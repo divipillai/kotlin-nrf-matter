@@ -39,7 +39,7 @@ import kotlinx.coroutines.flow.update
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class MainViewModel(
+internal class MainViewModel(
     private val beaconRepository: BeaconRepository
 ) : ViewModel() {
     private val _beacon = MutableStateFlow<List<MatterBeacon>>(emptyList())

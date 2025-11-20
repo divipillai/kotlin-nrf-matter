@@ -30,10 +30,12 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.splashscreen)
             implementation(libs.koin.android)
-            implementation("com.google.accompanist:accompanist-permissions:0.36.0")
+            implementation(libs.accompanist.permissions)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.androidx.datastore)
+            implementation(libs.play.services.home)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -68,6 +70,9 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        jniLibs {
+            pickFirsts += setOf("lib/**/libc++_shared.so")
         }
     }
     buildTypes {

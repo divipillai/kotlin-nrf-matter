@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.di
 
 import android.bluetooth.BluetoothAdapter
+import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.MainViewModel
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.commisionable.MatterBeaconProducerBle
@@ -53,4 +54,5 @@ val androidModule = module {
     }
     // Binding Viewmodel
     viewModel { MainViewModel(get()) }
+    viewModel { HomeViewModel() }
 }

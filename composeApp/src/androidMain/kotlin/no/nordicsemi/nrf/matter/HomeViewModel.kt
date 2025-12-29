@@ -1,9 +1,15 @@
 package no.nordicsemi.nrf.matter
 
+import android.content.Context
 import android.util.Log
 import androidx.activity.result.ActivityResult
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
+import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.chip.ChipClient
+import no.nordicsemi.nrf.matter.chip.ClustersHelper
+import no.nordicsemi.nrf.matter.data.Device
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -36,43 +42,113 @@ import com.google.android.gms.home.matter.commissioning.CommissioningResult
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 class HomeViewModel(
-//    private val devicesRepository: DevicesRepository,
+    context: Context,
 ) : ViewModel() {
-//     val devices = devicesRepository.devicesFlow
-    // Saves the result of the GPS Commissioning action (step 4).
-    // It is then used in step 5 to complete the commissioning.
     private var gpsCommissioningResult: CommissioningResult? = null
+    val chipsClient: ChipClient = ChipClient(context)
+    val clustersHelper: ClustersHelper = ClustersHelper(chipsClient)
 
-
-    // This is step 4 of the commissioning flow where GPS takes over.
-    // We save the result we get from GPS, which will be used by commissionedDeviceNameCaptured
-    // after the device name is captured.
     fun gpsCommissioningDeviceSucceeded(activityResult: ActivityResult) {
         gpsCommissioningResult =
-            CommissioningResult.fromIntentSenderResult(activityResult.resultCode, activityResult.data)
-        Log.i("AAA",
+            CommissioningResult.fromIntentSenderResult(
+                activityResult.resultCode,
+                activityResult.data
+            )
+        Log.i(
+            "AAA",
             "Device commissioned successfully! deviceName [${gpsCommissioningResult!!.deviceName}]"
         )
-        Log.i("AAA","Device commissioned successfully! room [${gpsCommissioningResult!!.room}]")
-        Log.i("AAA",
+        Log.i(
+            "AAA",
             "Device commissioned successfully! DeviceDescriptor of device:\n" +
                     "productId [${gpsCommissioningResult!!.commissionedDeviceDescriptor.productId}]\n" +
                     "vendorId [${gpsCommissioningResult!!.commissionedDeviceDescriptor.vendorId}]\n" +
                     "hashCode [${gpsCommissioningResult!!.commissionedDeviceDescriptor.hashCode()}]"
         )
+        // TODO: Add device to the devices repository.
+        // TODO: Add device state to repository: isOnline:true isOn:false
     }
 
-    // Called in Step 5 of the Device Commissioning flow when the GPS activity for
-    // commissioning the device has failed.
     fun commissionDeviceFailed(resultCode: Int) {
         if (resultCode == 0) {
             // User simply wilfully exited from GPS commissioning.
             return
         }
         val title = "Commissioning the device failed"
-        Log.e("AAA",title)
+        Log.e("AAA", title)
         Log.d("AAA", "commissionDeviceFailed: $title, $resultCode")
     }
 
+    // Called when the device name has been captured in the UI.
+    // This follows a successful gps commissioning (see gpsCommissioningDeviceSucceeded)
+    fun onCommissionedDeviceNameCaptured(deviceName: String) {
+        // Add the device to the devices repository.
+        viewModelScope.launch {
+            val deviceId = gpsCommissioningResult?.token?.toLong()!!
+            // todo: read device's vendor name and product name
 
+            try {
+
+                Log.d("BBB", "Commissioning: Adding device to repository")
+//                devicesRepository.addDevice(
+                val device = Device(
+                    dateCommissioned = gpsCommissioningResult?.token?.toLong(),
+                    vendorId = gpsCommissioningResult?.commissionedDeviceDescriptor?.vendorId.toString(),
+                    productId = gpsCommissioningResult?.commissionedDeviceDescriptor?.productId.toString(),
+//                        deviceType = gpsCommissioningResult?.commissionedDeviceDescriptor?.deviceType,
+                    deviceId = deviceId,
+                    name = gpsCommissioningResult?.deviceName,
+
+                    )
+                Log.d("AAA", "Commissioning: Adding device to repository: $device")
+//                )
+                // TODO: Add device state to repository: isOnline:true isOn:false
+            } catch (e: Exception) {
+                val msg = "Adding device [${deviceId}] [${deviceName}] to app's repository failed."
+                Log.e("BBB", "onCommissionedDeviceNameCaptured: $msg, $e")
+            }
+
+            // Introspect the device and update its deviceType.
+            // TODO: Need to get capabilities information and store that in the devices repository.
+            // (e.g on/off on which endpoint).
+            val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
+            Log.d("BBB", "*** MATTER DEVICE INFO ***")
+            val gotDeviceType = false
+            deviceMatterInfoList.forEach { deviceMatterInfo ->
+                Log.d("AAA", "Processing endpoint [$deviceMatterInfo.endpoint]")
+                // Endpoint 0 is the Root Node, so we disregard it.
+                if (deviceMatterInfo.endpoint != 0) {
+                    if (gotDeviceType) {
+                        // TODO: Handle this properly once we have specific examples to learn from.
+                        Log.w(
+                            "AAA",
+                            "The device has more than one endpoint. We're simply using the first one to define the device type."
+                        )
+                        return@forEach
+                    }
+                    if (deviceMatterInfo.types.size > 1) {
+                        // TODO: Handle this properly once we have specific examples to learn from.
+                        Log.w(
+                            "AAA",
+                            "The endpoint has more than one type. We're simply using the first one to define the device type."
+                        )
+                    }
+                    // TODO: Handle this properly once we have specific examples to learn from.
+//                    devicesRepository.updateDeviceType(
+//                        deviceId,
+//                        convertToAppDeviceType(deviceMatterInfo.types.first()),
+//                    )
+//                    gotDeviceType = true
+                }
+            }
+
+            // update device name
+            try {
+                clustersHelper.writeBasicClusterNodeLabelAttribute(deviceId, deviceName)
+            } catch (ex: Exception) {
+                val title = "Failed to write NodeLabel"
+                Log.e("AAA", title, ex)
+            }
+        }
+    }
 }

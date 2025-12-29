@@ -73,52 +73,46 @@ fun HomeScreen() {
                 homeViewModel.commissionDeviceFailed(resultCode)
             }
         }
-    val activity = LocalContext.current
+    val context = LocalContext.current
     val onCommissionDevice: () -> Unit = remember {
         {
-            Log.d("AAA","onAddDeviceClick")
+            Log.d("AAA", "onAddDeviceClick")
             // fixme deviceAttestationFailureIgnored = false
-//            homeViewModel.stopMonitoringStateChanges()
-            commissionDevice(activity.applicationContext, commissionDeviceLauncher)
+            commissionDevice(context.applicationContext, commissionDeviceLauncher)
         }
     }
 
     HomeScreenContent(
-        onCommissionDevice = onCommissionDevice)
+        onCommissionDevice = onCommissionDevice
+    )
 }
 
 @Composable
 fun HomeScreenContent(onCommissionDevice: () -> Unit) {
     LaunchedEffect(key1 = Unit) {
-        Log.d("AAA","HomeScreenContent: LaunchedEffect")
         onCommissionDevice()
     }
 }
 
-// Launch GPS Activity
-
-@RequiresApi(Build.VERSION_CODES.O_MR1)
+/**
+ * Commission a device.
+ */
 fun commissionDevice(
     context: Context,
     commissionDeviceLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>,
 ) {
-    Log.d("AAA","CommissionDevice: starting")
-
-    // CODELAB: commissionDevice
     val commissionDeviceRequest =
         CommissioningRequest.builder()
+//            .setOnboardingPayload(payload) // Add device payload directly to commission a specific device, such as payload = "MT:6FCJ142C00KA0648G00"
             .setCommissioningService(ComponentName(context, AppCommissioningService::class.java))
             .build()
 
-    // The call to commissionDevice() creates the IntentSender that will eventually be launched
-    // in the fragment to trigger the commissioning activity in GPS.
     Matter.getCommissioningClient(context)
         .commissionDevice(commissionDeviceRequest)
         .addOnSuccessListener { result ->
-            Log.d("AAA","CommissionDevice: Success getting the IntentSender: result [${result}]")
             commissionDeviceLauncher.launch(IntentSenderRequest.Builder(result).build())
         }
         .addOnFailureListener { error ->
-            Log.e("AAA",error.message.toString())
+            Log.e("AAA", error.message.toString())
         }
 }

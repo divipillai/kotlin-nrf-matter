@@ -52,7 +52,9 @@ val androidModule = module {
             context = androidContext()
         )
     }
+    single<ChipClient> { ChipClient(context = androidContext()) }
+
     // Binding Viewmodel
     viewModel { MainViewModel(get()) }
-    viewModel { HomeViewModel() }
+    viewModel { HomeViewModel(context = androidContext()) }
 }

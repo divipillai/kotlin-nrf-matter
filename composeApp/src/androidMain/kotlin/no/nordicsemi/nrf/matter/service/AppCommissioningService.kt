@@ -72,8 +72,6 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
                     "\tpassCode [${metadata.passcode}]"
         )
 
-
-        // CODELAB: onCommissioningRequested()
         // Perform commissioning on custom fabric for the sample app.
         serviceScope.launch {
             val deviceId = getNextDeviceId(DeviceIdGenerator.Random)
@@ -82,20 +80,20 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
                     "AAA",
                     "Commissioning: App fabric -> ChipClient.establishPaseConnection(): deviceId [${deviceId}]"
                 )
-//                chipClient.awaitEstablishPaseConnection(
-//                    deviceId,
-//                    metadata.networkLocation.ipAddress.hostAddress!!,
-//                    metadata.networkLocation.port,
-//                    metadata.passcode
-//                )
+                chipClient.awaitEstablishPaseConnection(
+                    deviceId,
+                    metadata.networkLocation.ipAddress.hostAddress!!,
+                    metadata.networkLocation.port,
+                    metadata.passcode
+                )
 
                 Log.d(
                     "AAA",
                     "Commissioning: App fabric -> ChipClient.commissionDevice(): deviceId [${deviceId}]"
                 )
-//                chipClient.awaitCommissionDevice(deviceId, null)
+                chipClient.awaitCommissionDevice(deviceId, null)
             } catch (e: Exception) {
-                Log.e("AAA", "onCommissioningRequested() failed")
+                Log.e("AAA", "onCommissioningRequested() failed with exception: $e")
                 // No way to determine whether this was ATTESTATION_FAILED or DEVICE_UNREACHABLE.
                 commissioningServiceDelegate
                     .sendCommissioningError(CommissioningError.OTHER)
@@ -144,7 +142,6 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
         super.onCreate()
         // May be invoked without MainActivity being called to initialize APP_NAME.
         // So do it here as well.
-        Log.d("AAA", "onCreate()")
         commissioningServiceDelegate = CommissioningService.Builder(this).setCallback(this).build()
     }
 
@@ -165,7 +162,7 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
      *
      * @param generator the method used to generate the device id
      */
-    private suspend fun getNextDeviceId(generator: DeviceIdGenerator): Long {
+    private fun getNextDeviceId(generator: DeviceIdGenerator): Long {
         return when (generator) {
             DeviceIdGenerator.Incremental -> {
                 devicesRepository.incrementAndReturnLastDeviceId()

@@ -54,6 +54,7 @@ val androidModule = module {
     }
     single<ChipClient> { ChipClient(context = androidContext()) }
 
+    single<MatterController> { AndroidMatterController(get()) }
     // Binding Viewmodel
     viewModel { MainViewModel(get()) }
     viewModel { HomeViewModel(context = androidContext()) }

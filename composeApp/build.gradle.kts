@@ -36,6 +36,7 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.datastore)
             implementation(libs.play.services.home)
+            implementation(libs.matter.android.demo.sdk)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

@@ -66,6 +66,10 @@ fun App() {
                     Text("Compose: $greeting")
                 }
             }
+
+            Button(onClick = { showContent = !showContent }) {
+                Text("ios Button")
+            }
         }
     }
 }

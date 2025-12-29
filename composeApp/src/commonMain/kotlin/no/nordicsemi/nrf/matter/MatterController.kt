@@ -1,17 +1,4 @@
-package no.nordicsemi.nrf.matter.di
-
-import android.bluetooth.BluetoothAdapter
-import no.nordicsemi.nrf.matter.AndroidMatterController
-import no.nordicsemi.nrf.matter.HomeViewModel
-import no.nordicsemi.nrf.matter.MainViewModel
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.MatterController
-import no.nordicsemi.nrf.matter.chip.ChipClient
-import no.nordicsemi.nrf.matter.commisionable.MatterBeaconProducerBle
-import org.koin.android.ext.koin.androidContext
-import org.koin.core.module.dsl.viewModel
-import org.koin.core.qualifier.named
-import org.koin.dsl.module
+package no.nordicsemi.nrf.matter
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -43,22 +30,9 @@ import org.koin.dsl.module
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-val androidModule = module {
 
-    single(named("MatterBeaconScanner")) {
-        BluetoothAdapter.getDefaultAdapter()?.bluetoothLeScanner
-    }
-
-    single<MatterBeaconProducer> {
-        MatterBeaconProducerBle(
-            bluetoothLeScanner = get(named("MatterBeaconScanner")),
-            context = androidContext()
-        )
-    }
-    single<ChipClient> { ChipClient(context = androidContext()) }
-
-    single<MatterController> { AndroidMatterController(get()) }
-    // Binding Viewmodel
-    viewModel { MainViewModel(get()) }
-    viewModel { HomeViewModel(context = androidContext()) }
+interface MatterController {
+    suspend fun readDeviceType(deviceId: Long): String
+    suspend fun toggleLight(deviceId: Long, isOn: Boolean): Boolean
+    // Add other generic Matter actions here
 }

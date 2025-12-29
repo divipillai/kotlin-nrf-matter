@@ -3,9 +3,9 @@ package no.nordicsemi.nrf.matter.data
 import android.content.Context
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
 import kotlinx.serialization.Serializable
-import androidx.datastore.core.Serializer
 import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.io.OutputStream
@@ -41,11 +41,11 @@ import java.io.OutputStream
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-object DevicesJsonSerializer: Serializer<Devices> {
+object DevicesJsonSerializer : Serializer<Devices> {
 
     override val defaultValue: Devices = Devices()
 
-     override suspend fun readFrom(input: InputStream): Devices {
+    override suspend fun readFrom(input: InputStream): Devices {
         return try {
             val text = input.readBytes().decodeToString()
             if (text.isBlank()) defaultValue
@@ -55,7 +55,7 @@ object DevicesJsonSerializer: Serializer<Devices> {
         }
     }
 
-     override suspend fun writeTo(t: Devices, output: OutputStream) {
+    override suspend fun writeTo(t: Devices, output: OutputStream) {
         val text = Json.encodeToString(t)
         output.write(text.encodeToByteArray())
     }
@@ -71,24 +71,22 @@ data class Device(
     val dateCommissioned: Long? = null,
     val vendorId: String? = null,
     val productId: String? = null,
-    val deviceType: DeviceType = DeviceType.TYPE_UNSPECIFIED,
+    val deviceType: DeviceType = DeviceType.UNKNOWN, // TODO: device type is no longer provided by the DeviceDescriptor.
     val deviceId: Long = 0L,
     val name: String? = null,
-    val room: String? = null,
+//    val room: String? = null, todo: Removed since it is deprecated in the Matter API.
     val productName: String? = null,
     val vendorName: String? = null
 )
 
 @Serializable
-enum class DeviceType {
-    TYPE_UNSPECIFIED,
-    TYPE_UNKNOWN,
-    TYPE_LIGHT,
-    TYPE_OUTLET,
-    TYPE_DIMMABLE_LIGHT,
-    TYPE_COLOR_TEMPERATURE_LIGHT,
-    TYPE_EXTENDED_COLOR_LIGHT,
-    TYPE_LIGHT_SWITCH
+enum class DeviceType(val deviceTypeId: Long) {
+    UNKNOWN(0x0000),
+    LIGHT_ON_OFF(0x0100),
+    DIMMABLE_LIGHT(0x0101),
+    COLOR_LIGHT(0x0102),
+    LIGHT_ON_OFF_SWITCH(0x0103),
+    TEMPERATURE_SENSOR(0x0302);
 }
 
 @Serializable

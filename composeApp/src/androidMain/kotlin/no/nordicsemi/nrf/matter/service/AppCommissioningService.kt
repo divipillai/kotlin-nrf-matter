@@ -12,7 +12,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
+import org.koin.android.ext.android.inject
 import java.lang.Long.max
 import java.security.SecureRandom
 import kotlin.math.abs
@@ -51,6 +53,7 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
     private lateinit var devicesRepository: DevicesRepository
+    private val chipClient: ChipClient by inject()
 
     override fun onBind(intent: Intent?): IBinder {
         Log.d("AAA", "onBind(): intent [${intent}]")
@@ -130,7 +133,8 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
                 .addOnFailureListener { e ->
                     Log.e(
                         "AAA",
-                        "Commissioning: commissioningServiceDelegate.sendCommissioningComplete() failed", e
+                        "Commissioning: commissioningServiceDelegate.sendCommissioningComplete() failed",
+                        e
                     )
                 }
         }

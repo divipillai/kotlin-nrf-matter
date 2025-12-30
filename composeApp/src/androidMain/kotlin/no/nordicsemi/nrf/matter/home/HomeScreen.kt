@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter
+package no.nordicsemi.nrf.matter.home
 
 import android.app.Activity
 import android.content.ComponentName

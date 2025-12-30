@@ -2,7 +2,7 @@ package no.nordicsemi.nrf.matter.di
 
 import android.bluetooth.BluetoothAdapter
 import no.nordicsemi.nrf.matter.AndroidMatterController
-import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.home.HomeViewModel
 import no.nordicsemi.nrf.matter.MainViewModel
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.MatterController

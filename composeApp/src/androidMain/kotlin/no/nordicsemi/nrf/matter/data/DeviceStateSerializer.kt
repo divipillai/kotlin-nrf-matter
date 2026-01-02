@@ -89,7 +89,7 @@ data class DeviceState(
 
 @Serializable
 data class DevicesState(
-    val devicesState: List<DeviceState> = emptyList()
+    val devicesStateList: List<DeviceState> = emptyList()
 )
 
 /**

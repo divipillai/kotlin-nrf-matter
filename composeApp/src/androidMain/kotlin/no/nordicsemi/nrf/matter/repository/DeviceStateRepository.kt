@@ -76,7 +76,7 @@ class DevicesStateRepository(context: Context) {
     ) {
         val updatedState = devicesStateDataStore.updateData { currentState ->
 
-            val updatedDevices = currentState.devicesState
+            val updatedDevices = currentState.devicesStateList
                 .filterNot { it.deviceId == deviceId } + // remove old entry if exists
                     DeviceState(
                         dateCaptured = Instant.now(),
@@ -85,7 +85,7 @@ class DevicesStateRepository(context: Context) {
                         on = isOn
                     )
 
-            currentState.copy(devicesState = updatedDevices)
+            currentState.copy(devicesStateList = updatedDevices)
         }
 
         _lastUpdatedDeviceState.postValue(updatedState)
@@ -101,7 +101,7 @@ class DevicesStateRepository(context: Context) {
 
         val updatedDevicesState = devicesStateDataStore.updateData { currentState ->
 
-            val updatedDevices = currentState.devicesState.map { deviceState ->
+            val updatedDevices = currentState.devicesStateList.map { deviceState ->
                 if (deviceState.deviceId == deviceId) {
                     wasUpdated = true
                     deviceState.copy(
@@ -114,7 +114,7 @@ class DevicesStateRepository(context: Context) {
                 }
             }
 
-            currentState.copy(devicesState = updatedDevices)
+            currentState.copy(devicesStateList = updatedDevices)
         }
 
         if (wasUpdated) {
@@ -131,7 +131,7 @@ class DevicesStateRepository(context: Context) {
     suspend fun loadDeviceState(deviceId: Long): DeviceState? {
         return devicesStateFlow
             .first()
-            .devicesState
+            .devicesStateList
             .firstOrNull { it.deviceId == deviceId }
     }
 

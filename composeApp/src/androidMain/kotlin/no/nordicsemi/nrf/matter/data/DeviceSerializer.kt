@@ -80,13 +80,14 @@ data class Device(
 )
 
 @Serializable
-enum class DeviceType(val deviceTypeId: Long) {
-    UNKNOWN(0x0000),
-    LIGHT_ON_OFF(0x0100),
-    DIMMABLE_LIGHT(0x0101),
-    COLOR_LIGHT(0x0102),
-    LIGHT_ON_OFF_SWITCH(0x0103),
-    TEMPERATURE_SENSOR(0x0302);
+enum class DeviceType {
+    UNKNOWN,
+    LIGHT_ON_OFF,
+    DIMMABLE_LIGHT,
+    LIGHT_SWITCH,
+    OUTLET,
+    COLOR_TEMPERATURE_LIGHT,
+    EXTENDED_COLOR_LIGHT, ;
 }
 
 @Serializable

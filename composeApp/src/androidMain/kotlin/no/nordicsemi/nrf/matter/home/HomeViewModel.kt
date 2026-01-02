@@ -4,12 +4,25 @@ import android.content.Context
 import android.util.Log
 import androidx.activity.result.ActivityResult
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.data.Device
+import no.nordicsemi.nrf.matter.data.DeviceType
+import no.nordicsemi.nrf.matter.data.Devices
+import no.nordicsemi.nrf.matter.data.DevicesState
+import no.nordicsemi.nrf.matter.data.UserPreferences
+import no.nordicsemi.nrf.matter.repository.DevicesRepository
+import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
+import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -41,12 +54,57 @@ import no.nordicsemi.nrf.matter.data.Device
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+/**
+ * Encapsulates all of the information on a specific device. Note that the app currently only
+ * supports Matter devices with server attribute "ON/OFF".
+ */
+data class DeviceUiModel(
+    // Device information that is persisted in a Proto DataStore. See DevicesRepository.
+    val device: Device,
+
+    // Device state information that is retrieved dynamically.
+    // Whether the device is online or offline.
+    val isOnline: Boolean,
+    // Whether the device is on or off.
+    val isOn: Boolean,
+)
+
+/**
+ * UI model that encapsulates the information about the devices to be displayed on the Home screen.
+ */
+data class DevicesListUiModel(
+    // The list of devices.
+    val devices: List<DeviceUiModel>,
+
+    // Whether offline devices should be shown.
+    val showOfflineDevices: Boolean,
+)
+
 class HomeViewModel(
     context: Context,
+    private val devicesRepository: DevicesRepository,
+    private val devicesStateRepository: DevicesStateRepository,
+    private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
     private var gpsCommissioningResult: CommissioningResult? = null
     val chipsClient: ChipClient = ChipClient(context)
     val clustersHelper: ClustersHelper = ClustersHelper(chipsClient)
+
+    private val devicesFlow = devicesRepository.devicesFlow
+    private val devicesStateFlow = devicesStateRepository.devicesStateFlow
+    private val userPreferencesFlow = userPreferencesRepository.userPreferencesFlow
+
+    // Controls whether the "New Device" AlertDialog should be shown in the UI.
+    private var _showNewDeviceNameAlertDialog = MutableStateFlow(false)
+    val showNewDeviceNameAlertDialog: StateFlow<Boolean> =
+        _showNewDeviceNameAlertDialog.asStateFlow()
+
+    init {
+        liveData { emit(devicesRepository.getAllDevices()) }
+        liveData { emit(devicesStateRepository.getAllDevicesState()) }
+        liveData { emit(userPreferencesRepository.getData()) }
+    }
 
     fun gpsCommissioningDeviceSucceeded(activityResult: ActivityResult) {
         gpsCommissioningResult =
@@ -65,6 +123,8 @@ class HomeViewModel(
                     "vendorId [${gpsCommissioningResult!!.commissionedDeviceDescriptor.vendorId}]\n" +
                     "hashCode [${gpsCommissioningResult!!.commissionedDeviceDescriptor.hashCode()}]"
         )
+        // Now we need to capture the device name.
+        _showNewDeviceNameAlertDialog.value = true
         // TODO: Add device to the devices repository.
         // TODO: Add device state to repository: isOnline:true isOn:false
     }
@@ -83,26 +143,47 @@ class HomeViewModel(
     // This follows a successful gps commissioning (see gpsCommissioningDeviceSucceeded)
     fun onCommissionedDeviceNameCaptured(deviceName: String) {
         // Add the device to the devices repository.
+        _showNewDeviceNameAlertDialog.value = false
         viewModelScope.launch {
             val deviceId = gpsCommissioningResult?.token?.toLong()!!
-            // todo: read device's vendor name and product name
+            // read device's vendor name and product name
+            val vendorName =
+                try {
+                    clustersHelper.readBasicClusterVendorNameAttribute(deviceId)
+                } catch (ex: Exception) {
+                    Log.e("AAA", "Failed to read VendorName attribute with exception: $ex")
+                    ""
+                }
+
+            val productName =
+                try {
+                    clustersHelper.readBasicClusterProductNameAttribute(deviceId)
+                } catch (ex: Exception) {
+                    Log.e("AAA", "Failed to read ProductName attribute with exception: $ex")
+                    ""
+                }
 
             try {
 
                 Log.d("BBB", "Commissioning: Adding device to repository")
-//                devicesRepository.addDevice(
+                val deviceType = convertToAppDeviceType(
+                    gpsCommissioningResult?.commissionedDeviceDescriptor?.deviceType?.toLong()!!
+                )
                 val device = Device(
+                    vendorName = vendorName,
+                    productName = productName,
                     dateCommissioned = gpsCommissioningResult?.token?.toLong(),
                     vendorId = gpsCommissioningResult?.commissionedDeviceDescriptor?.vendorId.toString(),
                     productId = gpsCommissioningResult?.commissionedDeviceDescriptor?.productId.toString(),
-//                        deviceType = gpsCommissioningResult?.commissionedDeviceDescriptor?.deviceType,
+                    deviceType = deviceType,
                     deviceId = deviceId,
                     name = gpsCommissioningResult?.deviceName,
-
-                    )
+                )
+                devicesRepository.addDevice(device)
                 Log.d("AAA", "Commissioning: Adding device to repository: $device")
 //                )
-                // TODO: Add device state to repository: isOnline:true isOn:false
+                // Add device state to repository: isOnline:true isOn:false
+                devicesStateRepository.addDeviceState(deviceId, isOnline = true, isOn = false)
             } catch (e: Exception) {
                 val msg = "Adding device [${deviceId}] [${deviceName}] to app's repository failed."
                 Log.e("BBB", "onCommissionedDeviceNameCaptured: $msg, $e")
@@ -113,9 +194,9 @@ class HomeViewModel(
             // (e.g on/off on which endpoint).
             val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
             Log.d("BBB", "*** MATTER DEVICE INFO ***")
-            val gotDeviceType = false
+            var gotDeviceType = false
             deviceMatterInfoList.forEach { deviceMatterInfo ->
-                Log.d("AAA", "Processing endpoint [$deviceMatterInfo.endpoint]")
+                Log.d("AAA", "Processing endpoint [${deviceMatterInfo.endpoint}]")
                 // Endpoint 0 is the Root Node, so we disregard it.
                 if (deviceMatterInfo.endpoint != 0) {
                     if (gotDeviceType) {
@@ -134,11 +215,11 @@ class HomeViewModel(
                         )
                     }
                     // TODO: Handle this properly once we have specific examples to learn from.
-//                    devicesRepository.updateDeviceType(
-//                        deviceId,
-//                        convertToAppDeviceType(deviceMatterInfo.types.first()),
-//                    )
-//                    gotDeviceType = true
+                    devicesRepository.updateDeviceType(
+                        deviceId,
+                        convertToAppDeviceType(deviceMatterInfo.types.first()),
+                    )
+                    gotDeviceType = true
                 }
             }
 
@@ -146,9 +227,67 @@ class HomeViewModel(
             try {
                 clustersHelper.writeBasicClusterNodeLabelAttribute(deviceId, deviceName)
             } catch (ex: Exception) {
-                val title = "Failed to write NodeLabel"
-                Log.e("AAA", title, ex)
+                Log.e("AAA", "Failed to write NodeLabel", ex)
             }
         }
+    }
+
+    fun updateDeviceStateOn(deviceId: Long, isOn: Boolean) {
+        Log.d("AAA","updateDeviceStateOn: Device [${deviceId}]  isOn [${isOn}]")
+        viewModelScope.launch {
+            Log.d("AAA","Handling real device")
+            clustersHelper.setOnOffDeviceStateOnOffCluster(deviceId, isOn, 1)
+            devicesStateRepository.updateDeviceState(deviceId, true, isOn)
+        }
+    }
+
+    // Every time the list of devices or user preferences are updated (emit is triggered),
+    // we recreate the DevicesListUiModel
+    private val devicesListUiModelFlow =
+        combine(devicesFlow, devicesStateFlow, userPreferencesFlow) { devices: Devices,
+                                                                      devicesStates: DevicesState,
+                                                                      userPreferences: UserPreferences ->
+            Log.d("AAA", "*** devicesListUiModelFlow changed ***")
+            return@combine DevicesListUiModel(
+                devices = processDevices(devices, devicesStates, userPreferences),
+                showOfflineDevices = !userPreferences.hideOfflineDevices,
+            )
+        }
+    val devicesUiModelLiveData = devicesListUiModelFlow.asLiveData()
+
+    private fun processDevices(
+        devices: Devices,
+        devicesStates: DevicesState,
+        userPreferences: UserPreferences,
+    ): List<DeviceUiModel> {
+        val devicesUiModel = ArrayList<DeviceUiModel>()
+        devices.devicesList.forEach { device ->
+            Log.d("AAA", "processDevices() deviceId: [${device.deviceId}]}")
+            val state = devicesStates.devicesStateList.find { it.deviceId == device.deviceId }
+            if (userPreferences.hideOfflineDevices) {
+                if (state?.online != true) return@forEach
+            }
+            if (state == null) {
+                Log.d("AAA", "    deviceId setting default value for state")
+                devicesUiModel.add(DeviceUiModel(device, isOnline = false, isOn = false))
+            } else {
+                Log.d("AAA", "    deviceId setting its own value for state")
+                devicesUiModel.add(DeviceUiModel(device, state.online, state.on))
+            }
+        }
+        return devicesUiModel
+    }
+}
+
+
+fun convertToAppDeviceType(matterDeviceType: Long): DeviceType {
+    return when (matterDeviceType) {
+        256L -> DeviceType.LIGHT_ON_OFF // 0x0100 On/Off Light
+        257L -> DeviceType.DIMMABLE_LIGHT // 0x0101 Dimmable Light
+        259L -> DeviceType.LIGHT_SWITCH// 0x0103 On/Off Light Switch
+        266L -> DeviceType.OUTLET // 0x010A (On/Off Plug-in Unit)
+        268L -> DeviceType.COLOR_TEMPERATURE_LIGHT // 0x010C Color Temperature Light
+        269L -> DeviceType.EXTENDED_COLOR_LIGHT // 0x010D Extended Color Light
+        else -> DeviceType.UNKNOWN
     }
 }

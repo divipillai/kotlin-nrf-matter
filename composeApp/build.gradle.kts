@@ -37,6 +37,9 @@ kotlin {
             implementation(libs.androidx.datastore)
             implementation(libs.play.services.home)
             implementation(libs.matter.android.demo.sdk)
+            implementation(libs.androidx.material3)
+            implementation(libs.androidx.material)
+            implementation(libs.androidx.runtime.livedata)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

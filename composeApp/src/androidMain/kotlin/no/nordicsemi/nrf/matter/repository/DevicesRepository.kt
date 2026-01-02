@@ -71,17 +71,17 @@ class DevicesRepository(
     suspend fun addDevice(device: Device) {
         Log.d("AAA", "addDevice: device [$device]")
         devicesDataStore.updateData { devices ->
-            devices.copy(devices = devices.devices + device)
+            devices.copy(devicesList = devices.devicesList + device)
         }
     }
 
     suspend fun updateDevice(device: Device) {
         Log.d("AAA", "updateDevice: device [$device]")
         devicesDataStore.updateData { devices ->
-            val updatedDevices = devices.devices.map {
+            val updatedDevices = devices.devicesList.map {
                 if (it.deviceId == device.deviceId) device else it
             }
-            devices.copy(devices = updatedDevices)
+            devices.copy(devicesList = updatedDevices)
         }
     }
 
@@ -91,7 +91,7 @@ class DevicesRepository(
         var wasUpdated = false
 
         devicesDataStore.updateData { devices ->
-            val updatedDevices = devices.devices.map { device ->
+            val updatedDevices = devices.devicesList.map { device ->
                 if (device.deviceId == deviceId) {
                     wasUpdated = true
                     device.copy(deviceType = deviceType)
@@ -99,7 +99,7 @@ class DevicesRepository(
                     device
                 }
             }
-            devices.copy(devices = updatedDevices)
+            devices.copy(devicesList = updatedDevices)
         }
 
         if (!wasUpdated) {
@@ -116,7 +116,7 @@ class DevicesRepository(
         var removed = false
 
         devicesDataStore.updateData { devices ->
-            val updatedDevices = devices.devices.filterNot {
+            val updatedDevices = devices.devicesList.filterNot {
                 if (it.deviceId == deviceId) {
                     removed = true
                     true
@@ -124,7 +124,7 @@ class DevicesRepository(
                     false
                 }
             }
-            devices.copy(devices = updatedDevices)
+            devices.copy(devicesList = updatedDevices)
         }
 
         if (!removed) {
@@ -137,7 +137,7 @@ class DevicesRepository(
     }
 
     suspend fun getDevice(deviceId: Long): Device {
-        return devicesFlow.first().devices.firstOrNull { it.deviceId == deviceId }
+        return devicesFlow.first().devicesList.firstOrNull { it.deviceId == deviceId }
             ?: throw Exception("Device not found: $deviceId")
     }
 
@@ -154,11 +154,11 @@ class DevicesRepository(
     // ---------- Helpers (JSON-friendly) ----------
 
     private suspend fun getIndex(deviceId: Long): Int {
-        return devicesFlow.first().devices.indexOfFirst { it.deviceId == deviceId }
+        return devicesFlow.first().devicesList.indexOfFirst { it.deviceId == deviceId }
     }
 
     private fun getIndex(devices: Devices, deviceId: Long): Int {
-        return devices.devices.indexOfFirst { it.deviceId == deviceId }
+        return devices.devicesList.indexOfFirst { it.deviceId == deviceId }
     }
 
     private suspend fun getIndexAndDevice(deviceId: Long): Pair<Int?, Device?> {
@@ -167,8 +167,8 @@ class DevicesRepository(
     }
 
     private fun getIndexAndDevice(devices: Devices, deviceId: Long): Pair<Int?, Device?> {
-        val index = devices.devices.indexOfFirst { it.deviceId == deviceId }
-        return if (index >= 0) index to devices.devices[index] else null to null
+        val index = devices.devicesList.indexOfFirst { it.deviceId == deviceId }
+        return if (index >= 0) index to devices.devicesList[index] else null to null
     }
 }
 

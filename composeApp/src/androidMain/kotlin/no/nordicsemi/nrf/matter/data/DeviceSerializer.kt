@@ -93,7 +93,7 @@ enum class DeviceType {
 @Serializable
 data class Devices(
     val lastDeviceId: Long = 0L,
-    val devices: List<Device> = emptyList()
+    val devicesList: List<Device> = emptyList()
 )
 
 

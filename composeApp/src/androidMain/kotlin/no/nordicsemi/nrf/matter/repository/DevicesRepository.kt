@@ -30,73 +30,105 @@ package no.nordicsemi.nrf.matter.repository
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import android.content.Context
+import android.util.Log
+import androidx.datastore.core.IOException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.data.Device
 import no.nordicsemi.nrf.matter.data.DeviceType
 import no.nordicsemi.nrf.matter.data.Devices
+import no.nordicsemi.nrf.matter.data.devicesDataStore
 
-class DevicesRepository {
+class DevicesRepository(
+    context: Context
+) {
 
-    private val _devicesFlow = MutableStateFlow(Devices())
-    val devicesFlow = _devicesFlow.asStateFlow()
+    // The datastore managed by DevicesRepository.
+    private val devicesDataStore = context.devicesDataStore
 
-    // Safely update Devices atomically
-    private inline fun updateDevices(transform: (Devices) -> Devices) {
-        _devicesFlow.update(transform)
+    // The Flow to read data from the DataStore.
+    val devicesFlow: Flow<Devices> =
+        devicesDataStore.data.catch { exception ->
+            if (exception is IOException) {
+                Log.e("AAA", "Error reading devices with exception", exception)
+                emit(Devices())
+            } else {
+                throw exception
+            }
+        }
+
+    suspend fun incrementAndReturnLastDeviceId(): Long {
+        val updatedDevices = devicesDataStore.updateData { devices ->
+            val newLastDeviceId = devices.lastDeviceId + 1
+            Log.d("AAA", "incrementAndReturnLastDeviceId(): newLastDeviceId [$newLastDeviceId]")
+            devices.copy(lastDeviceId = newLastDeviceId)
+        }
+        return updatedDevices.lastDeviceId
     }
 
-    fun incrementAndReturnLastDeviceId(): Long {
-        val newId = _devicesFlow.value.lastDeviceId + 1
-        updateDevices { it.copy(lastDeviceId = newId) }
-        return newId
-    }
-
-    fun addDevice(device: Device) {
-        updateDevices { devices ->
+    suspend fun addDevice(device: Device) {
+        Log.d("AAA", "addDevice: device [$device]")
+        devicesDataStore.updateData { devices ->
             devices.copy(devices = devices.devices + device)
         }
     }
 
     suspend fun updateDevice(device: Device) {
-        val index = getIndex(device.deviceId)
-        if (index == -1) return
-
-        updateDevices { devices ->
-            devices.copy(
-                devices = devices.devices.toMutableList().apply {
-                    this[index] = device
-                }
-            )
+        Log.d("AAA", "updateDevice: device [$device]")
+        devicesDataStore.updateData { devices ->
+            val updatedDevices = devices.devices.map {
+                if (it.deviceId == device.deviceId) device else it
+            }
+            devices.copy(devices = updatedDevices)
         }
     }
 
     suspend fun updateDeviceType(deviceId: Long, deviceType: DeviceType) {
-        val index = getIndex(deviceId)
-        if (index == -1) return
+        Log.d("AAA", "updateDeviceType: deviceId [$deviceId] deviceType [$deviceType]")
 
-        updateDevices { devices ->
-            val updated = devices.devices[index].copy(deviceType = deviceType)
-            devices.copy(
-                devices = devices.devices.toMutableList().apply {
-                    this[index] = updated
+        var wasUpdated = false
+
+        devicesDataStore.updateData { devices ->
+            val updatedDevices = devices.devices.map { device ->
+                if (device.deviceId == deviceId) {
+                    wasUpdated = true
+                    device.copy(deviceType = deviceType)
+                } else {
+                    device
                 }
+            }
+            devices.copy(devices = updatedDevices)
+        }
+
+        if (!wasUpdated) {
+            Log.e(
+                "AAA",
+                "Unable to get device information to update its type: deviceId [$deviceId] deviceType [$deviceType]"
             )
         }
     }
 
     suspend fun removeDevice(deviceId: Long) {
-        val index = getIndex(deviceId)
-        if (index == -1) return
+        Log.d("AAA", "removeDevice: device [$deviceId]")
 
-        updateDevices { devices ->
-            devices.copy(
-                devices = devices.devices.toMutableList().apply {
-                    removeAt(index)
+        var removed = false
+
+        devicesDataStore.updateData { devices ->
+            val updatedDevices = devices.devices.filterNot {
+                if (it.deviceId == deviceId) {
+                    removed = true
+                    true
+                } else {
+                    false
                 }
-            )
+            }
+            devices.copy(devices = updatedDevices)
+        }
+
+        if (!removed) {
+            throw Exception("Device not found: $deviceId")
         }
     }
 
@@ -105,25 +137,38 @@ class DevicesRepository {
     }
 
     suspend fun getDevice(deviceId: Long): Device {
-        val devices = devicesFlow.first()
-        val index = getIndex(devices, deviceId)
-        if (index == -1) throw Exception("Device not found: $deviceId")
-        return devices.devices[index]
+        return devicesFlow.first().devices.firstOrNull { it.deviceId == deviceId }
+            ?: throw Exception("Device not found: $deviceId")
     }
 
     suspend fun getAllDevices(): Devices {
         return devicesFlow.first()
     }
 
-    fun clearAllData() {
-        updateDevices { Devices() }
+    suspend fun clearAllData() {
+        devicesDataStore.updateData {
+            Devices()
+        }
     }
 
+    // ---------- Helpers (JSON-friendly) ----------
+
     private suspend fun getIndex(deviceId: Long): Int {
-        return getIndex(devicesFlow.first(), deviceId)
+        return devicesFlow.first().devices.indexOfFirst { it.deviceId == deviceId }
     }
 
     private fun getIndex(devices: Devices, deviceId: Long): Int {
         return devices.devices.indexOfFirst { it.deviceId == deviceId }
     }
+
+    private suspend fun getIndexAndDevice(deviceId: Long): Pair<Int?, Device?> {
+        val devices = devicesFlow.first()
+        return getIndexAndDevice(devices, deviceId)
+    }
+
+    private fun getIndexAndDevice(devices: Devices, deviceId: Long): Pair<Int?, Device?> {
+        val index = devices.devices.indexOfFirst { it.deviceId == deviceId }
+        return if (index >= 0) index to devices.devices[index] else null to null
+    }
 }
+

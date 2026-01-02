@@ -72,12 +72,6 @@ dataStore(fileName = "user_prefs_store.proto", serializer = UserPreferencesJsonS
  */
 @Serializable
 data class UserPreferences(
-    /**
-     * Filter for showing / hiding the codelab information on the Home screen.
-     * Using "hide" instead of show so that the default value (false) is the
-     * default behavior we want.
-     */
-    val hideCodelabInfo: Boolean = false,
 
     /**
      * Filter for showing / hiding offline devices on the Home screen.

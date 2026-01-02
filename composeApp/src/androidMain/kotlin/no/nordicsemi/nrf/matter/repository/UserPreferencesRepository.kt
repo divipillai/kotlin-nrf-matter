@@ -61,13 +61,6 @@ class UserPreferencesRepository(
 
     val userPreferencesLiveData = userPreferencesFlow.asLiveData()
 
-    suspend fun updateHideCodelabInfo(hide: Boolean) {
-        Log.d("AAA", "updateHideCodelabInfo [$hide]")
-        userPreferencesDataStore.updateData { prefs ->
-            prefs.copy(hideCodelabInfo = hide)
-        }
-    }
-
     suspend fun updateHideOfflineDevices(hide: Boolean) {
         Log.d("AAA", "updateHideOfflineDevices [$hide]")
         userPreferencesDataStore.updateData { prefs ->
@@ -85,10 +78,6 @@ class UserPreferencesRepository(
         userPreferencesDataStore.updateData { prefs ->
             prefs.copy(showHalfsheetNotification = show)
         }
-    }
-
-    suspend fun isHideCodelabInfo(): Boolean {
-        return userPreferencesFlow.first().hideCodelabInfo
     }
 
     suspend fun getData(): UserPreferences {

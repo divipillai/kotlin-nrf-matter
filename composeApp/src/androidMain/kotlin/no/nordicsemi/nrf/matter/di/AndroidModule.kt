@@ -68,5 +68,5 @@ val androidModule = module {
     // Binding Viewmodel
     viewModel { MainViewModel(get()) }
     viewModel { HomeViewModel(get(), get(), get(), get()) }
-    viewModel { DeviceViewModel(get(), get()) }
+    viewModel { DeviceViewModel(get(), get(), get()) }
 }

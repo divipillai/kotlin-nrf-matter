@@ -166,7 +166,7 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
      *
      * @param generator the method used to generate the device id
      */
-    private fun getNextDeviceId(generator: DeviceIdGenerator): Long {
+    private suspend fun getNextDeviceId(generator: DeviceIdGenerator): Long {
         return when (generator) {
             DeviceIdGenerator.Incremental -> {
                 devicesRepository.incrementAndReturnLastDeviceId()

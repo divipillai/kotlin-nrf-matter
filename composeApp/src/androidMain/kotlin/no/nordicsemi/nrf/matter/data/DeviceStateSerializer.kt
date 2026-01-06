@@ -1,15 +1,5 @@
 package no.nordicsemi.nrf.matter.data
 
-import android.content.Context
-import androidx.datastore.core.CorruptionException
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.Serializer
-import androidx.datastore.dataStore
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import java.io.InputStream
-import java.io.OutputStream
-
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -41,11 +31,22 @@ import java.io.OutputStream
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-object DevicesJsonSerializer : Serializer<Devices> {
+import android.content.Context
+import androidx.datastore.core.CorruptionException
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.Serializer
+import androidx.datastore.dataStore
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import java.io.InputStream
+import java.io.OutputStream
+import kotlin.time.ExperimentalTime
 
-    override val defaultValue: Devices = Devices()
+object DevicesStateJsonSerializer : Serializer<DevicesState> {
 
-    override suspend fun readFrom(input: InputStream): Devices {
+    override val defaultValue: DevicesState = DevicesState()
+
+    override suspend fun readFrom(input: InputStream): DevicesState {
         return try {
             val text = input.readBytes().decodeToString()
             if (text.isBlank()) defaultValue
@@ -55,45 +56,47 @@ object DevicesJsonSerializer : Serializer<Devices> {
         }
     }
 
-    override suspend fun writeTo(t: Devices, output: OutputStream) {
+    override suspend fun writeTo(
+        t: DevicesState,
+        output: OutputStream
+    ) {
         val text = Json.encodeToString(t)
         output.write(text.encodeToByteArray())
     }
 }
 
-val Context.devicesDataStore: DataStore<Devices> by dataStore(
-    fileName = "devices_store.json",
-    serializer = DevicesJsonSerializer
-)
-
+/**
+ * Info about the dynamic state of a Matter device that is persisted in a DataStore.
+ */
 @Serializable
-data class Device(
-    val dateCommissioned: Long? = null,
-    val vendorId: String? = null,
-    val productId: String? = null,
-    val deviceType: DeviceType = DeviceType.UNKNOWN, // TODO: device type is no longer provided by the DeviceDescriptor.
-    val deviceId: Long = 0L,
-    val name: String? = null,
-//    val room: String? = null, todo: Removed since it is deprecated in the Matter API.
-    val productName: String? = null,
-    val vendorName: String? = null
-)
+data class DeviceState @OptIn(ExperimentalTime::class) constructor(
+    /** Timestamp when the state was captured. */
+    val dateCaptured: kotlin.time.Instant,
 
-@Serializable
-enum class DeviceType {
-    UNKNOWN,
-    LIGHT_ON_OFF,
-    DIMMABLE_LIGHT,
-    LIGHT_SWITCH,
-    OUTLET,
-    COLOR_TEMPERATURE_LIGHT,
-    EXTENDED_COLOR_LIGHT, ;
-}
+    /** Device ID within the app's fabric. */
+    val deviceId: Long,
 
-@Serializable
-data class Devices(
-    val lastDeviceId: Long = 0L,
-    val devicesList: List<Device> = emptyList()
+    /** Whether the device is offline (false) or online (true). */
+    val online: Boolean,
+
+    /**
+     * Whether the device is off (false) or on (true).
+     * Value should be disregarded if the device is offline.
+     */
+    val on: Boolean
 )
 
 
+@Serializable
+data class DevicesState(
+    val devicesStateList: List<DeviceState> = emptyList()
+)
+
+/**
+ * DataStore to persist the dynamic state of a Matter device.
+ *
+ */
+val Context.devicesStateDataStore: DataStore<DevicesState> by dataStore(
+    fileName = "devices_state_store.json",
+    serializer = DevicesStateJsonSerializer
+)

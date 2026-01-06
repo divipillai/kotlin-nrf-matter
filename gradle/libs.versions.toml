@@ -23,6 +23,8 @@ matterAndroidDemoSdk = "1.0"
 playServicesHomeTypes = "16.0.0"
 matterGoogleDemo = "1.0.0"
 runtimeLivedata = "1.9.4"
+runtimeLivedataVersion = "1.10.0"
+material3 = "1.4.0"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -46,6 +48,9 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 matter-android-demo-sdk = { module = "com.google.matter:matter-android-demo-sdk", version.ref = "matterAndroidDemoSdk" }
 play-services-home = { module = "com.google.android.gms:play-services-home", version.ref = "playServicesHomeTypes" }
 play-services-home-types = { module = "com.google.android.gms:play-services-home-types", version.ref = "playServicesHomeTypes" }
+androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedataVersion" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-material = { group = "androidx.compose.material", name = "material", version.ref = "material3" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -53,3 +58,4 @@ androidLibrary = { id = "com.android.library", version.ref = "agp" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

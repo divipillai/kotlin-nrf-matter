@@ -1,15 +1,5 @@
 package no.nordicsemi.nrf.matter.data
 
-import android.content.Context
-import androidx.datastore.core.CorruptionException
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.Serializer
-import androidx.datastore.dataStore
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import java.io.InputStream
-import java.io.OutputStream
-
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -41,59 +31,60 @@ import java.io.OutputStream
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-object DevicesJsonSerializer : Serializer<Devices> {
+import android.content.Context
+import androidx.datastore.core.CorruptionException
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.Serializer
+import androidx.datastore.dataStore
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import java.io.InputStream
+import java.io.OutputStream
 
-    override val defaultValue: Devices = Devices()
+object UserPreferencesJsonSerializer : Serializer<UserPreferences> {
 
-    override suspend fun readFrom(input: InputStream): Devices {
+    override val defaultValue: UserPreferences = UserPreferences()
+
+    override suspend fun readFrom(input: InputStream): UserPreferences {
         return try {
             val text = input.readBytes().decodeToString()
             if (text.isBlank()) defaultValue
             else Json.decodeFromString(text)
         } catch (e: Exception) {
-            throw CorruptionException("Cannot read Devices JSON.", e)
+            throw CorruptionException("Cannot read UserPreferences JSON.", e)
         }
     }
 
-    override suspend fun writeTo(t: Devices, output: OutputStream) {
+    override suspend fun writeTo(
+        t: UserPreferences,
+        output: OutputStream
+    ) {
         val text = Json.encodeToString(t)
         output.write(text.encodeToByteArray())
     }
 }
 
-val Context.devicesDataStore: DataStore<Devices> by dataStore(
-    fileName = "devices_store.json",
-    serializer = DevicesJsonSerializer
-)
+val Context.userPreferencesDataStore: DataStore<UserPreferences> by
+dataStore(fileName = "user_prefs_store.proto", serializer = UserPreferencesJsonSerializer)
 
+/**
+ * User preferences and application settings persisted in DataStore.
+ */
 @Serializable
-data class Device(
-    val dateCommissioned: Long? = null,
-    val vendorId: String? = null,
-    val productId: String? = null,
-    val deviceType: DeviceType = DeviceType.UNKNOWN, // TODO: device type is no longer provided by the DeviceDescriptor.
-    val deviceId: Long = 0L,
-    val name: String? = null,
-//    val room: String? = null, todo: Removed since it is deprecated in the Matter API.
-    val productName: String? = null,
-    val vendorName: String? = null
+data class UserPreferences(
+
+    /**
+     * Filter for showing / hiding offline devices on the Home screen.
+     * Using "hide" instead of "show" so that the default value (false) is the
+     * default behavior we want (offline devices shown by default).
+     */
+    val hideOfflineDevices: Boolean = false,
+
+    /**
+     * Filter for showing / hiding HalfSheet Notification.
+     *
+     * Default value is false, meaning halfsheet notifications are hidden
+     * by default.
+     */
+    val showHalfsheetNotification: Boolean = false
 )
-
-@Serializable
-enum class DeviceType {
-    UNKNOWN,
-    LIGHT_ON_OFF,
-    DIMMABLE_LIGHT,
-    LIGHT_SWITCH,
-    OUTLET,
-    COLOR_TEMPERATURE_LIGHT,
-    EXTENDED_COLOR_LIGHT, ;
-}
-
-@Serializable
-data class Devices(
-    val lastDeviceId: Long = 0L,
-    val devicesList: List<Device> = emptyList()
-)
-
-

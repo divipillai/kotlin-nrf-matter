@@ -125,8 +125,11 @@ class HomeViewModel(
         )
         // Now we need to capture the device name.
         _showNewDeviceNameAlertDialog.value = true
+        Log.d("AAA", "gpsCommissioningDeviceSucceeded: Show device name is ${_showNewDeviceNameAlertDialog.value}")
         // TODO: Add device to the devices repository.
         // TODO: Add device state to repository: isOnline:true isOn:false
+
+        onCommissionedDeviceNameCaptured("Device-Test")
     }
 
     fun commissionDeviceFailed(resultCode: Int) {
@@ -142,6 +145,7 @@ class HomeViewModel(
     // Called when the device name has been captured in the UI.
     // This follows a successful gps commissioning (see gpsCommissioningDeviceSucceeded)
     fun onCommissionedDeviceNameCaptured(deviceName: String) {
+        Log.d("AAA", "onCommissionedDeviceNameCaptured: ")
         // Add the device to the devices repository.
         _showNewDeviceNameAlertDialog.value = false
         viewModelScope.launch {
@@ -213,13 +217,13 @@ class HomeViewModel(
                             "AAA",
                             "The endpoint has more than one type. We're simply using the first one to define the device type."
                         )
+                        // TODO: Handle this properly once we have specific examples to learn from.
+                        devicesRepository.updateDeviceType(
+                            deviceId,
+                            convertToAppDeviceType(deviceMatterInfo.types.first()),
+                        )
+                        gotDeviceType = true
                     }
-                    // TODO: Handle this properly once we have specific examples to learn from.
-                    devicesRepository.updateDeviceType(
-                        deviceId,
-                        convertToAppDeviceType(deviceMatterInfo.types.first()),
-                    )
-                    gotDeviceType = true
                 }
             }
 

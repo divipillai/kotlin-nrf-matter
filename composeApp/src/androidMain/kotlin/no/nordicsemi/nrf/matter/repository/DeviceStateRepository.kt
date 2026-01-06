@@ -10,7 +10,8 @@ import no.nordicsemi.nrf.matter.data.DeviceState
 import no.nordicsemi.nrf.matter.data.DevicesState
 import no.nordicsemi.nrf.matter.data.devicesStateDataStore
 import java.io.IOException
-import java.time.Instant
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -69,6 +70,7 @@ class DevicesStateRepository(context: Context) {
         get() = _lastUpdatedDeviceState
 
     /** Add Device State to the datastore */
+    @OptIn(ExperimentalTime::class)
     suspend fun addDeviceState(
         deviceId: Long,
         isOnline: Boolean,
@@ -79,7 +81,7 @@ class DevicesStateRepository(context: Context) {
             val updatedDevices = currentState.devicesStateList
                 .filterNot { it.deviceId == deviceId } + // remove old entry if exists
                     DeviceState(
-                        dateCaptured = Instant.now(),
+                        dateCaptured = Clock.System.now(),
                         deviceId = deviceId,
                         online = isOnline,
                         on = isOn
@@ -92,6 +94,7 @@ class DevicesStateRepository(context: Context) {
     }
 
 
+    @OptIn(ExperimentalTime::class)
     suspend fun updateDeviceState(
         deviceId: Long,
         isOnline: Boolean,
@@ -105,7 +108,7 @@ class DevicesStateRepository(context: Context) {
                 if (deviceState.deviceId == deviceId) {
                     wasUpdated = true
                     deviceState.copy(
-                        dateCaptured = Instant.now(),
+                        dateCaptured = Clock.System.now(),
                         online = isOnline,
                         on = isOn
                     )

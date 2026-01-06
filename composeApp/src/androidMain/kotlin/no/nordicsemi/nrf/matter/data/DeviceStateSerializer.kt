@@ -40,7 +40,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.io.OutputStream
-import java.time.Instant
+import kotlin.time.ExperimentalTime
 
 object DevicesStateJsonSerializer : Serializer<DevicesState> {
 
@@ -69,9 +69,9 @@ object DevicesStateJsonSerializer : Serializer<DevicesState> {
  * Info about the dynamic state of a Matter device that is persisted in a DataStore.
  */
 @Serializable
-data class DeviceState(
+data class DeviceState @OptIn(ExperimentalTime::class) constructor(
     /** Timestamp when the state was captured. */
-    val dateCaptured: Instant,
+    val dateCaptured: kotlin.time.Instant,
 
     /** Device ID within the app's fabric. */
     val deviceId: Long,

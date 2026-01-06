@@ -14,7 +14,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
+import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import org.koin.android.ext.android.inject
+import org.koin.core.component.KoinComponent
 import java.lang.Long.max
 import java.security.SecureRandom
 import kotlin.math.abs
@@ -49,11 +51,23 @@ import kotlin.math.abs
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-class AppCommissioningService : Service(), CommissioningService.Callback {
+
+class AppCommissioningService : Service(), CommissioningService.Callback, KoinComponent {
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
-    private lateinit var devicesRepository: DevicesRepository
+    private val devicesRepository: DevicesRepository by inject()
     private val chipClient: ChipClient by inject()
+
+    private val devicesStateRepository: DevicesStateRepository by inject()
+    private lateinit var commissioningServiceDelegate: CommissioningService
+
+    override fun onCreate() {
+        super.onCreate()
+        // May be invoked without MainActivity being called to initialize APP_NAME.
+        // So do it here as well.
+        Log.d("AAA", "onCreate: ")
+        commissioningServiceDelegate = CommissioningService.Builder(this).setCallback(this).build()
+    }
 
     override fun onBind(intent: Intent?): IBinder {
         Log.d("AAA", "onBind(): intent [${intent}]")
@@ -77,11 +91,15 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
 
         // Perform commissioning on custom fabric for the sample app.
         serviceScope.launch {
-            val deviceId = getNextDeviceId(DeviceIdGenerator.Random)
+            val deviceId = devicesRepository.incrementAndReturnLastDeviceId()
             try {
                 Log.d(
                     "AAA",
                     "Commissioning: App fabric -> ChipClient.establishPaseConnection(): deviceId [${deviceId}]"
+                )
+                Log.d(
+                    "AAA",
+                    "Commissioning Step 1: ChipClient.establishPaseConnection(): deviceId [${deviceId}]"
                 )
                 chipClient.awaitEstablishPaseConnection(
                     deviceId,
@@ -94,12 +112,25 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
                     "AAA",
                     "Commissioning: App fabric -> ChipClient.commissionDevice(): deviceId [${deviceId}]"
                 )
+                Log.d(
+                    "AAA",
+                    "Commissioning Step 2: ChipClient.commissionDevice(): deviceId [${deviceId}]"
+                )
+
                 chipClient.awaitCommissionDevice(deviceId, null)
-            } catch (e: Exception) {
-                Log.e("AAA", "onCommissioningRequested() failed with exception: $e")
-                // No way to determine whether this was ATTESTATION_FAILED or DEVICE_UNREACHABLE.
+
+                Log.d(
+                    "AAA","Commissioning Step 3: Adding device to repository")
+                devicesStateRepository.addDeviceState(
+                    deviceId,
+                    isOnline = true,
+                    isOn = false
+                )
+                Log.d(
+                    "AAA",
+                    "Commissioning Step 5: Calling commissioningServiceDelegate.sendCommissioningComplete()")
                 commissioningServiceDelegate
-                    .sendCommissioningError(CommissioningError.OTHER)
+                    .sendCommissioningComplete( CommissioningCompleteMetadata.builder().setToken(deviceId.toString()).build())
                     .addOnSuccessListener {
                         Log.d(
                             "AAA",
@@ -113,40 +144,44 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
                             e2,
                         )
                     }
+
+            } catch (e: Exception) {
+                Log.e("AAA", "onCommissioningRequested() failed with exception: $e")
+                // No way to determine whether this was ATTESTATION_FAILED or DEVICE_UNREACHABLE.
+                commissioningServiceDelegate
+                    .sendCommissioningError(CommissioningError.OTHER)
+                    .addOnFailureListener { e2 ->
+                        Log.e(
+                            "AAA",
+                            "Commissioning: commissioningServiceDelegate.sendCommissioningError() failed",
+                            e2,
+                        )
+                    }
                 return@launch
             }
 
-            Log.d(
-                "AAA",
-                "Commissioning: Calling commissioningServiceDelegate.sendCommissioningComplete()"
-            )
-            commissioningServiceDelegate
-                .sendCommissioningComplete(
-                    CommissioningCompleteMetadata.builder().setToken(deviceId.toString()).build()
-                )
-                .addOnSuccessListener {
-                    Log.d(
-                        "AAA",
-                        "Commissioning: commissioningServiceDelegate.sendCommissioningComplete() succeeded"
-                    )
-                }
-                .addOnFailureListener { e ->
-                    Log.e(
-                        "AAA",
-                        "Commissioning: commissioningServiceDelegate.sendCommissioningComplete() failed",
-                        e
-                    )
-                }
+//            Log.d(
+//                "AAA",
+//                "Commissioning: Calling commissioningServiceDelegate.sendCommissioningComplete()"
+//            )
+//            commissioningServiceDelegate
+//                .sendCommissioningComplete(
+//                    CommissioningCompleteMetadata.builder().setToken(deviceId.toString()).build()
+//                )
+//                .addOnSuccessListener {
+//                    Log.d(
+//                        "AAA",
+//                        "Commissioning: commissioningServiceDelegate.sendCommissioningComplete() succeeded"
+//                    )
+//                }
+//                .addOnFailureListener { e ->
+//                    Log.e(
+//                        "AAA",
+//                        "Commissioning: commissioningServiceDelegate.sendCommissioningComplete() failed",
+//                        e
+//                    )
+//                }
         }
-    }
-
-    private lateinit var commissioningServiceDelegate: CommissioningService
-
-    override fun onCreate() {
-        super.onCreate()
-        // May be invoked without MainActivity being called to initialize APP_NAME.
-        // So do it here as well.
-        commissioningServiceDelegate = CommissioningService.Builder(this).setCallback(this).build()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

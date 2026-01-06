@@ -196,6 +196,7 @@ class ChipClient(
             // TODO: Fix it.
 //            chipDeviceController.establishPaseConnection(
 //                deviceId, stripLinkLocalInIpAddress(ipAddress), port, setupPinCode)
+            chipDeviceController.establishPaseConnection(deviceId, ipAddress, port, setupPinCode)
         }
     }
 

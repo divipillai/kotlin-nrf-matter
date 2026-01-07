@@ -15,11 +15,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
-import no.nordicsemi.nrf.matter.data.Device
-import no.nordicsemi.nrf.matter.data.DeviceType
-import no.nordicsemi.nrf.matter.data.Devices
-import no.nordicsemi.nrf.matter.data.DevicesState
-import no.nordicsemi.nrf.matter.data.UserPreferences
+import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.Devices
+import no.nordicsemi.nrf.matter.model.DevicesState
+import no.nordicsemi.nrf.matter.model.UserPreferences
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository

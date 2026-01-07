@@ -7,8 +7,8 @@ import androidx.lifecycle.asLiveData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
-import no.nordicsemi.nrf.matter.data.UserPreferences
-import no.nordicsemi.nrf.matter.data.userPreferencesDataStore
+import no.nordicsemi.nrf.matter.model.UserPreferences
+import no.nordicsemi.nrf.matter.model.userPreferencesDataStore
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor

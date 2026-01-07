@@ -6,9 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
-import no.nordicsemi.nrf.matter.data.DeviceState
-import no.nordicsemi.nrf.matter.data.DevicesState
-import no.nordicsemi.nrf.matter.data.devicesStateDataStore
+import no.nordicsemi.nrf.matter.model.DeviceState
+import no.nordicsemi.nrf.matter.model.DevicesState
+import no.nordicsemi.nrf.matter.model.devicesStateDataStore
 import java.io.IOException
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime

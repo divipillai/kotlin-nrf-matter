@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.data
+package no.nordicsemi.nrf.matter.model
 
 import android.content.Context
 import androidx.datastore.core.CorruptionException

@@ -54,6 +54,8 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.koin.core)
             implementation(libs.koin.androidx.compose)
+            //navigation
+            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.1")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

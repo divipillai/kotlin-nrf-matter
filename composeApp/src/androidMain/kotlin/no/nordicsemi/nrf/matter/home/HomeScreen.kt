@@ -11,6 +11,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -33,6 +35,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -47,6 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.home.matter.Matter
@@ -87,6 +91,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun HomeScreen() {
+    val isDark = isSystemInDarkTheme()
     val homeViewModel: HomeViewModel = koinViewModel()
 
     // Controls when the "New Device" alert dialog is shown.
@@ -108,8 +113,6 @@ fun HomeScreen() {
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartIntentSenderForResult()
         ) { result ->
-            // Commission Device Step 5.
-            // The Commission Device activity in GPS (step 4) has completed.
             val resultCode = result.resultCode
             if (resultCode == Activity.RESULT_OK) {
                 Log.d("AAA", "CommissionDevice: Success")
@@ -137,6 +140,7 @@ fun HomeScreen() {
             // TODO: Navigate to device details page.
             Log.d("AAA", "onDeviceClick: ${it.device.name}, id: ${it.device.deviceId}")
             // navigateToDevice(it.device.deviceId)
+            // todo: show device detail in the
         }
     }
     val onOnOffClick: (deviceId: Long, value: Boolean) -> Unit = remember {
@@ -144,15 +148,40 @@ fun HomeScreen() {
             homeViewModel.updateDeviceStateOn(deviceId, value)
         }
     }
-
-    HomeScreenContent(
-        showNewDeviceAlertDialog,
-        devicesList,
-        onCommissionedDeviceNameCaptured,
-        onDeviceClick = onDeviceClick,
-        onOnOffClick = onOnOffClick,
-        onCommissionDevice = onCommissionDevice
-    )
+    Scaffold(
+        containerColor = if (isDark) BackgroundDark else BackgroundLight,
+        topBar = { HomeTopAppBar() },
+        floatingActionButton = {
+            // Only show FAB if we already have devices
+            if (devicesList.isNotEmpty()) {
+                FloatingActionButton(
+                    onClick = { onCommissionDevice() },
+                    containerColor = Primary,
+                    contentColor = Color.White,
+                    shape = CircleShape,
+                    modifier = Modifier.padding(bottom = 80.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                }
+//                AddDeviceSuggestion()
+            }
+        }
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            if (devicesList.isEmpty()) {
+                // Pass a callback to simulate adding a device for testing
+                NoDevicesScreen(
+                    onAddDeviceClick = { onCommissionDevice() }
+                )
+            } else {
+                DeviceList(
+                    devicesList,
+                    onDeviceClick = onDeviceClick,
+                    onOnOffClick = onOnOffClick
+                )
+            }
+        }
+    }
 }
 
 @Composable

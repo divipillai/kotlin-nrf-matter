@@ -252,6 +252,12 @@ class HomeViewModel(
                                                                       devicesStates: DevicesState,
                                                                       userPreferences: UserPreferences ->
             Log.d("AAA", "*** devicesListUiModelFlow changed ***")
+
+            // TODO: Before demo clear the devices from repositories.
+//             devicesRepository.clearAllData()
+//            devicesStateRepository.clearAllData()
+
+
             return@combine DevicesListUiModel(
                 devices = processDevices(devices, devicesStates, userPreferences),
                 showOfflineDevices = !userPreferences.hideOfflineDevices,

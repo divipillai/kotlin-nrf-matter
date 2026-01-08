@@ -90,8 +90,28 @@ import org.koin.androidx.compose.koinViewModel
  */
 
 @Composable
-fun HomeScreen() {
-    val isDark = isSystemInDarkTheme()
+internal fun HomeRoute(
+    innerPaddings: PaddingValues,
+    updateTitle: (title: String) -> Unit,
+    navigateToDevice: (deviceId: Long) -> Unit,
+    onCommissionDevice: () -> Unit,
+) {
+    LaunchedEffect(Unit) {
+        updateTitle("Home")
+    }
+    HomeScreen(
+        innerPaddings,
+        navigateToDevice,
+        onCommissionDevice = onCommissionDevice
+    )
+}
+
+@Composable
+private fun HomeScreen(
+    innerPaddings: PaddingValues,
+    navigateToDevice: (deviceId: Long) -> Unit,
+    onCommissionDevice: () -> Unit,
+) {
     val homeViewModel: HomeViewModel = koinViewModel()
 
     // Controls when the "New Device" alert dialog is shown.
@@ -109,29 +129,29 @@ fun HomeScreen() {
     val devices = devicesUiModel?.devices
     val devicesList = devices ?: emptyList()
 
-    val commissionDeviceLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartIntentSenderForResult()
-        ) { result ->
-            val resultCode = result.resultCode
-            if (resultCode == Activity.RESULT_OK) {
-                Log.d("AAA", "CommissionDevice: Success")
-                // We let the ViewModel know that GPS commissioning has completed successfully.
-                // The ViewModel knows that we still need to capture the device name and will\
-                // update UI state to trigger the NewDeviceAlertDialog.
-                homeViewModel.gpsCommissioningDeviceSucceeded(result)
-            } else {
-                homeViewModel.commissionDeviceFailed(resultCode)
-            }
-        }
-    val context = LocalContext.current
-    val onCommissionDevice: () -> Unit = remember {
-        {
-            Log.d("AAA", "onAddDeviceClick")
-            // fixme deviceAttestationFailureIgnored = false
-            commissionDevice(context.applicationContext, commissionDeviceLauncher)
-        }
-    }
+//    val commissionDeviceLauncher =
+//        rememberLauncherForActivityResult(
+//            contract = ActivityResultContracts.StartIntentSenderForResult()
+//        ) { result ->
+//            val resultCode = result.resultCode
+//            if (resultCode == Activity.RESULT_OK) {
+//                Log.d("AAA", "CommissionDevice: Success")
+//                // We let the ViewModel know that GPS commissioning has completed successfully.
+//                // The ViewModel knows that we still need to capture the device name and will\
+//                // update UI state to trigger the NewDeviceAlertDialog.
+//                homeViewModel.gpsCommissioningDeviceSucceeded(result)
+//            } else {
+//                homeViewModel.commissionDeviceFailed(resultCode)
+//            }
+//        }
+//    val context = LocalContext.current
+//    val onCommissionDevice: () -> Unit = remember {
+//        {
+//            Log.d("AAA", "onAddDeviceClick")
+//            // fixme deviceAttestationFailureIgnored = false
+//            commissionDevice(context.applicationContext, commissionDeviceLauncher)
+//        }
+//    }
 
     // Functions invoked when UI controls are clicked on a specific device in the list.
     val onDeviceClick: (deviceUiModel: DeviceUiModel) -> Unit = remember {
@@ -141,6 +161,7 @@ fun HomeScreen() {
             Log.d("AAA", "onDeviceClick: ${it.device.name}, id: ${it.device.deviceId}")
             // navigateToDevice(it.device.deviceId)
             // todo: show device detail in the
+            navigateToDevice(it.device.deviceId)
         }
     }
     val onOnOffClick: (deviceId: Long, value: Boolean) -> Unit = remember {
@@ -148,38 +169,18 @@ fun HomeScreen() {
             homeViewModel.updateDeviceStateOn(deviceId, value)
         }
     }
-    Scaffold(
-        containerColor = if (isDark) BackgroundDark else BackgroundLight,
-        topBar = { HomeTopAppBar() },
-        floatingActionButton = {
-            // Only show FAB if we already have devices
-            if (devicesList.isNotEmpty()) {
-                FloatingActionButton(
-                    onClick = { onCommissionDevice() },
-                    containerColor = Primary,
-                    contentColor = Color.White,
-                    shape = CircleShape,
-                    modifier = Modifier.padding(bottom = 80.dp)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                }
-//                AddDeviceSuggestion()
-            }
-        }
-    ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
-            if (devicesList.isEmpty()) {
-                // Pass a callback to simulate adding a device for testing
-                NoDevicesScreen(
-                    onAddDeviceClick = { onCommissionDevice() }
-                )
-            } else {
-                DeviceList(
-                    devicesList,
-                    onDeviceClick = onDeviceClick,
-                    onOnOffClick = onOnOffClick
-                )
-            }
+    Box(modifier = Modifier.padding(innerPaddings)) {
+        if (devicesList.isEmpty()) {
+            // Pass a callback to simulate adding a device for testing
+            NoDevicesScreen(
+                onAddDeviceClick = { onCommissionDevice() }
+            )
+        } else {
+            DeviceList(
+                devicesList,
+                onDeviceClick = onDeviceClick,
+                onOnOffClick = onOnOffClick
+            )
         }
     }
 }

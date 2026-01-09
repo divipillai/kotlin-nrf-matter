@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.home
 
+import android.util.Log
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -9,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,12 +35,8 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -65,7 +63,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -150,12 +148,13 @@ fun ConnectedDevicesScreen() {
 
 @Composable
 fun DeviceItemContainer(
-    icon: ImageVector,
+    icon: Painter,
     iconBg: Color,
     iconTint: Color,
     title: String,
     subtitle: String,
     hasStatusBorder: Boolean = false,
+    onDeviceClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
     Row(
@@ -170,7 +169,8 @@ fun DeviceItemContainer(
                     shape = RoundedCornerShape(16.dp)
                 ) else Modifier
             )
-            .padding(16.dp),
+            .padding(16.dp)
+            .clickable { onDeviceClick() },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -209,12 +209,13 @@ fun DeviceItemContainer(
 @Composable
 fun DeviceItemContainerPreview() {
     DeviceItemContainer(
-        icon = Icons.Default.Person,
+        icon = painterResource(R.drawable.light_bulb_smart_light),
         iconBg = Color.LightGray.copy(alpha = 0.6f),
         iconTint = Color.Gray,
         title = "Living Room Lamp",
         subtitle = "Dimmable Light",
-        hasStatusBorder = true
+        hasStatusBorder = true,
+        {}
     ) {
         Text("50%", fontWeight = FontWeight.Bold)
     }
@@ -226,11 +227,14 @@ fun DeviceItemContainerPreview() {
 @Composable
 fun DimmableLightItem() {
     DeviceItemContainer(
-        icon = Icons.Filled.ThumbUp,// TODO: Change it to the light bulb icon
+        icon = painterResource(R.drawable.light_bulb_smart_light),
         iconBg = Color(0xFFFEF3C7),
         iconTint = Color(0xFFD97706),
         title = "Living Room Lamp",
-        subtitle = "Dimmable Light"
+        subtitle = "Dimmable Light",
+        onDeviceClick = {
+            /* TODO: Add onClick handler */
+        }
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("50%", fontWeight = FontWeight.Bold)
@@ -250,15 +254,21 @@ fun DimmableLightItem() {
 
 // Specific Device: Smart Switch
 @Composable
-fun SwitchDeviceItem(title: String, subtitle: String, initialState: Boolean) {
+fun SwitchDeviceItem(
+    title: String,
+    subtitle: String,
+    initialState: Boolean,
+    onDeviceClick: () -> Unit
+) {
     var checked by remember { mutableStateOf(initialState) }
     DeviceItemContainer(
-        icon = Icons.Default.Person,// TODO: Change it to the Power icon
+        icon = painterResource(R.drawable.light_fixture),// TODO: Change it to the Power icon
         iconBg = if (checked) Color(0xFFDBEAFE) else Color.LightGray.copy(alpha = 0.2f),
         iconTint = if (checked) Primary else Color.Gray,
         title = title,
         subtitle = subtitle,
-        hasStatusBorder = checked
+        hasStatusBorder = checked,
+        onDeviceClick = { onDeviceClick() }
     ) {
         Switch(
             checked = checked,
@@ -274,7 +284,12 @@ fun SwitchDeviceItem(title: String, subtitle: String, initialState: Boolean) {
 @Preview(showBackground = true)
 @Composable
 private fun SwitchDeviceItemPreview() {
-    SwitchDeviceItem(title = "Living Room Lamp", subtitle = "Smart Switch", initialState = true)
+    SwitchDeviceItem(
+        title = "Living Room Lamp",
+        subtitle = "Smart Switch",
+        initialState = true,
+        onDeviceClick = {}
+    )
 }
 
 @Preview(showBackground = true)
@@ -382,7 +397,7 @@ fun FilterChipsRow() {
 @Composable
 internal fun DeviceList(
     devicesList: List<DeviceUiModel>,
-    onDeviceClick: (deviceUiModel: DeviceUiModel) -> Unit,
+    onDeviceClick: (DeviceUiModel) -> Unit,
     onOnOffClick: (deviceId: Long, value: Boolean) -> Unit
 ) {
     LazyColumn(
@@ -403,7 +418,10 @@ internal fun DeviceList(
                 title = device.device.name ?: "Living Room Lamp",
                 subtitle = "Smart Light",
                 initialState = false
-            )
+            ) {
+                Log.d("AAA", "DeviceList: ${device.device.name}, device.device.deviceId: ${device.device.deviceId}")
+
+                onDeviceClick(device) }
 
         }
 //
@@ -455,11 +473,11 @@ fun SectionHeader(text: String = "Lights") {
 @Composable
 fun ThermostatItem() {
     DeviceItemContainer(
-        icon = Icons.Default.Place,// TODO: Change it to the thermostat icon
+        icon = painterResource(R.drawable.temperature),
         iconBg = Color(0xFFFFEDD5),
         iconTint = Color(0xFFEA580C),
         title = "Downstairs AC",
-        subtitle = "Target: 70°F"
+        subtitle = "Target: 70°F", onDeviceClick = {}
     ) {
         Column(horizontalAlignment = Alignment.End) {
             Text(
@@ -477,11 +495,12 @@ fun ThermostatItem() {
 @Composable
 fun LockItem() {
     DeviceItemContainer(
-        icon = Icons.Default.Lock,
+        icon = painterResource(R.drawable.light_bulb_smart_light),// TODO: Change it to the door lock icon.
         iconBg = Color(0xFFFFE4E6),
         iconTint = Color(0xFFE11D48),
         title = "Front Door",
-        subtitle = "Smart Lock"
+        subtitle = "Smart Lock",
+        onDeviceClick = {}
     ) {
         Surface(
             color = Color.LightGray.copy(alpha = 0.2f),

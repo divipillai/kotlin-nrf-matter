@@ -154,12 +154,11 @@ private fun HomeScreen(
 //    }
 
     // Functions invoked when UI controls are clicked on a specific device in the list.
-    val onDeviceClick: (deviceUiModel: DeviceUiModel) -> Unit = remember {
+    val onDeviceClick: (DeviceUiModel) -> Unit = remember {
         {
             // Show device details page.
             // TODO: Navigate to device details page.
             Log.d("AAA", "onDeviceClick: ${it.device.name}, id: ${it.device.deviceId}")
-            // navigateToDevice(it.device.deviceId)
             // todo: show device detail in the
             navigateToDevice(it.device.deviceId)
         }

@@ -129,30 +129,6 @@ private fun HomeScreen(
     val devices = devicesUiModel?.devices
     val devicesList = devices ?: emptyList()
 
-//    val commissionDeviceLauncher =
-//        rememberLauncherForActivityResult(
-//            contract = ActivityResultContracts.StartIntentSenderForResult()
-//        ) { result ->
-//            val resultCode = result.resultCode
-//            if (resultCode == Activity.RESULT_OK) {
-//                Log.d("AAA", "CommissionDevice: Success")
-//                // We let the ViewModel know that GPS commissioning has completed successfully.
-//                // The ViewModel knows that we still need to capture the device name and will\
-//                // update UI state to trigger the NewDeviceAlertDialog.
-//                homeViewModel.gpsCommissioningDeviceSucceeded(result)
-//            } else {
-//                homeViewModel.commissionDeviceFailed(resultCode)
-//            }
-//        }
-//    val context = LocalContext.current
-//    val onCommissionDevice: () -> Unit = remember {
-//        {
-//            Log.d("AAA", "onAddDeviceClick")
-//            // fixme deviceAttestationFailureIgnored = false
-//            commissionDevice(context.applicationContext, commissionDeviceLauncher)
-//        }
-//    }
-
     // Functions invoked when UI controls are clicked on a specific device in the list.
     val onDeviceClick: (DeviceUiModel) -> Unit = remember {
         {

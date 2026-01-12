@@ -24,7 +24,7 @@ playServicesHomeTypes = "16.0.0"
 matterGoogleDemo = "1.0.0"
 runtimeLivedata = "1.9.4"
 runtimeLivedataVersion = "1.10.0"
-material3 = "1.10.0"
+material3 = "1.4.0"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }

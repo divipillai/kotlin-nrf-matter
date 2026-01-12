@@ -257,10 +257,10 @@ fun DimmableLightItem() {
 fun SwitchDeviceItem(
     title: String,
     subtitle: String,
-    initialState: Boolean,
+    checked: Boolean,
+    onOnOffClick: (deviceId: Long, value: Boolean) -> Unit,
     onDeviceClick: () -> Unit
 ) {
-    var checked by remember { mutableStateOf(initialState) }
     DeviceItemContainer(
         icon = painterResource(R.drawable.light_fixture),// TODO: Change it to the Power icon
         iconBg = if (checked) Color(0xFFDBEAFE) else Color.LightGray.copy(alpha = 0.2f),
@@ -272,7 +272,9 @@ fun SwitchDeviceItem(
     ) {
         Switch(
             checked = checked,
-            onCheckedChange = { checked = it },
+            onCheckedChange = {
+                onOnOffClick(1L, it)
+            },
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
                 checkedTrackColor = Primary
@@ -287,8 +289,9 @@ private fun SwitchDeviceItemPreview() {
     SwitchDeviceItem(
         title = "Living Room Lamp",
         subtitle = "Smart Switch",
-        initialState = true,
-        onDeviceClick = {}
+        checked = true,
+        onOnOffClick = { _, _ -> },
+        onDeviceClick = {},
     )
 }
 
@@ -412,16 +415,22 @@ internal fun DeviceList(
     ) {
         // --- Section: Lights ---
 
-        this.items(devicesList) { device ->
+        this.items(devicesList, key = { device -> device.device.deviceId }) { device ->
             SectionHeader("Lights")
             SwitchDeviceItem(
                 title = device.device.name ?: "Living Room Lamp",
                 subtitle = "Smart Light",
-                initialState = false
-            ) {
-                Log.d("AAA", "DeviceList: ${device.device.name}, device.device.deviceId: ${device.device.deviceId}")
+                checked = device.isOn,
+                onOnOffClick = { deviceId, value -> onOnOffClick(deviceId, value) },
 
-                onDeviceClick(device) }
+                ) {
+                Log.d(
+                    "AAA",
+                    "DeviceList: ${device.device.name}, device.device.deviceId: ${device.device.deviceId}"
+                )
+
+                onDeviceClick(device)
+            }
 
         }
 //

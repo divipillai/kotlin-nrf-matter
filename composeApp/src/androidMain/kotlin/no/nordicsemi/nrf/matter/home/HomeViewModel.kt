@@ -125,7 +125,10 @@ class HomeViewModel(
         )
         // Now we need to capture the device name.
         _showNewDeviceNameAlertDialog.value = true
-        Log.d("AAA", "gpsCommissioningDeviceSucceeded: Show device name is ${_showNewDeviceNameAlertDialog.value}")
+        Log.d(
+            "AAA",
+            "gpsCommissioningDeviceSucceeded: Show device name is ${_showNewDeviceNameAlertDialog.value}"
+        )
         // TODO: Add device to the devices repository.
         // TODO: Add device state to repository: isOnline:true isOn:false
 
@@ -237,11 +240,28 @@ class HomeViewModel(
     }
 
     fun updateDeviceStateOn(deviceId: Long, isOn: Boolean) {
-        Log.d("AAA","updateDeviceStateOn: Device [${deviceId}]  isOn [${isOn}]")
         viewModelScope.launch {
-            Log.d("AAA","Handling real device")
-            clustersHelper.setOnOffDeviceStateOnOffCluster(deviceId, isOn, 1)
-            devicesStateRepository.updateDeviceState(deviceId, true, isOn)
+            try {
+                devicesStateRepository.updateDeviceState(
+                    deviceId = deviceId,
+                    isOnline = true,
+                    isOn = isOn
+                )
+
+                clustersHelper.setOnOffDeviceStateOnOffCluster(
+                    deviceId,
+                    isOn,
+                    0xd
+                )
+
+            } catch (e: Exception) {
+                // Rollback on failure
+                devicesStateRepository.updateDeviceState(
+                    deviceId = deviceId,
+                    isOnline = false,
+                    isOn = !isOn
+                )
+            }
         }
     }
 

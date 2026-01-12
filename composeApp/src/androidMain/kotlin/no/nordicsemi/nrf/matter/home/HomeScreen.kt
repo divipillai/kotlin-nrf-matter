@@ -1,14 +1,11 @@
 package no.nordicsemi.nrf.matter.home
 
-import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -47,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.home.matter.Matter
 import com.google.android.gms.home.matter.commissioning.CommissioningRequest
@@ -86,7 +82,28 @@ import org.koin.androidx.compose.koinViewModel
  */
 
 @Composable
-fun HomeScreen() {
+internal fun HomeRoute(
+    innerPaddings: PaddingValues,
+    updateTitle: (title: String) -> Unit,
+    navigateToDevice: (deviceId: Long) -> Unit,
+    onCommissionDevice: () -> Unit,
+) {
+    LaunchedEffect(Unit) {
+        updateTitle("Home")
+    }
+    HomeScreen(
+        innerPaddings,
+        navigateToDevice,
+        onCommissionDevice = onCommissionDevice
+    )
+}
+
+@Composable
+private fun HomeScreen(
+    innerPaddings: PaddingValues,
+    navigateToDevice: (deviceId: Long) -> Unit,
+    onCommissionDevice: () -> Unit,
+) {
     val homeViewModel: HomeViewModel = koinViewModel()
 
     // Controls when the "New Device" alert dialog is shown.
@@ -104,39 +121,12 @@ fun HomeScreen() {
     val devices = devicesUiModel?.devices
     val devicesList = devices ?: emptyList()
 
-    val commissionDeviceLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartIntentSenderForResult()
-        ) { result ->
-            // Commission Device Step 5.
-            // The Commission Device activity in GPS (step 4) has completed.
-            val resultCode = result.resultCode
-            if (resultCode == Activity.RESULT_OK) {
-                Log.d("AAA", "CommissionDevice: Success")
-                // We let the ViewModel know that GPS commissioning has completed successfully.
-                // The ViewModel knows that we still need to capture the device name and will\
-                // update UI state to trigger the NewDeviceAlertDialog.
-                homeViewModel.gpsCommissioningDeviceSucceeded(result)
-            } else {
-                homeViewModel.commissionDeviceFailed(resultCode)
-            }
-        }
-    val context = LocalContext.current
-    val onCommissionDevice: () -> Unit = remember {
-        {
-            Log.d("AAA", "onAddDeviceClick")
-            // fixme deviceAttestationFailureIgnored = false
-            commissionDevice(context.applicationContext, commissionDeviceLauncher)
-        }
-    }
-
     // Functions invoked when UI controls are clicked on a specific device in the list.
-    val onDeviceClick: (deviceUiModel: DeviceUiModel) -> Unit = remember {
+    val onDeviceClick: (DeviceUiModel) -> Unit = remember {
         {
             // Show device details page.
-            // TODO: Navigate to device details page.
             Log.d("AAA", "onDeviceClick: ${it.device.name}, id: ${it.device.deviceId}")
-            // navigateToDevice(it.device.deviceId)
+            navigateToDevice(it.device.deviceId)
         }
     }
     val onOnOffClick: (deviceId: Long, value: Boolean) -> Unit = remember {
@@ -144,15 +134,20 @@ fun HomeScreen() {
             homeViewModel.updateDeviceStateOn(deviceId, value)
         }
     }
-
-    HomeScreenContent(
-        showNewDeviceAlertDialog,
-        devicesList,
-        onCommissionedDeviceNameCaptured,
-        onDeviceClick = onDeviceClick,
-        onOnOffClick = onOnOffClick,
-        onCommissionDevice = onCommissionDevice
-    )
+    Box(modifier = Modifier.padding(innerPaddings)) {
+        if (devicesList.isEmpty()) {
+            // Pass a callback to simulate adding a device for testing
+            NoDevicesScreen(
+                onAddDeviceClick = { onCommissionDevice() }
+            )
+        } else {
+            DeviceList(
+                devicesList,
+                onDeviceClick = onDeviceClick,
+                onOnOffClick = onOnOffClick
+            )
+        }
+    }
 }
 
 @Composable

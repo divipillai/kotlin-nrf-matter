@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.data
+package no.nordicsemi.nrf.matter.model
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -40,23 +40,24 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.io.OutputStream
+import kotlin.time.ExperimentalTime
 
-object UserPreferencesJsonSerializer : Serializer<UserPreferences> {
+object DevicesStateJsonSerializer : Serializer<DevicesState> {
 
-    override val defaultValue: UserPreferences = UserPreferences()
+    override val defaultValue: DevicesState = DevicesState()
 
-    override suspend fun readFrom(input: InputStream): UserPreferences {
+    override suspend fun readFrom(input: InputStream): DevicesState {
         return try {
             val text = input.readBytes().decodeToString()
             if (text.isBlank()) defaultValue
             else Json.decodeFromString(text)
         } catch (e: Exception) {
-            throw CorruptionException("Cannot read UserPreferences JSON.", e)
+            throw CorruptionException("Cannot read Devices JSON.", e)
         }
     }
 
     override suspend fun writeTo(
-        t: UserPreferences,
+        t: DevicesState,
         output: OutputStream
     ) {
         val text = Json.encodeToString(t)
@@ -64,27 +65,38 @@ object UserPreferencesJsonSerializer : Serializer<UserPreferences> {
     }
 }
 
-val Context.userPreferencesDataStore: DataStore<UserPreferences> by
-dataStore(fileName = "user_prefs_store.proto", serializer = UserPreferencesJsonSerializer)
-
 /**
- * User preferences and application settings persisted in DataStore.
+ * Info about the dynamic state of a Matter device that is persisted in a DataStore.
  */
 @Serializable
-data class UserPreferences(
+data class DeviceState @OptIn(ExperimentalTime::class) constructor(
+    /** Timestamp when the state was captured. */
+    val dateCaptured: kotlin.time.Instant,
+
+    /** Device ID within the app's fabric. */
+    val deviceId: Long,
+
+    /** Whether the device is offline (false) or online (true). */
+    val online: Boolean,
 
     /**
-     * Filter for showing / hiding offline devices on the Home screen.
-     * Using "hide" instead of "show" so that the default value (false) is the
-     * default behavior we want (offline devices shown by default).
+     * Whether the device is off (false) or on (true).
+     * Value should be disregarded if the device is offline.
      */
-    val hideOfflineDevices: Boolean = false,
+    val on: Boolean
+)
 
-    /**
-     * Filter for showing / hiding HalfSheet Notification.
-     *
-     * Default value is false, meaning halfsheet notifications are hidden
-     * by default.
-     */
-    val showHalfsheetNotification: Boolean = false
+
+@Serializable
+data class DevicesState(
+    val devicesStateList: List<DeviceState> = emptyList()
+)
+
+/**
+ * DataStore to persist the dynamic state of a Matter device.
+ *
+ */
+val Context.devicesStateDataStore: DataStore<DevicesState> by dataStore(
+    fileName = "devices_state_store.json",
+    serializer = DevicesStateJsonSerializer
 )

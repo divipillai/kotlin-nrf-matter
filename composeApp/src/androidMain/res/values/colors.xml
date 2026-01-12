@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="statusBarColor">@color/md_theme_primary</color>
+    <color name="navigationBarColor">#E1EFF2</color>
+
+    <color name="iconColor">@color/md_theme_onBackground</color>
+
+</resources>

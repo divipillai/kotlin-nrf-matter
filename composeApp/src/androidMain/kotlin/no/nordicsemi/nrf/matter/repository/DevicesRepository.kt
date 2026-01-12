@@ -36,10 +36,10 @@ import androidx.datastore.core.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
-import no.nordicsemi.nrf.matter.data.Device
-import no.nordicsemi.nrf.matter.data.DeviceType
-import no.nordicsemi.nrf.matter.data.Devices
-import no.nordicsemi.nrf.matter.data.devicesDataStore
+import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.Devices
+import no.nordicsemi.nrf.matter.model.devicesDataStore
 
 class DevicesRepository(
     context: Context

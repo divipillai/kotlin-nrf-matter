@@ -20,6 +20,7 @@ kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.9.0"
 lifecycleViewmodelCompose = "2.9.4"
 matterAndroidDemoSdk = "1.0"
+navigationCompose = "2.9.1"
 playServicesHomeTypes = "16.0.0"
 matterGoogleDemo = "1.0.0"
 runtimeLivedata = "1.9.4"
@@ -46,6 +47,7 @@ androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 matter-android-demo-sdk = { module = "com.google.matter:matter-android-demo-sdk", version.ref = "matterAndroidDemoSdk" }
+navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 play-services-home = { module = "com.google.android.gms:play-services-home", version.ref = "playServicesHomeTypes" }
 play-services-home-types = { module = "com.google.android.gms:play-services-home-types", version.ref = "playServicesHomeTypes" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedataVersion" }

@@ -55,7 +55,7 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.androidx.compose)
             //navigation
-            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.1")
+            implementation(libs.navigation.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

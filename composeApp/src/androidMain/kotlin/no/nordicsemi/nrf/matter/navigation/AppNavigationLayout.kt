@@ -68,9 +68,7 @@ import org.koin.androidx.compose.koinViewModel
 fun AppNavigationLayout(navController: NavHostController) {
     var topAppBarTitle by rememberSaveable { mutableStateOf("nRF Matter") }
     val updateTopAppBarTitle: (title: String) -> Unit = remember {
-        { title ->
-            topAppBarTitle = title
-        }
+        { topAppBarTitle = it }
     }
     val homeViewModel: HomeViewModel = koinViewModel()
     val devicesUiModel by homeViewModel.devicesUiModelLiveData.observeAsState()

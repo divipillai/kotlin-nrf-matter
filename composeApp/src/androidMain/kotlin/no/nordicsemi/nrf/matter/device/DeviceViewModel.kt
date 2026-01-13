@@ -44,6 +44,29 @@ import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+sealed interface RemoveDeviceState {
+    object Idle : RemoveDeviceState
+    object Removing : RemoveDeviceState
+    data class ConformRemove(
+        val deviceId: Long,
+        val isConformRemove: Boolean
+    ) : RemoveDeviceState
+
+    data class RemoveResult(
+        val deviceId: Long,
+        val isRemovedSuccess: Boolean
+    ) : RemoveDeviceState
+
+    data class ForceRemove(
+        val deviceId: Long,
+        val isForceRemove: Boolean
+    ) : RemoveDeviceState
+}
+
+data class DeviceUiState(
+    val deviceUiModel: DeviceUiModel? = null,
+    val removeDeviceState: RemoveDeviceState = RemoveDeviceState.Idle,
+)
 
 class DeviceViewModel
     (

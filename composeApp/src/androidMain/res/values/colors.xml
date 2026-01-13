@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <color name="appBarColor">#00A9CE</color>
     <color name="statusBarColor">@color/md_theme_primary</color>
     <color name="navigationBarColor">#E1EFF2</color>
 

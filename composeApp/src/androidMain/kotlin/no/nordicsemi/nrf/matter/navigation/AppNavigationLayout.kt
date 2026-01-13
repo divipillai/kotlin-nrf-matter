@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.union
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,12 +24,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import no.nordicsemi.nrf.matter.home.HomeViewModel
-import no.nordicsemi.nrf.matter.home.Primary
 import no.nordicsemi.nrf.matter.home.commissionDevice
 import no.nordicsemi.nrf.matter.ui.TitleAppBar
 import org.koin.androidx.compose.koinViewModel
@@ -113,10 +110,7 @@ fun AppNavigationLayout(navController: NavHostController) {
             if (devicesList.isNotEmpty()) {
                 FloatingActionButton(
                     onClick = { onCommissionDevice() },
-                    containerColor = Primary,
-                    contentColor = Color.White,
-                    shape = CircleShape,
-                    modifier = Modifier.padding(bottom = 80.dp)
+                    modifier = Modifier.padding(8.dp)
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null)
                 }

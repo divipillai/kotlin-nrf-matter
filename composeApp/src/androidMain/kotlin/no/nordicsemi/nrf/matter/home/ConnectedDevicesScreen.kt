@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter.home
 
-import android.util.Log
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -10,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,29 +39,22 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -74,6 +65,8 @@ import no.nordicsemi.nrf.matter.R
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.ui.DeviceItemContainer
+import no.nordicsemi.nrf.matter.ui.SectionTitle
 import kotlin.time.Clock
 
 /*
@@ -107,120 +100,7 @@ import kotlin.time.Clock
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val Primary = Color(0xFF137FEC)
-val BackgroundDark = Color(0xFF101922)
-val SurfaceDark = Color(0xFF1A2632)
-val BackgroundLight = Color(0xFFF6F7F8)
 val MatterGreen = Color(0xFF22C55E)
-
-@Preview(showBackground = true)
-@Composable
-fun ConnectedDevicesScreen() {
-    Scaffold(
-        containerColor = if (isSystemInDarkTheme()) BackgroundDark else BackgroundLight,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { /* TODO */ },
-                containerColor = Primary,
-                contentColor = Color.White,
-                shape = CircleShape,
-                modifier = Modifier.padding(bottom = 80.dp) // Space for bottom bar
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            HeaderSection()
-            FilterChipsRow()
-//            DeviceList(devicesList, onDeviceClick, onOnOffClick)
-        }
-    }
-}
-
-@Composable
-fun DeviceItemContainer(
-    icon: Painter,
-    iconBg: Color,
-    iconTint: Color,
-    title: String,
-    subtitle: String,
-    hasStatusBorder: Boolean = false,
-    onDeviceClick: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(if (isSystemInDarkTheme()) SurfaceDark else Color.White)
-            .then(
-                if (hasStatusBorder) Modifier.border(
-                    width = 1.dp,
-                    color = Primary,
-                    shape = RoundedCornerShape(16.dp)
-                ) else Modifier
-            )
-            .padding(16.dp)
-            .clickable { onDeviceClick() },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Icon Box
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(iconBg),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(icon, contentDescription = null, tint = iconTint)
-        }
-
-        // Labels
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = if (isSystemInDarkTheme()) Color.White else Primary
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
-
-        content()
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DeviceItemContainerPreview() {
-    DeviceItemContainer(
-        icon = painterResource(R.drawable.light_bulb_smart_light),
-        iconBg = Color.LightGray.copy(alpha = 0.6f),
-        iconTint = Color.Gray,
-        title = "Living Room Lamp",
-        subtitle = "Dimmable Light",
-        hasStatusBorder = true,
-        {}
-    ) {
-        Text("50%", fontWeight = FontWeight.Bold)
-    }
-
-}
 
 // Specific Device: Dimmable Light
 @Preview(showBackground = true)
@@ -228,8 +108,6 @@ fun DeviceItemContainerPreview() {
 fun DimmableLightItem() {
     DeviceItemContainer(
         icon = painterResource(R.drawable.light_bulb_smart_light),
-        iconBg = Color(0xFFFEF3C7),
-        iconTint = Color(0xFFD97706),
         title = "Living Room Lamp",
         subtitle = "Dimmable Light",
         onDeviceClick = {
@@ -263,11 +141,9 @@ fun SwitchDeviceItem(
 ) {
     DeviceItemContainer(
         icon = painterResource(R.drawable.light_fixture),// TODO: Change it to the Power icon
-        iconBg = if (checked) Color(0xFFDBEAFE) else Color.LightGray.copy(alpha = 0.2f),
-        iconTint = if (checked) Primary else Color.Gray,
         title = title,
         subtitle = subtitle,
-        hasStatusBorder = checked,
+        isOnline = checked,
         onDeviceClick = { onDeviceClick() }
     ) {
         Switch(
@@ -275,10 +151,6 @@ fun SwitchDeviceItem(
             onCheckedChange = {
                 onOnOffClick(1L, it)
             },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = Primary
-            )
         )
     }
 }
@@ -378,7 +250,6 @@ fun FilterChipsRow() {
         items(filters) { filter ->
             val isSelected = filter == "All"
             Surface(
-                color = if (isSelected) Primary else MaterialTheme.colorScheme.surface,
                 shape = CircleShape,
                 border = if (isSelected) null else BorderStroke(
                     1.dp,
@@ -406,75 +277,50 @@ internal fun DeviceList(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(
-            top = 16.dp,
-            bottom = 100.dp
-        ) // Extra bottom padding for FAB/Nav
+            .padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // --- Section: Lights ---
-
         this.items(devicesList, key = { device -> device.device.deviceId }) { device ->
-            SectionHeader("Lights")
+            SectionTitle("Lights")
             SwitchDeviceItem(
                 title = device.device.name ?: "Living Room Lamp",
                 subtitle = "Smart Light",
                 checked = device.isOn,
                 onOnOffClick = { deviceId, value -> onOnOffClick(deviceId, value) },
-
-                ) {
-                Log.d(
-                    "AAA",
-                    "DeviceList: ${device.device.name}, device.device.deviceId: ${device.device.deviceId}"
-                )
-
-                onDeviceClick(device)
-            }
+            ) { onDeviceClick(device) }
 
         }
-//
-//        item { SectionHeader("Lights") }
-//        item { DimmableLightItem() }
-//        item {
-//            SwitchDeviceItem(
-//                title = "Hallway Light",
-//                subtitle = "Smart Light",
-//                initialState = false
-//            )
-//        }
         /*
-                // --- Section: Power & Energy ---
-                item { SectionHeader("Power & Energy") }
+                item { SectionHeader("Lights") }
+                item { DimmableLightItem() }
                 item {
                     SwitchDeviceItem(
-                        title = "Coffee Maker",
-                        subtitle = "Smart Plug",
-                        initialState = true
+                        title = "Hallway Light",
+                        subtitle = "Smart Light",
+                        initialState = false
                     )
                 }
 
-                // --- Section: Climate & Security ---
-                item { SectionHeader("Climate & Security") }
-                item { ThermostatItem() }
-                item { LockItem() }
+                        // --- Section: Power & Energy ---
+                        item { SectionHeader("Power & Energy") }
+                        item {
+                            SwitchDeviceItem(
+                                title = "Coffee Maker",
+                                subtitle = "Smart Plug",
+                                initialState = true
+                            )
+                        }
 
-                // --- Empty State / Add Suggestion ---
-                item { AddDeviceSuggestion() }*/
+                        // --- Section: Climate & Security ---
+                        item { SectionHeader("Climate & Security") }
+                        item { ThermostatItem() }
+                        item { LockItem() }
+
+                        // --- Empty State / Add Suggestion ---
+                        item { AddDeviceSuggestion() }
+                  */
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SectionHeader(text: String = "Lights") {
-    Text(
-        text = text.uppercase(),
-        style = MaterialTheme.typography.labelMedium,
-        color = Color.Gray,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
-        letterSpacing = 1.sp
-    )
 }
 
 // Thermostat Item
@@ -483,8 +329,6 @@ fun SectionHeader(text: String = "Lights") {
 fun ThermostatItem() {
     DeviceItemContainer(
         icon = painterResource(R.drawable.temperature),
-        iconBg = Color(0xFFFFEDD5),
-        iconTint = Color(0xFFEA580C),
         title = "Downstairs AC",
         subtitle = "Target: 70°F", onDeviceClick = {}
     ) {
@@ -505,8 +349,6 @@ fun ThermostatItem() {
 fun LockItem() {
     DeviceItemContainer(
         icon = painterResource(R.drawable.light_bulb_smart_light),// TODO: Change it to the door lock icon.
-        iconBg = Color(0xFFFFE4E6),
-        iconTint = Color(0xFFE11D48),
         title = "Front Door",
         subtitle = "Smart Lock",
         onDeviceClick = {}
@@ -579,7 +421,6 @@ fun NoDevicesScreen(
             text = "Let's get connected",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = if (isSystemInDarkTheme()) Color.White else Primary
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -601,7 +442,6 @@ fun NoDevicesScreen(
                 .fillMaxWidth()
                 .height(48.dp)
                 .widthIn(max = 320.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Primary),
             shape = RoundedCornerShape(12.dp),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
         ) {
@@ -615,7 +455,6 @@ fun NoDevicesScreen(
         TextButton(onClick = { /* TODO */ }) {
             Text(
                 "What is Matter?",
-                color = Primary,
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Medium
             )
@@ -647,22 +486,19 @@ fun EmptyStateIllustration() {
                 .fillMaxSize()
                 .graphicsLayer(scaleX = scale, scaleY = scale)
                 .background(
-                    color = Primary.copy(alpha = 0.1f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                     shape = CircleShape
                 )
-                .border(2.dp, Primary.copy(alpha = 0.3f), CircleShape)
         )
 
         Surface(
             modifier = Modifier.size(200.dp),
             shape = RoundedCornerShape(20.dp),
-            color = Primary.copy(alpha = 0.2f)
         ) {
             Icon(
                 painter = painterResource(R.drawable.no_matter_devices),
                 contentDescription = null,
                 modifier = Modifier.padding(40.dp),
-                tint = Primary
             )
         }
     }
@@ -678,7 +514,6 @@ fun HomeTopAppBar() {
                 "My Devices",
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleLarge,
-                color = if (isSystemInDarkTheme()) Color.White else Primary
             )
         },
         navigationIcon = {
@@ -686,7 +521,6 @@ fun HomeTopAppBar() {
                 Icon(
                     Icons.Default.Menu, contentDescription = "Menu",
                     modifier = Modifier.size(28.dp),
-                    tint = if (isSystemInDarkTheme()) Color.White else Primary
                 )
             }
         },
@@ -696,7 +530,6 @@ fun HomeTopAppBar() {
                     Icons.Default.AccountCircle,
                     contentDescription = "Profile",
                     modifier = Modifier.size(28.dp),
-                    tint = if (isSystemInDarkTheme()) Color.White else Primary
                 )
             }
         },

@@ -22,14 +22,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,7 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import no.nordicsemi.nrf.matter.R
 import no.nordicsemi.nrf.matter.home.MatterGreen
-import no.nordicsemi.nrf.matter.home.Primary
+import no.nordicsemi.nrf.matter.ui.DeviceItemContainer
+import no.nordicsemi.nrf.matter.ui.SectionTitle
 import org.koin.androidx.compose.koinViewModel
 
 /*
@@ -199,6 +199,7 @@ internal fun DeviceScreen(
             SectionTitle("Technical Details")
             TechnicalDetailsCard()
 
+            Spacer(modifier = Modifier.height(16.dp))
             RemoveDeviceSection { /* todo: Add remove device feature. */ }
         }
     }
@@ -209,23 +210,21 @@ internal fun DeviceScreen(
 private fun DeviceHeader() {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp),
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Icon(
-            painter = painterResource(R.drawable.light_bulb_smart_light),
+            painter = painterResource(R.drawable.light_fixture),
             contentDescription = null,
-            tint = Primary,
-            modifier = Modifier.size(48.dp)
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(80.dp)
         )
-
-
         Text(
             "Living Room Light",
             fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
         )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -235,7 +234,7 @@ private fun DeviceHeader() {
                     .background(MatterGreen, CircleShape)
             )
             Spacer(Modifier.width(8.dp))
-            Text("Online", color = MatterGreen, fontSize = 14.sp)
+            Text("Online", color = MatterGreen)
             Spacer(Modifier.width(8.dp))
             Text("•", color = Color.Gray)
             Spacer(Modifier.width(8.dp))
@@ -249,43 +248,17 @@ private fun PowerCard(
     enabled: Boolean,
     onToggle: (Boolean) -> Unit
 ) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(),
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth()
+    DeviceItemContainer(
+        icon = painterResource(R.drawable.power_settings),
+        title = "Power",
+        subtitle = "Turn device ON or OFF",
+        isOnline = enabled,
+        onDeviceClick = { },
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(Primary.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.power_settings),
-                    contentDescription = null,
-                    tint = Primary
-                )
-            }
-
-            Spacer(Modifier.width(16.dp))
-
-            Column(Modifier.weight(1f)) {
-                Text("Power", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text("Turn device on or off", fontSize = 14.sp, color = Color.Gray)
-            }
-
-            Switch(
-                checked = enabled,
-                onCheckedChange = onToggle,
-                colors = SwitchDefaults.colors(checkedThumbColor = Color.White)
-            )
-        }
+        Switch(
+            checked = enabled,
+            onCheckedChange = onToggle,
+        )
     }
 }
 
@@ -297,33 +270,54 @@ private fun PowerCardPreview() {
 
 @Composable
 private fun ShareCard(onShare: () -> Unit) {
-    Card(
+    OutlinedCard(
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(),
+        border = CardDefaults.outlinedCardBorder(enabled = false),
         modifier = Modifier
-            .padding(horizontal = 16.dp)
             .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { onShare() }
     ) {
         Row(
             modifier = Modifier
-                .clickable(onClick = onShare)
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .background(Primary.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
+                    .size(48.dp)
+                    .background(
+                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
+                        RoundedCornerShape(12.dp)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Share, contentDescription = null, tint = Primary)
+                Icon(
+                    Icons.Default.Share,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
 
-            Spacer(Modifier.width(16.dp))
-
-            Column(Modifier.weight(1f)) {
-                Text("Share with other apps", fontWeight = FontWeight.Bold)
-                Text("Generate a Matter setup code", fontSize = 14.sp, color = Color.Gray)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    "Share with other apps",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    "You can share this device to control it from other apps or services.",
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(0.5f)
+                )
             }
 
             Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = Color.Gray)
@@ -340,12 +334,12 @@ private fun ShareCardPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun TechnicalDetailsCard() {
-    Card(
+    OutlinedCard(
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(),
+        border = CardDefaults.outlinedCardBorder(enabled = false),
         modifier = Modifier
-            .padding(horizontal = 16.dp)
             .fillMaxWidth()
+            .padding(8.dp)
     ) {
         Column {
             DetailRow("Vendor ID", "0x1234")
@@ -365,61 +359,69 @@ private fun DetailRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, color = Color.Gray)
-        Text(value, fontWeight = FontWeight.Medium)
+        Text(
+            text = label,
+            modifier = Modifier
+                .alpha(0.5f)
+        )
+        Text(
+            value,
+            style = MaterialTheme.typography.titleMedium,
+        )
     }
 
-    if (divider) HorizontalDivider()
+    if (divider) HorizontalDivider(
+        modifier = Modifier.alpha(0.3f)
+    )
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun RemoveDeviceSection(onRemove: () -> Unit = {}) {
-    Column(
+    OutlinedCard(
+        shape = RoundedCornerShape(16.dp),
+        border = CardDefaults.outlinedCardBorder(enabled = false),
         modifier = Modifier
-            .padding(24.dp)
-            .fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { onRemove() }
     ) {
-        Button(
-            onClick = onRemove,
-//            colors = ButtonDefaults.buttonColors(
-//                backgroundColor = DangerRed.copy(alpha = 0.1f),
-//                contentColor = DangerRed
-//            ),
-            colors = ButtonDefaults.buttonColors(),
-            shape = RoundedCornerShape(16.dp),
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
+                .padding(8.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Icon(Icons.Default.Delete, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Text("Remove Device", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Remove Device", fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            Text(
+                "Removing this device will disconnect it from your Matter fabric and home network.",
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.alpha(0.5f)
+            )
         }
-
-        Spacer(Modifier.height(12.dp))
-
-        Text(
-            "Removing this device will disconnect it from your Matter fabric and home network.",
-            fontSize = 12.sp,
-            color = Color.Gray,
-            textAlign = TextAlign.Center
-        )
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun SectionTitle(text: String = "Device Test") {
-    Text(
-        text,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-    )
-}
 

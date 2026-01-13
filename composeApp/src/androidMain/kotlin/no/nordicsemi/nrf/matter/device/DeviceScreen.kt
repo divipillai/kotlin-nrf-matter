@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.nrf.matter.R
 import no.nordicsemi.nrf.matter.home.MatterGreen
 import no.nordicsemi.nrf.matter.ui.DeviceItemContainer
@@ -111,12 +112,27 @@ internal fun DeviceScreen(
 
 
     // Observes values needed by the DeviceScreen.
-    val deviceUiModel by deviceViewModel.deviceUiModel.collectAsState()
+    val deviceUiState by deviceViewModel.deviceUiState.collectAsStateWithLifecycle()
+    val deviceUiModel = deviceUiState.deviceUiModel
     Log.d("AAA", "DeviceRoute deviceUiModel [${deviceUiModel?.device?.deviceId}]")
 
     // TODO: Implement remove device feature.
     val lastUpdatedDeviceState by deviceViewModel.lastUpdatedDeviceState.observeAsState()
 
+    // Controls whether the "remove device" alert dialog should be shown.
+    val showRemoveDeviceAlertDialog by deviceViewModel.showRemoveDeviceAlertDialog.collectAsState()
+    val onRemoveDeviceClick: () -> Unit = remember {
+        { deviceViewModel.showRemoveDeviceAlertDialog() }
+    }
+    val onRemoveDeviceOutcome: (doIt: Boolean) -> Unit = remember {
+        { doIt ->
+            deviceViewModel.dismissRemoveDeviceDialog()
+            if (doIt) {
+                deviceViewModel.removeDevice(deviceUiModel!!.device.deviceId)
+            }
+
+        }
+    }
     // TODO: On/Off Switch click.
     val onOnOffClick: (value: Boolean) -> Unit = remember {
         { value ->
@@ -151,14 +167,14 @@ internal fun DeviceScreen(
         return
     }
     val deviceState = lastUpdatedDeviceState?.devicesStateList?.find { deviceState ->
-        deviceState.deviceId == deviceUiModel!!.device.deviceId
+        deviceState.deviceId == deviceUiModel.device.deviceId
     }
 
     var powerEnabled by remember { mutableStateOf(true) }
     LaunchedEffect(deviceUiModel, deviceState) {
 
         // Device state
-        deviceUiModel?.let { model ->
+        deviceUiModel.let { model ->
             isOnline =
                 when (deviceState) {
                     null -> model.isOnline
@@ -171,6 +187,40 @@ internal fun DeviceScreen(
                 }
         }
         Log.d("AAA", "deviceState: isOnline [$isOnline] isOn[$isOn]")
+    }
+
+    // TODO: Implement remove device state here.
+    when (val removeState = deviceUiState.removeDeviceState) {
+        is RemoveDeviceState.ConformRemove -> {
+            // Show a dialog to confirm removal.
+            // if confirmed, remove device, else do nothing.
+            // TODO: Implement confirmation dialog.
+            if (removeState.isConformRemove) {
+                deviceViewModel.removeDevice(deviceUiModel.device.deviceId)
+            }
+        }
+
+        is RemoveDeviceState.ForceRemove -> {
+            // Show a dialog to confirm a force removal.
+            // if confirmed, remove device, else do nothing.
+            // TODO()
+        }
+
+        RemoveDeviceState.Idle -> {
+            // Do nothing.
+        }
+
+        is RemoveDeviceState.RemoveResult -> {
+            if (removeState.isRemovedSuccess) {
+                navigateToHome()
+            }
+        }
+
+        RemoveDeviceState.Removing -> {
+            // TODO: Show loading indicator.
+            // Don't allow user to click anything.
+            // Show it like a Alert message but loading indicator.
+        }
     }
 
     Box(
@@ -200,7 +250,7 @@ internal fun DeviceScreen(
             TechnicalDetailsCard()
 
             Spacer(modifier = Modifier.height(16.dp))
-            RemoveDeviceSection { /* todo: Add remove device feature. */ }
+            RemoveDeviceSection { onRemoveDeviceOutcome(true) }
         }
     }
 }

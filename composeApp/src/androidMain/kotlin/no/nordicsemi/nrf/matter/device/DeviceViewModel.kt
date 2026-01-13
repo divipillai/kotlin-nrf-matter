@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
@@ -48,16 +49,20 @@ class DeviceViewModel
     (
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
-    chipClient: ChipClient,
+    private val chipClient: ChipClient,
 ) : ViewModel() {
     val clustersHelper: ClustersHelper = ClustersHelper(chipClient)
 
     // The UI model for device shown on the Device screen.
-    private var _deviceUiModel = MutableStateFlow<DeviceUiModel?>(null)
-    val deviceUiModel: StateFlow<DeviceUiModel?> = _deviceUiModel.asStateFlow()
+    private val _deviceUiState = MutableStateFlow(DeviceUiState())
+    val deviceUiState: StateFlow<DeviceUiState> = _deviceUiState.asStateFlow()
 
     val lastUpdatedDeviceState = devicesStateRepository.lastUpdatedDeviceState
 
+
+    // Controls whether the "Remove Device" AlertDialog should be shown in the UI.
+    private var _showRemoveDeviceAlertDialog = MutableStateFlow(false)
+    val showRemoveDeviceAlertDialog: StateFlow<Boolean> = _showRemoveDeviceAlertDialog.asStateFlow()
 
     // Controls whether a periodic ping to the device is enabled or not.
     private var devicePeriodicPingEnabled: Boolean = true
@@ -78,11 +83,9 @@ class DeviceViewModel
     // Load device
 
     fun loadDevice(deviceId: Long) {
-        if (deviceId == deviceUiModel.value?.device?.deviceId) {
-            Log.d("AAA", "loadDevice: [${deviceId}] was already loaded")
+        if (deviceId == _deviceUiState.value.deviceUiModel?.device?.deviceId) {
             return
         } else {
-            Log.d("AAA", "loadDevice: loading [${deviceId}]")
             viewModelScope.launch {
                 val device = devicesRepository.getDevice(deviceId)
                 val deviceState = devicesStateRepository.loadDeviceState(deviceId)
@@ -92,7 +95,12 @@ class DeviceViewModel
                     isOnline = deviceState.online
                     isOn = deviceState.on
                 }
-                _deviceUiModel.value = DeviceUiModel(device, isOnline, isOn)
+                _deviceUiState.update {
+                    it.copy(
+                        deviceUiModel = DeviceUiModel(device, isOnline, isOn),
+                        removeDeviceState = RemoveDeviceState.Idle
+                    )
+                }
             }
         }
     }
@@ -103,7 +111,9 @@ class DeviceViewModel
     // TODO: Implement multi-admin.
 
 
-    //    TODO: Remove device
+    // -----------------------------------------------------------------------------------------------
+    // Remove device
+
     // Removes the device. First we remove the fabric from the device, and then we remove the
     // device from the app's devices repository.
     // Note that unlinking the device may take a while if the device is offline. Because of that,
@@ -115,14 +125,47 @@ class DeviceViewModel
     // removeDeviceWithoutUnlink is called.
     // TODO: The device will still be linked to the local Android fabric. We should remove all the
     // fabrics at the device.
+    fun removeDevice(deviceId: Long) {
+        Log.d("AAA", "Removing device [${deviceId}]")
+        _deviceUiState.update {
+            it.copy(removeDeviceState = RemoveDeviceState.Removing)
+        }
+        // TODO: Add some ui feedback that the device is being removed.
 
+        viewModelScope.launch {
+            try {
+                chipClient.awaitUnpairDevice(deviceId)
+            } catch (e: Exception) {
+                Log.e("AAA", "Unlinking the device failed with exception: [${e.message}]")
+                return@launch
+            }
+            // Remove device from the app's devices repository.
+            Log.d("AAA", "removeDevice succeeded! [$deviceId]")
+            devicesRepository.removeDevice(deviceId)
+            // Notify UI so we navigate back to Home screen.
+            _deviceRemovalCompleted.value = true
+            _deviceUiState.update {
+                it.copy(removeDeviceState = RemoveDeviceState.RemoveResult(
+                    deviceId = deviceId,
+                    isRemovedSuccess = true
+                ))
+            }
+        }
+    }
 
-    // TODO: Once device is removed it should also be removed from the devicesStateRepository.
     // Removes the device from the app's devices repository, and does not unlink the fabric
     // from the device.
     // This function is called after removeDevice() has failed trying to unlink the device
     // and the user has confirmed that the device should still be removed from the app's device
     // repository.
+    fun removeDeviceWithoutUnlink(deviceId: Long) {
+        Log.d("AAA", "removeDeviceWithoutUnlink: [${deviceId}]")
+        viewModelScope.launch {
+            // Remove device from the app's devices repository.
+            devicesRepository.removeDevice(deviceId)
+            _deviceRemovalCompleted.value = true
+        }
+    }
 
 
     // -----------------------------------------------------------------------------------------------
@@ -149,6 +192,16 @@ class DeviceViewModel
 
     private fun stopDevicePeriodicPing() {
         devicePeriodicPingEnabled = false
+    }
+
+    fun showRemoveDeviceAlertDialog() {
+        Log.d("AAA", "showRemoveDeviceAlertDialog")
+        _showRemoveDeviceAlertDialog.value = true
+    }
+
+    fun dismissRemoveDeviceDialog() {
+        Log.d("AAA", "dismissRemoveDeviceDialog")
+        _showRemoveDeviceAlertDialog.value = false
     }
 
 }

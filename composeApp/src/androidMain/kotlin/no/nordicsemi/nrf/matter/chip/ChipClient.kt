@@ -27,6 +27,7 @@ import chip.platform.NsdManagerServiceBrowser
 import chip.platform.NsdManagerServiceResolver
 import chip.platform.PreferencesConfigurationManager
 import chip.platform.PreferencesKeyValueStoreManager
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -83,7 +84,9 @@ class ChipClient(
             DiagnosticDataProviderImpl(context)
         )
         ChipDeviceController(
-            ControllerParams.newBuilder().setUdpListenPort(0).setControllerVendorId(VENDOR_ID).build())
+            ControllerParams.newBuilder().setUdpListenPort(0).setControllerVendorId(VENDOR_ID)
+                .build()
+        )
     }
 
     /**
@@ -95,13 +98,13 @@ class ChipClient(
                 nodeId,
                 object : GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback {
                     override fun onDeviceConnected(devicePointer: Long) {
-                        Log.d("AAA","Got connected device pointer")
+                        Log.d("AAA", "Got connected device pointer")
                         continuation.resume(devicePointer)
                     }
 
                     override fun onConnectionFailure(nodeId: Long, error: Exception) {
                         val errorMessage = "Unable to get connected device with nodeId $nodeId."
-                        Log.e("AAA",errorMessage, error)
+                        Log.e("AAA", errorMessage, error)
                         continuation.resumeWithException(IllegalStateException(errorMessage))
                     }
                 })
@@ -114,22 +117,31 @@ class ChipClient(
      * @param nodeId node identifier
      */
     suspend fun awaitUnpairDevice(nodeId: Long) {
-        return suspendCoroutine { continuation ->
-            Log.d("AAA","Calling chipDeviceController.unpair")
+        return suspendCancellableCoroutine { continuation ->
+            Log.d("AAA", "Calling chipDeviceController.unpair")
             val callback: UnpairDeviceCallback =
                 object : UnpairDeviceCallback {
                     override fun onError(status: Int, nodeId: Long) {
-                        continuation.resumeWithException(
-                            java.lang.IllegalStateException(
-                                "Failed unpairing device [$nodeId] with status [$status]"))
+                        if (continuation.isActive) {
+                            continuation.resumeWithException(
+                                IllegalStateException(
+                                    "Failed unpairing device [$nodeId] with status [$status]"
+                                )
+                            )
+                        }
                     }
 
                     override fun onSuccess(nodeId: Long) {
-                        Log.d("AAA","awaitUnpairDevice.onSuccess: deviceId [$nodeId]")
-                        continuation.resume(Unit)
+                        if (continuation.isActive) {
+                            Log.d("AAA", "awaitUnpairDevice.onSuccess: deviceId [$nodeId]")
+                            continuation.resume(Unit)
+                        }
                     }
                 }
             chipDeviceController.unpairDeviceCallback(nodeId, callback)
+            continuation.invokeOnCancellation {
+                Log.d("AAA", "Unpair coroutine cancelled")
+            }
         }
     }
 
@@ -139,8 +151,10 @@ class ChipClient(
         iterations: Long,
         salt: ByteArray
     ): PaseVerifierParams {
-        Log.d("AAA",
-            "computePaseVerifier: devicePtr [${devicePtr}] pinCode [${pinCode}] iterations [${iterations}] salt [${salt}]")
+        Log.d(
+            "AAA",
+            "computePaseVerifier: devicePtr [${devicePtr}] pinCode [${pinCode}] iterations [${iterations}] salt [${salt}]"
+        )
         return chipDeviceController.computePaseVerifier(devicePtr, pinCode, iterations, salt)
     }
 
@@ -164,7 +178,8 @@ class ChipClient(
                         super.onPairingComplete(code)
                         if (code != 0) {
                             continuation.resumeWithException(
-                                IllegalStateException("Pairing failed with error code [${code}]"))
+                                IllegalStateException("Pairing failed with error code [${code}]")
+                            )
                         } else {
                             continuation.resume(Unit)
                         }
@@ -181,11 +196,20 @@ class ChipClient(
                         wifiEndpointId: Int,
                         threadEndpointId: Int
                     ) {
-                        super.onReadCommissioningInfo(vendorId, productId, wifiEndpointId, threadEndpointId)
+                        super.onReadCommissioningInfo(
+                            vendorId,
+                            productId,
+                            wifiEndpointId,
+                            threadEndpointId
+                        )
                         continuation.resume(Unit)
                     }
 
-                    override fun onCommissioningStatusUpdate(nodeId: Long, stage: String?, errorCode: Int) {
+                    override fun onCommissioningStatusUpdate(
+                        nodeId: Long,
+                        stage: String?,
+                        errorCode: Int
+                    ) {
                         super.onCommissioningStatusUpdate(nodeId, stage, errorCode)
                         continuation.resume(Unit)
                     }
@@ -210,7 +234,8 @@ class ChipClient(
                         super.onCommissioningComplete(nodeId, errorCode)
                         if (errorCode != 0) {
                             continuation.resumeWithException(
-                                IllegalStateException("Commissioning failed with error code [${errorCode}]"))
+                                IllegalStateException("Commissioning failed with error code [${errorCode}]")
+                            )
                         } else {
                             continuation.resume(Unit)
                         }
@@ -233,25 +258,36 @@ class ChipClient(
         setupPinCode: Long
     ) {
         return suspendCoroutine { continuation ->
-            Log.d("AAA","Calling chipDeviceController.openPairingWindowWithPIN")
+            Log.d("AAA", "Calling chipDeviceController.openPairingWindowWithPIN")
             val callback: OpenCommissioningCallback =
                 object : OpenCommissioningCallback {
                     override fun onError(status: Int, deviceId: Long) {
-                        Log.e("AAA",
-                            "ShareDevice: awaitOpenPairingWindowWithPIN.onError: status [${status}] device [${deviceId}]")
+                        Log.e(
+                            "AAA",
+                            "ShareDevice: awaitOpenPairingWindowWithPIN.onError: status [${status}] device [${deviceId}]"
+                        )
                         continuation.resumeWithException(
                             java.lang.IllegalStateException(
-                                "Failed opening the pairing window with status [${status}]"))
+                                "Failed opening the pairing window with status [${status}]"
+                            )
+                        )
                     }
 
-                    override fun onSuccess(deviceId: Long, manualPairingCode: String?, qrCode: String?) {
-                        Log.d("AAA",
-                            "ShareDevice: awaitOpenPairingWindowWithPIN.onSuccess: deviceId [${deviceId}]")
+                    override fun onSuccess(
+                        deviceId: Long,
+                        manualPairingCode: String?,
+                        qrCode: String?
+                    ) {
+                        Log.d(
+                            "AAA",
+                            "ShareDevice: awaitOpenPairingWindowWithPIN.onSuccess: deviceId [${deviceId}]"
+                        )
                         continuation.resume(Unit)
                     }
                 }
             chipDeviceController.openPairingWindowWithPINCallback(
-                connectedDevicePointer, duration, iteration, discriminator, setupPinCode, callback)
+                connectedDevicePointer, duration, iteration, discriminator, setupPinCode, callback
+            )
         }
     }
 
@@ -264,13 +300,13 @@ class ChipClient(
                 nodeId,
                 object : GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback {
                     override fun onDeviceConnected(devicePointer: Long) {
-                        Log.d("AAA","Got connected device pointer")
+                        Log.d("AAA", "Got connected device pointer")
                         continuation.resume(devicePointer)
                     }
 
                     override fun onConnectionFailure(nodeId: Long, error: Exception) {
                         val errorMessage = "Unable to get connected device with nodeId $nodeId"
-                        Log.e("AAA",errorMessage, error)
+                        Log.e("AAA", errorMessage, error)
                         continuation.resumeWithException(IllegalStateException(errorMessage))
                     }
                 })
@@ -286,7 +322,7 @@ class ChipClient(
     }
 
     fun getDiscoveredDevice(index: Int): DiscoveredDevice? {
-        Log.d("AAA","getDiscoveredDevice(${index})")
+        Log.d("AAA", "getDiscoveredDevice(${index})")
         return chipDeviceController.getDiscoveredDevice(index)
     }
 
@@ -301,7 +337,8 @@ class ChipClient(
         imTimeoutMs: Int = DEFAULT_TIMEOUT
     ) {
         return writeAttributes(
-            devicePtr, mapOf(attributePath to tlv), timedRequestTimeoutMs, imTimeoutMs)
+            devicePtr, mapOf(attributePath to tlv), timedRequestTimeoutMs, imTimeoutMs
+        )
     }
 
     /** Wrapper around [ChipDeviceController.write] */
@@ -315,12 +352,21 @@ class ChipClient(
             val requests: List<AttributeWriteRequest> =
                 attributes.toList().map {
                     AttributeWriteRequest.newInstance(
-                        it.first.endpointId, it.first.clusterId, it.first.attributeId, it.second)
+                        it.first.endpointId, it.first.clusterId, it.first.attributeId, it.second
+                    )
                 }
             val callback: WriteAttributesCallback =
                 object : WriteAttributesCallback {
-                    override fun onError(attributePath: ChipAttributePath?, e: java.lang.Exception?) {
-                        continuation.resumeWithException(IllegalStateException("writeAttributes failed", e))
+                    override fun onError(
+                        attributePath: ChipAttributePath?,
+                        e: java.lang.Exception?
+                    ) {
+                        continuation.resumeWithException(
+                            IllegalStateException(
+                                "writeAttributes failed",
+                                e
+                            )
+                        )
                     }
 
                     override fun onResponse(attributePath: ChipAttributePath?) {
@@ -328,13 +374,21 @@ class ChipClient(
                             ChipAttributePath.newInstance(
                                 requests.last().endpointId,
                                 requests.last().clusterId,
-                                requests.last().attributeId)) {
+                                requests.last().attributeId
+                            )
+                        ) {
                             continuation.resume(Unit)
                         }
                     }
                 }
 
-            chipDeviceController.write(callback, devicePtr, requests, timedRequestTimeoutMs, imTimeoutMs)
+            chipDeviceController.write(
+                callback,
+                devicePtr,
+                requests,
+                timedRequestTimeoutMs,
+                imTimeoutMs
+            )
         }
     }
 
@@ -355,7 +409,12 @@ class ChipClient(
                         eventPath: ChipEventPath?,
                         e: Exception?
                     ) {
-                        continuation.resumeWithException(IllegalStateException("readAttributes failed", e))
+                        continuation.resumeWithException(
+                            IllegalStateException(
+                                "readAttributes failed",
+                                e
+                            )
+                        )
                     }
 
                     override fun onReport(nodeState: NodeState?) {
@@ -394,7 +453,8 @@ class ChipClient(
                 devicePtr,
                 listOf(attributePath),
                 minInterval,
-                maxInterval)
+                maxInterval
+            )
         }
     }
 
@@ -417,7 +477,8 @@ class ChipClient(
                     }
                 }
             chipDeviceController.invoke(
-                invokeCallback, devicePtr, invokeElement, timedRequestTimeoutMs, imTimeoutMs)
+                invokeCallback, devicePtr, invokeElement, timedRequestTimeoutMs, imTimeoutMs
+            )
         }
     }
 }

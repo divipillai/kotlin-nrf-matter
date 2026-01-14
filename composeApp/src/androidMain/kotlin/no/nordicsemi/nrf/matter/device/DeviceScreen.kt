@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.nrf.matter.R
 import no.nordicsemi.nrf.matter.home.MatterGreen
+import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.DeviceItemContainer
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.SectionTitle
@@ -200,7 +201,14 @@ internal fun DeviceScreen(
         is RemoveDeviceState.ForceRemove -> {
             // Show a dialog to confirm a force removal.
             // if confirmed, remove device, else do nothing.
-            // TODO()
+            AlertDialogView(
+                onDismiss = { deviceViewModel.updateRemoveDeviceState(RemoveDeviceState.Idle) },
+                onConfirm = {
+                    deviceViewModel.removeDeviceWithoutUnlink(deviceUiModel.device.deviceId)
+                },
+                title = "Force Remove Device",
+                message = "The device could not be removed normally. Do you want to force remove it from your Matter network?"
+            )
         }
 
         RemoveDeviceState.Idle -> {

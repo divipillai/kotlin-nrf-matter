@@ -56,7 +56,6 @@ sealed interface RemoveDeviceState {
 
     data class ForceRemove(
         val deviceId: Long,
-        val isForceRemove: Boolean
     ) : RemoveDeviceState
 }
 
@@ -148,13 +147,13 @@ class DeviceViewModel(
         _deviceUiState.update {
             it.copy(removeDeviceState = RemoveDeviceState.Removing)
         }
-        // TODO: Add some ui feedback that the device is being removed.
-
         viewModelScope.launch {
             try {
                 chipClient.awaitUnpairDevice(deviceId)
             } catch (e: Exception) {
                 Log.e("AAA", "Unlinking the device failed with exception: [${e.message}]")
+                // Error on removing device. Show error dialog with an option to force remove.
+                updateRemoveDeviceState(RemoveDeviceState.ForceRemove(deviceId))
                 return@launch
             }
             // Remove device from the app's devices repository.

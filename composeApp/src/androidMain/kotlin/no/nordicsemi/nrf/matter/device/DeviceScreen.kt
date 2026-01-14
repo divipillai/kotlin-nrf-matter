@@ -188,13 +188,13 @@ internal fun DeviceScreen(
 
     // TODO: Implement remove device state here.
     when (val removeState = deviceUiState.removeDeviceState) {
-        is RemoveDeviceState.ConformRemove -> {
-            // Show a dialog to confirm removal.
-            // if confirmed, remove device, else do nothing.
-            // TODO: Implement confirmation dialog.
-            if (removeState.isConformRemove) {
-                deviceViewModel.removeDevice(deviceUiModel.device.deviceId)
-            }
+        RemoveDeviceState.ConfirmRemove -> {
+            AlertDialogView(
+                onDismiss = { deviceViewModel.updateRemoveDeviceState(RemoveDeviceState.Idle) },
+                onConfirm = { deviceViewModel.removeDevice(deviceUiModel.device.deviceId) },
+                title = "Remove Device",
+                message = "Are you sure you want to remove this device from your Matter network?"
+            )
         }
 
         is RemoveDeviceState.ForceRemove -> {
@@ -247,7 +247,7 @@ internal fun DeviceScreen(
             TechnicalDetailsCard()
 
             Spacer(modifier = Modifier.height(16.dp))
-            RemoveDeviceSection { onRemoveDeviceOutcome(true) }
+            RemoveDeviceSection { deviceViewModel.updateRemoveDeviceState(RemoveDeviceState.ConfirmRemove) }
         }
     }
 }

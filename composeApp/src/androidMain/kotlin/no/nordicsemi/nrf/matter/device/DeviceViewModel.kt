@@ -47,10 +47,7 @@ import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 sealed interface RemoveDeviceState {
     object Idle : RemoveDeviceState
     object Removing : RemoveDeviceState
-    data class ConformRemove(
-        val deviceId: Long,
-        val isConformRemove: Boolean
-    ) : RemoveDeviceState
+    data object ConfirmRemove : RemoveDeviceState
 
     data class RemoveResult(
         val deviceId: Long,
@@ -68,8 +65,7 @@ data class DeviceUiState(
     val removeDeviceState: RemoveDeviceState = RemoveDeviceState.Idle,
 )
 
-class DeviceViewModel
-    (
+class DeviceViewModel(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     private val chipClient: ChipClient,
@@ -149,7 +145,6 @@ class DeviceViewModel
     // TODO: The device will still be linked to the local Android fabric. We should remove all the
     // fabrics at the device.
     fun removeDevice(deviceId: Long) {
-        Log.d("AAA", "Removing device [${deviceId}]")
         _deviceUiState.update {
             it.copy(removeDeviceState = RemoveDeviceState.Removing)
         }
@@ -163,18 +158,23 @@ class DeviceViewModel
                 return@launch
             }
             // Remove device from the app's devices repository.
-            Log.d("AAA", "removeDevice succeeded! [$deviceId]")
             devicesRepository.removeDevice(deviceId)
             // Notify UI so we navigate back to Home screen.
-            _deviceRemovalCompleted.value = true
-            _deviceUiState.update {
-                it.copy(removeDeviceState = RemoveDeviceState.RemoveResult(
-                    deviceId = deviceId,
-                    isRemovedSuccess = true
-                ))
-            }
+            updateRemoveDeviceState(RemoveDeviceState.Removed(deviceId))
         }
     }
+
+    /**
+     * Updates the remove device state in the UI state.
+     */
+    fun updateRemoveDeviceState(
+        removeState: RemoveDeviceState
+    ) {
+        _deviceUiState.update {
+            it.copy(removeDeviceState = removeState)
+        }
+    }
+
 
     // Removes the device from the app's devices repository, and does not unlink the fabric
     // from the device.
@@ -187,6 +187,8 @@ class DeviceViewModel
             // Remove device from the app's devices repository.
             devicesRepository.removeDevice(deviceId)
             _deviceRemovalCompleted.value = true
+            // Notify UI so we navigate back to Home screen.
+            updateRemoveDeviceState(RemoveDeviceState.Removed(deviceId))
         }
     }
 

@@ -49,9 +49,8 @@ sealed interface RemoveDeviceState {
     object Removing : RemoveDeviceState
     data object ConfirmRemove : RemoveDeviceState
 
-    data class RemoveResult(
+    data class Removed(
         val deviceId: Long,
-        val isRemovedSuccess: Boolean
     ) : RemoveDeviceState
 
     data class ForceRemove(

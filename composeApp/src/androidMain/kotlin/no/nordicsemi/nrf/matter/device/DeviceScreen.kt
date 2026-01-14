@@ -215,10 +215,10 @@ internal fun DeviceScreen(
             // Do nothing.
         }
 
-        is RemoveDeviceState.RemoveResult -> {
-            if (removeState.isRemovedSuccess) {
-                navigateToHome()
-            }
+        is RemoveDeviceState.Removed -> {
+            navigateToHome()
+            // TODO: Show snackbar "Device removed"
+
         }
 
         RemoveDeviceState.Removing -> {

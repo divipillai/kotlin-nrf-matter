@@ -163,10 +163,6 @@ internal fun DeviceScreen(
         Text("Still loading the device information")
         return
     }
-    if (deviceUiModel == null) {
-        Text("Still loading the device information")
-        return
-    }
     val deviceState = lastUpdatedDeviceState?.devicesStateList?.find { deviceState ->
         deviceState.deviceId == deviceUiModel.device.deviceId
     }

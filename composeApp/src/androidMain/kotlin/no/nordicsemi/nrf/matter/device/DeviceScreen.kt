@@ -51,6 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.nrf.matter.R
 import no.nordicsemi.nrf.matter.home.MatterGreen
 import no.nordicsemi.nrf.matter.ui.DeviceItemContainer
+import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.SectionTitle
 import org.koin.androidx.compose.koinViewModel
 
@@ -217,9 +218,9 @@ internal fun DeviceScreen(
         }
 
         RemoveDeviceState.Removing -> {
-            // TODO: Show loading indicator.
-            // Don't allow user to click anything.
-            // Show it like a Alert message but loading indicator.
+            Loader {
+                Text("Removing device...")
+            }
         }
     }
 

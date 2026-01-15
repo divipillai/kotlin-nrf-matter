@@ -251,7 +251,7 @@ class HomeViewModel(
                 clustersHelper.setOnOffDeviceStateOnOffCluster(
                     deviceId,
                     isOn,
-                    0xd
+                    0xd // TODO: This endpoint is hardcoded, replace with the correct endpoint.
                 )
 
             } catch (e: Exception) {

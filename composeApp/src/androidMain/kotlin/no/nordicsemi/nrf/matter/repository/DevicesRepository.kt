@@ -1,5 +1,16 @@
 package no.nordicsemi.nrf.matter.repository
 
+import android.content.Context
+import android.util.Log
+import androidx.datastore.core.IOException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.Devices
+import no.nordicsemi.nrf.matter.model.devicesDataStore
+
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -30,16 +41,6 @@ package no.nordicsemi.nrf.matter.repository
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import android.content.Context
-import android.util.Log
-import androidx.datastore.core.IOException
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
-import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceType
-import no.nordicsemi.nrf.matter.model.Devices
-import no.nordicsemi.nrf.matter.model.devicesDataStore
 
 class DevicesRepository(
     context: Context

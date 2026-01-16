@@ -31,7 +31,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -118,23 +117,8 @@ internal fun DeviceScreen(
     val deviceUiModel = deviceUiState.deviceUiModel
     Log.d("AAA", "DeviceRoute deviceUiModel [${deviceUiModel?.device?.deviceId}]")
 
-    // TODO: Implement remove device feature.
     val lastUpdatedDeviceState by deviceViewModel.lastUpdatedDeviceState.observeAsState()
 
-    // Controls whether the "remove device" alert dialog should be shown.
-    val showRemoveDeviceAlertDialog by deviceViewModel.showRemoveDeviceAlertDialog.collectAsState()
-    val onRemoveDeviceClick: () -> Unit = remember {
-        { deviceViewModel.showRemoveDeviceAlertDialog() }
-    }
-    val onRemoveDeviceOutcome: (doIt: Boolean) -> Unit = remember {
-        { doIt ->
-            deviceViewModel.dismissRemoveDeviceDialog()
-            if (doIt) {
-                deviceViewModel.removeDevice(deviceUiModel!!.device.deviceId)
-            }
-
-        }
-    }
     // TODO: On/Off Switch click.
     val onOnOffClick: (value: Boolean) -> Unit = remember {
         { value ->

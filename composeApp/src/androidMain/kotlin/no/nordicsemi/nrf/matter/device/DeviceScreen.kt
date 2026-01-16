@@ -152,7 +152,6 @@ internal fun DeviceScreen(
         deviceState.deviceId == deviceUiModel.device.deviceId
     }
 
-    var powerEnabled by remember { mutableStateOf(true) }
     LaunchedEffect(deviceUiModel, deviceState) {
 
         // Device state
@@ -228,8 +227,10 @@ internal fun DeviceScreen(
             DeviceHeader()
 
             PowerCard(
-                enabled = powerEnabled,
-                onToggle = { powerEnabled = it }
+                enabled = deviceUiModel.isOn,
+                onToggle = {
+                    onOnOffClick(it)
+                }
             )
 
             SectionTitle("Sharing")

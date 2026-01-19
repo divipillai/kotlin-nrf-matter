@@ -171,7 +171,7 @@ internal fun DeviceScreen(
     }
 
     // TODO: Implement remove device state here.
-    when (val removeState = deviceUiState.removeDeviceState) {
+    when (deviceUiState.removeDeviceState) {
         RemoveDeviceState.ConfirmRemove -> {
             AlertDialogView(
                 onDismiss = { deviceViewModel.updateRemoveDeviceState(RemoveDeviceState.Idle) },

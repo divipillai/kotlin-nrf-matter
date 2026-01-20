@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter.device
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -105,31 +104,15 @@ internal fun DeviceScreen(
     updateTitle: (title: String) -> Unit,
     deviceId: Long,
 ) {
-    Log.d("AAA", "DeviceRoute deviceId [$deviceId]")
-
-    // Launching GPS commissioning requires Activity.
     val deviceViewModel: DeviceViewModel = koinViewModel()
-
-
-    // Observes values needed by the DeviceScreen.
     val deviceUiState by deviceViewModel.deviceUiState.collectAsStateWithLifecycle()
     val deviceUiModel = deviceUiState.deviceUiModel
-    Log.d("AAA", "DeviceRoute deviceUiModel [${deviceUiModel?.device?.deviceId}]")
 
     val onOnOffClick: (value: Boolean) -> Unit = remember {
         { value ->
             deviceViewModel.updateDeviceStateOn(deviceUiModel!!, value)
         }
     }
-
-    // TODO: Add Inspect feature. isOnline must be provided in InspectScreen because it is updated there.
-
-    // TODO: Add Share Device feature.
-    // The device sharing flow involves multiple steps as it is based on an Activity
-
-
-    // FIXME
-    // When app is sent to the background, and pulled back, this kicks in.
 
     LaunchedEffect(Unit) {
         deviceViewModel.loadDevice(deviceId)
@@ -142,7 +125,6 @@ internal fun DeviceScreen(
         return
     }
 
-    // TODO: Implement remove device state here.
     when (deviceUiState.removeDeviceState) {
         RemoveDeviceState.ConfirmRemove -> {
             AlertDialogView(

@@ -180,7 +180,6 @@ class DeviceViewModel(
     // and the user has confirmed that the device should still be removed from the app's device
     // repository.
     fun removeDeviceWithoutUnlink(deviceId: Long) {
-        Log.d("AAA", "removeDeviceWithoutUnlink: [${deviceId}]")
         viewModelScope.launch {
             // Remove device from the app's devices repository.
             devicesRepository.removeDevice(deviceId)
@@ -195,10 +194,7 @@ class DeviceViewModel(
     // Device state (On/Off)
 
     fun updateDeviceStateOn(deviceUiModel: DeviceUiModel, isOn: Boolean) {
-        Log.d("AAA", "updateDeviceStateOn: isOn [${isOn}]")
         viewModelScope.launch {
-
-            Log.d("AAA", "Handling real device")
             try {
                 clustersHelper.setOnOffDeviceStateOnOffCluster(
                     deviceUiModel.device.deviceId,
@@ -208,7 +204,7 @@ class DeviceViewModel(
                 // We observe state changes there, so we'll get these updates
                 devicesStateRepository.updateDeviceState(deviceUiModel.device.deviceId, true, isOn)
             } catch (e: Throwable) {
-                Log.e("AAA", "Failed setting on/off state")
+                Log.e("UpdateDeviceState", "Failed setting on/off state on device: ${e.message}")
             }
         }
     }

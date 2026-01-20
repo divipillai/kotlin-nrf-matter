@@ -27,6 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -101,6 +102,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 internal fun DeviceScreen(
     innerPadding: PaddingValues,
+    snackbarHostState: SnackbarHostState,
     navigateToHome: () -> Unit,
     navigateToInspect: (deviceId: Long) -> Unit,
     updateTitle: (title: String) -> Unit,
@@ -199,9 +201,10 @@ internal fun DeviceScreen(
         }
 
         is RemoveDeviceState.Removed -> {
-            navigateToHome()
-            // TODO: Show snackbar "Device removed"
-
+            LaunchedEffect(Unit) {
+                snackbarHostState.showSnackbar("Device removed successfully.")
+                navigateToHome()
+            }
         }
 
         RemoveDeviceState.Removing -> {

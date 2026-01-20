@@ -16,6 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -66,6 +67,7 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigationLayout(navController: NavHostController) {
+    val snackbarHostState = remember { SnackbarHostState() }
     var topAppBarTitle by rememberSaveable { mutableStateOf("nRF Matter") }
     val updateTopAppBarTitle: (title: String) -> Unit = remember {
         { topAppBarTitle = it }
@@ -115,6 +117,6 @@ fun AppNavigationLayout(navController: NavHostController) {
             }
         }
     ) { innerPadding ->
-        AppNavigation(navController, innerPadding, updateTopAppBarTitle, onCommissionDevice)
+        AppNavigation(navController, innerPadding, snackbarHostState, updateTopAppBarTitle, onCommissionDevice)
     }
 }

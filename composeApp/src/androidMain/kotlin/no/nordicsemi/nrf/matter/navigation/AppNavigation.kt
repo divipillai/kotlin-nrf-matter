@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
@@ -50,13 +51,10 @@ const val DEST_INSPECT = "inspect"
 fun AppNavigation(
     navController: NavHostController,
     innerPadding: PaddingValues,
+    snackbarHostState: SnackbarHostState,
     updateTitle: (title: String) -> Unit,
     onCommissionDevice: () -> Unit
 ) {
-    // Lambdas to all destinations needed in our various routes.
-    // [Top level Route Composables should not be passed the navController explicitly,
-    // as NavController is an unstable type. Indirection like a lambda should be used
-    // as the compiler considers lambdas stable.]
     val navigateToHome: () -> Unit = remember {
         { navController.navigate(DEST_HOME) }
     }
@@ -80,6 +78,7 @@ fun AppNavigation(
         {
             DeviceScreen(
                 innerPadding,
+                snackbarHostState = snackbarHostState,
                 navigateToHome,
                 navigateToInspect,
                 updateTitle,

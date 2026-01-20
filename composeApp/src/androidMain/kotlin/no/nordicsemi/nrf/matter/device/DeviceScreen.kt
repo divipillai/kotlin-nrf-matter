@@ -32,7 +32,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -44,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.R
 import no.nordicsemi.nrf.matter.home.MatterGreen
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
@@ -107,6 +111,7 @@ internal fun DeviceScreen(
     val deviceViewModel: DeviceViewModel = koinViewModel()
     val deviceUiState by deviceViewModel.deviceUiState.collectAsStateWithLifecycle()
     val deviceUiModel = deviceUiState.deviceUiModel
+    var isRemoving by rememberSaveable { mutableStateOf(false) }
 
     val onOnOffClick: (value: Boolean) -> Unit = remember {
         { value ->
@@ -150,9 +155,11 @@ internal fun DeviceScreen(
 
         RemoveDeviceState.Idle -> {
             // Do nothing.
+            isRemoving = false
         }
 
         is RemoveDeviceState.Removed -> {
+            isRemoving = false
             LaunchedEffect(Unit) {
                 snackbarHostState.showSnackbar("Device removed successfully.")
                 navigateToHome()
@@ -160,8 +167,20 @@ internal fun DeviceScreen(
         }
 
         RemoveDeviceState.Removing -> {
+            isRemoving = true
             Loader {
-                Text("Removing device...")
+                Column {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Removing device...",
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "It might take a few seconds, please wait!",
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
             }
         }
     }
@@ -170,6 +189,7 @@ internal fun DeviceScreen(
         modifier = Modifier
             .padding(innerPadding)
             .fillMaxWidth()
+            .then(if (isRemoving) Modifier.cloudy() else Modifier)
     ) {
 
         Column(

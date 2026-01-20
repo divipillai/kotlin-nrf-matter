@@ -26,6 +26,7 @@ matterGoogleDemo = "1.0.0"
 runtimeLivedata = "1.9.4"
 runtimeLivedataVersion = "1.10.0"
 material3 = "1.4.0"
+cloudy = "0.5.0"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -53,6 +54,7 @@ play-services-home-types = { module = "com.google.android.gms:play-services-home
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedataVersion" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-material = { group = "androidx.compose.material", name = "material", version.ref = "material3" }
+compose-cloudy = { module = "com.github.skydoves:cloudy", version.ref = "cloudy" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

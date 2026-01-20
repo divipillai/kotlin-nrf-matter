@@ -33,10 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -119,9 +116,6 @@ internal fun DeviceScreen(
     val deviceUiModel = deviceUiState.deviceUiModel
     Log.d("AAA", "DeviceRoute deviceUiModel [${deviceUiModel?.device?.deviceId}]")
 
-    val lastUpdatedDeviceState by deviceViewModel.lastUpdatedDeviceState.observeAsState()
-
-    // TODO: On/Off Switch click.
     val onOnOffClick: (value: Boolean) -> Unit = remember {
         { value ->
             deviceViewModel.updateDeviceStateOn(deviceUiModel!!, value)
@@ -143,33 +137,9 @@ internal fun DeviceScreen(
 
     }
 
-    var isOnline by remember { mutableStateOf(false) }
-    var isOn by remember { mutableStateOf(false) }
-
     if (deviceUiModel == null) {
         Text("Still loading the device information")
         return
-    }
-    val deviceState = lastUpdatedDeviceState?.devicesStateList?.find { deviceState ->
-        deviceState.deviceId == deviceUiModel.device.deviceId
-    }
-
-    LaunchedEffect(deviceUiModel, deviceState) {
-
-        // Device state
-        deviceUiModel.let { model ->
-            isOnline =
-                when (deviceState) {
-                    null -> model.isOnline
-                    else -> deviceState.online
-                }
-            isOn =
-                when (deviceState) {
-                    null -> model.isOn
-                    else -> deviceState.on
-                }
-        }
-        Log.d("AAA", "deviceState: isOnline [$isOnline] isOn[$isOn]")
     }
 
     // TODO: Implement remove device state here.

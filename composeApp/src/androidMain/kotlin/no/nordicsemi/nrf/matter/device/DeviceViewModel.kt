@@ -203,7 +203,7 @@ class DeviceViewModel(
                 clustersHelper.setOnOffDeviceStateOnOffCluster(
                     deviceUiModel.device.deviceId,
                     isOn,
-                    1
+                    0xd // TODO: use proper endpoint
                 )
                 // We observe state changes there, so we'll get these updates
                 devicesStateRepository.updateDeviceState(deviceUiModel.device.deviceId, true, isOn)

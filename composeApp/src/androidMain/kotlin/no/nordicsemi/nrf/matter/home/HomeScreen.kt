@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.home.matter.Matter
 import com.google.android.gms.home.matter.commissioning.CommissioningRequest
 import no.nordicsemi.nrf.matter.service.AppCommissioningService
@@ -75,15 +75,11 @@ private fun HomeScreen(
     onCommissionDevice: () -> Unit,
 ) {
     val homeViewModel: HomeViewModel = koinViewModel()
-    val devicesUiModel by homeViewModel.devicesUiModelLiveData.observeAsState()
-    val devices = devicesUiModel?.devices
-    val devicesList = devices ?: emptyList()
+    val devicesUiModel by homeViewModel.devicesUiModelLiveData.collectAsStateWithLifecycle()
 
-    val onDeviceClick: (DeviceUiModel) -> Unit = remember {
-        {
-            // Show device details page.
-            navigateToDevice(it.device.deviceId)
-        }
+    val onDeviceClick: (DeviceUiModel) -> Unit = {
+        // Show device details page.
+        navigateToDevice(it.device.deviceId)
     }
     val onOnOffClick: (deviceId: Long, value: Boolean) -> Unit = remember {
         { deviceId, value ->
@@ -91,13 +87,13 @@ private fun HomeScreen(
         }
     }
     Box(modifier = Modifier.padding(innerPaddings)) {
-        if (devicesList.isEmpty()) {
+        if (devicesUiModel.devices.isEmpty()) {
             NoDevicesScreen(
                 onAddDeviceClick = { onCommissionDevice() }
             )
         } else {
             DeviceList(
-                devicesList,
+                devicesUiModel.devices,
                 onDeviceClick = onDeviceClick,
                 onOnOffClick = onOnOffClick
             )

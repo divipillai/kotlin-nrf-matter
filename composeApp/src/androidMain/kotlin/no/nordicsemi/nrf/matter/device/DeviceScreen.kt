@@ -113,9 +113,9 @@ internal fun DeviceScreen(
     val deviceUiModel = deviceUiState.deviceUiModel
     var isRemoving by rememberSaveable { mutableStateOf(false) }
 
-    val onOnOffClick: (value: Boolean) -> Unit = remember {
-        { value ->
-            deviceViewModel.updateDeviceStateOn(deviceUiModel!!, value)
+    val onOnOffClick: (deviceId: Long, value: Boolean) -> Unit = remember {
+        { deviceId, value ->
+            deviceViewModel.updateDevicePowerState(deviceId, value)
         }
     }
 
@@ -204,7 +204,7 @@ internal fun DeviceScreen(
             PowerCard(
                 enabled = deviceUiModel.isOn,
                 onToggle = {
-                    onOnOffClick(it)
+                    onOnOffClick(deviceUiModel.device.deviceId, it)
                 }
             )
 

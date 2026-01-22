@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import no.nordicsemi.nrf.matter.home.HomeViewModel
 import no.nordicsemi.nrf.matter.home.commissionDevice
@@ -73,9 +74,7 @@ fun AppNavigationLayout(navController: NavHostController) {
         { topAppBarTitle = it }
     }
     val homeViewModel: HomeViewModel = koinViewModel()
-    val devicesUiModel by homeViewModel.devicesUiModelLiveData.observeAsState()
-    val devices = devicesUiModel?.devices
-    val devicesList = devices ?: emptyList()
+    val devicesUiModel by homeViewModel.devicesUiModelLiveData.collectAsStateWithLifecycle()
 
     val commissionDeviceLauncher =
         rememberLauncherForActivityResult(
@@ -107,7 +106,7 @@ fun AppNavigationLayout(navController: NavHostController) {
         },
         floatingActionButton = {
             // Only show FAB if we already have devices
-            if (devicesList.isNotEmpty()) {
+            if (devicesUiModel.devices.isNotEmpty()) {
                 FloatingActionButton(
                     onClick = { onCommissionDevice() },
                     modifier = Modifier.padding(8.dp)

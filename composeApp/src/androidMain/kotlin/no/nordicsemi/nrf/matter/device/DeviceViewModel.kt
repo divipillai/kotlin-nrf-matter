@@ -157,18 +157,32 @@ class DeviceViewModel(
     // -----------------------------------------------------------------------------------------------
     // Device state (On/Off)
 
-    fun updateDeviceStateOn(deviceUiModel: DeviceUiModel, isOn: Boolean) {
+    fun updateDevicePowerState(deviceId: Long, isOn: Boolean) {
         viewModelScope.launch {
             try {
-                clustersHelper.setOnOffDeviceStateOnOffCluster(
-                    deviceUiModel.device.deviceId,
-                    isOn,
-                    0xd // TODO: use proper endpoint
+                devicesStateRepository.updateDeviceState(
+                    deviceId = deviceId,
+                    isOnline = true,
+                    isOn = isOn
                 )
-                // We observe state changes there, so we'll get these updates
-                devicesStateRepository.updateDeviceState(deviceUiModel.device.deviceId, true, isOn)
-            } catch (e: Throwable) {
-                Log.e("UpdateDeviceState", "Failed setting on/off state on device: ${e.message}")
+
+                clustersHelper.setOnOffDeviceStateOnOffCluster(
+                    deviceId,
+                    isOn,
+                    0xd // TODO: This endpoint is hardcoded, replace with the correct endpoint.
+                )
+
+            } catch (e: Exception) {
+                Log.d(
+                    "UpdateDeviceState",
+                    "Device state update failed with exception: [${e.message}] "
+                )
+                // Rollback on failure
+                devicesStateRepository.updateDeviceState(
+                    deviceId = deviceId,
+                    isOnline = false,
+                    isOn = !isOn
+                )
             }
         }
     }

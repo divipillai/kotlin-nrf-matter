@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.home
 
+import android.util.Log
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -280,6 +281,7 @@ internal fun DeviceList(
         // --- Section: Lights ---
         this.items(devicesList, key = { device -> device.device.deviceId }) { device ->
             SectionTitle("Lights")
+            Log.d("AAA", "DeviceList: ${device.device}")
             SwitchDeviceItem(
                 title = device.device.name ?: "Living Room Lamp",
                 subtitle = "Smart Light",

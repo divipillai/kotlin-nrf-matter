@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter
+package no.nordicsemi.nrf.matter.beacon
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-
+import no.nordicsemi.nrf.matter.BeaconRepository
+import no.nordicsemi.nrf.matter.MatterBeacon
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -39,7 +40,7 @@ import kotlinx.coroutines.flow.update
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-internal class MainViewModel(
+internal class BeaconViewModel(
     private val beaconRepository: BeaconRepository
 ) : ViewModel() {
     private val _beacon = MutableStateFlow<List<MatterBeacon>>(emptyList())

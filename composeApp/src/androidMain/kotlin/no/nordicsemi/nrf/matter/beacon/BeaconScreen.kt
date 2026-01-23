@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter
+package no.nordicsemi.nrf.matter.beacon
 
 import android.Manifest
 import android.content.Context
@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import no.nordicsemi.nrf.matter.MatterBeacon
 import org.koin.androidx.compose.koinViewModel
 
 /*
@@ -92,7 +93,7 @@ fun BeaconScreen() {
 @Composable
 fun BeaconContent(
 ) {
-    val viewModel: MainViewModel = koinViewModel()
+    val viewModel: BeaconViewModel = koinViewModel()
     val beacons by viewModel
         .beacon
         .collectAsState(initial = emptyList())

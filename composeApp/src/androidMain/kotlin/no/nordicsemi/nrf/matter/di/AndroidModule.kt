@@ -2,11 +2,11 @@ package no.nordicsemi.nrf.matter.di
 
 import android.bluetooth.BluetoothAdapter
 import no.nordicsemi.nrf.matter.AndroidMatterController
-import no.nordicsemi.nrf.matter.MainViewModel
+import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.MatterController
 import no.nordicsemi.nrf.matter.chip.ChipClient
-import no.nordicsemi.nrf.matter.commisionable.MatterBeaconProducerBle
+import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
 import no.nordicsemi.nrf.matter.device.DeviceViewModel
 import no.nordicsemi.nrf.matter.home.HomeViewModel
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
@@ -66,7 +66,7 @@ val androidModule = module {
     single<DevicesStateRepository> { DevicesStateRepository(androidContext()) }
     single<UserPreferencesRepository> { UserPreferencesRepository(androidContext()) }
     // Binding Viewmodel
-    viewModel { MainViewModel(get()) }
+    viewModel { BeaconViewModel(get()) }
     viewModel { HomeViewModel(get(), get(), get(), get()) }
     viewModel { DeviceViewModel(get(), get(), get()) }
 }

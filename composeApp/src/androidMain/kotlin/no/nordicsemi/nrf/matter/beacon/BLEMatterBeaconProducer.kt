@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.commisionable
+package no.nordicsemi.nrf.matter.beacon
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -30,6 +30,7 @@ package no.nordicsemi.nrf.matter.commisionable
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -43,6 +44,7 @@ import android.content.Context.BLUETOOTH_SERVICE
 import android.os.ParcelUuid
 import android.os.SystemClock
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -114,6 +116,7 @@ import java.util.concurrent.ConcurrentHashMap
     // ---------------------------------------------------------------------------
     // Utility functions
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun ScanResult.toMatterBeaconOrNull(): MatterBeacon? {
         val data = scanRecord?.bytes ?: return null
         // Full record must be at least 14 bytes.

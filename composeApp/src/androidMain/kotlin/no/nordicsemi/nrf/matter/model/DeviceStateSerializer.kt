@@ -36,32 +36,25 @@ import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import no.nordicsemi.nrf.matter.serialization.DevicesStateJson
 import java.io.InputStream
 import java.io.OutputStream
-import kotlin.time.ExperimentalTime
 
 object DevicesStateJsonSerializer : Serializer<DevicesState> {
 
     override val defaultValue: DevicesState = DevicesState()
 
-    override suspend fun readFrom(input: InputStream): DevicesState {
-        return try {
-            val text = input.readBytes().decodeToString()
-            if (text.isBlank()) defaultValue
-            else Json.decodeFromString(text)
+    override suspend fun readFrom(input: InputStream): DevicesState =
+        try {
+            DevicesStateJson.decode(input.readBytes().decodeToString())
         } catch (e: Exception) {
             throw CorruptionException("Cannot read Devices JSON.", e)
         }
-    }
 
-    override suspend fun writeTo(
-        t: DevicesState,
-        output: OutputStream
-    ) {
-        val text = Json.encodeToString(t)
-        output.write(text.encodeToByteArray())
+    override suspend fun writeTo(t: DevicesState, output: OutputStream) {
+        output.write(
+            DevicesStateJson.encode(t).encodeToByteArray()
+        )
     }
 }
 

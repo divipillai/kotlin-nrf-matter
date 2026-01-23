@@ -1,13 +1,6 @@
 package no.nordicsemi.nrf.matter.model
 
-import android.content.Context
-import androidx.datastore.core.CorruptionException
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.Serializer
-import androidx.datastore.dataStore
-import kotlinx.serialization.json.Json
-import java.io.InputStream
-import java.io.OutputStream
+import kotlinx.serialization.Serializable
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -40,27 +33,32 @@ import java.io.OutputStream
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-object DevicesJsonSerializer : Serializer<Devices> {
+@Serializable
+data class Device(
+    val dateCommissioned: Long? = null,
+    val vendorId: String? = null,
+    val productId: String? = null,
+    val deviceType: DeviceType = DeviceType.UNKNOWN, // TODO: device type is no longer provided by the DeviceDescriptor.
+    val deviceId: Long = 0L,
+    val name: String? = null,
+//    val room: String? = null, todo: Removed since it is deprecated in the Matter API.
+    val productName: String? = null,
+    val vendorName: String? = null
+)
 
-    override val defaultValue: Devices = Devices()
-
-    override suspend fun readFrom(input: InputStream): Devices {
-        return try {
-            val text = input.readBytes().decodeToString()
-            if (text.isBlank()) defaultValue
-            else Json.decodeFromString(text)
-        } catch (e: Exception) {
-            throw CorruptionException("Cannot read Devices JSON.", e)
-        }
-    }
-
-    override suspend fun writeTo(t: Devices, output: OutputStream) {
-        val text = Json.encodeToString(t)
-        output.write(text.encodeToByteArray())
-    }
+@Serializable
+enum class DeviceType {
+    UNKNOWN,
+    LIGHT_ON_OFF,
+    DIMMABLE_LIGHT,
+    LIGHT_SWITCH,
+    OUTLET,
+    COLOR_TEMPERATURE_LIGHT,
+    EXTENDED_COLOR_LIGHT, ;
 }
 
-val Context.devicesDataStore: DataStore<Devices> by dataStore(
-    fileName = "devices_store.json",
-    serializer = DevicesJsonSerializer
+@Serializable
+data class Devices(
+    val lastDeviceId: Long = 0L,
+    val devicesList: List<Device> = emptyList()
 )

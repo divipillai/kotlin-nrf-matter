@@ -1,5 +1,8 @@
 package no.nordicsemi.nrf.matter.model
 
+import kotlinx.serialization.Serializable
+import kotlin.time.ExperimentalTime
+
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -31,39 +34,29 @@ package no.nordicsemi.nrf.matter.model
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import android.content.Context
-import androidx.datastore.core.CorruptionException
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.Serializer
-import androidx.datastore.dataStore
-import no.nordicsemi.nrf.matter.serialization.DevicesStateJson
-import java.io.InputStream
-import java.io.OutputStream
-
-object DevicesStateJsonSerializer : Serializer<DevicesState> {
-
-    override val defaultValue: DevicesState = DevicesState()
-
-    override suspend fun readFrom(input: InputStream): DevicesState =
-        try {
-            DevicesStateJson.decode(input.readBytes().decodeToString())
-        } catch (e: Exception) {
-            throw CorruptionException("Cannot read Devices JSON.", e)
-        }
-
-    override suspend fun writeTo(t: DevicesState, output: OutputStream) {
-        output.write(
-            DevicesStateJson.encode(t).encodeToByteArray()
-        )
-    }
-}
-
-
 /**
- * DataStore to persist the dynamic state of a Matter device.
- *
+ * Info about the dynamic state of a Matter device that is persisted in a DataStore.
  */
-val Context.devicesStateDataStore: DataStore<DevicesState> by dataStore(
-    fileName = "devices_state_store.json",
-    serializer = DevicesStateJsonSerializer
+@Serializable
+data class DeviceState @OptIn(ExperimentalTime::class) constructor(
+    /** Timestamp when the state was captured. */
+    val dateCaptured: kotlin.time.Instant,
+
+    /** Device ID within the app's fabric. */
+    val deviceId: Long,
+
+    /** Whether the device is offline (false) or online (true). */
+    val online: Boolean,
+
+    /**
+     * Whether the device is off (false) or on (true).
+     * Value should be disregarded if the device is offline.
+     */
+    val on: Boolean
+)
+
+
+@Serializable
+data class DevicesState(
+    val devicesStateList: List<DeviceState> = emptyList()
 )

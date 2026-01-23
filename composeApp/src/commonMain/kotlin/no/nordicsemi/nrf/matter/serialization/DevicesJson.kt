@@ -1,13 +1,7 @@
-package no.nordicsemi.nrf.matter.model
+package no.nordicsemi.nrf.matter.serialization
 
-import android.content.Context
-import androidx.datastore.core.CorruptionException
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.Serializer
-import androidx.datastore.dataStore
-import no.nordicsemi.nrf.matter.serialization.DevicesJson
-import java.io.InputStream
-import java.io.OutputStream
+import kotlinx.serialization.json.Json
+import no.nordicsemi.nrf.matter.model.Devices
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -40,25 +34,17 @@ import java.io.OutputStream
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-object DevicesJsonSerializer : Serializer<Devices> {
+object DevicesJson {
 
-    override val defaultValue: Devices = Devices()
-
-    override suspend fun readFrom(input: InputStream): Devices =
-        try {
-            DevicesJson.decode(input.readBytes().decodeToString())
-        } catch (e: Exception) {
-            throw CorruptionException("Cannot read Devices JSON.", e)
-        }
-
-    override suspend fun writeTo(t: Devices, output: OutputStream) {
-        output.write(
-            DevicesJson.encode(t).encodeToByteArray()
-        )
+    private val json = Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
     }
-}
 
-val Context.devicesDataStore: DataStore<Devices> by dataStore(
-    fileName = "devices_store.json",
-    serializer = DevicesJsonSerializer
-)
+    fun encode(devices: Devices): String =
+        json.encodeToString(devices)
+
+    fun decode(text: String): Devices =
+        if (text.isBlank()) Devices()
+        else json.decodeFromString(text)
+}

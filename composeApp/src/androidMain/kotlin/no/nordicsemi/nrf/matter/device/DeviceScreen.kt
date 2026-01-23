@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter.device
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,15 +26,15 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.R
 import no.nordicsemi.nrf.matter.home.MatterGreen
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
@@ -102,54 +102,22 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 internal fun DeviceScreen(
     innerPadding: PaddingValues,
+    snackbarHostState: SnackbarHostState,
     navigateToHome: () -> Unit,
     navigateToInspect: (deviceId: Long) -> Unit,
     updateTitle: (title: String) -> Unit,
     deviceId: Long,
 ) {
-    Log.d("AAA", "DeviceRoute deviceId [$deviceId]")
-
-    // Launching GPS commissioning requires Activity.
     val deviceViewModel: DeviceViewModel = koinViewModel()
-
-
-    // Observes values needed by the DeviceScreen.
     val deviceUiState by deviceViewModel.deviceUiState.collectAsStateWithLifecycle()
     val deviceUiModel = deviceUiState.deviceUiModel
-    Log.d("AAA", "DeviceRoute deviceUiModel [${deviceUiModel?.device?.deviceId}]")
+    var isRemoving by rememberSaveable { mutableStateOf(false) }
 
-    // TODO: Implement remove device feature.
-    val lastUpdatedDeviceState by deviceViewModel.lastUpdatedDeviceState.observeAsState()
-
-    // Controls whether the "remove device" alert dialog should be shown.
-    val showRemoveDeviceAlertDialog by deviceViewModel.showRemoveDeviceAlertDialog.collectAsState()
-    val onRemoveDeviceClick: () -> Unit = remember {
-        { deviceViewModel.showRemoveDeviceAlertDialog() }
-    }
-    val onRemoveDeviceOutcome: (doIt: Boolean) -> Unit = remember {
-        { doIt ->
-            deviceViewModel.dismissRemoveDeviceDialog()
-            if (doIt) {
-                deviceViewModel.removeDevice(deviceUiModel!!.device.deviceId)
-            }
-
+    val onOnOffClick: (deviceId: Long, value: Boolean) -> Unit = remember {
+        { deviceId, value ->
+            deviceViewModel.updateDevicePowerState(deviceId, value)
         }
     }
-    // TODO: On/Off Switch click.
-    val onOnOffClick: (value: Boolean) -> Unit = remember {
-        { value ->
-            deviceViewModel.updateDeviceStateOn(deviceUiModel!!, value)
-        }
-    }
-
-    // TODO: Add Inspect feature. isOnline must be provided in InspectScreen because it is updated there.
-
-    // TODO: Add Share Device feature.
-    // The device sharing flow involves multiple steps as it is based on an Activity
-
-
-    // FIXME
-    // When app is sent to the background, and pulled back, this kicks in.
 
     LaunchedEffect(Unit) {
         deviceViewModel.loadDevice(deviceId)
@@ -157,38 +125,12 @@ internal fun DeviceScreen(
 
     }
 
-    var isOnline by remember { mutableStateOf(false) }
-    var isOn by remember { mutableStateOf(false) }
-
     if (deviceUiModel == null) {
         Text("Still loading the device information")
         return
     }
-    val deviceState = lastUpdatedDeviceState?.devicesStateList?.find { deviceState ->
-        deviceState.deviceId == deviceUiModel.device.deviceId
-    }
 
-    var powerEnabled by remember { mutableStateOf(true) }
-    LaunchedEffect(deviceUiModel, deviceState) {
-
-        // Device state
-        deviceUiModel.let { model ->
-            isOnline =
-                when (deviceState) {
-                    null -> model.isOnline
-                    else -> deviceState.online
-                }
-            isOn =
-                when (deviceState) {
-                    null -> model.isOn
-                    else -> deviceState.on
-                }
-        }
-        Log.d("AAA", "deviceState: isOnline [$isOnline] isOn[$isOn]")
-    }
-
-    // TODO: Implement remove device state here.
-    when (val removeState = deviceUiState.removeDeviceState) {
+    when (deviceUiState.removeDeviceState) {
         RemoveDeviceState.ConfirmRemove -> {
             AlertDialogView(
                 onDismiss = { deviceViewModel.updateRemoveDeviceState(RemoveDeviceState.Idle) },
@@ -213,17 +155,32 @@ internal fun DeviceScreen(
 
         RemoveDeviceState.Idle -> {
             // Do nothing.
+            isRemoving = false
         }
 
         is RemoveDeviceState.Removed -> {
-            navigateToHome()
-            // TODO: Show snackbar "Device removed"
-
+            isRemoving = false
+            LaunchedEffect(Unit) {
+                snackbarHostState.showSnackbar("Device removed successfully.")
+                navigateToHome()
+            }
         }
 
         RemoveDeviceState.Removing -> {
+            isRemoving = true
             Loader {
-                Text("Removing device...")
+                Column {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Removing device...",
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "It might take a few seconds, please wait!",
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
             }
         }
     }
@@ -232,6 +189,7 @@ internal fun DeviceScreen(
         modifier = Modifier
             .padding(innerPadding)
             .fillMaxWidth()
+            .then(if (isRemoving) Modifier.cloudy() else Modifier)
     ) {
 
         Column(
@@ -244,8 +202,10 @@ internal fun DeviceScreen(
             DeviceHeader()
 
             PowerCard(
-                enabled = powerEnabled,
-                onToggle = { powerEnabled = it }
+                enabled = deviceUiModel.isOn,
+                onToggle = {
+                    onOnOffClick(deviceUiModel.device.deviceId, it)
+                }
             )
 
             SectionTitle("Sharing")

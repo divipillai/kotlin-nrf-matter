@@ -2,10 +2,9 @@ package no.nordicsemi.nrf.matter.repository
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DevicesState
 import no.nordicsemi.nrf.matter.model.devicesStateDataStore
@@ -47,14 +46,17 @@ import kotlin.time.ExperimentalTime
 /**
  * Singleton repository that updates the dynamic state of the devices on the homesampleapp fabric.
  */
-class DevicesStateRepository(context: Context) {
+class DevicesStateRepository(private val context: Context) {
 
     // The datastore managed by DevicesStateRepository.
-    private val devicesStateDataStore = context.devicesStateDataStore
+    private val devicesStateDataStore = context.devicesStateDataStore.data.map {
+        Log.d("AAA", "devicesStateDataStore: $it")
+        it
+    }
 
     // The Flow to read data from the DataStore.
     val devicesStateFlow =
-        devicesStateDataStore.data.catch { exception ->
+        devicesStateDataStore.catch { exception ->
             // dataStore.data throws an IOException when an error is encountered when reading data
             if (exception is IOException) {
                 Log.e("AAA", "Error reading devicesState.$exception")
@@ -64,11 +66,6 @@ class DevicesStateRepository(context: Context) {
             }
         }
 
-    /** The latest device state update */
-    private val _lastUpdatedDeviceState = MutableLiveData(DevicesState())
-    val lastUpdatedDeviceState: LiveData<DevicesState>
-        get() = _lastUpdatedDeviceState
-
     /** Add Device State to the datastore */
     @OptIn(ExperimentalTime::class)
     suspend fun addDeviceState(
@@ -76,8 +73,7 @@ class DevicesStateRepository(context: Context) {
         isOnline: Boolean,
         isOn: Boolean
     ) {
-        val updatedState = devicesStateDataStore.updateData { currentState ->
-
+        context.devicesStateDataStore.updateData { currentState ->
             val updatedDevices = currentState.devicesStateList
                 .filterNot { it.deviceId == deviceId } + // remove old entry if exists
                     DeviceState(
@@ -89,8 +85,6 @@ class DevicesStateRepository(context: Context) {
 
             currentState.copy(devicesStateList = updatedDevices)
         }
-
-        _lastUpdatedDeviceState.postValue(updatedState)
     }
 
 
@@ -100,34 +94,25 @@ class DevicesStateRepository(context: Context) {
         isOnline: Boolean,
         isOn: Boolean
     ) {
-        var wasUpdated = false
+        context.devicesStateDataStore.updateData { currentState ->
+            val exists = currentState.devicesStateList.any { it.deviceId == deviceId }
 
-        val updatedDevicesState = devicesStateDataStore.updateData { currentState ->
-
-            val updatedDevices = currentState.devicesStateList.map { deviceState ->
-                if (deviceState.deviceId == deviceId) {
-                    wasUpdated = true
-                    deviceState.copy(
-                        dateCaptured = Clock.System.now(),
-                        online = isOnline,
-                        on = isOn
-                    )
-                } else {
-                    deviceState
+            val updatedList = if (exists) {
+                currentState.devicesStateList.map { device ->
+                    if (device.deviceId == deviceId) {
+                        device.copy(online = isOnline, on = isOn, dateCaptured = Clock.System.now())
+                    } else device
                 }
+            } else {
+                currentState.devicesStateList + DeviceState(
+                    deviceId = deviceId,
+                    online = isOnline,
+                    on = isOn,
+                    dateCaptured = Clock.System.now()
+                )
             }
 
-            currentState.copy(devicesStateList = updatedDevices)
-        }
-
-        if (wasUpdated) {
-            _lastUpdatedDeviceState.postValue(updatedDevicesState)
-        } else {
-            Log.w(
-                "AAA",
-                "We did not find device [$deviceId] in devicesStateRepository; it should have been there???"
-            )
-            addDeviceState(deviceId, isOnline = isOnline, isOn = isOn)
+            currentState.copy(devicesStateList = updatedList)
         }
     }
 
@@ -144,7 +129,7 @@ class DevicesStateRepository(context: Context) {
     }
 
     suspend fun clearAllData() {
-        devicesStateDataStore.updateData {
+        context.devicesStateDataStore.updateData {
             DevicesState()
         }
     }

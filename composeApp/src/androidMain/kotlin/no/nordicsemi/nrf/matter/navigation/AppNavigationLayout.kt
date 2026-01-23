@@ -16,6 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import no.nordicsemi.nrf.matter.home.HomeViewModel
 import no.nordicsemi.nrf.matter.home.commissionDevice
@@ -66,14 +68,13 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigationLayout(navController: NavHostController) {
+    val snackbarHostState = remember { SnackbarHostState() }
     var topAppBarTitle by rememberSaveable { mutableStateOf("nRF Matter") }
     val updateTopAppBarTitle: (title: String) -> Unit = remember {
         { topAppBarTitle = it }
     }
     val homeViewModel: HomeViewModel = koinViewModel()
-    val devicesUiModel by homeViewModel.devicesUiModelLiveData.observeAsState()
-    val devices = devicesUiModel?.devices
-    val devicesList = devices ?: emptyList()
+    val devicesUiModel by homeViewModel.devicesUiModelLiveData.collectAsStateWithLifecycle()
 
     val commissionDeviceLauncher =
         rememberLauncherForActivityResult(
@@ -105,7 +106,7 @@ fun AppNavigationLayout(navController: NavHostController) {
         },
         floatingActionButton = {
             // Only show FAB if we already have devices
-            if (devicesList.isNotEmpty()) {
+            if (devicesUiModel.devices.isNotEmpty()) {
                 FloatingActionButton(
                     onClick = { onCommissionDevice() },
                     modifier = Modifier.padding(8.dp)
@@ -115,6 +116,6 @@ fun AppNavigationLayout(navController: NavHostController) {
             }
         }
     ) { innerPadding ->
-        AppNavigation(navController, innerPadding, updateTopAppBarTitle, onCommissionDevice)
+        AppNavigation(navController, innerPadding, snackbarHostState, updateTopAppBarTitle, onCommissionDevice)
     }
 }

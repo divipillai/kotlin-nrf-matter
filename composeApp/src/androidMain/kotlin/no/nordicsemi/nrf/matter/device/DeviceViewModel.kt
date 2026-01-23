@@ -74,31 +74,7 @@ class DeviceViewModel(
     private val _deviceUiState = MutableStateFlow(DeviceUiState())
     val deviceUiState: StateFlow<DeviceUiState> = _deviceUiState.asStateFlow()
 
-    val lastUpdatedDeviceState = devicesStateRepository.lastUpdatedDeviceState
-
-
-    // Controls whether the "Remove Device" AlertDialog should be shown in the UI.
-    private var _showRemoveDeviceAlertDialog = MutableStateFlow(false)
-    val showRemoveDeviceAlertDialog: StateFlow<Boolean> = _showRemoveDeviceAlertDialog.asStateFlow()
-
-    // Controls whether a periodic ping to the device is enabled or not.
-    private var devicePeriodicPingEnabled: Boolean = true
-
-
-    // Communicates to the UI that removal of the device has completed successfully.
-    // See resetDeviceRemovalCompleted() to reset this state after being handled by the UI.
-    private var _deviceRemovalCompleted = MutableStateFlow(false)
-    val deviceRemovalCompleted: StateFlow<Boolean> = _deviceRemovalCompleted.asStateFlow()
-
-    // Communicates to the UI that the pairing window is open for device sharing.
-    // See resetPairingWindowOpenForDeviceSharing() to reset this state after being handled by the UI.
-    private var _pairingWindowOpenForDeviceSharing = MutableStateFlow(false)
-    val pairingWindowOpenForDeviceSharing: StateFlow<Boolean> =
-        _pairingWindowOpenForDeviceSharing.asStateFlow()
-
-    // -----------------------------------------------------------------------------------------------
     // Load device
-
     fun loadDevice(deviceId: Long) {
         if (deviceId == _deviceUiState.value.deviceUiModel?.device?.deviceId) {
             return
@@ -123,25 +99,15 @@ class DeviceViewModel(
     }
 
     // -----------------------------------------------------------------------------------------------
-    // Share Device (aka Multi-Admin)
-
-    // TODO: Implement multi-admin.
-
-
-    // -----------------------------------------------------------------------------------------------
     // Remove device
 
     // Removes the device. First we remove the fabric from the device, and then we remove the
     // device from the app's devices repository.
-    // Note that unlinking the device may take a while if the device is offline. Because of that,
-    // a MsgAlertDIalog is shown, without any confirm button, to let the user know that unlinking
-    // may take a while. That way the user is not left hanging wondering what is going on.
-    // If removing the fabric from the device fails (e.g. device is offline), then another dialog
+    // Note that unlinking the device may take a while if the device is offline.
+    // If removing the fabric from the device fails (e.g. device is offline), then a dialog
     // is shown so the user has the option to force remove the device without unlinking
     // the fabric at the device. If a forced removal is selected, then function
     // removeDeviceWithoutUnlink is called.
-    // TODO: The device will still be linked to the local Android fabric. We should remove all the
-    // fabrics at the device.
     fun removeDevice(deviceId: Long) {
         _deviceUiState.update {
             it.copy(removeDeviceState = RemoveDeviceState.Removing)
@@ -150,7 +116,7 @@ class DeviceViewModel(
             try {
                 chipClient.awaitUnpairDevice(deviceId)
             } catch (e: Exception) {
-                Log.e("AAA", "Unlinking the device failed with exception: [${e.message}]")
+                Log.e("RemoveDevice", "Unlinking the device failed with exception: [${e.message}]")
                 // Error on removing device. Show error dialog with an option to force remove.
                 updateRemoveDeviceState(RemoveDeviceState.ForceRemove(deviceId))
                 return@launch
@@ -173,18 +139,15 @@ class DeviceViewModel(
         }
     }
 
-
     // Removes the device from the app's devices repository, and does not unlink the fabric
     // from the device.
     // This function is called after removeDevice() has failed trying to unlink the device
     // and the user has confirmed that the device should still be removed from the app's device
     // repository.
     fun removeDeviceWithoutUnlink(deviceId: Long) {
-        Log.d("AAA", "removeDeviceWithoutUnlink: [${deviceId}]")
         viewModelScope.launch {
             // Remove device from the app's devices repository.
             devicesRepository.removeDevice(deviceId)
-            _deviceRemovalCompleted.value = true
             // Notify UI so we navigate back to Home screen.
             updateRemoveDeviceState(RemoveDeviceState.Removed(deviceId))
         }
@@ -194,37 +157,34 @@ class DeviceViewModel(
     // -----------------------------------------------------------------------------------------------
     // Device state (On/Off)
 
-    fun updateDeviceStateOn(deviceUiModel: DeviceUiModel, isOn: Boolean) {
-        Log.d("AAA", "updateDeviceStateOn: isOn [${isOn}]")
+    fun updateDevicePowerState(deviceId: Long, isOn: Boolean) {
         viewModelScope.launch {
-
-            Log.d("AAA", "Handling real device")
             try {
-                clustersHelper.setOnOffDeviceStateOnOffCluster(
-                    deviceUiModel.device.deviceId,
-                    isOn,
-                    1
+                devicesStateRepository.updateDeviceState(
+                    deviceId = deviceId,
+                    isOnline = true,
+                    isOn = isOn
                 )
-                // We observe state changes there, so we'll get these updates
-                devicesStateRepository.updateDeviceState(deviceUiModel.device.deviceId, true, isOn)
-            } catch (e: Throwable) {
-                Log.e("AAA", "Failed setting on/off state")
+
+                clustersHelper.setOnOffDeviceStateOnOffCluster(
+                    deviceId,
+                    isOn,
+                    0xd // TODO: This endpoint is hardcoded, replace with the correct endpoint.
+                )
+
+            } catch (e: Exception) {
+                Log.d(
+                    "UpdateDeviceState",
+                    "Device state update failed with exception: [${e.message}] "
+                )
+                // Rollback on failure
+                devicesStateRepository.updateDeviceState(
+                    deviceId = deviceId,
+                    isOnline = false,
+                    isOn = !isOn
+                )
             }
         }
-    }
-
-    private fun stopDevicePeriodicPing() {
-        devicePeriodicPingEnabled = false
-    }
-
-    fun showRemoveDeviceAlertDialog() {
-        Log.d("AAA", "showRemoveDeviceAlertDialog")
-        _showRemoveDeviceAlertDialog.value = true
-    }
-
-    fun dismissRemoveDeviceDialog() {
-        Log.d("AAA", "dismissRemoveDeviceDialog")
-        _showRemoveDeviceAlertDialog.value = false
     }
 
 }

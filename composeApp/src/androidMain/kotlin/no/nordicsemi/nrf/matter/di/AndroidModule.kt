@@ -1,9 +1,7 @@
 package no.nordicsemi.nrf.matter.di
 
 import android.bluetooth.BluetoothAdapter
-import no.nordicsemi.nrf.matter.AndroidMatterController
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.MatterController
 import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
 import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
 import no.nordicsemi.nrf.matter.chip.ChipClient
@@ -66,7 +64,6 @@ val androidModule = module {
     }
     single<ChipClient> { ChipClient(context = androidContext()) }
 
-    single<MatterController> { AndroidMatterController(get()) }
     // NOTE to myself: even though I have it in the common module, it also need to be declared in each module.
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(androidContext()) }

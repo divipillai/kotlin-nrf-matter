@@ -1,10 +1,7 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.repository
 
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.repository.DevicesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import org.koin.dsl.module
+import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.model.Devices
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -37,9 +34,17 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val commonModule = module {
-    single { BeaconRepository(get<MatterBeaconProducer>()) }
-    // Binding in the common module
-    single{ DevicesRepository(get <DevicesDataSource>()) }
-}
+class SettingsDevicesDataSource(
+) : DevicesDataSource {
+    override val devicesFlow: Flow<Devices>
+        get() = TODO("Not yet implemented")
 
+    override suspend fun update(transform: (Devices) -> Devices) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun removeDevice(deviceId: Long) {
+        TODO("Not yet implemented")
+    }
+
+}

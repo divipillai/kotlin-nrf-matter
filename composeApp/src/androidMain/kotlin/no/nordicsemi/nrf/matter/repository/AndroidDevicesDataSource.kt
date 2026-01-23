@@ -1,10 +1,11 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.repository
 
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.repository.DevicesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import org.koin.dsl.module
+import android.content.Context
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import no.nordicsemi.nrf.matter.model.Devices
+import no.nordicsemi.nrf.matter.model.devicesDataStore
+import java.io.IOException
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -37,9 +38,42 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val commonModule = module {
-    single { BeaconRepository(get<MatterBeaconProducer>()) }
-    // Binding in the common module
-    single{ DevicesRepository(get <DevicesDataSource>()) }
-}
+internal class AndroidDevicesDataSource(
+    context: Context
+) : DevicesDataSource {
+    private val dataStore = context.devicesDataStore
+    override val devicesFlow: Flow<Devices> =
+        dataStore.data
+            .catch { e ->
+                if (e is IOException) {
+                    emit(Devices())
+                } else {
+                    throw e
+                }
+            }
 
+
+    override suspend fun update(transform: (Devices) -> Devices) {
+        try {
+            dataStore.updateData(transform)
+        } catch (e: IOException) {
+            // log & rethrow or map to domain error
+            throw e
+        }
+    }
+
+    override suspend fun removeDevice(deviceId: Long) {
+        dataStore.updateData { devices ->
+            if (devices.devicesList.none { it.deviceId == deviceId }) {
+                throw IllegalStateException("Device not found: $deviceId")
+            }
+
+            devices.copy(
+                devicesList = devices.devicesList.filterNot {
+                    it.deviceId == deviceId
+                }
+            )
+        }
+    }
+
+}

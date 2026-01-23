@@ -1,9 +1,8 @@
 package no.nordicsemi.nrf.matter.di
 
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.repository.DevicesDataSource
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
+import no.nordicsemi.nrf.matter.repository.SettingsDevicesDataSource
 import org.koin.dsl.module
 
 /*
@@ -37,9 +36,13 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val commonModule = module {
-    single { BeaconRepository(get<MatterBeaconProducer>()) }
-    // Binding in the common module
-    single{ DevicesRepository(get <DevicesDataSource>()) }
-}
+val iosModule = module {
 
+    single<DevicesDataSource> {
+        SettingsDevicesDataSource()
+    }
+
+    single {
+        DevicesRepository(dataSource = get())
+    }
+}

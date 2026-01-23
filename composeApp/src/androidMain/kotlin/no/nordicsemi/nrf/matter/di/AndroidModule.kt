@@ -2,13 +2,15 @@ package no.nordicsemi.nrf.matter.di
 
 import android.bluetooth.BluetoothAdapter
 import no.nordicsemi.nrf.matter.AndroidMatterController
-import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.MatterController
-import no.nordicsemi.nrf.matter.chip.ChipClient
+import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
 import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
+import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.device.DeviceViewModel
 import no.nordicsemi.nrf.matter.home.HomeViewModel
+import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
+import no.nordicsemi.nrf.matter.repository.DevicesDataSource
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
@@ -59,10 +61,14 @@ val androidModule = module {
             context = androidContext()
         )
     }
+    single<DevicesDataSource> {
+        AndroidDevicesDataSource(androidContext())
+    }
     single<ChipClient> { ChipClient(context = androidContext()) }
 
     single<MatterController> { AndroidMatterController(get()) }
-    single<DevicesRepository> { DevicesRepository(androidContext()) }
+    // NOTE to myself: even though I have it in the common module, it also need to be declared in each module.
+    single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(androidContext()) }
     single<UserPreferencesRepository> { UserPreferencesRepository(androidContext()) }
     // Binding Viewmodel

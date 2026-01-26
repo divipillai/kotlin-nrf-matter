@@ -6,19 +6,12 @@ import androidx.activity.result.ActivityResult
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
-import no.nordicsemi.nrf.matter.model.Devices
-import no.nordicsemi.nrf.matter.model.DevicesState
-import no.nordicsemi.nrf.matter.model.UserPreferences
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
@@ -54,38 +47,21 @@ import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Encapsulates all of the information on a specific device. Note that the app currently only
- * supports Matter devices with server attribute "ON/OFF".
- */
-data class DeviceUiModel(
-    // Device information that is persisted in a Proto DataStore. See DevicesRepository.
-    val device: Device,
-
-    // Device state information that is retrieved dynamically.
-    // Whether the device is online or offline.
-    val isOnline: Boolean,
-    // Whether the device is on or off.
-    val isOn: Boolean,
-)
-
-/**
- * UI model that encapsulates the information about the devices to be displayed on the Home screen.
- */
-data class DevicesListUiModel(
-    // The list of devices.
-    val devices: List<DeviceUiModel>,
-
-    // Whether offline devices should be shown.
-    val showOfflineDevices: Boolean,
-)
-
-class HomeViewModel(
+class HomeViewModelAndroid(
     context: Context,
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
-    private val userPreferencesRepository: UserPreferencesRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
+
+    private val baseViewModel = HomeViewModel(
+        devicesRepository,
+        devicesStateRepository,
+        userPreferencesRepository,
+        viewModelScope
+    )
+    val devicesUiModelLiveData = baseViewModel.devicesUiModelFlow
+
     private var gpsCommissioningResult: CommissioningResult? = null
     val chipsClient: ChipClient = ChipClient(context)
     val clustersHelper: ClustersHelper = ClustersHelper(chipsClient)
@@ -160,7 +136,6 @@ class HomeViewModel(
                     }
                     if (deviceMatterInfo.types.size > 1) {
                         // TODO: Handle this properly once we have specific examples to learn from.
-                        // TODO: Handle this properly once we have specific examples to learn from.
                         devicesRepository.updateDeviceType(
                             deviceId,
                             convertToAppDeviceType(deviceMatterInfo.types.first()),
@@ -182,21 +157,21 @@ class HomeViewModel(
     fun updateDeviceStateOn(deviceId: Long, isOn: Boolean) {
         viewModelScope.launch {
             try {
-                devicesStateRepository.updateDeviceState(
-                    deviceId = deviceId,
-                    isOnline = true,
-                    isOn = isOn
-                )
-
                 clustersHelper.setOnOffDeviceStateOnOffCluster(
                     deviceId,
                     isOn,
                     0xd // TODO: This endpoint is hardcoded, replace with the correct endpoint.
                 )
+                baseViewModel.updateDeviceState(
+                    deviceId = deviceId,
+                    isOn = isOn,
+                    isOnline = true
+                )
 
             } catch (e: Exception) {
+                Log.d("UpdateDeviceState", "Failed to update with exception: ${e.message} ")
                 // Rollback on failure
-                devicesStateRepository.updateDeviceState(
+                baseViewModel.updateDeviceState(
                     deviceId = deviceId,
                     isOnline = false,
                     isOn = !isOn
@@ -205,62 +180,17 @@ class HomeViewModel(
         }
     }
 
-    private val devicesListUiModelFlow = combine(
-        devicesRepository.devicesFlow,
-        devicesStateRepository.devicesStateFlow,
-        userPreferencesRepository.userPreferencesFlow
-    ) { devices, states, prefs ->
-        Log.d(
-            "AAA",
-            "Flow combined! Devices: ${devices.devicesList.size}, States: ${states.devicesStateList.size}"
-        )
-        DevicesListUiModel(
-            devices = processDevices(devices, states, prefs),
-            showOfflineDevices = !prefs.hideOfflineDevices,
-        )
-    }.flowOn(Dispatchers.Default) // Ensure processing happens off the main thread
-
-    val devicesUiModelLiveData =
-        devicesListUiModelFlow.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = DevicesListUiModel(
-                devices = emptyList(),
-                showOfflineDevices = true
-            )
-        )
-
-
-    private fun processDevices(
-        devices: Devices,
-        devicesStates: DevicesState,
-        userPreferences: UserPreferences,
-    ): List<DeviceUiModel> {
-        val devicesUiModel = ArrayList<DeviceUiModel>()
-        devices.devicesList.forEach { device ->
-            val state = devicesStates.devicesStateList.find { it.deviceId == device.deviceId }
-            if (userPreferences.hideOfflineDevices) {
-                if (state?.online != true) return@forEach
-            }
-            if (state == null) {
-                devicesUiModel.add(DeviceUiModel(device, isOnline = false, isOn = false))
-            } else {
-                devicesUiModel.add(DeviceUiModel(device, state.online, state.on))
-            }
+    private fun convertToAppDeviceType(matterDeviceType: Long): DeviceType {
+        return when (matterDeviceType) {
+            256L -> DeviceType.LIGHT_ON_OFF // 0x0100 On/Off Light
+            257L -> DeviceType.DIMMABLE_LIGHT // 0x0101 Dimmable Light
+            259L -> DeviceType.LIGHT_SWITCH// 0x0103 On/Off Light Switch
+            266L -> DeviceType.OUTLET // 0x010A (On/Off Plug-in Unit)
+            268L -> DeviceType.COLOR_TEMPERATURE_LIGHT // 0x010C Color Temperature Light
+            269L -> DeviceType.EXTENDED_COLOR_LIGHT // 0x010D Extended Color Light
+            else -> DeviceType.UNKNOWN
         }
-        return devicesUiModel
     }
+
 }
 
-
-fun convertToAppDeviceType(matterDeviceType: Long): DeviceType {
-    return when (matterDeviceType) {
-        256L -> DeviceType.LIGHT_ON_OFF // 0x0100 On/Off Light
-        257L -> DeviceType.DIMMABLE_LIGHT // 0x0101 Dimmable Light
-        259L -> DeviceType.LIGHT_SWITCH// 0x0103 On/Off Light Switch
-        266L -> DeviceType.OUTLET // 0x010A (On/Off Plug-in Unit)
-        268L -> DeviceType.COLOR_TEMPERATURE_LIGHT // 0x010C Color Temperature Light
-        269L -> DeviceType.EXTENDED_COLOR_LIGHT // 0x010D Extended Color Light
-        else -> DeviceType.UNKNOWN
-    }
-}

@@ -63,6 +63,7 @@ import no.nordicsemi.nrf.matter.R
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.ui.DeviceItemContainer
 import no.nordicsemi.nrf.matter.ui.SectionTitle
 import kotlin.time.Clock

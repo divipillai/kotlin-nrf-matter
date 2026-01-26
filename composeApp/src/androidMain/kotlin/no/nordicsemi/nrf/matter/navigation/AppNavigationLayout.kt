@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import no.nordicsemi.nrf.matter.home.HomeViewModel
+import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
 import no.nordicsemi.nrf.matter.home.commissionDevice
 import no.nordicsemi.nrf.matter.ui.TitleAppBar
 import org.koin.androidx.compose.koinViewModel
@@ -73,7 +74,7 @@ fun AppNavigationLayout(navController: NavHostController) {
     val updateTopAppBarTitle: (title: String) -> Unit = remember {
         { topAppBarTitle = it }
     }
-    val homeViewModel: HomeViewModel = koinViewModel()
+    val homeViewModel: HomeViewModelAndroid = koinViewModel()
     val devicesUiModel by homeViewModel.devicesUiModelLiveData.collectAsStateWithLifecycle()
 
     val commissionDeviceLauncher =

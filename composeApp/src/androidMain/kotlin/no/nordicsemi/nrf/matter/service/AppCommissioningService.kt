@@ -17,9 +17,6 @@ import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import org.koin.android.ext.android.inject
 import org.koin.core.component.KoinComponent
-import java.lang.Long.max
-import java.security.SecureRandom
-import kotlin.math.abs
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -65,25 +62,23 @@ class AppCommissioningService : Service(), CommissioningService.Callback, KoinCo
         super.onCreate()
         // May be invoked without MainActivity being called to initialize APP_NAME.
         // So do it here as well.
-        Log.d("AAA", "onCreate: ")
         commissioningServiceDelegate = CommissioningService.Builder(this).setCallback(this).build()
     }
 
     override fun onBind(intent: Intent?): IBinder {
-        Log.d("AAA", "onBind(): intent [${intent}]")
         return commissioningServiceDelegate.asBinder()
     }
 
     override fun onCommissioningRequested(metadata: CommissioningRequestMetadata) {
         Log.d(
-            "AAA",
+            "CommissionService",
             "*** onCommissioningRequested ***:\n" +
                     "\tdeviceDescriptor: " +
                     "deviceType [${metadata.deviceDescriptor.deviceType}] " +
                     "vendorId [${metadata.deviceDescriptor.vendorId}] " +
                     "productId [${metadata.deviceDescriptor.productId}]\n" +
                     "\tnetworkLocation: " +
-                    "IP address toString() [${metadata.networkLocation.ipAddress}] " +
+                    "IP address [${metadata.networkLocation.ipAddress}] " +
                     "IP address hostAddress [${metadata.networkLocation.ipAddress.hostAddress}] " +
                     "port [${metadata.networkLocation.port}]\n" +
                     "\tpassCode [${metadata.passcode}]"
@@ -93,14 +88,6 @@ class AppCommissioningService : Service(), CommissioningService.Callback, KoinCo
         serviceScope.launch {
             val deviceId = devicesRepository.incrementAndReturnLastDeviceId()
             try {
-                Log.d(
-                    "AAA",
-                    "Commissioning: App fabric -> ChipClient.establishPaseConnection(): deviceId [${deviceId}]"
-                )
-                Log.d(
-                    "AAA",
-                    "Commissioning Step 1: ChipClient.establishPaseConnection(): deviceId [${deviceId}]"
-                )
                 chipClient.awaitEstablishPaseConnection(
                     deviceId,
                     metadata.networkLocation.ipAddress.hostAddress!!,
@@ -108,128 +95,53 @@ class AppCommissioningService : Service(), CommissioningService.Callback, KoinCo
                     metadata.passcode
                 )
 
-                Log.d(
-                    "AAA",
-                    "Commissioning: App fabric -> ChipClient.commissionDevice(): deviceId [${deviceId}]"
-                )
-                Log.d(
-                    "AAA",
-                    "Commissioning Step 2: ChipClient.commissionDevice(): deviceId [${deviceId}]"
-                )
-
                 chipClient.awaitCommissionDevice(deviceId, null)
 
-                Log.d(
-                    "AAA","Commissioning Step 3: Adding device to repository")
                 devicesStateRepository.addDeviceState(
                     deviceId,
                     isOnline = true,
                     isOn = false
                 )
-                Log.d(
-                    "AAA",
-                    "Commissioning Step 5: Calling commissioningServiceDelegate.sendCommissioningComplete()")
+
                 commissioningServiceDelegate
-                    .sendCommissioningComplete( CommissioningCompleteMetadata.builder().setToken(deviceId.toString()).build())
+                    .sendCommissioningComplete(
+                        CommissioningCompleteMetadata.builder().setToken(deviceId.toString())
+                            .build()
+                    )
                     .addOnSuccessListener {
                         Log.d(
-                            "AAA",
-                            "Commissioning: commissioningServiceDelegate.sendCommissioningError() succeeded"
+                            "CommissionService",
+                            "Device commissioned succeeded!"
                         )
                     }
                     .addOnFailureListener { e2 ->
                         Log.e(
-                            "AAA",
-                            "Commissioning: commissioningServiceDelegate.sendCommissioningError() failed",
+                            "CommissionService",
+                            "Device commissioned failed!",
                             e2,
                         )
                     }
 
             } catch (e: Exception) {
-                Log.e("AAA", "onCommissioningRequested() failed with exception: $e")
                 // No way to determine whether this was ATTESTATION_FAILED or DEVICE_UNREACHABLE.
                 commissioningServiceDelegate
                     .sendCommissioningError(CommissioningError.OTHER)
                     .addOnFailureListener { e2 ->
                         Log.e(
-                            "AAA",
-                            "Commissioning: commissioningServiceDelegate.sendCommissioningError() failed",
+                            "CommissionService",
+                            "Device commissioned failed!",
                             e2,
                         )
                     }
                 return@launch
             }
 
-//            Log.d(
-//                "AAA",
-//                "Commissioning: Calling commissioningServiceDelegate.sendCommissioningComplete()"
-//            )
-//            commissioningServiceDelegate
-//                .sendCommissioningComplete(
-//                    CommissioningCompleteMetadata.builder().setToken(deviceId.toString()).build()
-//                )
-//                .addOnSuccessListener {
-//                    Log.d(
-//                        "AAA",
-//                        "Commissioning: commissioningServiceDelegate.sendCommissioningComplete() succeeded"
-//                    )
-//                }
-//                .addOnFailureListener { e ->
-//                    Log.e(
-//                        "AAA",
-//                        "Commissioning: commissioningServiceDelegate.sendCommissioningComplete() failed",
-//                        e
-//                    )
-//                }
         }
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("AAA", "onStartCommand(): intent [${intent}] flags [${flags}] startId [${startId}]")
-        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("AAA", "onDestroy()")
         serviceJob.cancel()
     }
 
-    /**
-     * Generates the device id for the device being commissioned ToDo() move this function into an
-     * appropriate class to make it visible in HomeFragmentRecyclerViewTest
-     *
-     * @param generator the method used to generate the device id
-     */
-    private suspend fun getNextDeviceId(generator: DeviceIdGenerator): Long {
-        return when (generator) {
-            DeviceIdGenerator.Incremental -> {
-                devicesRepository.incrementAndReturnLastDeviceId()
-            }
-
-            DeviceIdGenerator.Random -> {
-                generateNextDeviceId()
-            }
-        }
-    }
-
-}
-
-enum class DeviceIdGenerator {
-    Random,
-    Incremental
-}
-
-/** Generates a random number to be used as a device identifier during device commissioning */
-fun generateNextDeviceId(): Long {
-    val secureRandom =
-        try {
-            SecureRandom.getInstance("SHA1PRNG")
-        } catch (ex: Exception) {
-//            Timber.w(ex, "Failed to instantiate SecureRandom with SHA1PRNG")
-            // instantiate with the default algorithm
-            SecureRandom()
-        }
-
-    return max(abs(secureRandom.nextLong()), 1)
 }

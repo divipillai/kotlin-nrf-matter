@@ -1,12 +1,7 @@
-package no.nordicsemi.nrf.matter
+package no.nordicsemi.nrf.matter.serializer
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
+import kotlinx.serialization.json.Json
+import no.nordicsemi.nrf.matter.model.Devices
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -39,24 +34,17 @@ import kotlinx.coroutines.flow.update
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-internal class MainViewModel(
-    private val beaconRepository: BeaconRepository
-) : ViewModel() {
-    private val _beacon = MutableStateFlow<List<MatterBeacon>>(emptyList())
-    val beacon = _beacon.asStateFlow()
+object DevicesJson {
 
-    init {
-        observeBeacons()
+    private val json = Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
     }
 
-    private fun observeBeacons() = beaconRepository.observeBeacons()
-        .onEach { beacon ->
-            _beacon.update {
-                // add new beacon to the list.
-                // Before adding check if already exist.
-                if (!it.contains(beacon)) {
-                    it + beacon
-                } else it
-            }
-        }.launchIn(viewModelScope)
+    fun encode(devices: Devices): String =
+        json.encodeToString(devices)
+
+    fun decode(text: String): Devices =
+        if (text.isBlank()) Devices()
+        else json.decodeFromString(text)
 }

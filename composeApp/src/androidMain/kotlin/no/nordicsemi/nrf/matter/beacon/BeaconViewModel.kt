@@ -1,15 +1,14 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.beacon
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
-
+import no.nordicsemi.nrf.matter.MatterBeacon
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -41,11 +40,24 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val commonModule = module {
-    single { BeaconRepository(get<MatterBeaconProducer>()) }
-    // Binding in the common module
-    single { DevicesRepository(get<DevicesDataSource>()) }
-    single { DevicesStateRepository(get<DeviceStateDataSource>()) }
-    single { UserPreferencesRepository(get<UserPreferencesDataSource>()) }
-}
+internal class BeaconViewModel(
+    private val beaconRepository: BeaconRepository
+) : ViewModel() {
+    private val _beacon = MutableStateFlow<List<MatterBeacon>>(emptyList())
+    val beacon = _beacon.asStateFlow()
 
+    init {
+        observeBeacons()
+    }
+
+    private fun observeBeacons() = beaconRepository.observeBeacons()
+        .onEach { beacon ->
+            _beacon.update {
+                // add new beacon to the list.
+                // Before adding check if already exist.
+                if (!it.contains(beacon)) {
+                    it + beacon
+                } else it
+            }
+        }.launchIn(viewModelScope)
+}

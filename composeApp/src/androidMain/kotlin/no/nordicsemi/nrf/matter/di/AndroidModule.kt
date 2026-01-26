@@ -1,14 +1,18 @@
 package no.nordicsemi.nrf.matter.di
 
 import android.bluetooth.BluetoothAdapter
-import no.nordicsemi.nrf.matter.AndroidMatterController
-import no.nordicsemi.nrf.matter.MainViewModel
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.MatterController
+import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
+import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
 import no.nordicsemi.nrf.matter.chip.ChipClient
-import no.nordicsemi.nrf.matter.commisionable.MatterBeaconProducerBle
+import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
+import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
+import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.device.DeviceViewModel
 import no.nordicsemi.nrf.matter.home.HomeViewModel
+import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
+import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
+import no.nordicsemi.nrf.matter.repository.AndroidUserPreferencesDataSource
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
@@ -59,14 +63,26 @@ val androidModule = module {
             context = androidContext()
         )
     }
+    single<DevicesDataSource> {
+        AndroidDevicesDataSource(androidContext())
+    }
+    single<DeviceStateDataSource> {
+        AndroidDeviceStateDataSource(
+            context = androidContext()
+        )
+    }
+    single<UserPreferencesDataSource> {
+        AndroidUserPreferencesDataSource(androidContext())
+    }
+
     single<ChipClient> { ChipClient(context = androidContext()) }
 
-    single<MatterController> { AndroidMatterController(get()) }
-    single<DevicesRepository> { DevicesRepository(androidContext()) }
-    single<DevicesStateRepository> { DevicesStateRepository(androidContext()) }
-    single<UserPreferencesRepository> { UserPreferencesRepository(androidContext()) }
+    // NOTE to myself: even though I have it in the common module, it also need to be declared in each module.
+    single<DevicesRepository> { DevicesRepository(dataSource = get()) }
+    single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
+    single<UserPreferencesRepository> { UserPreferencesRepository(get()) }
     // Binding Viewmodel
-    viewModel { MainViewModel(get()) }
+    viewModel { BeaconViewModel(get()) }
     viewModel { HomeViewModel(get(), get(), get(), get()) }
     viewModel { DeviceViewModel(get(), get(), get()) }
 }

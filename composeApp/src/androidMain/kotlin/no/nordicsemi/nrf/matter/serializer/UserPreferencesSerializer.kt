@@ -1,14 +1,4 @@
-package no.nordicsemi.nrf.matter.di
-
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
+package no.nordicsemi.nrf.matter.serializer
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -41,11 +31,35 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val commonModule = module {
-    single { BeaconRepository(get<MatterBeaconProducer>()) }
-    // Binding in the common module
-    single { DevicesRepository(get<DevicesDataSource>()) }
-    single { DevicesStateRepository(get<DeviceStateDataSource>()) }
-    single { UserPreferencesRepository(get<UserPreferencesDataSource>()) }
+import android.content.Context
+import androidx.datastore.core.CorruptionException
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.Serializer
+import androidx.datastore.dataStore
+import no.nordicsemi.nrf.matter.model.UserPreferences
+import java.io.InputStream
+import java.io.OutputStream
+
+object UserPreferencesJsonSerializer : Serializer<UserPreferences> {
+
+    override val defaultValue: UserPreferences = UserPreferences()
+
+    override suspend fun readFrom(input: InputStream): UserPreferences =
+        try {
+            UserPreferencesJson.decode(input.readBytes().decodeToString())
+        } catch (e: Exception) {
+            throw CorruptionException("Cannot read UserPreferences JSON.", e)
+        }
+
+    override suspend fun writeTo(t: UserPreferences, output: OutputStream) {
+        output.write(
+            UserPreferencesJson.encode(t).encodeToByteArray()
+        )
+    }
 }
 
+val Context.userPreferencesDataStore: DataStore<UserPreferences> by
+dataStore(
+    fileName = "user_prefs_store.proto",
+    serializer = UserPreferencesJsonSerializer
+)

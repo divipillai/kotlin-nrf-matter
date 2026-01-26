@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter
+package no.nordicsemi.nrf.matter.beacon
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor

@@ -1,5 +1,8 @@
 package no.nordicsemi.nrf.matter.model
 
+import kotlinx.serialization.Serializable
+import kotlin.time.ExperimentalTime
+
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -31,40 +34,6 @@ package no.nordicsemi.nrf.matter.model
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import android.content.Context
-import androidx.datastore.core.CorruptionException
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.Serializer
-import androidx.datastore.dataStore
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import java.io.InputStream
-import java.io.OutputStream
-import kotlin.time.ExperimentalTime
-
-object DevicesStateJsonSerializer : Serializer<DevicesState> {
-
-    override val defaultValue: DevicesState = DevicesState()
-
-    override suspend fun readFrom(input: InputStream): DevicesState {
-        return try {
-            val text = input.readBytes().decodeToString()
-            if (text.isBlank()) defaultValue
-            else Json.decodeFromString(text)
-        } catch (e: Exception) {
-            throw CorruptionException("Cannot read Devices JSON.", e)
-        }
-    }
-
-    override suspend fun writeTo(
-        t: DevicesState,
-        output: OutputStream
-    ) {
-        val text = Json.encodeToString(t)
-        output.write(text.encodeToByteArray())
-    }
-}
-
 /**
  * Info about the dynamic state of a Matter device that is persisted in a DataStore.
  */
@@ -90,13 +59,4 @@ data class DeviceState @OptIn(ExperimentalTime::class) constructor(
 @Serializable
 data class DevicesState(
     val devicesStateList: List<DeviceState> = emptyList()
-)
-
-/**
- * DataStore to persist the dynamic state of a Matter device.
- *
- */
-val Context.devicesStateDataStore: DataStore<DevicesState> by dataStore(
-    fileName = "devices_state_store.json",
-    serializer = DevicesStateJsonSerializer
 )

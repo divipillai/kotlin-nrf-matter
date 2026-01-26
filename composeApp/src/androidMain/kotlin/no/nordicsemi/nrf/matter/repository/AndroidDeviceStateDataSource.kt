@@ -1,4 +1,12 @@
-package no.nordicsemi.nrf.matter
+package no.nordicsemi.nrf.matter.repository
+
+import android.content.Context
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
+import no.nordicsemi.nrf.matter.model.DevicesState
+import no.nordicsemi.nrf.matter.serializer.devicesStateDataStore
+import java.io.IOException
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -31,8 +39,33 @@ package no.nordicsemi.nrf.matter
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface MatterController {
-    suspend fun readDeviceType(deviceId: Long): String
-    suspend fun toggleLight(deviceId: Long, isOn: Boolean): Boolean
-    // Add other generic Matter actions here
+class AndroidDeviceStateDataSource(
+    context: Context
+) : DeviceStateDataSource {
+
+    private val dataStore = context.devicesStateDataStore
+
+    override val devicesFlow: Flow<DevicesState> =
+        dataStore.data
+            .catch { e ->
+                if (e is IOException) emit(DevicesState())
+                else throw e
+            }
+
+    override suspend fun update(
+        transform: (DevicesState) -> DevicesState
+    ) {
+        dataStore.updateData { current ->
+            transform(current)
+        }
+    }
+
+    override suspend fun removeDevice(deviceId: Long) {
+        dataStore.updateData { current ->
+            current.copy(
+                devicesStateList = current.devicesStateList
+                    .filterNot { it.deviceId == deviceId }
+            )
+        }
+    }
 }

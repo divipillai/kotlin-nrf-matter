@@ -1,6 +1,7 @@
-package no.nordicsemi.nrf.matter
+package no.nordicsemi.nrf.matter.datasource
 
-import no.nordicsemi.nrf.matter.chip.ChipClient
+import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.model.UserPreferences
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -33,18 +34,7 @@ import no.nordicsemi.nrf.matter.chip.ChipClient
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class AndroidMatterController(
-    private val chipClient: ChipClient // This is the Android-specific helper
-) : MatterController {
-
-    override suspend fun readDeviceType(deviceId: Long): String {
-        // Use the logic we discussed to read Descriptor Cluster (0x001D)
-        // returning a string like "OnOffLight"
-        return "OnOffLight"
-    }
-
-    override suspend fun toggleLight(deviceId: Long, isOn: Boolean): Boolean {
-        // Call chipClient.getDeviceController().invokeCommand(...)
-        return true
-    }
+interface UserPreferencesDataSource {
+    val userPreferencesFlow: Flow<UserPreferences>
+    suspend fun update(transform: (UserPreferences) -> UserPreferences)
 }

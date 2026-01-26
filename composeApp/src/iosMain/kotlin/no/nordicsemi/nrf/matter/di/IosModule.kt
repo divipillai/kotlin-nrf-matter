@@ -1,12 +1,13 @@
 package no.nordicsemi.nrf.matter.di
 
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
+import no.nordicsemi.nrf.matter.repository.SettingsDeviceStateDataSource
+import no.nordicsemi.nrf.matter.repository.SettingsDevicesDataSource
+import no.nordicsemi.nrf.matter.repository.SettingsUserPreferencesDataSource
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import org.koin.dsl.module
 
@@ -41,11 +42,29 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val commonModule = module {
-    single { BeaconRepository(get<MatterBeaconProducer>()) }
-    // Binding in the common module
-    single { DevicesRepository(get<DevicesDataSource>()) }
-    single { DevicesStateRepository(get<DeviceStateDataSource>()) }
-    single { UserPreferencesRepository(get<UserPreferencesDataSource>()) }
-}
+val iosModule = module {
 
+    single<DevicesDataSource> {
+        SettingsDevicesDataSource()
+    }
+
+    single {
+        DevicesRepository(dataSource = get())
+    }
+
+    single<DeviceStateDataSource> {
+        SettingsDeviceStateDataSource()
+    }
+
+    single {
+        DevicesStateRepository(dataSource = get())
+    }
+
+    single<UserPreferencesDataSource> {
+        SettingsUserPreferencesDataSource()
+    }
+
+    single {
+        UserPreferencesRepository(dataSource = get())
+    }
+}

@@ -1,14 +1,13 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.serializer
 
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
+import android.content.Context
+import androidx.datastore.core.CorruptionException
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.Serializer
+import androidx.datastore.dataStore
+import no.nordicsemi.nrf.matter.model.Devices
+import java.io.InputStream
+import java.io.OutputStream
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -41,11 +40,25 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val commonModule = module {
-    single { BeaconRepository(get<MatterBeaconProducer>()) }
-    // Binding in the common module
-    single { DevicesRepository(get<DevicesDataSource>()) }
-    single { DevicesStateRepository(get<DeviceStateDataSource>()) }
-    single { UserPreferencesRepository(get<UserPreferencesDataSource>()) }
+object DevicesJsonSerializer : Serializer<Devices> {
+
+    override val defaultValue: Devices = Devices()
+
+    override suspend fun readFrom(input: InputStream): Devices =
+        try {
+            DevicesJson.decode(input.readBytes().decodeToString())
+        } catch (e: Exception) {
+            throw CorruptionException("Cannot read Devices JSON.", e)
+        }
+
+    override suspend fun writeTo(t: Devices, output: OutputStream) {
+        output.write(
+            DevicesJson.encode(t).encodeToByteArray()
+        )
+    }
 }
 
+val Context.devicesDataStore: DataStore<Devices> by dataStore(
+    fileName = "devices_store.json",
+    serializer = DevicesJsonSerializer
+)

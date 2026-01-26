@@ -1,14 +1,6 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.model
 
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
+import kotlinx.serialization.Serializable
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -41,11 +33,16 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val commonModule = module {
-    single { BeaconRepository(get<MatterBeaconProducer>()) }
-    // Binding in the common module
-    single { DevicesRepository(get<DevicesDataSource>()) }
-    single { DevicesStateRepository(get<DeviceStateDataSource>()) }
-    single { UserPreferencesRepository(get<UserPreferencesDataSource>()) }
-}
+/**
+ * User preferences and application settings persisted in DataStore.
+ */
+@Serializable
+data class UserPreferences(
 
+    /**
+     * Filter for showing / hiding offline devices on the Home screen.
+     * Using "hide" instead of "show" so that the default value (false) is the
+     * default behavior we want (offline devices shown by default).
+     */
+    val hideOfflineDevices: Boolean = false,
+)

@@ -1,13 +1,4 @@
-package no.nordicsemi.nrf.matter.model
-
-import android.content.Context
-import androidx.datastore.core.CorruptionException
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.Serializer
-import androidx.datastore.dataStore
-import no.nordicsemi.nrf.matter.serialization.DevicesJson
-import java.io.InputStream
-import java.io.OutputStream
+package no.nordicsemi.nrf.matter.serializer
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -40,25 +31,40 @@ import java.io.OutputStream
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-object DevicesJsonSerializer : Serializer<Devices> {
+import android.content.Context
+import androidx.datastore.core.CorruptionException
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.Serializer
+import androidx.datastore.dataStore
+import no.nordicsemi.nrf.matter.model.DevicesState
+import no.nordicsemi.nrf.matter.serialization.DevicesStateJson
+import java.io.InputStream
+import java.io.OutputStream
 
-    override val defaultValue: Devices = Devices()
+object DevicesStateJsonSerializer : Serializer<DevicesState> {
 
-    override suspend fun readFrom(input: InputStream): Devices =
+    override val defaultValue: DevicesState = DevicesState()
+
+    override suspend fun readFrom(input: InputStream): DevicesState =
         try {
-            DevicesJson.decode(input.readBytes().decodeToString())
+            DevicesStateJson.decode(input.readBytes().decodeToString())
         } catch (e: Exception) {
             throw CorruptionException("Cannot read Devices JSON.", e)
         }
 
-    override suspend fun writeTo(t: Devices, output: OutputStream) {
+    override suspend fun writeTo(t: DevicesState, output: OutputStream) {
         output.write(
-            DevicesJson.encode(t).encodeToByteArray()
+            DevicesStateJson.encode(t).encodeToByteArray()
         )
     }
 }
 
-val Context.devicesDataStore: DataStore<Devices> by dataStore(
-    fileName = "devices_store.json",
-    serializer = DevicesJsonSerializer
+
+/**
+ * DataStore to persist the dynamic state of a Matter device.
+ *
+ */
+val Context.devicesStateDataStore: DataStore<DevicesState> by dataStore(
+    fileName = "devices_state_store.json",
+    serializer = DevicesStateJsonSerializer
 )

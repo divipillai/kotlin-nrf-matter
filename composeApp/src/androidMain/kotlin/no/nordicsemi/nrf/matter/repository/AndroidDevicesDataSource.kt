@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.model.Devices
-import no.nordicsemi.nrf.matter.model.devicesDataStore
+import no.nordicsemi.nrf.matter.serializer.devicesDataStore
 import java.io.IOException
 
 /*

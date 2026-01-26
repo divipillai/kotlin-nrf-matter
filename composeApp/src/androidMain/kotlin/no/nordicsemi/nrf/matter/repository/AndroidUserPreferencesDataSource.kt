@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.model.UserPreferences
-import no.nordicsemi.nrf.matter.model.userPreferencesDataStore
+import no.nordicsemi.nrf.matter.serializer.userPreferencesDataStore
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor

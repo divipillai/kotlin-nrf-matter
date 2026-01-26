@@ -1,8 +1,8 @@
 package no.nordicsemi.nrf.matter.di
 
-import no.nordicsemi.nrf.matter.repository.DeviceStateDataSource
+import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.DevicesDataSource
+import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.SettingsDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.SettingsDevicesDataSource

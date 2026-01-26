@@ -2,7 +2,7 @@ package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.BeaconRepository
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.repository.DevicesDataSource
+import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import org.koin.dsl.module
 

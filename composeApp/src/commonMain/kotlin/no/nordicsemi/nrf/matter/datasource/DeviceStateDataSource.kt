@@ -1,7 +1,8 @@
-package no.nordicsemi.nrf.matter.repository
+package no.nordicsemi.nrf.matter.datasource
 
 import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.nrf.matter.model.Devices
+import no.nordicsemi.nrf.matter.model.DevicesState
+
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -34,8 +35,8 @@ import no.nordicsemi.nrf.matter.model.Devices
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface DevicesDataSource {
-    val devicesFlow: Flow<Devices>
-    suspend fun update(transform: (Devices) -> Devices)
+interface DeviceStateDataSource {
+    val devicesFlow: Flow<DevicesState>
+    suspend fun update(transform: (DevicesState) -> DevicesState)
     suspend fun removeDevice(deviceId: Long)
 }

@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.repository
 
 import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.model.DevicesState
 
 /*

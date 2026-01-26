@@ -7,7 +7,9 @@ import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.device.DeviceViewModel
 import no.nordicsemi.nrf.matter.home.HomeViewModel
+import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
+import no.nordicsemi.nrf.matter.repository.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.DevicesDataSource
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
@@ -62,11 +64,16 @@ val androidModule = module {
     single<DevicesDataSource> {
         AndroidDevicesDataSource(androidContext())
     }
+    single<DeviceStateDataSource> {
+        AndroidDeviceStateDataSource(
+            context = androidContext()
+        )
+    }
     single<ChipClient> { ChipClient(context = androidContext()) }
 
     // NOTE to myself: even though I have it in the common module, it also need to be declared in each module.
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
-    single<DevicesStateRepository> { DevicesStateRepository(androidContext()) }
+    single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<UserPreferencesRepository> { UserPreferencesRepository(androidContext()) }
     // Binding Viewmodel
     viewModel { BeaconViewModel(get()) }

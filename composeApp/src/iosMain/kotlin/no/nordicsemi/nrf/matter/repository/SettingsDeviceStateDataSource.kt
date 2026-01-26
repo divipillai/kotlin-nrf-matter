@@ -1,12 +1,7 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.repository
 
-import no.nordicsemi.nrf.matter.repository.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.DevicesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.SettingsDeviceStateDataSource
-import no.nordicsemi.nrf.matter.repository.SettingsDevicesDataSource
-import org.koin.dsl.module
+import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.model.DevicesState
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -39,21 +34,21 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val iosModule = module {
+class SettingsDeviceStateDataSource(
+) : DeviceStateDataSource {
 
-    single<DevicesDataSource> {
-        SettingsDevicesDataSource()
+    private val key = "device_state"
+
+    override val devicesFlow: Flow<DevicesState>
+        get() = TODO("Not yet implemented")
+
+    override suspend fun update(
+        transform: (DevicesState) -> DevicesState
+    ) {
+        TODO("Not yet implemented")
     }
 
-    single {
-        DevicesRepository(dataSource = get())
-    }
-
-    single<DeviceStateDataSource> {
-        SettingsDeviceStateDataSource()
-    }
-
-    single {
-        DevicesStateRepository(dataSource = get())
+    override suspend fun removeDevice(deviceId: Long) {
+        TODO("Not yet implemented")
     }
 }

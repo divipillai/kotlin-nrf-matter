@@ -1,12 +1,8 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.repository
 
-import no.nordicsemi.nrf.matter.repository.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.DevicesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.SettingsDeviceStateDataSource
-import no.nordicsemi.nrf.matter.repository.SettingsDevicesDataSource
-import org.koin.dsl.module
+import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.model.DevicesState
+
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -39,21 +35,8 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val iosModule = module {
-
-    single<DevicesDataSource> {
-        SettingsDevicesDataSource()
-    }
-
-    single {
-        DevicesRepository(dataSource = get())
-    }
-
-    single<DeviceStateDataSource> {
-        SettingsDeviceStateDataSource()
-    }
-
-    single {
-        DevicesStateRepository(dataSource = get())
-    }
+interface DeviceStateDataSource {
+    val devicesFlow: Flow<DevicesState>
+    suspend fun update(transform: (DevicesState) -> DevicesState)
+    suspend fun removeDevice(deviceId: Long)
 }

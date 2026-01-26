@@ -1,5 +1,7 @@
 package no.nordicsemi.nrf.matter.model
 
+import kotlinx.serialization.Serializable
+
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -31,42 +33,6 @@ package no.nordicsemi.nrf.matter.model
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import android.content.Context
-import androidx.datastore.core.CorruptionException
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.Serializer
-import androidx.datastore.dataStore
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import java.io.InputStream
-import java.io.OutputStream
-
-object UserPreferencesJsonSerializer : Serializer<UserPreferences> {
-
-    override val defaultValue: UserPreferences = UserPreferences()
-
-    override suspend fun readFrom(input: InputStream): UserPreferences {
-        return try {
-            val text = input.readBytes().decodeToString()
-            if (text.isBlank()) defaultValue
-            else Json.decodeFromString(text)
-        } catch (e: Exception) {
-            throw CorruptionException("Cannot read UserPreferences JSON.", e)
-        }
-    }
-
-    override suspend fun writeTo(
-        t: UserPreferences,
-        output: OutputStream
-    ) {
-        val text = Json.encodeToString(t)
-        output.write(text.encodeToByteArray())
-    }
-}
-
-val Context.userPreferencesDataStore: DataStore<UserPreferences> by
-dataStore(fileName = "user_prefs_store.proto", serializer = UserPreferencesJsonSerializer)
-
 /**
  * User preferences and application settings persisted in DataStore.
  */
@@ -79,12 +45,4 @@ data class UserPreferences(
      * default behavior we want (offline devices shown by default).
      */
     val hideOfflineDevices: Boolean = false,
-
-    /**
-     * Filter for showing / hiding HalfSheet Notification.
-     *
-     * Default value is false, meaning halfsheet notifications are hidden
-     * by default.
-     */
-    val showHalfsheetNotification: Boolean = false
 )

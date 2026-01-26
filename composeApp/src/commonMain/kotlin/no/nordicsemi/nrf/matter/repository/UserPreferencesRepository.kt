@@ -1,14 +1,9 @@
 package no.nordicsemi.nrf.matter.repository
 
-import android.content.Context
-import android.util.Log
-import androidx.datastore.core.IOException
-import androidx.lifecycle.asLiveData
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.model.UserPreferences
-import no.nordicsemi.nrf.matter.model.userPreferencesDataStore
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -42,45 +37,18 @@ import no.nordicsemi.nrf.matter.model.userPreferencesDataStore
  */
 
 class UserPreferencesRepository(
-    context: Context
+    private val dataSource: UserPreferencesDataSource
 ) {
 
-    // The datastore managed by UserPreferencesRepository.
-    private val userPreferencesDataStore = context.userPreferencesDataStore
-
-    // The Flow to read data from the DataStore.
     val userPreferencesFlow: Flow<UserPreferences> =
-        userPreferencesDataStore.data.catch { exception ->
-            if (exception is IOException) {
-                Log.e("AAA", "Error reading user preferences with exception", exception)
-                emit(UserPreferences())
-            } else {
-                throw exception
-            }
-        }
-
-    val userPreferencesLiveData = userPreferencesFlow.asLiveData()
+        dataSource.userPreferencesFlow
 
     suspend fun updateHideOfflineDevices(hide: Boolean) {
-        Log.d("AAA", "updateHideOfflineDevices [$hide]")
-        userPreferencesDataStore.updateData { prefs ->
+        dataSource.update { prefs ->
             prefs.copy(hideOfflineDevices = hide)
         }
     }
 
-    suspend fun shouldShowHalfsheetNotification(): Boolean {
-        Log.d("AAA", "shouldShowHalfsheetNotification")
-        return userPreferencesFlow.first().showHalfsheetNotification
-    }
-
-    suspend fun updateShowHalfsheetNotification(show: Boolean) {
-        Log.d("AAA", "updateShowHalfsheetNotification [$show]")
-        userPreferencesDataStore.updateData { prefs ->
-            prefs.copy(showHalfsheetNotification = show)
-        }
-    }
-
-    suspend fun getData(): UserPreferences {
-        return userPreferencesFlow.first()
-    }
+    suspend fun getData(): UserPreferences =
+        userPreferencesFlow.first()
 }

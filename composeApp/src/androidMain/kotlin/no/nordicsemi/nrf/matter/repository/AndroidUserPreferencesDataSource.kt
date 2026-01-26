@@ -1,14 +1,12 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.repository
 
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
+import android.content.Context
+import androidx.datastore.core.IOException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
+import no.nordicsemi.nrf.matter.model.UserPreferences
+import no.nordicsemi.nrf.matter.model.userPreferencesDataStore
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -41,11 +39,27 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val commonModule = module {
-    single { BeaconRepository(get<MatterBeaconProducer>()) }
-    // Binding in the common module
-    single { DevicesRepository(get<DevicesDataSource>()) }
-    single { DevicesStateRepository(get<DeviceStateDataSource>()) }
-    single { UserPreferencesRepository(get<UserPreferencesDataSource>()) }
+class AndroidUserPreferencesDataSource(
+    context: Context
+) : UserPreferencesDataSource {
+
+    private val dataStore = context.userPreferencesDataStore
+
+    override val userPreferencesFlow: Flow<UserPreferences> =
+        dataStore.data.catch { e ->
+            if (e is IOException) {
+                emit(UserPreferences())
+            } else {
+                throw e
+            }
+        }
+
+    override suspend fun update(
+        transform: (UserPreferences) -> UserPreferences
+    ) {
+        dataStore.updateData { current ->
+            transform(current)
+        }
+    }
 }
 

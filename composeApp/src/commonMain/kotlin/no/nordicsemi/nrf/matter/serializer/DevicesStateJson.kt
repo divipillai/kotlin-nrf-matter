@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.serialization
+package no.nordicsemi.nrf.matter.serializer
 
 import kotlinx.serialization.json.Json
 import no.nordicsemi.nrf.matter.model.DevicesState

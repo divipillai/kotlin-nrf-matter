@@ -37,7 +37,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
 import no.nordicsemi.nrf.matter.model.DevicesState
-import no.nordicsemi.nrf.matter.serialization.DevicesStateJson
 import java.io.InputStream
 import java.io.OutputStream
 

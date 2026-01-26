@@ -1,7 +1,7 @@
-package no.nordicsemi.nrf.matter.serialization
+package no.nordicsemi.nrf.matter.serializer
 
 import kotlinx.serialization.json.Json
-import no.nordicsemi.nrf.matter.model.Devices
+import no.nordicsemi.nrf.matter.model.UserPreferences
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -34,17 +34,17 @@ import no.nordicsemi.nrf.matter.model.Devices
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-object DevicesJson {
+object UserPreferencesJson {
 
     private val json = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true
     }
 
-    fun encode(devices: Devices): String =
-        json.encodeToString(devices)
+    fun encode(userPreferences: UserPreferences): String =
+        json.encodeToString(userPreferences)
 
-    fun decode(text: String): Devices =
-        if (text.isBlank()) Devices()
+    fun decode(text: String): UserPreferences =
+        if (text.isBlank()) UserPreferences()
         else json.decodeFromString(text)
 }

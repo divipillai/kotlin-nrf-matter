@@ -115,6 +115,12 @@ fun AppNavigationLayout(navController: NavHostController) {
             }
         }
     ) { innerPadding ->
-        AppNavigation(navController, innerPadding, snackbarHostState, updateTopAppBarTitle, onCommissionDevice)
+        AppNavigation(
+            navController,
+            innerPadding,
+            snackbarHostState,
+            updateTopAppBarTitle,
+            onCommissionDevice
+        )
     }
 }

@@ -1,8 +1,9 @@
-package no.nordicsemi.nrf.matter.repository
+package no.nordicsemi.nrf.matter.serializer
 
-import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.model.UserPreferences
+import androidx.datastore.core.okio.OkioSerializer
+import no.nordicsemi.nrf.matter.model.DevicesState
+import okio.BufferedSink
+import okio.BufferedSource
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -35,17 +36,22 @@ import no.nordicsemi.nrf.matter.model.UserPreferences
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class SettingsUserPreferencesDataSource(
-) : UserPreferencesDataSource {
+object DevicesStateOkioSerializer : OkioSerializer<DevicesState> {
+    override val defaultValue: DevicesState = DevicesState()
+    override suspend fun readFrom(source: BufferedSource): DevicesState {
+        return try {
+            // Read the entire source as a String and decode
+            DevicesStateJson.decode(source.readUtf8())
+        } catch (e: Exception) {
+            throw androidx.datastore.core.CorruptionException("Cannot read Devices state JSON.", e)
+        }
+    }
 
-    private val key = "user_preferences"
-
-    override val userPreferencesFlow: Flow<UserPreferences>
-        get() = TODO("Not yet implemented")
-
-    override suspend fun update(
-        transform: (UserPreferences) -> UserPreferences
+    override suspend fun writeTo(
+        t: DevicesState,
+        sink: BufferedSink
     ) {
-        TODO("Not yet implemented")
+        // Encode to String and write to the sink
+        sink.writeUtf8(DevicesStateJson.encode(t))
     }
 }

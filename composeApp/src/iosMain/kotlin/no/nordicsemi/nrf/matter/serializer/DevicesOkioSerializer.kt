@@ -1,8 +1,9 @@
-package no.nordicsemi.nrf.matter.repository
+package no.nordicsemi.nrf.matter.serializer
 
-import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.model.DevicesState
+import androidx.datastore.core.okio.OkioSerializer
+import no.nordicsemi.nrf.matter.model.Devices
+import okio.BufferedSink
+import okio.BufferedSource
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -35,21 +36,19 @@ import no.nordicsemi.nrf.matter.model.DevicesState
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class SettingsDeviceStateDataSource(
-) : DeviceStateDataSource {
-
-    private val key = "device_state"
-
-    override val devicesFlow: Flow<DevicesState>
-        get() = TODO("Not yet implemented")
-
-    override suspend fun update(
-        transform: (DevicesState) -> DevicesState
-    ) {
-        TODO("Not yet implemented")
+object DevicesOkioSerializer : OkioSerializer<Devices> {
+    override val defaultValue: Devices = Devices()
+    override suspend fun readFrom(source: BufferedSource): Devices {
+        return try {
+            // Read the entire source as a String and decode
+            DevicesJson.decode(source.readUtf8())
+        } catch (e: Exception) {
+            throw androidx.datastore.core.CorruptionException("Cannot read Devices JSON.", e)
+        }
     }
 
-    override suspend fun removeDevice(deviceId: Long) {
-        TODO("Not yet implemented")
+    override suspend fun writeTo(t: Devices, sink: BufferedSink) {
+        // Encode to String and write to the sink
+        sink.writeUtf8(DevicesJson.encode(t))
     }
 }

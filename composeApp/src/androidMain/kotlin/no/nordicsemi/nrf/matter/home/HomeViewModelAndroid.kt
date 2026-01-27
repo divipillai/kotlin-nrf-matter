@@ -57,8 +57,7 @@ class HomeViewModelAndroid(
     private val baseViewModel = HomeViewModel(
         devicesRepository,
         devicesStateRepository,
-        userPreferencesRepository,
-        viewModelScope
+        userPreferencesRepository
     )
     val devicesUiModelLiveData = baseViewModel.devicesUiModelFlow
 

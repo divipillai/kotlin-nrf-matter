@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -53,8 +54,10 @@ class HomeViewModel(
     devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     userPreferencesRepository: UserPreferencesRepository,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
-): ViewModel() {
+) : ViewModel() {
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Main
+    )
     private val devicesListUiModelFlow: Flow<DevicesListUiModel> =
         combine(
             devicesRepository.devicesFlow,

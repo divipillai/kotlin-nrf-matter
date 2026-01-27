@@ -42,7 +42,7 @@ import okio.Path.Companion.toPath
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-internal class IosUserPreferencesDataSource(
+class IosUserPreferencesDataSource(
 ) : UserPreferencesDataSource {
 
     private val dataStore: DataStore<UserPreferences> = DataStoreFactory.create(

@@ -42,7 +42,7 @@ import okio.Path.Companion.toPath
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-internal class IosDevicesDataSource(
+class IosDevicesDataSource(
 ) : DevicesDataSource {
 
     private val dataStore: DataStore<Devices> = DataStoreFactory.create(

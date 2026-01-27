@@ -13,6 +13,7 @@ import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.device.DeviceViewModel
+import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidUserPreferencesDataSource
@@ -20,7 +21,7 @@ import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -88,14 +89,8 @@ val androidModule = module {
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<UserPreferencesRepository> { UserPreferencesRepository(get()) }
     // Binding Viewmodel
-    viewModel { BeaconViewModel(get()) }
-    viewModel {
-        HomeViewModel (
-            devicesRepository = get(),
-            devicesStateRepository = get(),
-            userPreferencesRepository = get(),
-            scope = get()
-        )
-    }
-    viewModel { DeviceViewModel(get(), get(), get()) }
+    viewModelOf(::BeaconViewModel)
+    viewModelOf(::HomeViewModel)
+    viewModelOf(::HomeViewModelAndroid)
+    viewModelOf(::DeviceViewModel)
 }

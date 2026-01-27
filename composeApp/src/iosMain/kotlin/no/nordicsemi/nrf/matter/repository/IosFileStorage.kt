@@ -1,8 +1,10 @@
 package no.nordicsemi.nrf.matter.repository
 
-import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.model.Devices
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -35,17 +37,14 @@ import no.nordicsemi.nrf.matter.model.Devices
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class SettingsDevicesDataSource(
-) : DevicesDataSource {
-    override val devicesFlow: Flow<Devices>
-        get() = TODO("Not yet implemented")
-
-    override suspend fun update(transform: (Devices) -> Devices) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun removeDevice(deviceId: Long) {
-        TODO("Not yet implemented")
-    }
-
+@OptIn(ExperimentalForeignApi::class)
+fun getDocumentDirectory(): String {
+    val documentDirectory: NSURL? = NSFileManager.defaultManager.URLForDirectory(
+        directory = NSDocumentDirectory,
+        inDomain = NSUserDomainMask,
+        appropriateForURL = null,
+        create = false,
+        error = null,
+    )
+    return requireNotNull(documentDirectory?.path) { "Could not find document directory" }
 }

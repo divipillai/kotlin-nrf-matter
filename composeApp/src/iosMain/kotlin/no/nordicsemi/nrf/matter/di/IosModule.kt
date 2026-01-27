@@ -5,9 +5,9 @@ import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.SettingsDeviceStateDataSource
-import no.nordicsemi.nrf.matter.repository.SettingsDevicesDataSource
-import no.nordicsemi.nrf.matter.repository.SettingsUserPreferencesDataSource
+import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
+import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
+import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import org.koin.dsl.module
 
@@ -45,7 +45,7 @@ import org.koin.dsl.module
 val iosModule = module {
 
     single<DevicesDataSource> {
-        SettingsDevicesDataSource()
+        IosDevicesDataSource()
     }
 
     single {
@@ -53,7 +53,7 @@ val iosModule = module {
     }
 
     single<DeviceStateDataSource> {
-        SettingsDeviceStateDataSource()
+        IosDevicesStateDataSource()
     }
 
     single {
@@ -61,7 +61,7 @@ val iosModule = module {
     }
 
     single<UserPreferencesDataSource> {
-        SettingsUserPreferencesDataSource()
+        IosUserPreferencesDataSource()
     }
 
     single {

@@ -19,7 +19,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -29,7 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import no.nordicsemi.nrf.matter.home.HomeViewModel
+import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
 import no.nordicsemi.nrf.matter.home.commissionDevice
 import no.nordicsemi.nrf.matter.ui.TitleAppBar
 import org.koin.androidx.compose.koinViewModel
@@ -73,7 +72,7 @@ fun AppNavigationLayout(navController: NavHostController) {
     val updateTopAppBarTitle: (title: String) -> Unit = remember {
         { topAppBarTitle = it }
     }
-    val homeViewModel: HomeViewModel = koinViewModel()
+    val homeViewModel: HomeViewModelAndroid = koinViewModel()
     val devicesUiModel by homeViewModel.devicesUiModelLiveData.collectAsStateWithLifecycle()
 
     val commissionDeviceLauncher =
@@ -116,6 +115,12 @@ fun AppNavigationLayout(navController: NavHostController) {
             }
         }
     ) { innerPadding ->
-        AppNavigation(navController, innerPadding, snackbarHostState, updateTopAppBarTitle, onCommissionDevice)
+        AppNavigation(
+            navController,
+            innerPadding,
+            snackbarHostState,
+            updateTopAppBarTitle,
+            onCommissionDevice
+        )
     }
 }

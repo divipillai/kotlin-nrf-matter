@@ -1,15 +1,9 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.serializer
 
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
-import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
-import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
+import androidx.datastore.core.okio.OkioSerializer
+import no.nordicsemi.nrf.matter.model.Devices
+import okio.BufferedSink
+import okio.BufferedSource
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -42,29 +36,19 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val iosModule = module {
-
-    single<DevicesDataSource> {
-        IosDevicesDataSource()
+object DevicesOkioSerializer : OkioSerializer<Devices> {
+    override val defaultValue: Devices = Devices()
+    override suspend fun readFrom(source: BufferedSource): Devices {
+        return try {
+            // Read the entire source as a String and decode
+            DevicesJson.decode(source.readUtf8())
+        } catch (e: Exception) {
+            throw androidx.datastore.core.CorruptionException("Cannot read Devices JSON.", e)
+        }
     }
 
-    single {
-        DevicesRepository(dataSource = get())
-    }
-
-    single<DeviceStateDataSource> {
-        IosDevicesStateDataSource()
-    }
-
-    single {
-        DevicesStateRepository(dataSource = get())
-    }
-
-    single<UserPreferencesDataSource> {
-        IosUserPreferencesDataSource()
-    }
-
-    single {
-        UserPreferencesRepository(dataSource = get())
+    override suspend fun writeTo(t: Devices, sink: BufferedSink) {
+        // Encode to String and write to the sink
+        sink.writeUtf8(DevicesJson.encode(t))
     }
 }

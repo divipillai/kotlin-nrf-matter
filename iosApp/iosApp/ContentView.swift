@@ -1,21 +1,28 @@
 import UIKit
 import SwiftUI
 import ComposeApp
-
-struct ComposeView: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.MainViewController()
-    }
-
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
-}
+import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        ComposeView()
-            .ignoresSafeArea()
+        NavigationStack {
+            List {
+                Text("Living Room Light")
+                Text("Bedroom Outlet")
+                Text("Kitchen Switch")
+            }
+            .navigationTitle("nRF Matter")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        print("Add Device tapped")
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+        }
+        .padding(.horizontal)
     }
 }
-
-
 

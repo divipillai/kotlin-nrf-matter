@@ -1,15 +1,8 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.commission
 
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
+import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
-import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
-import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -42,29 +35,38 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val iosModule = module {
+class CommissioningResultProcessor(
+    private val devicesRepository: DevicesRepository,
+    private val devicesStateRepository: DevicesStateRepository
+) : CommissioningResultHandler {
 
-    single<DevicesDataSource> {
-        IosDevicesDataSource()
+    override suspend fun onCommissioningSucceeded(commissionResult: Device) {
+        devicesRepository.addDevice(commissionResult)
+        devicesStateRepository.addDeviceState(
+            deviceId = commissionResult.deviceId,
+            isOnline = true,
+            isOn = false
+        )
     }
 
-    single {
-        DevicesRepository(dataSource = get())
-    }
-
-    single<DeviceStateDataSource> {
-        IosDevicesStateDataSource()
-    }
-
-    single {
-        DevicesStateRepository(dataSource = get())
-    }
-
-    single<UserPreferencesDataSource> {
-        IosUserPreferencesDataSource()
-    }
-
-    single {
-        UserPreferencesRepository(dataSource = get())
+    override suspend fun onCommissioningFailed(reason: CommissioningFailure) {
+        // optional: metrics, logs, retry counters
     }
 }
+
+class CommissioningFacade(
+    private val handler: CommissioningResultHandler
+) {
+    suspend fun onSuccess(deviceIds: List<Long>) {
+        deviceIds.forEach { id ->
+//            handler.onCommissioningSucceeded(
+//               commissionResult =
+//            )
+        }
+    }
+
+    suspend fun onFailure() {
+        handler.onCommissioningFailed(CommissioningFailure.UNKNOWN)
+    }
+}
+

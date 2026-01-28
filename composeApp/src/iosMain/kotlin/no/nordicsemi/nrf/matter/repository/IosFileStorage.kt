@@ -1,15 +1,10 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.repository
 
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
-import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
-import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -42,29 +37,14 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val iosModule = module {
-
-    single<DevicesDataSource> {
-        IosDevicesDataSource()
-    }
-
-    single {
-        DevicesRepository(dataSource = get())
-    }
-
-    single<DeviceStateDataSource> {
-        IosDevicesStateDataSource()
-    }
-
-    single {
-        DevicesStateRepository(dataSource = get())
-    }
-
-    single<UserPreferencesDataSource> {
-        IosUserPreferencesDataSource()
-    }
-
-    single {
-        UserPreferencesRepository(dataSource = get())
-    }
+@OptIn(ExperimentalForeignApi::class)
+fun getDocumentDirectory(): String {
+    val documentDirectory: NSURL? = NSFileManager.defaultManager.URLForDirectory(
+        directory = NSDocumentDirectory,
+        inDomain = NSUserDomainMask,
+        appropriateForURL = null,
+        create = false,
+        error = null,
+    )
+    return requireNotNull(documentDirectory?.path) { "Could not find document directory" }
 }

@@ -1,15 +1,15 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.repository
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.core.okio.OkioStorage
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
-import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
-import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
+import no.nordicsemi.nrf.matter.model.DevicesState
+import no.nordicsemi.nrf.matter.serializer.DevicesStateOkioSerializer
+import okio.FileSystem
+import okio.Path.Companion.toPath
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -42,29 +42,42 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val iosModule = module {
+class IosDevicesStateDataSource(
+) : DeviceStateDataSource {
 
-    single<DevicesDataSource> {
-        IosDevicesDataSource()
+    private val dataStore: DataStore<DevicesState> = DataStoreFactory.create(
+        storage = OkioStorage(
+            fileSystem = FileSystem.SYSTEM,
+            serializer = DevicesStateOkioSerializer,
+            producePath = {
+                val path = "${getDocumentDirectory()}/devices_state_store.json"
+                path.toPath()
+            }
+        ))
+
+    override val devicesFlow: Flow<DevicesState> = dataStore.data
+        .catch { e ->
+            if (e is Exception) {
+                emit(DevicesState())
+            } else {
+                throw e
+            }
+        }
+
+    override suspend fun update(transform: (DevicesState) -> DevicesState) {
+        try {
+            dataStore.updateData(transform)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
-    single {
-        DevicesRepository(dataSource = get())
-    }
-
-    single<DeviceStateDataSource> {
-        IosDevicesStateDataSource()
-    }
-
-    single {
-        DevicesStateRepository(dataSource = get())
-    }
-
-    single<UserPreferencesDataSource> {
-        IosUserPreferencesDataSource()
-    }
-
-    single {
-        UserPreferencesRepository(dataSource = get())
+    override suspend fun removeDevice(deviceId: Long) {
+        dataStore.updateData { current ->
+            current.copy(
+                devicesStateList = current.devicesStateList
+                    .filterNot { it.deviceId == deviceId }
+            )
+        }
     }
 }

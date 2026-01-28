@@ -1,8 +1,15 @@
 package no.nordicsemi.nrf.matter.repository
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.core.okio.OkioStorage
 import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.model.UserPreferences
+import kotlinx.coroutines.flow.catch
+import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
+import no.nordicsemi.nrf.matter.model.Devices
+import no.nordicsemi.nrf.matter.serializer.DevicesOkioSerializer
+import okio.FileSystem
+import okio.Path.Companion.toPath
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -35,17 +42,44 @@ import no.nordicsemi.nrf.matter.model.UserPreferences
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class SettingsUserPreferencesDataSource(
-) : UserPreferencesDataSource {
+class IosDevicesDataSource(
+) : DevicesDataSource {
 
-    private val key = "user_preferences"
+    private val dataStore: DataStore<Devices> = DataStoreFactory.create(
+        storage = OkioStorage(
+            fileSystem = FileSystem.SYSTEM,
+            serializer = DevicesOkioSerializer,
+            producePath = {
+                val path = "${getDocumentDirectory()}/devices_store.json"
+                path.toPath()
+            }
+        ))
 
-    override val userPreferencesFlow: Flow<UserPreferences>
-        get() = TODO("Not yet implemented")
+    override val devicesFlow: Flow<Devices> = dataStore.data
+        .catch { e ->
+            if (e is Exception) {
+                emit(Devices())
+            } else {
+                throw e
+            }
+        }
 
-    override suspend fun update(
-        transform: (UserPreferences) -> UserPreferences
-    ) {
-        TODO("Not yet implemented")
+    override suspend fun update(transform: (Devices) -> Devices) {
+        try {
+            dataStore.updateData(transform)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    override suspend fun removeDevice(deviceId: Long) {
+        dataStore.updateData { devices ->
+            if (devices.devicesList.none { it.deviceId == deviceId }) {
+                throw IllegalStateException("Device not found: $deviceId")
+            }
+            devices.copy(
+                devicesList = devices.devicesList.filterNot { it.deviceId == deviceId }
+            )
+        }
     }
 }

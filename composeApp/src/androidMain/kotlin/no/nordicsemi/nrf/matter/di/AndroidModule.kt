@@ -1,6 +1,10 @@
 package no.nordicsemi.nrf.matter.di
 
 import android.bluetooth.BluetoothAdapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
 import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
@@ -9,7 +13,7 @@ import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.device.DeviceViewModel
-import no.nordicsemi.nrf.matter.home.HomeViewModel
+import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidUserPreferencesDataSource
@@ -17,7 +21,7 @@ import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -77,12 +81,16 @@ val androidModule = module {
 
     single<ChipClient> { ChipClient(context = androidContext()) }
 
+    // Define CoroutineScope as a singleton
+    single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
+
     // NOTE to myself: even though I have it in the common module, it also need to be declared in each module.
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<UserPreferencesRepository> { UserPreferencesRepository(get()) }
     // Binding Viewmodel
-    viewModel { BeaconViewModel(get()) }
-    viewModel { HomeViewModel(get(), get(), get(), get()) }
-    viewModel { DeviceViewModel(get(), get(), get()) }
+    viewModelOf(::BeaconViewModel)
+    viewModelOf(::HomeViewModel)
+    viewModelOf(::HomeViewModelAndroid)
+    viewModelOf(::DeviceViewModel)
 }

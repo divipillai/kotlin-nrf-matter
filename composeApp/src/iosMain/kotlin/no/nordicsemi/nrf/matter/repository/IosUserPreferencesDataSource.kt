@@ -1,8 +1,15 @@
 package no.nordicsemi.nrf.matter.repository
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.core.okio.OkioStorage
 import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.model.DevicesState
+import kotlinx.coroutines.flow.catch
+import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
+import no.nordicsemi.nrf.matter.model.UserPreferences
+import no.nordicsemi.nrf.matter.serializer.UserPreferencesOkioSerializer
+import okio.FileSystem
+import okio.Path.Companion.toPath
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -35,21 +42,33 @@ import no.nordicsemi.nrf.matter.model.DevicesState
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class SettingsDeviceStateDataSource(
-) : DeviceStateDataSource {
+class IosUserPreferencesDataSource(
+) : UserPreferencesDataSource {
 
-    private val key = "device_state"
+    private val dataStore: DataStore<UserPreferences> = DataStoreFactory.create(
+        storage = OkioStorage(
+            fileSystem = FileSystem.SYSTEM,
+            serializer = UserPreferencesOkioSerializer,
+            producePath = {
+                val path = "${getDocumentDirectory()}/user_preferences.json"
+                path.toPath()
+            }
+        ))
 
-    override val devicesFlow: Flow<DevicesState>
-        get() = TODO("Not yet implemented")
+    override val userPreferencesFlow: Flow<UserPreferences> = dataStore.data
+        .catch { e ->
+            if (e is Exception) {
+                emit(UserPreferences())
+            } else {
+                throw e
+            }
+        }
 
-    override suspend fun update(
-        transform: (DevicesState) -> DevicesState
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun removeDevice(deviceId: Long) {
-        TODO("Not yet implemented")
+    override suspend fun update(transform: (UserPreferences) -> UserPreferences) {
+        try {
+            dataStore.updateData(transform)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 }

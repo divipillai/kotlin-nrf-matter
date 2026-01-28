@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.home.matter.Matter
 import com.google.android.gms.home.matter.commissioning.CommissioningRequest
+import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.service.AppCommissioningService
 import org.koin.androidx.compose.koinViewModel
 
@@ -74,7 +75,7 @@ private fun HomeScreen(
     navigateToDevice: (deviceId: Long) -> Unit,
     onCommissionDevice: () -> Unit,
 ) {
-    val homeViewModel: HomeViewModel = koinViewModel()
+    val homeViewModel: HomeViewModelAndroid = koinViewModel()
     val devicesUiModel by homeViewModel.devicesUiModelLiveData.collectAsStateWithLifecycle()
 
     val onDeviceClick: (DeviceUiModel) -> Unit = {

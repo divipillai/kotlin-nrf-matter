@@ -1,15 +1,9 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.serializer
 
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
-import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
-import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
+import androidx.datastore.core.okio.OkioSerializer
+import no.nordicsemi.nrf.matter.model.UserPreferences
+import okio.BufferedSink
+import okio.BufferedSource
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -42,29 +36,21 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val iosModule = module {
-
-    single<DevicesDataSource> {
-        IosDevicesDataSource()
+object UserPreferencesOkioSerializer : OkioSerializer<UserPreferences> {
+    override val defaultValue: UserPreferences = UserPreferences()
+    override suspend fun readFrom(source: BufferedSource): UserPreferences {
+        return try {
+            UserPreferencesJson.decode(source.readUtf8())
+        } catch (e: Exception) {
+            throw androidx.datastore.core.CorruptionException("Cannot read user preferences.", e)
+        }
     }
 
-    single {
-        DevicesRepository(dataSource = get())
-    }
 
-    single<DeviceStateDataSource> {
-        IosDevicesStateDataSource()
-    }
-
-    single {
-        DevicesStateRepository(dataSource = get())
-    }
-
-    single<UserPreferencesDataSource> {
-        IosUserPreferencesDataSource()
-    }
-
-    single {
-        UserPreferencesRepository(dataSource = get())
+    override suspend fun writeTo(
+        t: UserPreferences,
+        sink: BufferedSink
+    ) {
+        sink.writeUtf8(UserPreferencesJson.encode(t))
     }
 }

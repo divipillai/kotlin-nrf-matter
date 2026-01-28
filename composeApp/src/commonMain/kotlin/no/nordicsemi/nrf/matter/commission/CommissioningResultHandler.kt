@@ -1,15 +1,6 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.commission
 
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
-import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
-import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
+import no.nordicsemi.nrf.matter.model.Device
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -42,29 +33,18 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val iosModule = module {
+interface CommissioningResultHandler {
+    suspend fun onCommissioningSucceeded(
+       commissionResult: Device
+    )
 
-    single<DevicesDataSource> {
-        IosDevicesDataSource()
-    }
-
-    single {
-        DevicesRepository(dataSource = get())
-    }
-
-    single<DeviceStateDataSource> {
-        IosDevicesStateDataSource()
-    }
-
-    single {
-        DevicesStateRepository(dataSource = get())
-    }
-
-    single<UserPreferencesDataSource> {
-        IosUserPreferencesDataSource()
-    }
-
-    single {
-        UserPreferencesRepository(dataSource = get())
-    }
+    suspend fun onCommissioningFailed(reason: CommissioningFailure)
 }
+
+enum class CommissioningFailure {
+    TIMEOUT,
+    NETWORK_ERROR,
+    ATTESTATION_FAILED,
+    UNKNOWN
+}
+

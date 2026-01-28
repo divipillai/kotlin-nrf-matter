@@ -1,8 +1,4 @@
-package no.nordicsemi.nrf.matter.repository
-
-import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.model.Devices
+package no.nordicsemi.nrf.matter.model
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -35,17 +31,27 @@ import no.nordicsemi.nrf.matter.model.Devices
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class SettingsDevicesDataSource(
-) : DevicesDataSource {
-    override val devicesFlow: Flow<Devices>
-        get() = TODO("Not yet implemented")
+/**
+ * Encapsulates all of the information on a specific device. Note that the app currently only
+ * supports Matter devices with server attribute "ON/OFF".
+ */
+data class DeviceUiModel(
+    // Device information that is persisted in a DataStore.
+    val device: Device,
 
-    override suspend fun update(transform: (Devices) -> Devices) {
-        TODO("Not yet implemented")
-    }
+    // Device state information that is retrieved dynamically.
+    val isOnline: Boolean,
+    // Whether the device is on or off.
+    val isOn: Boolean,
+)
 
-    override suspend fun removeDevice(deviceId: Long) {
-        TODO("Not yet implemented")
-    }
+/**
+ * UI model that encapsulates the information about the devices to be displayed on the Home screen.
+ */
+data class DevicesListUiModel(
+    // The list of devices.
+    val devices: List<DeviceUiModel>,
 
-}
+    // Whether offline devices should be shown.
+    val showOfflineDevices: Boolean,
+)

@@ -6,10 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.rememberNavController
-import no.nordicsemi.nrf.matter.navigation.AppNavigationLayout
 import no.nordicsemi.nrf.matter.theme.NordicActivity
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.ui.AppRoot
 
 class MainActivity : NordicActivity() {
 
@@ -22,8 +21,9 @@ class MainActivity : NordicActivity() {
                     color = MaterialTheme.colorScheme.surface,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    val navController = rememberNavController()
-                    AppNavigationLayout(navController)
+                    AppRoot()
+                    /* val navController = rememberNavController()
+                     AppNavigationLayout(navController)*/
                 }
             }
         }

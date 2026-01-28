@@ -45,17 +45,24 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
-            implementation(compose.material3)
+            implementation(libs.material.icons.extended)
+            implementation(libs.material3)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.kotlinx.datetime)
+            // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.androidx.compose)
             //navigation
-            implementation(libs.navigation.compose)
+            implementation(libs.navigation.compose) // todo: might not be needed once nav 3 is implemented, verify and remove it.
+            // Nav 3
+            implementation(libs.jetbrains.navigation3.ui)
+            implementation(libs.jetbrains.material3.adaptiveNavigation3)
+            implementation(libs.jetbrains.lifecycle.viewmodelNavigation3)
+            // serialization
             implementation(libs.kotlinx.serialization.json)
             // data store
             implementation(libs.androidx.datastore.preferences)

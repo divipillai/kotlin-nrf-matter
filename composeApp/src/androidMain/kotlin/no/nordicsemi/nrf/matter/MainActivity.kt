@@ -7,7 +7,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import no.nordicsemi.nrf.matter.theme.NordicActivity
-import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.AppRoot
 
 class MainActivity : NordicActivity() {
@@ -16,15 +15,13 @@ class MainActivity : NordicActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            NordicTheme {
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    AppRoot()
-                    /* val navController = rememberNavController()
-                     AppNavigationLayout(navController)*/
-                }
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                AppRoot()
+                /* val navController = rememberNavController()
+                 AppNavigationLayout(navController)*/
             }
         }
     }

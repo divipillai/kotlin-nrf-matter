@@ -102,29 +102,34 @@ fun AppRoot() {
 
 //    val commissioningHandler = getKoin().get<CommissioningHandler>()
     NordicTheme {
-        Scaffold(
-            topBar = {
-                AppBar(
-                    topAppBarTitle = topBarTitle,
-                )
-            },
-            floatingActionButton = {
-                if (devicesUiModel.devices.isNotEmpty()) {
-                    FloatingActionButton(
-                        onClick = {
-                            // invoke onCommission click action.
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            Scaffold(
+                topBar = {
+                    AppBar(
+                        topAppBarTitle = topBarTitle,
+                    )
+                },
+                floatingActionButton = {
+                    if (devicesUiModel.devices.isNotEmpty()) {
+                        FloatingActionButton(
+                            onClick = {
+                                // invoke onCommission click action.
 //                        commissioningHandler.commission()
+                            }
+                        ) {
+                            Icon(Icons.Default.Add, null)
                         }
-                    ) {
-                        Icon(Icons.Default.Add, null)
                     }
                 }
+            ) { padding ->
+                AppNavDisplay(
+                    padding = padding,
+                    updateTitle = { topBarTitle = it }
+                )
             }
-        ) { padding ->
-            AppNavDisplay(
-                padding = padding,
-                updateTitle = { topBarTitle = it }
-            )
         }
     }
 }

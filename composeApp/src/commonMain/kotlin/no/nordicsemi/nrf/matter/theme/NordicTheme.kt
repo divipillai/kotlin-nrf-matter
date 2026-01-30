@@ -78,7 +78,18 @@ fun NordicTheme(
             outline = dark_md_theme_outline,
             inverseSurface = dark_md_theme_inverseSurface,
             inverseOnSurface = dark_md_theme_inverseOnSurface,
-        )
+
+            tertiary = dark_md_theme_tertiary,
+            tertiaryContainer = dark_md_theme_tertiaryContainer,
+            onTertiary = dark_md_theme_onTertiary,
+            onTertiaryContainer = dark_md_theme_onTertiaryContainer,
+
+            surfaceContainer = dark_md_theme_surfaceContainer,
+            surfaceContainerLow = dark_md_theme_surfaceContainerLow,
+            surfaceContainerHigh = dark_md_theme_surfaceContainerHigh,
+            surfaceContainerHighest = dark_md_theme_surfaceContainerHighest
+
+            )
     } else {
         lightColorScheme(
             primary = light_md_theme_primary,
@@ -108,6 +119,16 @@ fun NordicTheme(
             outline = light_md_theme_outline,
             inverseSurface = light_md_theme_inverseSurface,
             inverseOnSurface = light_md_theme_inverseOnSurface,
+
+            tertiary = light_md_theme_tertiary,
+            tertiaryContainer = light_md_theme_tertiaryContainer,
+            onTertiary = light_md_theme_onTertiary,
+            onTertiaryContainer = light_md_theme_onTertiaryContainer,
+
+            surfaceContainer = light_md_theme_surfaceContainer,
+            surfaceContainerLow = light_md_theme_surfaceContainerLow,
+            surfaceContainerHigh = light_md_theme_surfaceContainerHigh,
+            surfaceContainerHighest = light_md_theme_surfaceContainerHighest
         )
     }
 

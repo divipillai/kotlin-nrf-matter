@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -22,9 +23,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-
-private val appBarColor = Color(0xFF333F48)
+import no.nordicsemi.nrf.matter.theme.dark_md_appBarColor
+import no.nordicsemi.nrf.matter.theme.light_md_appBarColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +44,7 @@ fun AppBar(
         },
         colors = TopAppBarDefaults.topAppBarColors(
             scrolledContainerColor = MaterialTheme.colorScheme.primary,
-            containerColor = appBarColor,
+            containerColor = if (isSystemInDarkTheme()) dark_md_appBarColor else light_md_appBarColor,
             titleContentColor = MaterialTheme.colorScheme.onPrimary,
             actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
             navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,

@@ -48,3 +48,7 @@ enum class CommissioningFailure {
     UNKNOWN
 }
 
+interface CommissionHandler {
+    fun onCommissioningStarted()
+}
+

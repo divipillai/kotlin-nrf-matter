@@ -1,12 +1,11 @@
-package no.nordicsemi.nrf.matter.screens
+package no.nordicsemi.nrf.matter.ui
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import no.nordicsemi.nrf.matter.model.DeviceUiModel
-import no.nordicsemi.nrf.matter.ui.DeviceList
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.unit.dp
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -40,25 +39,11 @@ import no.nordicsemi.nrf.matter.ui.DeviceList
  */
 
 @Composable
-fun HomeScreen(
-    innerPaddings: PaddingValues,
-    devices: List<DeviceUiModel>,
-    onCommissionClick: () -> Unit,
-    onDeviceClick: (deviceId: Long) -> Unit,
-    onOnOffClick: (deviceId: Long, value: Boolean) -> Unit,
-) {
-    Box(modifier = Modifier.padding(innerPaddings)) {
-        if (devices.isEmpty()) {
-            NoDevicesScreen(
-                onAddDeviceClick = onCommissionClick
-            )
-        } else {
-            DeviceList(
-                onDeviceClick = { onDeviceClick(it.device.deviceId) },
-                onOnOffClick = onOnOffClick,
-                devicesList = devices,
-            )
-        }
-    }
+fun SectionTitle(title: String = "Device Test") {
+    Text(
+        text = title.uppercase(),
+        modifier = Modifier
+            .alpha(0.5f)
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp),
+    )
 }
-

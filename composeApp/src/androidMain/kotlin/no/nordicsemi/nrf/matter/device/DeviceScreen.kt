@@ -51,7 +51,7 @@ import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.R
 import no.nordicsemi.nrf.matter.home.MatterGreen
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
-import no.nordicsemi.nrf.matter.ui.DeviceItemContainer
+import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.SectionTitle
 import org.koin.androidx.compose.koinViewModel
@@ -230,7 +230,7 @@ private fun DeviceHeader() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Icon(
-            painter = painterResource(R.drawable.light_fixture),
+            painter = painterResource(R.drawable.no_matter_devices), // todo: Change it to light_fixture
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(80.dp)
@@ -264,7 +264,7 @@ private fun PowerCard(
     onToggle: (Boolean) -> Unit
 ) {
     DeviceItemContainer(
-        icon = painterResource(R.drawable.power_settings),
+        icon = painterResource(R.drawable.no_matter_devices), // todo: Change it to power_settings
         title = "Power",
         subtitle = "Turn device ON or OFF",
         isOnline = enabled,

@@ -26,13 +26,14 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
-import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
 import no.nordicsemi.nrf.matter.navigation.DetailsRoute
 import no.nordicsemi.nrf.matter.navigation.HomeRoute
 import no.nordicsemi.nrf.matter.navigation.config
 import no.nordicsemi.nrf.matter.screens.DeviceScreen
 import no.nordicsemi.nrf.matter.screens.HomeScreen
+import no.nordicsemi.nrf.matter.theme.NordicTheme
 import org.koin.compose.getKoin
 
 /*
@@ -111,9 +112,20 @@ fun App() {
                     backStack = backStack,
                     onBack = onBack,
                     entryProvider = entryProvider {
-                        screens(padding, onCommissioningStarted = {
-                            commissionHandler.onCommissioningStarted()
-                        }, backStack)
+                        screens(
+                            padding = padding,
+                            onCommissioningStarted = {
+                                commissionHandler.onCommissioningStarted()
+                            },
+                            backStack = backStack,
+                            devices = devicesUiModel.devices,
+                            onDeviceClick = { deviceId ->
+                                backStack.add(DetailsRoute(deviceId))
+                            },
+                            onOnOffClick = { deviceId, onOff ->
+//                                homeViewModel.onOnOffClick(deviceId, onOff)
+                            }
+                        )
                     },
                     entryDecorators = listOf(
                         rememberSaveableStateHolderNavEntryDecorator(),
@@ -129,14 +141,17 @@ private fun EntryProviderScope<NavKey>.screens(
     padding: PaddingValues,
     onCommissioningStarted: () -> Unit,
     backStack: NavBackStack<NavKey>,
+    devices: List<DeviceUiModel>,
+    onDeviceClick: (deviceId: Long) -> Unit,
+    onOnOffClick: (deviceId: Long, Boolean) -> Unit,
 ) {
     entry<HomeRoute> {
         HomeScreen(
             innerPaddings = padding,
+            devices = devices,
             onCommissionClick = onCommissioningStarted,
-            navigateToDevice = { deviceId ->
-                backStack.add(DetailsRoute(deviceId))
-            }
+            onDeviceClick = { onDeviceClick(it) },
+            onOnOffClick = onOnOffClick
         )
 
     }

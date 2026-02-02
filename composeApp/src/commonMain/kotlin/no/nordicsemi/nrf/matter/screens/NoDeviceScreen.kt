@@ -150,7 +150,7 @@ fun NoDevicesScreen(
 }
 
 @Composable
-fun EmptyStateIllustration() {
+private fun EmptyStateIllustration() {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,

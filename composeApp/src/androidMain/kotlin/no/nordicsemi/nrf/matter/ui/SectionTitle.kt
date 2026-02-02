@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
  */
 @Preview(showBackground = true)
 @Composable
-fun SectionTitle(title: String = "Device Test") {
+private fun SectionTitle(title: String = "Device Test") {
     Text(
         text = title.uppercase(),
         modifier = Modifier

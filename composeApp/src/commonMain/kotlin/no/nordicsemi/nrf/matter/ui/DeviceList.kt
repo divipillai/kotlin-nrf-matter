@@ -1,6 +1,5 @@
-package no.nordicsemi.nrf.matter.home
+package no.nordicsemi.nrf.matter.ui
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,50 +25,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import no.nordicsemi.nrf.matter.R
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
-import no.nordicsemi.nrf.matter.ui.SectionTitle
+import nrfmatterformobile.composeapp.generated.resources.Res
+import nrfmatterformobile.composeapp.generated.resources.light_bulb_smart_light
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.time.Clock
-
-/*
- * Copyright (c) 2025, Nordic Semiconductor
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification, are
- * permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- * conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- * of conditions and the following disclaimer in the documentation and/or other materials
- * provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be
- * used to endorse or promote products derived from this software without specific prior
- * written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 
 val MatterGreen = Color(0xFF22C55E)
 
@@ -78,7 +46,7 @@ val MatterGreen = Color(0xFF22C55E)
 @Composable
 fun DimmableLightItem() {
     DeviceItemContainer(
-        icon = painterResource(R.drawable.no_matter_devices),
+        icon = painterResource(resource = Res.drawable.light_bulb_smart_light),
         title = "Living Room Lamp",
         subtitle = "Dimmable Light",
         onDeviceClick = {
@@ -111,7 +79,7 @@ fun SwitchDeviceItem(
     onDeviceClick: () -> Unit
 ) {
     DeviceItemContainer(
-        icon = painterResource(R.drawable.no_matter_devices),// TODO: Change it to the Power icon
+        icon = painterResource(resource = Res.drawable.light_fixture),// TODO: Change it to the Power icon
         title = title,
         subtitle = subtitle,
         isOnline = checked,
@@ -182,7 +150,6 @@ internal fun DeviceList(
         // --- Section: Lights ---
         this.items(devicesList, key = { device -> device.device.deviceId }) { device ->
             SectionTitle("Lights")
-            Log.d("AAA", "DeviceList: ${device.device}")
             SwitchDeviceItem(
                 title = device.device.name ?: "Living Room Lamp",
                 subtitle = "Smart Light",
@@ -228,7 +195,7 @@ internal fun DeviceList(
 @Composable
 fun ThermostatItem() {
     DeviceItemContainer(
-        icon = painterResource(R.drawable.no_matter_devices),
+        icon = painterResource(resource = Res.drawable.temperature),
         title = "Downstairs AC",
         subtitle = "Target: 70°F", onDeviceClick = {}
     ) {
@@ -248,7 +215,7 @@ fun ThermostatItem() {
 @Composable
 fun LockItem() {
     DeviceItemContainer(
-        icon = painterResource(R.drawable.no_matter_devices),// TODO: Change it to the door lock icon.
+        icon = painterResource(R.drawable.light_bulb_smart_light),// TODO: Change it to the door lock icon.
         title = "Front Door",
         subtitle = "Smart Lock",
         onDeviceClick = {}

@@ -58,7 +58,7 @@ import no.nordicsemi.nrf.matter.R
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @Composable
-fun DeviceItemContainer(
+private fun DeviceItemContainer(
     icon: Painter,
     title: String,
     subtitle: String,
@@ -130,7 +130,7 @@ fun DeviceItemContainer(
 
 @Preview(showBackground = true)
 @Composable
-fun DeviceItemContainerPreview() {
+private fun DeviceItemContainerPreview() {
     DeviceItemContainer(
         icon = painterResource(R.drawable.light_bulb_smart_light),
         title = "Living Room Lamp",

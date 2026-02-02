@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.ui
+package no.nordicsemi.nrf.matter.screens
 
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -11,7 +11,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,18 +27,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -47,21 +41,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.ui.NavDisplay
-import androidx.savedstate.serialization.SavedStateConfiguration
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import no.nordicsemi.nrf.matter.HomeViewModel
-import no.nordicsemi.nrf.matter.theme.NordicTheme
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.getKoin
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -95,110 +77,9 @@ import org.koin.compose.getKoin
  */
 
 @Composable
-fun AppRoot() {
-    var topBarTitle by rememberSaveable { mutableStateOf("nRF Matter") }
-    val homeViewModel: HomeViewModel = getKoin().get()
-    val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsStateWithLifecycle()
-
-//    val commissioningHandler = getKoin().get<CommissioningHandler>()
-    NordicTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.surface,
-        ) {
-            Scaffold(
-                topBar = {
-                    AppBar(
-                        topAppBarTitle = topBarTitle,
-                    )
-                },
-                floatingActionButton = {
-                    if (devicesUiModel.devices.isNotEmpty()) {
-                        FloatingActionButton(
-                            onClick = {
-                                // invoke onCommission click action.
-//                        commissioningHandler.commission()
-                            }
-                        ) {
-                            Icon(Icons.Default.Add, null)
-                        }
-                    }
-                }
-            ) { padding ->
-                AppNavDisplay(
-                    padding = padding,
-                    updateTitle = { topBarTitle = it }
-                )
-            }
-        }
-    }
-}
-
-
-@Serializable
-private data object HomeRoute : NavKey
-
-@Serializable
-private data class DetailsRoute(val id: Long) : NavKey
-
-private val config = SavedStateConfiguration {
-    serializersModule = SerializersModule {
-        polymorphic(NavKey::class) {
-            subclass(HomeRoute::class, HomeRoute.serializer())
-            subclass(DetailsRoute::class, DetailsRoute.serializer())
-        }
-    }
-}
-
-@Composable
-fun HomeScreen(
-    innerPaddings: PaddingValues,
-    navigateToDevice: (deviceId: Long) -> Unit,
-) {
-    Box(modifier = Modifier.padding(innerPaddings)) {
-
-        NoDevicesScreen()
-    }
-}
-
-@Composable
-fun AppNavDisplay(
-    padding: PaddingValues,
-    updateTitle: (String) -> Unit
-) {
-    val backStack = rememberNavBackStack(config, HomeRoute)
-    NavDisplay(
-        backStack = backStack,
-        onBack = { backStack.removeLastOrNull() },
-        entryProvider = entryProvider {
-            entry<HomeRoute> {
-                updateTitle("nRF Matter")
-                HomeScreen(
-                    innerPaddings = padding,
-                    navigateToDevice = { deviceId ->
-                        backStack.add(DetailsRoute(deviceId))
-                    }
-                )
-
-            }
-            entry<DetailsRoute> { key ->
-                updateTitle("Device Details")
-                DeviceScreen(
-                    deviceId = key.id,
-                    padding = padding,
-                )
-            }
-        }
-    )
-}
-
-@Composable
-fun DeviceScreen(deviceId: Long, padding: PaddingValues) {
-}
-
-@Composable
 fun NoDevicesScreen(
-    onAddDeviceClick: () -> Unit = {}
+    onAddDeviceClick: () -> Unit = {},
+    onMatterUrlClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -257,7 +138,7 @@ fun NoDevicesScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = { /* TODO */ }) {
+        TextButton(onClick = { onMatterUrlClick() }) {
             Text(
                 "What is Matter?",
                 style = MaterialTheme.typography.labelLarge,
@@ -312,6 +193,3 @@ fun EmptyStateIllustration() {
         }
     }
 }
-
-
-

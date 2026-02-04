@@ -1,12 +1,14 @@
 package no.nordicsemi.nrf.matter
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeUIViewController
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
-import platform.UIKit.UIViewController
 
 class IosCommissionHandler(
     private val onCommission: () -> Unit
@@ -16,9 +18,12 @@ class IosCommissionHandler(
     }
 }
 
-fun MainViewController(): UIViewController =
+fun MainViewController() =
     ComposeUIViewController {
-        Surface {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
             IosAppRoot()
         }
 

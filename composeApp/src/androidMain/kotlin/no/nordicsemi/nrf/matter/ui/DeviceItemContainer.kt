@@ -127,18 +127,3 @@ private fun DeviceItemContainer(
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-private fun DeviceItemContainerPreview() {
-    DeviceItemContainer(
-        icon = painterResource(R.drawable.light_bulb_smart_light),
-        title = "Living Room Lamp",
-        subtitle = "Dimmable Light",
-        isOnline = true,
-        {}
-    ) {
-        Text("50%", fontWeight = FontWeight.Bold)
-    }
-
-}

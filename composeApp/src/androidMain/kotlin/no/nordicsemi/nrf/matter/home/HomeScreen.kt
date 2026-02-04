@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.home.matter.Matter
 import com.google.android.gms.home.matter.commissioning.CommissioningRequest
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.screens.NoDevicesScreen
 import no.nordicsemi.nrf.matter.service.AppCommissioningService
 import org.koin.androidx.compose.koinViewModel
 

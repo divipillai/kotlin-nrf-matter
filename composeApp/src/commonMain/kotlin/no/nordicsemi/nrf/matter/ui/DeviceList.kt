@@ -35,6 +35,8 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.light_bulb_smart_light
+import nrfmatterformobile.composeapp.generated.resources.light_fixture
+import nrfmatterformobile.composeapp.generated.resources.temperature
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.time.Clock
@@ -215,7 +217,7 @@ fun ThermostatItem() {
 @Composable
 fun LockItem() {
     DeviceItemContainer(
-        icon = painterResource(R.drawable.light_bulb_smart_light),// TODO: Change it to the door lock icon.
+        icon = painterResource(Res.drawable.light_bulb_smart_light),// TODO: Change it to the door lock icon.
         title = "Front Door",
         subtitle = "Smart Lock",
         onDeviceClick = {}

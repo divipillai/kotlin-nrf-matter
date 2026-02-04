@@ -52,7 +52,7 @@ fun AndroidAppRoot() {
 
     val context = LocalContext.current
 
-    val commissionHandler = remember {
+    val commissionHandler = remember(context, commissionDeviceLauncher) {
         AndroidCommissionHandler {
             commissionDevice(
                 context.applicationContext,

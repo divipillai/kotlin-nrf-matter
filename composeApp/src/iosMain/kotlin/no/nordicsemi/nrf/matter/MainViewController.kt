@@ -20,6 +20,9 @@ class IosCommissionHandler(
 
 fun MainViewController() =
     ComposeUIViewController {
+        // Initialize koin
+        initKoin()
+
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background

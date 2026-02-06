@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +29,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,10 +46,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceState
+import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.ui.SectionTitle
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.time.Clock
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -109,10 +117,10 @@ fun DeviceScreen(deviceId: Long, padding: PaddingValues, onBack: () -> Unit) {
                 }
             )
 
-//            SectionTitle("Sharing")
+            SectionTitle("Sharing")
             ShareCard { /* todo: Add share device feature. */ }
 
-//            SectionTitle("Technical Details")
+            SectionTitle("Technical Details")
             TechnicalDetailsCard()
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -122,6 +130,7 @@ fun DeviceScreen(deviceId: Long, padding: PaddingValues, onBack: () -> Unit) {
     }
 
 }
+
 @Preview(showBackground = true)
 @Composable
 fun DeviceHeader() {
@@ -426,3 +435,110 @@ fun DeviceItemContainerPreview() {
     }
 
 }
+
+// Lock Item
+@Composable
+fun LockItem(icon: Painter) {
+    DeviceItemContainer(
+        icon = icon,// TODO: Change it to the door lock icon.
+        title = "Front Door",
+        subtitle = "Smart Lock",
+        onDeviceClick = {}
+    ) {
+        Surface(
+            color = Color.LightGray.copy(alpha = 0.2f),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text(
+                "LOCKED",
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFE11D48)
+            )
+        }
+    }
+}
+
+// Thermostat Item
+@Composable
+fun ThermostatItem(icon: Painter) {
+    DeviceItemContainer(
+        icon = icon,
+        title = "Downstairs AC",
+        subtitle = "Target: 70°F", onDeviceClick = {}
+    ) {
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                "72°",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Text("Cooling", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+        }
+    }
+}
+
+@Composable
+fun FilterChipsRow() {
+    val filters = listOf("All", "Living Room", "Kitchen", "Bedroom")
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(filters) { filter ->
+            val isSelected = filter == "All"
+            Surface(
+                shape = CircleShape,
+                border = if (isSelected) null else BorderStroke(
+                    1.dp,
+                    Color.LightGray.copy(alpha = 0.5f)
+                )
+            ) {
+                Text(
+                    text = filter,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                    color = if (isSelected) Color.White else Color.Unspecified,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------------------------
+// Constant objects used in Compose Preview
+
+// DeviceState -- Online and On
+private val DeviceState_OnlineOn =
+    DeviceState(
+        dateCaptured = Clock.System.now(),
+        deviceId = 1L,
+        on = true,
+        online = true
+
+    )
+
+// DeviceState -- Offline
+private val DeviceState_Offline =
+    DeviceState(
+        dateCaptured = Clock.System.now(),
+        deviceId = 1L,
+        on = true,
+        online = false
+
+    )
+
+private val DeviceTest =
+    Device(
+        dateCommissioned = 123456789L,
+        vendorId = "1234",
+        productId = "5678",
+        deviceType = DeviceType.LIGHT_ON_OFF,
+        deviceId = 1L,
+        name = "Living Room Light",
+        productName = "My Light",
+        vendorName = "MyVendor"
+
+    )

@@ -49,9 +49,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.R
-import no.nordicsemi.nrf.matter.home.MatterGreen
-import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
+import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.SectionTitle
 import org.koin.androidx.compose.koinViewModel
@@ -99,6 +98,9 @@ import org.koin.androidx.compose.koinViewModel
  * When the screen is shown, state monitoring is activated to get the device's latest state. This
  * makes it possible to update the device's online status dynamically.
  */
+
+val MatterGreen = Color(0xFF22C55E)
+
 @Composable
 internal fun DeviceScreen(
     innerPadding: PaddingValues,

@@ -26,7 +26,6 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
-import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
 import no.nordicsemi.nrf.matter.navigation.DetailsRoute
 import no.nordicsemi.nrf.matter.navigation.HomeRoute
@@ -71,7 +70,6 @@ val LocalCommissionHandler =
     staticCompositionLocalOf<CommissionHandler> {
         error("CommissionHandler not provided")
     }
-
 
 @Composable
 fun App() {
@@ -122,7 +120,7 @@ fun App() {
                                 commissionHandler.onCommissioningStarted()
                             },
                             backStack = backStack,
-                            devices = devicesUiModel.devices,
+                            homeViewModel = homeViewModel,
                             onDeviceClick = { deviceId ->
                                 backStack.add(DetailsRoute(deviceId))
                             },
@@ -149,14 +147,14 @@ private fun EntryProviderScope<NavKey>.screens(
     padding: PaddingValues,
     onCommissioningStarted: () -> Unit,
     backStack: NavBackStack<NavKey>,
-    devices: List<DeviceUiModel>,
+    homeViewModel: HomeViewModel,
     onDeviceClick: (deviceId: Long) -> Unit,
     onOnOffClick: (deviceId: Long, Boolean) -> Unit,
 ) {
     entry<HomeRoute> {
         HomeScreen(
             innerPaddings = padding,
-            devices = devices,
+            homeViewModel = homeViewModel,
             onCommissionClick = onCommissioningStarted,
             onDeviceClick = { onDeviceClick(it) },
             onOnOffClick = onOnOffClick

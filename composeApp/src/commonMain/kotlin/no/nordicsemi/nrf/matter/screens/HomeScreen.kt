@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.ui.DeviceList
 
 /*
@@ -42,13 +44,15 @@ import no.nordicsemi.nrf.matter.ui.DeviceList
 @Composable
 fun HomeScreen(
     innerPaddings: PaddingValues,
-    devices: List<DeviceUiModel>,
+    homeViewModel: HomeViewModel,
     onCommissionClick: () -> Unit,
     onDeviceClick: (deviceId: Long) -> Unit,
     onOnOffClick: (deviceId: Long, value: Boolean) -> Unit,
 ) {
+    val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
+
     Box(modifier = Modifier.padding(innerPaddings)) {
-        if (devices.isEmpty()) {
+        if (devicesUiModel.devices.isEmpty()) {
             NoDevicesScreen(
                 onAddDeviceClick = onCommissionClick
             )
@@ -56,7 +60,7 @@ fun HomeScreen(
             DeviceList(
                 onDeviceClick = { onDeviceClick(it.device.deviceId) },
                 onOnOffClick = onOnOffClick,
-                devicesList = devices,
+                devicesList = devicesUiModel.devices,
             )
         }
     }

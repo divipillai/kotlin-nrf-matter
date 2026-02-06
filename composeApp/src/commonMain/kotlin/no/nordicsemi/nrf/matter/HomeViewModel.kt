@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.Devices
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
@@ -51,7 +53,7 @@ import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
  */
 
 class HomeViewModel(
-    devicesRepository: DevicesRepository,
+    private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
@@ -99,6 +101,37 @@ class HomeViewModel(
             }
         }
         return list
+    }
+
+    fun addCommissionedDevice(
+        device: Device,
+        isOnline: Boolean,
+        isOn: Boolean,
+    ) {
+        scope.launch {
+            devicesRepository.addDevice(device)
+            devicesStateRepository.addDeviceState(
+                device.deviceId,
+                isOnline = isOnline,
+                isOn = isOn
+            )
+        }
+    }
+
+    fun updateDeviceType(
+        deviceId: Long,
+        deviceType: DeviceType
+    ) {
+        scope.launch {
+            devicesRepository.updateDeviceType(deviceId, deviceType)
+        }
+    }
+
+    fun commissioningFailed(resultCode: Int) {
+        if (resultCode == 0) {
+            // User simply wilfully exited from commissioning.
+            return
+        }
     }
 }
 

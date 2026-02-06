@@ -1,6 +1,11 @@
-package no.nordicsemi.nrf.matter.commission
+package no.nordicsemi.nrf.matter.ui
 
-import no.nordicsemi.nrf.matter.model.Device
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.unit.dp
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -33,22 +38,12 @@ import no.nordicsemi.nrf.matter.model.Device
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface CommissioningResultHandler {
-    suspend fun onCommissioningSucceeded(
-       commissionResult: Device
+@Composable
+fun SectionTitle(title: String = "Device Test") {
+    Text(
+        text = title.uppercase(),
+        modifier = Modifier
+            .alpha(0.5f)
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp),
     )
-
-    suspend fun onCommissioningFailed(reason: CommissioningFailure)
 }
-
-enum class CommissioningFailure {
-    TIMEOUT,
-    NETWORK_ERROR,
-    ATTESTATION_FAILED,
-    UNKNOWN
-}
-
-interface CommissionHandler {
-    fun onCommissioningStarted()
-}
-

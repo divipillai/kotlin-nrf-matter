@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.di
 
+import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
@@ -9,6 +10,7 @@ import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 /*
@@ -67,4 +69,6 @@ val iosModule = module {
     single {
         UserPreferencesRepository(dataSource = get())
     }
+
+    viewModelOf(::HomeViewModel)
 }

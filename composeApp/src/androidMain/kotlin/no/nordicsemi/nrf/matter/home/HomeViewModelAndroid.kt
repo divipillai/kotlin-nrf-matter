@@ -12,9 +12,6 @@ import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -48,17 +45,9 @@ import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
  */
 
 class HomeViewModelAndroid(
+    private val baseViewModel: HomeViewModel,
     context: Context,
-    private val devicesRepository: DevicesRepository,
-    private val devicesStateRepository: DevicesStateRepository,
-    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
-
-    private val baseViewModel = HomeViewModel(
-        devicesRepository,
-        devicesStateRepository,
-        userPreferencesRepository
-    )
     val devicesUiModelLiveData = baseViewModel.devicesUiModelFlow
 
     private var gpsCommissioningResult: CommissioningResult? = null
@@ -76,10 +65,7 @@ class HomeViewModelAndroid(
     }
 
     fun commissionDeviceFailed(resultCode: Int) {
-        if (resultCode == 0) {
-            // User simply wilfully exited from GPS commissioning.
-            return
-        }
+        baseViewModel.commissioningFailed(resultCode)
     }
 
     fun onCommissionedDeviceNameCaptured(deviceName: String) {
@@ -115,9 +101,7 @@ class HomeViewModelAndroid(
                     deviceId = deviceId,
                     name = gpsCommissioningResult?.deviceName,
                 )
-                devicesRepository.addDevice(device)
-//                )
-                devicesStateRepository.addDeviceState(deviceId, isOnline = true, isOn = false)
+                baseViewModel.addCommissionedDevice(device, isOnline = true, isOn = false)
             } catch (e: Exception) {
                 val msg = "Adding device [${deviceId}] [${deviceName}] to app's repository failed."
                 Log.e("BBB", "onCommissionedDeviceNameCaptured: $msg, $e")
@@ -135,7 +119,7 @@ class HomeViewModelAndroid(
                     }
                     if (deviceMatterInfo.types.size > 1) {
                         // TODO: Handle this properly once we have specific examples to learn from.
-                        devicesRepository.updateDeviceType(
+                        baseViewModel.updateDeviceType(
                             deviceId,
                             convertToAppDeviceType(deviceMatterInfo.types.first()),
                         )

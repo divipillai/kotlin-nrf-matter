@@ -1,6 +1,8 @@
-package no.nordicsemi.nrf.matter.commission
+package no.nordicsemi.nrf.matter
 
-import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.di.commonModule
+import no.nordicsemi.nrf.matter.di.iosModule
+import org.koin.core.context.startKoin
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -33,22 +35,8 @@ import no.nordicsemi.nrf.matter.model.Device
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface CommissioningResultHandler {
-    suspend fun onCommissioningSucceeded(
-       commissionResult: Device
-    )
-
-    suspend fun onCommissioningFailed(reason: CommissioningFailure)
+fun initKoin() {
+    startKoin {
+        modules(commonModule, iosModule)
+    }
 }
-
-enum class CommissioningFailure {
-    TIMEOUT,
-    NETWORK_ERROR,
-    ATTESTATION_FAILED,
-    UNKNOWN
-}
-
-interface CommissionHandler {
-    fun onCommissioningStarted()
-}
-

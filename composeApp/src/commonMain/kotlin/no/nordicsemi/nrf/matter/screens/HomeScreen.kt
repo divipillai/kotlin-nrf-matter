@@ -1,12 +1,14 @@
-package no.nordicsemi.nrf.matter.ui
+package no.nordicsemi.nrf.matter.screens
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.ui.DeviceList
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -38,13 +40,29 @@ import androidx.compose.ui.unit.dp
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-@Preview(showBackground = true)
+
 @Composable
-fun SectionTitle(title: String = "Device Test") {
-    Text(
-        text = title.uppercase(),
-        modifier = Modifier
-            .alpha(0.5f)
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp),
-    )
+fun HomeScreen(
+    innerPaddings: PaddingValues,
+    homeViewModel: HomeViewModel,
+    onCommissionClick: () -> Unit,
+    onDeviceClick: (deviceId: Long) -> Unit,
+    onOnOffClick: (deviceId: Long, value: Boolean) -> Unit,
+) {
+    val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
+
+    Box(modifier = Modifier.padding(innerPaddings)) {
+        if (devicesUiModel.devices.isEmpty()) {
+            NoDevicesScreen(
+                onAddDeviceClick = onCommissionClick
+            )
+        } else {
+            DeviceList(
+                onDeviceClick = { onDeviceClick(it.device.deviceId) },
+                onOnOffClick = onOnOffClick,
+                devicesList = devicesUiModel.devices,
+            )
+        }
+    }
 }
+

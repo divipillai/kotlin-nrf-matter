@@ -12,6 +12,12 @@ androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.9.6"
 androidx-testExt = "1.3.0"
 composeMultiplatform = "1.10.0"
+material = "1.10.0"
+material3Version = "1.9.0"
+materialIconsExtended = "1.7.3"
+multiplatform-nav3-ui = "1.0.0-alpha06"
+compose-multiplatform-adaptive = "1.3.0-alpha04"
+compose-multiplatform-lifecycle = "2.10.0-alpha08"
 datastore = "1.2.0"
 junit = "4.13.2"
 koinCore = "4.1.1"
@@ -48,6 +54,9 @@ androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecyc
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+material = { module = "org.jetbrains.compose.material:material", version.ref = "material" }
+material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3Version" }
 matter-android-demo-sdk = { module = "com.google.matter:matter-android-demo-sdk", version.ref = "matterAndroidDemoSdk" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 play-services-home = { module = "com.google.android.gms:play-services-home", version.ref = "playServicesHomeTypes" }
@@ -56,6 +65,9 @@ androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtim
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-material = { group = "androidx.compose.material", name = "material", version.ref = "material3" }
 compose-cloudy = { module = "com.github.skydoves:cloudy", version.ref = "cloudy" }
+jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "multiplatform-nav3-ui" }
+jetbrains-material3-adaptiveNavigation3 = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation3", version.ref = "compose-multiplatform-adaptive" }
+jetbrains-lifecycle-viewmodelNavigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "compose-multiplatform-lifecycle" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

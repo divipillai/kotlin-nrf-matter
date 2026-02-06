@@ -1,6 +1,11 @@
-package no.nordicsemi.nrf.matter.commission
+package no.nordicsemi.nrf.matter.navigation
 
-import no.nordicsemi.nrf.matter.model.Device
+import androidx.navigation3.runtime.NavKey
+import androidx.savedstate.serialization.SavedStateConfiguration
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -33,22 +38,19 @@ import no.nordicsemi.nrf.matter.model.Device
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface CommissioningResultHandler {
-    suspend fun onCommissioningSucceeded(
-       commissionResult: Device
-    )
+@Serializable
+@SerialName("Home")
+data object HomeRoute : NavKey
 
-    suspend fun onCommissioningFailed(reason: CommissioningFailure)
+@Serializable
+@SerialName("Details")
+data class DetailsRoute(val id: Long) : NavKey
+
+val config = SavedStateConfiguration {
+    serializersModule = SerializersModule {
+        polymorphic(NavKey::class) {
+            subclass(HomeRoute::class, HomeRoute.serializer())
+            subclass(DetailsRoute::class, DetailsRoute.serializer())
+        }
+    }
 }
-
-enum class CommissioningFailure {
-    TIMEOUT,
-    NETWORK_ERROR,
-    ATTESTATION_FAILED,
-    UNKNOWN
-}
-
-interface CommissionHandler {
-    fun onCommissioningStarted()
-}
-

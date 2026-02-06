@@ -92,7 +92,11 @@ fun App() {
                 topBar = {
                     AppBar(
                         topAppBarTitle = topBarTitle,
-                        onNavigationIconClick = { onBack() }
+                        onNavigationIconClick = {
+                            if (backStack.size > 1) {
+                                backStack.removeLastOrNull()
+                            }
+                        }
                     )
                 },
                 floatingActionButton = {

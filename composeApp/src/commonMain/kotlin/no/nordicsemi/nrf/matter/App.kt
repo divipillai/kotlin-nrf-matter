@@ -11,10 +11,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -26,6 +25,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
+import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
 import no.nordicsemi.nrf.matter.navigation.DetailsRoute
 import no.nordicsemi.nrf.matter.navigation.HomeRoute
@@ -73,11 +73,10 @@ val LocalCommissionHandler =
 
 @Composable
 fun App() {
-    var topBarTitle by rememberSaveable { mutableStateOf("nRF Matter") }
     val homeViewModel: HomeViewModel = getKoin().get()
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
 
-    val backStack = rememberNavBackStack(config, HomeRoute)
+    val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)
     val onBack: () -> Unit = { backStack.removeLastOrNull() }
 
     val commissionHandler = LocalCommissionHandler.current
@@ -89,7 +88,10 @@ fun App() {
             Scaffold(
                 topBar = {
                     AppBar(
-                        topAppBarTitle = topBarTitle,
+                        topAppBarTitle = rememberTopBarTitle(
+                            backStack = backStack,
+                            devicesUiModel = devicesUiModel
+                        ),
                         onNavigationIconClick = {
                             if (backStack.size > 1) {
                                 backStack.removeLastOrNull()
@@ -168,4 +170,23 @@ private fun EntryProviderScope<NavKey>.screens(
             onBack = { backStack.removeLastOrNull() }
         )
     }
+}
+
+@Composable
+private fun rememberTopBarTitle(
+    backStack: NavBackStack<NavKey>,
+    devicesUiModel: DevicesListUiModel
+): String {
+    return remember {
+        derivedStateOf {
+            when (backStack.lastOrNull()) {
+                HomeRoute ->
+                    if (devicesUiModel.devices.isEmpty()) "nRF Matter"
+                    else "Home"
+
+                is DetailsRoute -> "Device" // TODO: device name
+                else -> "nRF Matter"
+            }
+        }
+    }.value
 }

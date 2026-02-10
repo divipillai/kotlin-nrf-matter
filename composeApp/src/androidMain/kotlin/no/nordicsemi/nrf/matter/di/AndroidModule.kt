@@ -9,11 +9,14 @@ import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
 import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
 import no.nordicsemi.nrf.matter.chip.ChipClient
+import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.device.DeviceViewModel
 import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
+import no.nordicsemi.nrf.matter.model.AndroidDeviceController
+import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidUserPreferencesDataSource
@@ -80,6 +83,8 @@ val androidModule = module {
     }
 
     single<ChipClient> { ChipClient(context = androidContext()) }
+    single<ClustersHelper> { ClustersHelper(chipClient = get()) }
+
 
     // Define CoroutineScope as a singleton
     single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
@@ -88,6 +93,11 @@ val androidModule = module {
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<UserPreferencesRepository> { UserPreferencesRepository(get()) }
+
+    // Inject DeviceController
+    single<DeviceController> { AndroidDeviceController(get()) }
+
+
     // Binding Viewmodel
     viewModelOf(::BeaconViewModel)
     viewModelOf(::HomeViewModel)

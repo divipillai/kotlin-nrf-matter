@@ -131,6 +131,7 @@ class HomeViewModel(
     }
 
     fun commissioningFailed(resultCode: Int) {
+        // TODO: Handle commissioning failure with proper UI states.
         if (resultCode == 0) {
             // User simply wilfully exited from commissioning.
             return

@@ -157,6 +157,7 @@ class DeviceViewModel(
     // -----------------------------------------------------------------------------------------------
     // Device state (On/Off)
 
+    // todo: This should be done from the Home viewmodel only. Duplicate.
     fun updateDevicePowerState(deviceId: Long, isOn: Boolean) {
         viewModelScope.launch {
             try {

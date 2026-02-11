@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -139,7 +138,7 @@ class HomeViewModel(
     }
 
     fun updateDeviceState(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 updateDeviceStateRepository(
                     deviceId = deviceId,

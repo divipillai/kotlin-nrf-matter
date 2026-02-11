@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.model
 
+import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 
 /*
@@ -34,8 +35,10 @@ import no.nordicsemi.nrf.matter.chip.ClustersHelper
  */
 
 class AndroidDeviceController(
-    private val clustersHelper: ClustersHelper
+    private val clustersHelper: ClustersHelper,
+    private val chipClient: ChipClient,
 ) : DeviceController {
+
     override suspend fun setDeviceOnOff(
         deviceId: Long,
         isDeviceOnline: Boolean,
@@ -46,5 +49,9 @@ class AndroidDeviceController(
             isOn = isOn,
             endpoint = 0xD // todo: replace the static endpoints with a param.
         )
+    }
+
+    override suspend fun unlinkDevice(deviceId: Long) {
+        chipClient.awaitUnpairDevice(deviceId)
     }
 }

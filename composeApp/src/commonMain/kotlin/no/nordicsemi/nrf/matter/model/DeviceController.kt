@@ -32,4 +32,6 @@ package no.nordicsemi.nrf.matter.model
  */
 interface DeviceController {
     suspend fun setDeviceOnOff(deviceId: Long, isDeviceOnline: Boolean, isOn: Boolean)
+
+    suspend fun unlinkDevice(deviceId: Long)
 }

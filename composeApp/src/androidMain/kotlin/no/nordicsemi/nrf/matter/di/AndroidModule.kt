@@ -13,7 +13,6 @@ import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.device.DeviceViewModel
 import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
 import no.nordicsemi.nrf.matter.model.AndroidDeviceController
 import no.nordicsemi.nrf.matter.model.DeviceController
@@ -95,7 +94,7 @@ val androidModule = module {
     single<UserPreferencesRepository> { UserPreferencesRepository(get()) }
 
     // Inject DeviceController
-    single<DeviceController> { AndroidDeviceController(get()) }
+    single<DeviceController> { AndroidDeviceController(get(), get ()) }
 
 
     // Binding Viewmodel

@@ -1,16 +1,6 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.device
 
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.device.DeviceViewModel
-import no.nordicsemi.nrf.matter.model.DeviceController
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.dsl.module
+import no.nordicsemi.nrf.matter.model.DeviceUiModel
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -43,19 +33,21 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val commonModule = module {
-    single { BeaconRepository(get<MatterBeaconProducer>()) }
-    // Binding in the common module
-    single { DevicesRepository(get<DevicesDataSource>()) }
-    single { DevicesStateRepository(get<DeviceStateDataSource>()) }
-    single { UserPreferencesRepository(get<UserPreferencesDataSource>()) }
+sealed interface RemoveDeviceState {
+    object Idle : RemoveDeviceState
+    object Removing : RemoveDeviceState
+    data object ConfirmRemove : RemoveDeviceState
 
-    single {
-        DeviceViewModel(
-            get<DevicesRepository>(),
-            get<DevicesStateRepository>(),
-            get<DeviceController>()
-        )
-    }
+    data class Removed(
+        val deviceId: Long,
+    ) : RemoveDeviceState
+
+    data class ForceRemove(
+        val deviceId: Long,
+    ) : RemoveDeviceState
 }
 
+data class DeviceUiState(
+    val deviceUiModel: DeviceUiModel? = null,
+    val removeDeviceState: RemoveDeviceState = RemoveDeviceState.Idle,
+)

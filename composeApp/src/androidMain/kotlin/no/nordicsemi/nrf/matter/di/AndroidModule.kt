@@ -101,5 +101,4 @@ val androidModule = module {
     viewModelOf(::BeaconViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::HomeViewModelAndroid)
-    viewModelOf(::DeviceViewModel)
 }

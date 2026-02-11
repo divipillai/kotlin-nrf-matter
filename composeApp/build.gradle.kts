@@ -39,8 +39,6 @@ kotlin {
             implementation(libs.androidx.material3)
             implementation(libs.androidx.material)
             implementation(libs.androidx.runtime.livedata)
-            // Cloudy to have blur effect.
-            implementation(libs.compose.cloudy)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -67,6 +65,9 @@ kotlin {
             // data store
             implementation(libs.androidx.datastore.preferences)
             implementation(libs.androidx.datastore)
+
+            // Cloudy to have blur effect.
+            implementation(libs.compose.cloudy)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

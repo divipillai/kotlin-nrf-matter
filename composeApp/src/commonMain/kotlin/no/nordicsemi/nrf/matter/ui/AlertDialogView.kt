@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-internal fun AlertDialogView(
+fun AlertDialogView(
     title: String,
     message: String,
     dismissText: String = "Cancel",

@@ -24,7 +24,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
 @Composable
-internal fun Loader(
+fun Loader(
     dotSize: Dp = 16.dp,
     loadingText: @Composable (() -> Unit) = {}
 ) {

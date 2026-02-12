@@ -41,6 +41,7 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinCore" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinCore" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinCore" }
+kotlin-logging = { module = "io.github.oshai:kotlin-logging", version.ref = "kotlinLogging" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }

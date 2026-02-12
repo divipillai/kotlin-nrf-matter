@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter
 
 import androidx.lifecycle.ViewModel
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -62,6 +63,7 @@ class HomeViewModel(
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
     )
+    private val log = KotlinLogging.logger {}
     private val devicesListUiModelFlow: Flow<DevicesListUiModel> =
         combine(
             devicesRepository.devicesFlow,
@@ -151,7 +153,7 @@ class HomeViewModel(
                     isOn = isOn
                 )
             } catch (e: Exception) {
-                println("Failed to update with exception: ${e.message} ")
+                log.error(e) { "Failed to update device state with exception: ${e.message}" }
                 updateDeviceStateRepository(
                     deviceId = deviceId,
                     isOnline = false,

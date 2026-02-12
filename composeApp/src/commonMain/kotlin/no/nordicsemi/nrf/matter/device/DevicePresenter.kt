@@ -44,7 +44,7 @@ import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class DeviceViewModel(
+class DevicePresenter(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,

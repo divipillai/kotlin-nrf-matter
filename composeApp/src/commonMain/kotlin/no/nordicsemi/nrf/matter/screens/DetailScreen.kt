@@ -50,7 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.cloudy.cloudy
-import no.nordicsemi.nrf.matter.device.DeviceViewModel
+import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceState
@@ -117,15 +117,14 @@ fun DeviceScreen(
     snackbarHostState: SnackbarHostState,
     onBack: () -> Unit
 ) {
-    val viewModel: DeviceViewModel = getKoin().get()
-    var isOn by remember { mutableStateOf(true) }
-    val uiState by viewModel.uiState.collectAsState()
+    val devicePresenter: DevicePresenter = getKoin().get()
+    val uiState by devicePresenter.uiState.collectAsState()
     var isRemoving by remember {
         mutableStateOf(false)
     }
 
     LaunchedEffect(deviceId) {
-        viewModel.loadDevice(deviceId)
+        devicePresenter.loadDevice(deviceId)
     }
     if (uiState.deviceUiModel == null) {
         Text("Still loading the device information")
@@ -142,8 +141,8 @@ fun DeviceScreen(
         RemoveDeviceState.ConfirmRemove -> {
             isRemoving = true
             AlertDialogView(
-                onDismiss = { viewModel.updateRemoveDeviceState(RemoveDeviceState.Idle) },
-                onConfirm = { viewModel.removeDevice(device.device.deviceId) },
+                onDismiss = { devicePresenter.updateRemoveDeviceState(RemoveDeviceState.Idle) },
+                onConfirm = { devicePresenter.removeDevice(device.device.deviceId) },
                 title = "Remove Device",
                 message = "Are you sure you want to remove this device?"
             )
@@ -152,9 +151,9 @@ fun DeviceScreen(
         is RemoveDeviceState.ForceRemove -> {
             isRemoving = true
             AlertDialogView(
-                onDismiss = { viewModel.updateRemoveDeviceState(RemoveDeviceState.Idle) },
+                onDismiss = { devicePresenter.updateRemoveDeviceState(RemoveDeviceState.Idle) },
                 onConfirm = {
-                    viewModel.removeDeviceWithoutUnlink(device.device.deviceId)
+                    devicePresenter.removeDeviceWithoutUnlink(device.device.deviceId)
                 },
                 title = "Force Remove Device",
                 message = "Unable to unlink device. Force remove?"
@@ -213,7 +212,7 @@ fun DeviceScreen(
             PowerCard(
                 enabled = uiState.deviceUiModel!!.isOn,
                 onToggle = {
-                    viewModel.updateDevicePowerState(
+                    devicePresenter.updateDevicePowerState(
                         device.device.deviceId,
                         it
                     )
@@ -228,7 +227,7 @@ fun DeviceScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
             RemoveDeviceSection {
-                viewModel.updateRemoveDeviceState(RemoveDeviceState.ConfirmRemove)
+                devicePresenter.updateRemoveDeviceState(RemoveDeviceState.ConfirmRemove)
             }
         }
     }

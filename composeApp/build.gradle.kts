@@ -54,8 +54,6 @@ kotlin {
             // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.androidx.compose)
-            //navigation
-            implementation(libs.navigation.compose) // todo: might not be needed once nav 3 is implemented, verify and remove it.
             // Nav 3
             implementation(libs.jetbrains.navigation3.ui)
             implementation(libs.jetbrains.material3.adaptiveNavigation3)

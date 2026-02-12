@@ -1,15 +1,11 @@
 package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
-import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.device.DeviceViewModel
-import no.nordicsemi.nrf.matter.model.DeviceController
+import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 /*
@@ -44,18 +40,16 @@ import org.koin.dsl.module
  */
 
 val commonModule = module {
-    single { BeaconRepository(get<MatterBeaconProducer>()) }
-    // Binding in the common module
-    single { DevicesRepository(get<DevicesDataSource>()) }
-    single { DevicesStateRepository(get<DeviceStateDataSource>()) }
-    single { UserPreferencesRepository(get<UserPreferencesDataSource>()) }
+    // Beacon.
+    singleOf(::BeaconRepository)
 
-    single {
-        DeviceViewModel(
-            get<DevicesRepository>(),
-            get<DevicesStateRepository>(),
-            get<DeviceController>()
-        )
-    }
+    // Repositories
+    singleOf(::DevicesRepository)
+    singleOf(::DevicesStateRepository)
+    singleOf(::UserPreferencesRepository)
+
+    // Device viewmodel.
+    singleOf(::DevicePresenter)
+
 }
 

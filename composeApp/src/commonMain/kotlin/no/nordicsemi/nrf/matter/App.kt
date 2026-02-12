@@ -8,6 +8,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -80,6 +81,8 @@ fun App() {
     val onBack: () -> Unit = { backStack.removeLastOrNull() }
 
     val commissionHandler = LocalCommissionHandler.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
     NordicTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -118,6 +121,7 @@ fun App() {
                     entryProvider = entryProvider {
                         screens(
                             padding = padding,
+                            snackbarHostState= snackbarHostState,
                             onCommissioningStarted = {
                                 commissionHandler.onCommissioningStarted()
                             },
@@ -147,9 +151,10 @@ fun App() {
 
 private fun EntryProviderScope<NavKey>.screens(
     padding: PaddingValues,
-    onCommissioningStarted: () -> Unit,
-    backStack: NavBackStack<NavKey>,
+    snackbarHostState: SnackbarHostState,
     homeViewModel: HomeViewModel,
+    backStack: NavBackStack<NavKey>,
+    onCommissioningStarted: () -> Unit,
     onDeviceClick: (deviceId: Long) -> Unit,
     onOnOffClick: (deviceId: Long, Boolean) -> Unit,
 ) {
@@ -167,6 +172,7 @@ private fun EntryProviderScope<NavKey>.screens(
         DeviceScreen(
             deviceId = key.id,
             padding = padding,
+            snackbarHostState = snackbarHostState,
             onBack = { backStack.removeLastOrNull() }
         )
     }

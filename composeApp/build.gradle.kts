@@ -39,8 +39,6 @@ kotlin {
             implementation(libs.androidx.material3)
             implementation(libs.androidx.material)
             implementation(libs.androidx.runtime.livedata)
-            // Cloudy to have blur effect.
-            implementation(libs.compose.cloudy)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -56,8 +54,6 @@ kotlin {
             // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.androidx.compose)
-            //navigation
-            implementation(libs.navigation.compose) // todo: might not be needed once nav 3 is implemented, verify and remove it.
             // Nav 3
             implementation(libs.jetbrains.navigation3.ui)
             implementation(libs.jetbrains.material3.adaptiveNavigation3)
@@ -67,6 +63,11 @@ kotlin {
             // data store
             implementation(libs.androidx.datastore.preferences)
             implementation(libs.androidx.datastore)
+
+            // Cloudy to have blur effect.
+            implementation(libs.compose.cloudy)
+            // Logger
+            implementation(libs.kotlin.logging)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

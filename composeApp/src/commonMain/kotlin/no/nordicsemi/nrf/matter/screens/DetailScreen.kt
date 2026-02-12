@@ -29,10 +29,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,14 +49,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.skydoves.cloudy.cloudy
+import no.nordicsemi.nrf.matter.device.DevicePresenter
+import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.ui.AlertDialogView
+import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.SectionTitle
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.getKoin
 import kotlin.time.Clock
 
 /*
@@ -88,16 +97,107 @@ import kotlin.time.Clock
  */
 
 val MatterGreen = Color(0xFF22C55E)
-
+/**
+ * The Device Screen shows all the information about the device that was selected in the Home
+ * screen. It supports the following actions:
+ * ```
+ * - toggle the on/off state of the device
+ * - share the device with another Matter commissioner app
+ * - remove the device
+ * - inspect the device (get all info we can from the clusters supported by the device)
+ * ```
+ *
+ * When the screen is shown, state monitoring is activated to get the device's latest state. This
+ * makes it possible to update the device's online status dynamically.
+ */
 @Composable
-fun DeviceScreen(deviceId: Long, padding: PaddingValues, onBack: () -> Unit) {
-    var isOn by remember { mutableStateOf(true) }
+fun DeviceScreen(
+    deviceId: Long,
+    padding: PaddingValues,
+    snackbarHostState: SnackbarHostState,
+    onBack: () -> Unit
+) {
+    val devicePresenter: DevicePresenter = getKoin().get()
+    val uiState by devicePresenter.uiState.collectAsState()
+    var isRemoving by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(deviceId) {
+        devicePresenter.loadDevice(deviceId)
+    }
+    if (uiState.deviceUiModel == null) {
+        Text("Still loading the device information")
+        return
+    }
+
+    val device = uiState.deviceUiModel ?: run {
+        Text("Loading device…")
+        return
+    }
+
+    when (uiState.removeDeviceState) {
+
+        RemoveDeviceState.ConfirmRemove -> {
+            isRemoving = true
+            AlertDialogView(
+                onDismiss = { devicePresenter.updateRemoveDeviceState(RemoveDeviceState.Idle) },
+                onConfirm = { devicePresenter.removeDevice(device.device.deviceId) },
+                title = "Remove Device",
+                message = "Are you sure you want to remove this device?"
+            )
+        }
+
+        is RemoveDeviceState.ForceRemove -> {
+            isRemoving = true
+            AlertDialogView(
+                onDismiss = { devicePresenter.updateRemoveDeviceState(RemoveDeviceState.Idle) },
+                onConfirm = {
+                    devicePresenter.removeDeviceWithoutUnlink(device.device.deviceId)
+                },
+                title = "Force Remove Device",
+                message = "Unable to unlink device. Force remove?"
+            )
+        }
+
+        is RemoveDeviceState.Removed -> {
+            isRemoving = false
+            LaunchedEffect(Unit) {
+                snackbarHostState.showSnackbar("Device removed")
+                onBack()
+            }
+        }
+
+        RemoveDeviceState.Removing -> {
+            isRemoving = true
+            Loader {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Removing device...",
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Text(
+                        "It might take a few seconds, please wait!",
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
+
+        RemoveDeviceState.Idle -> {
+            isRemoving = false
+        }
+    }
 
     Box(
         modifier = Modifier
             .padding(padding)
             .fillMaxWidth()
-//            .then(if (isRemoving) Modifier.cloudy() else Modifier)
+            .then(if (isRemoving) Modifier.cloudy() else Modifier)
     ) {
 
         Column(
@@ -109,11 +209,13 @@ fun DeviceScreen(deviceId: Long, padding: PaddingValues, onBack: () -> Unit) {
 
             DeviceHeader()
 
-
             PowerCard(
-                enabled = isOn,
+                enabled = uiState.deviceUiModel!!.isOn,
                 onToggle = {
-                    isOn = !isOn
+                    devicePresenter.updateDevicePowerState(
+                        device.device.deviceId,
+                        it
+                    )
                 }
             )
 
@@ -125,6 +227,7 @@ fun DeviceScreen(deviceId: Long, padding: PaddingValues, onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
             RemoveDeviceSection {
+                devicePresenter.updateRemoveDeviceState(RemoveDeviceState.ConfirmRemove)
             }
         }
     }

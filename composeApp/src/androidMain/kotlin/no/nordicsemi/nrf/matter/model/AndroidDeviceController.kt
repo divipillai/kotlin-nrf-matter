@@ -1,16 +1,7 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.model
 
-import no.nordicsemi.nrf.matter.HomeViewModel
-import no.nordicsemi.nrf.matter.model.IosDeviceController
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
-import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
-import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModelOf
-import org.koin.dsl.module
+import no.nordicsemi.nrf.matter.chip.ChipClient
+import no.nordicsemi.nrf.matter.chip.ClustersHelper
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -43,22 +34,24 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val iosModule = module {
+class AndroidDeviceController(
+    private val clustersHelper: ClustersHelper,
+    private val chipClient: ChipClient,
+) : DeviceController {
 
-    // Data sources.
-    singleOf(::IosDevicesDataSource)
-    singleOf(::IosDevicesStateDataSource)
-    singleOf(::IosUserPreferencesDataSource)
+    override suspend fun setDeviceOnOff(
+        deviceId: Long,
+        isDeviceOnline: Boolean,
+        isOn: Boolean
+    ) {
+        clustersHelper.setOnOffDeviceStateOnOffCluster(
+            deviceId = deviceId,
+            isOn = isOn,
+            endpoint = 0xD // todo: replace the static endpoints with a param.
+        )
+    }
 
-    // Repositories.
-    singleOf(::DevicesRepository)
-    singleOf(::DevicesStateRepository)
-    singleOf(::UserPreferencesRepository)
-
-    // Device Controller
-    singleOf(::IosDeviceController)
-
-    // View models.
-    viewModelOf(::HomeViewModel)
-
+    override suspend fun unlinkDevice(deviceId: Long) {
+        chipClient.awaitUnpairDevice(deviceId)
+    }
 }

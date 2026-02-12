@@ -1,7 +1,5 @@
 package no.nordicsemi.nrf.matter.commission
 
-import no.nordicsemi.nrf.matter.model.Device
-
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -33,22 +31,6 @@ import no.nordicsemi.nrf.matter.model.Device
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface CommissioningResultHandler {
-    suspend fun onCommissioningSucceeded(
-       commissionResult: Device
-    )
-
-    suspend fun onCommissioningFailed(reason: CommissioningFailure)
-}
-
-enum class CommissioningFailure {
-    TIMEOUT,
-    NETWORK_ERROR,
-    ATTESTATION_FAILED,
-    UNKNOWN
-}
-
 interface CommissionHandler {
     fun onCommissioningStarted()
 }
-

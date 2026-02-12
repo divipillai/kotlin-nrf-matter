@@ -1,8 +1,6 @@
-package no.nordicsemi.nrf.matter.commission
+package no.nordicsemi.nrf.matter.device
 
-import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
+import no.nordicsemi.nrf.matter.model.DeviceUiModel
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -35,38 +33,21 @@ import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class CommissioningResultProcessor(
-    private val devicesRepository: DevicesRepository,
-    private val devicesStateRepository: DevicesStateRepository
-) : CommissioningResultHandler {
+sealed interface RemoveDeviceState {
+    object Idle : RemoveDeviceState
+    object Removing : RemoveDeviceState
+    data object ConfirmRemove : RemoveDeviceState
 
-    override suspend fun onCommissioningSucceeded(commissionResult: Device) {
-        devicesRepository.addDevice(commissionResult)
-        devicesStateRepository.addDeviceState(
-            deviceId = commissionResult.deviceId,
-            isOnline = true,
-            isOn = false
-        )
-    }
+    data class Removed(
+        val deviceId: Long,
+    ) : RemoveDeviceState
 
-    override suspend fun onCommissioningFailed(reason: CommissioningFailure) {
-        // optional: metrics, logs, retry counters
-    }
+    data class ForceRemove(
+        val deviceId: Long,
+    ) : RemoveDeviceState
 }
 
-class CommissioningFacade(
-    private val handler: CommissioningResultHandler
-) {
-    suspend fun onSuccess(deviceIds: List<Long>) {
-        deviceIds.forEach { id ->
-//            handler.onCommissioningSucceeded(
-//               commissionResult =
-//            )
-        }
-    }
-
-    suspend fun onFailure() {
-        handler.onCommissioningFailed(CommissioningFailure.UNKNOWN)
-    }
-}
-
+data class DeviceUiState(
+    val deviceUiModel: DeviceUiModel? = null,
+    val removeDeviceState: RemoveDeviceState = RemoveDeviceState.Idle,
+)

@@ -1,15 +1,15 @@
 package no.nordicsemi.nrf.matter.device
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.chip.ChipClient
-import no.nordicsemi.nrf.matter.chip.ClustersHelper
+import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
@@ -44,56 +44,62 @@ import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-sealed interface RemoveDeviceState {
-    object Idle : RemoveDeviceState
-    object Removing : RemoveDeviceState
-    data object ConfirmRemove : RemoveDeviceState
 
-    data class Removed(
-        val deviceId: Long,
-    ) : RemoveDeviceState
-
-    data class ForceRemove(
-        val deviceId: Long,
-    ) : RemoveDeviceState
-}
-
-data class DeviceUiState(
-    val deviceUiModel: DeviceUiModel? = null,
-    val removeDeviceState: RemoveDeviceState = RemoveDeviceState.Idle,
-)
-
-class DeviceViewModel(
+class DevicePresenter(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
-    private val chipClient: ChipClient,
-) : ViewModel() {
-    val clustersHelper: ClustersHelper = ClustersHelper(chipClient)
+    private val deviceController: DeviceController,
+) {
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Main
+    )
+    private val log = KotlinLogging.logger {}
 
-    // The UI model for device shown on the Device screen.
-    private val _deviceUiState = MutableStateFlow(DeviceUiState())
-    val deviceUiState: StateFlow<DeviceUiState> = _deviceUiState.asStateFlow()
+    private val _uiState = MutableStateFlow(DeviceUiState())
+    val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
 
-    // Load device
     fun loadDevice(deviceId: Long) {
-        if (deviceId == _deviceUiState.value.deviceUiModel?.device?.deviceId) {
-            return
-        } else {
-            viewModelScope.launch {
-                val device = devicesRepository.getDevice(deviceId)
-                val deviceState = devicesStateRepository.loadDeviceState(deviceId)
-                var isOnline = false
-                var isOn = false
-                if (deviceState != null) {
-                    isOnline = deviceState.online
-                    isOn = deviceState.on
-                }
-                _deviceUiState.update {
-                    it.copy(
-                        deviceUiModel = DeviceUiModel(device, isOnline, isOn),
-                        removeDeviceState = RemoveDeviceState.Idle
-                    )
-                }
+        if (deviceId == _uiState.value.deviceUiModel?.device?.deviceId) return
+
+        scope.launch {
+            val device = devicesRepository.getDevice(deviceId)
+            val state = devicesStateRepository.loadDeviceState(deviceId)
+
+            _uiState.update {
+                it.copy(
+                    deviceUiModel = DeviceUiModel(
+                        device = device,
+                        isOnline = state?.online ?: false,
+                        isOn = state?.on ?: false
+                    ),
+                    removeDeviceState = RemoveDeviceState.Idle
+                )
+            }
+        }
+    }
+
+    fun updateDevicePowerState(deviceId: Long, isOn: Boolean) {
+        scope.launch {
+            try {
+                devicesStateRepository.updateDeviceState(
+                    deviceId = deviceId,
+                    isOnline = true,
+                    isOn = isOn
+                )
+
+                deviceController.setDeviceOnOff(
+                    deviceId = deviceId,
+                    isDeviceOnline = true,
+                    isOn = isOn
+                )
+            } catch (e: Exception) {
+                log.error(e) { "AAA, error updating device state: ${e.message}" }
+                // rollback
+                devicesStateRepository.updateDeviceState(
+                    deviceId = deviceId,
+                    isOnline = false,
+                    isOn = !isOn
+                )
             }
         }
     }
@@ -109,14 +115,15 @@ class DeviceViewModel(
     // the fabric at the device. If a forced removal is selected, then function
     // removeDeviceWithoutUnlink is called.
     fun removeDevice(deviceId: Long) {
-        _deviceUiState.update {
+        _uiState.update {
             it.copy(removeDeviceState = RemoveDeviceState.Removing)
         }
-        viewModelScope.launch {
+
+        scope.launch {
             try {
-                chipClient.awaitUnpairDevice(deviceId)
+                deviceController.unlinkDevice(deviceId)
             } catch (e: Exception) {
-                Log.e("RemoveDevice", "Unlinking the device failed with exception: [${e.message}]")
+                log.error(e) { "AAA, error unlinking device: ${e.message}" }
                 // Error on removing device. Show error dialog with an option to force remove.
                 updateRemoveDeviceState(RemoveDeviceState.ForceRemove(deviceId))
                 return@launch
@@ -125,18 +132,12 @@ class DeviceViewModel(
             devicesRepository.removeDevice(deviceId)
             // Notify UI so we navigate back to Home screen.
             updateRemoveDeviceState(RemoveDeviceState.Removed(deviceId))
+
         }
     }
 
-    /**
-     * Updates the remove device state in the UI state.
-     */
-    fun updateRemoveDeviceState(
-        removeState: RemoveDeviceState
-    ) {
-        _deviceUiState.update {
-            it.copy(removeDeviceState = removeState)
-        }
+    fun updateRemoveDeviceState(state: RemoveDeviceState) {
+        _uiState.update { it.copy(removeDeviceState = state) }
     }
 
     // Removes the device from the app's devices repository, and does not unlink the fabric
@@ -145,45 +146,11 @@ class DeviceViewModel(
     // and the user has confirmed that the device should still be removed from the app's device
     // repository.
     fun removeDeviceWithoutUnlink(deviceId: Long) {
-        viewModelScope.launch {
+        scope.launch {
             // Remove device from the app's devices repository.
             devicesRepository.removeDevice(deviceId)
             // Notify UI so we navigate back to Home screen.
             updateRemoveDeviceState(RemoveDeviceState.Removed(deviceId))
-        }
-    }
-
-
-    // -----------------------------------------------------------------------------------------------
-    // Device state (On/Off)
-
-    fun updateDevicePowerState(deviceId: Long, isOn: Boolean) {
-        viewModelScope.launch {
-            try {
-                devicesStateRepository.updateDeviceState(
-                    deviceId = deviceId,
-                    isOnline = true,
-                    isOn = isOn
-                )
-
-                clustersHelper.setOnOffDeviceStateOnOffCluster(
-                    deviceId,
-                    isOn,
-                    0xd // TODO: This endpoint is hardcoded, replace with the correct endpoint.
-                )
-
-            } catch (e: Exception) {
-                Log.d(
-                    "UpdateDeviceState",
-                    "Device state update failed with exception: [${e.message}] "
-                )
-                // Rollback on failure
-                devicesStateRepository.updateDeviceState(
-                    deviceId = deviceId,
-                    isOnline = false,
-                    isOn = !isOn
-                )
-            }
         }
     }
 

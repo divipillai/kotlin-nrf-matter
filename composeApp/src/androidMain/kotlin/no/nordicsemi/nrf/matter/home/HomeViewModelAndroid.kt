@@ -137,32 +137,6 @@ class HomeViewModelAndroid(
         }
     }
 
-    fun updateDeviceStateOn(deviceId: Long, isOn: Boolean) {
-        viewModelScope.launch {
-            try {
-                clustersHelper.setOnOffDeviceStateOnOffCluster(
-                    deviceId,
-                    isOn,
-                    0xd // TODO: This endpoint is hardcoded, replace with the correct endpoint.
-                )
-                baseViewModel.updateDeviceState(
-                    deviceId = deviceId,
-                    isOn = isOn,
-                    isOnline = true
-                )
-
-            } catch (e: Exception) {
-                Log.d("UpdateDeviceState", "Failed to update with exception: ${e.message} ")
-                // Rollback on failure
-                baseViewModel.updateDeviceState(
-                    deviceId = deviceId,
-                    isOnline = false,
-                    isOn = !isOn
-                )
-            }
-        }
-    }
-
     private fun convertToAppDeviceType(matterDeviceType: Long): DeviceType {
         return when (matterDeviceType) {
             256L -> DeviceType.LIGHT_ON_OFF // 0x0100 On/Off Light

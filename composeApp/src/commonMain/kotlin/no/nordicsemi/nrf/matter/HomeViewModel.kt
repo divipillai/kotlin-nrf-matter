@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter
 
 import androidx.lifecycle.ViewModel
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.Devices
@@ -56,10 +58,12 @@ class HomeViewModel(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     userPreferencesRepository: UserPreferencesRepository,
+    private val deviceController: DeviceController,
 ) : ViewModel() {
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
     )
+    private val log = KotlinLogging.logger {}
     private val devicesListUiModelFlow: Flow<DevicesListUiModel> =
         combine(
             devicesRepository.devicesFlow,
@@ -79,7 +83,7 @@ class HomeViewModel(
             DevicesListUiModel(emptyList(), showOfflineDevices = true)
         )
 
-    fun updateDeviceState(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
+    private fun updateDeviceStateRepository(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
         scope.launch {
             devicesStateRepository.updateDeviceState(deviceId, isOnline = isOnline, isOn = isOn)
         }
@@ -128,9 +132,34 @@ class HomeViewModel(
     }
 
     fun commissioningFailed(resultCode: Int) {
+        // TODO: Handle commissioning failure with proper UI states.
         if (resultCode == 0) {
             // User simply wilfully exited from commissioning.
             return
+        }
+    }
+
+    fun updateDeviceState(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
+        scope.launch {
+            try {
+                updateDeviceStateRepository(
+                    deviceId = deviceId,
+                    isOn = isOn,
+                    isOnline = isOnline
+                )
+                deviceController.setDeviceOnOff(
+                    deviceId = deviceId,
+                    isDeviceOnline = isOnline,
+                    isOn = isOn
+                )
+            } catch (e: Exception) {
+                log.error(e) { "Failed to update device state with exception: ${e.message}" }
+                updateDeviceStateRepository(
+                    deviceId = deviceId,
+                    isOnline = false,
+                    isOn = !isOn
+                )
+            }
         }
     }
 }

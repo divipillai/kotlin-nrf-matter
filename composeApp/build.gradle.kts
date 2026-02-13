@@ -67,7 +67,7 @@ kotlin {
             // Cloudy to have blur effect.
             implementation(libs.compose.cloudy)
             // Logger
-            implementation(libs.kotlin.logging)
+            implementation(libs.napier)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

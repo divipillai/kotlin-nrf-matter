@@ -2,6 +2,7 @@ package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.BeaconRepository
 import no.nordicsemi.nrf.matter.device.DevicePresenter
+import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
@@ -49,7 +50,13 @@ val commonModule = module {
     singleOf(::UserPreferencesRepository)
 
     // Device viewmodel.
-    singleOf(::DevicePresenter)
+    single {
+        DevicePresenter(
+            get<DevicesRepository>(),
+            get<DevicesStateRepository>(),
+            get<DeviceController>()
+        )
+    }
 
 }
 

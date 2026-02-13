@@ -50,7 +50,7 @@ fun IosAppRoot() {
 
 fun startIosCommissioning() {
     // Matter commissioning on iOS
-    print("iOS commissioning has started!")
+    println("iOS commissioning has started!")
 }
 
 

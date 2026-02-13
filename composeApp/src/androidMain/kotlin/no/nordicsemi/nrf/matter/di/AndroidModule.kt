@@ -5,19 +5,24 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
 import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
+import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
+import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
+import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
 import no.nordicsemi.nrf.matter.model.AndroidDeviceController
+import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidUserPreferencesDataSource
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.core.module.dsl.singleOf
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -58,27 +63,38 @@ val androidModule = module {
         BluetoothAdapter.getDefaultAdapter()?.bluetoothLeScanner
     }
 
-    // Matter beacon producer.
-    singleOf(::MatterBeaconProducerBle)
+    single<MatterBeaconProducer> {
+        MatterBeaconProducerBle(
+            bluetoothLeScanner = get(named("MatterBeaconScanner")),
+            context = androidContext()
+        )
+    }
+    single<DevicesDataSource> {
+        AndroidDevicesDataSource(androidContext())
+    }
+    single<DeviceStateDataSource> {
+        AndroidDeviceStateDataSource(
+            context = androidContext()
+        )
+    }
+    single<UserPreferencesDataSource> {
+        AndroidUserPreferencesDataSource(androidContext())
+    }
 
-    // Android data sources.
-    singleOf(::AndroidDevicesDataSource)
-    singleOf(::AndroidDeviceStateDataSource)
-    singleOf(::AndroidUserPreferencesDataSource)
+    single<ChipClient> { ChipClient(context = androidContext()) }
+    single<ClustersHelper> { ClustersHelper(chipClient = get()) }
 
-    // Matter chip clients.
-    singleOf(::ChipClient)
-    singleOf(::ClustersHelper)
 
     // Define CoroutineScope as a singleton
     single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
 
-    singleOf(::DevicesRepository)
-    singleOf(::DevicesStateRepository)
-    singleOf(::UserPreferencesRepository)
+    // NOTE to myself: even though I have it in the common module, it also need to be declared in each module.
+    single<DevicesRepository> { DevicesRepository(dataSource = get()) }
+    single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
+    single<UserPreferencesRepository> { UserPreferencesRepository(get()) }
 
     // Inject DeviceController
-    singleOf(::AndroidDeviceController)
+    single<DeviceController> { AndroidDeviceController(get(), get()) }
 
     // Binding Viewmodel
     viewModelOf(::BeaconViewModel)

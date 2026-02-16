@@ -8,6 +8,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeUIViewController
+import io.github.aakira.napier.DebugAntilog
+import io.github.aakira.napier.Napier
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
 
 class IosCommissionHandler(
@@ -22,6 +24,9 @@ fun MainViewController() =
     ComposeUIViewController {
         // Initialize koin
         initKoin()
+
+        // Initialize Napier for logging
+        Napier.base(DebugAntilog())
 
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -50,7 +55,7 @@ fun IosAppRoot() {
 
 fun startIosCommissioning() {
     // Matter commissioning on iOS
-    println("iOS commissioning has started!")
+    Napier.d("iOS commissioning has started!")
 }
 
 

@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter.chip
 
 import android.content.Context
-import android.util.Log
 import chip.devicecontroller.ChipDeviceController
 import chip.devicecontroller.ControllerParams
 import chip.devicecontroller.DiscoveredDevice
@@ -27,6 +26,7 @@ import chip.platform.NsdManagerServiceBrowser
 import chip.platform.NsdManagerServiceResolver
 import chip.platform.PreferencesConfigurationManager
 import chip.platform.PreferencesKeyValueStoreManager
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -98,13 +98,13 @@ class ChipClient(
                 nodeId,
                 object : GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback {
                     override fun onDeviceConnected(devicePointer: Long) {
-                        Log.d("AAA", "Got connected device pointer")
+                        Napier.d { "AAA, Got connected device pointer" }
                         continuation.resume(devicePointer)
                     }
 
                     override fun onConnectionFailure(nodeId: Long, error: Exception) {
                         val errorMessage = "Unable to get connected device with nodeId $nodeId."
-                        Log.e("AAA", errorMessage, error)
+                        Napier.e(error) { errorMessage }
                         continuation.resumeWithException(IllegalStateException(errorMessage))
                     }
                 })
@@ -118,7 +118,7 @@ class ChipClient(
      */
     suspend fun awaitUnpairDevice(nodeId: Long) {
         return suspendCancellableCoroutine { continuation ->
-            Log.d("AAA", "Calling chipDeviceController.unpair")
+            Napier.d { "AAA, Calling chipDeviceController.unpair" }
             val callback: UnpairDeviceCallback =
                 object : UnpairDeviceCallback {
                     override fun onError(status: Int, nodeId: Long) {
@@ -133,14 +133,14 @@ class ChipClient(
 
                     override fun onSuccess(nodeId: Long) {
                         if (continuation.isActive) {
-                            Log.d("AAA", "awaitUnpairDevice.onSuccess: deviceId [$nodeId]")
+                            Napier.d { "AAA, awaitUnpairDevice.onSuccess: deviceId [$nodeId]" }
                             continuation.resume(Unit)
                         }
                     }
                 }
             chipDeviceController.unpairDeviceCallback(nodeId, callback)
             continuation.invokeOnCancellation {
-                Log.d("AAA", "Unpair coroutine cancelled")
+                Napier.d { "AAA, Unpair coroutine cancelled" }
             }
         }
     }
@@ -151,10 +151,9 @@ class ChipClient(
         iterations: Long,
         salt: ByteArray
     ): PaseVerifierParams {
-        Log.d(
-            "AAA",
-            "computePaseVerifier: devicePtr [${devicePtr}] pinCode [${pinCode}] iterations [${iterations}] salt [${salt}]"
-        )
+        Napier.d {
+            "AAA, computePaseVerifier: devicePtr [${devicePtr}] pinCode [${pinCode}] iterations [${iterations}] salt [${salt}]"
+        }
         return chipDeviceController.computePaseVerifier(devicePtr, pinCode, iterations, salt)
     }
 
@@ -258,14 +257,11 @@ class ChipClient(
         setupPinCode: Long
     ) {
         return suspendCoroutine { continuation ->
-            Log.d("AAA", "Calling chipDeviceController.openPairingWindowWithPIN")
+            Napier.d { "AAA, Calling chipDeviceController.openPairingWindowWithPIN" }
             val callback: OpenCommissioningCallback =
                 object : OpenCommissioningCallback {
                     override fun onError(status: Int, deviceId: Long) {
-                        Log.e(
-                            "AAA",
-                            "ShareDevice: awaitOpenPairingWindowWithPIN.onError: status [${status}] device [${deviceId}]"
-                        )
+                        Napier.e { "AAA, awaitOpenPairingWindowWithPIN.onError: status [${status}] device [${deviceId}]" }
                         continuation.resumeWithException(
                             java.lang.IllegalStateException(
                                 "Failed opening the pairing window with status [${status}]"
@@ -278,10 +274,7 @@ class ChipClient(
                         manualPairingCode: String?,
                         qrCode: String?
                     ) {
-                        Log.d(
-                            "AAA",
-                            "ShareDevice: awaitOpenPairingWindowWithPIN.onSuccess: deviceId [${deviceId}]"
-                        )
+                        Napier.d { "AAA, awaitOpenPairingWindowWithPIN.onSuccess: deviceId [${deviceId}]" }
                         continuation.resume(Unit)
                     }
                 }
@@ -300,13 +293,13 @@ class ChipClient(
                 nodeId,
                 object : GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback {
                     override fun onDeviceConnected(devicePointer: Long) {
-                        Log.d("AAA", "Got connected device pointer")
+                        Napier.d { "AAA, Got connected device pointer" }
                         continuation.resume(devicePointer)
                     }
 
                     override fun onConnectionFailure(nodeId: Long, error: Exception) {
                         val errorMessage = "Unable to get connected device with nodeId $nodeId"
-                        Log.e("AAA", errorMessage, error)
+                        Napier.e(error) { errorMessage }
                         continuation.resumeWithException(IllegalStateException(errorMessage))
                     }
                 })
@@ -322,7 +315,7 @@ class ChipClient(
     }
 
     fun getDiscoveredDevice(index: Int): DiscoveredDevice? {
-        Log.d("AAA", "getDiscoveredDevice(${index})")
+        Napier.d { "AAA, getDiscoveredDevice(${index})" }
         return chipDeviceController.getDiscoveredDevice(index)
     }
 

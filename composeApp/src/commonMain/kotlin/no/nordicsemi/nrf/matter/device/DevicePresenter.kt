@@ -1,6 +1,6 @@
 package no.nordicsemi.nrf.matter.device
 
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -53,7 +53,6 @@ class DevicePresenter(
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
     )
-    private val log = KotlinLogging.logger {}
 
     private val _uiState = MutableStateFlow(DeviceUiState())
     val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
@@ -93,7 +92,7 @@ class DevicePresenter(
                     isOn = isOn
                 )
             } catch (e: Exception) {
-                log.error(e) { "AAA, error updating device state: ${e.message}" }
+                Napier.e(e) { "AAA, error updating device state: ${e.message}" }
                 // rollback
                 devicesStateRepository.updateDeviceState(
                     deviceId = deviceId,
@@ -123,7 +122,7 @@ class DevicePresenter(
             try {
                 deviceController.unlinkDevice(deviceId)
             } catch (e: Exception) {
-                log.error(e) { "AAA, error unlinking device: ${e.message}" }
+                Napier.e(e) { "Error unlinking device: ${e.message}" }
                 // Error on removing device. Show error dialog with an option to force remove.
                 updateRemoveDeviceState(RemoveDeviceState.ForceRemove(deviceId))
                 return@launch

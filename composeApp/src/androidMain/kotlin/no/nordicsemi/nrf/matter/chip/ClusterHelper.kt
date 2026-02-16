@@ -1,8 +1,8 @@
 package no.nordicsemi.nrf.matter.chip
 
-import android.util.Log
 import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
+import io.github.aakira.napier.Napier
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -55,13 +55,13 @@ class ClustersHelper(private val chipClient: ChipClient) {
 
     /** Fetches MatterDeviceInfo for each endpoint supported by the device. */
     suspend fun fetchDeviceMatterInfo(nodeId: Long): List<DeviceMatterInfo> {
-        Log.d("AAA", "fetchDeviceMatterInfo(): nodeId [${nodeId}]")
+        Napier.d { "AAA, fetchDeviceMatterInfo(): nodeId [${nodeId}]" }
         val matterDeviceInfoList = arrayListOf<DeviceMatterInfo>()
         val connectedDevicePtr =
             try {
                 chipClient.getConnectedDevicePointer(nodeId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return emptyList()
             }
         fetchDeviceMatterInfo(nodeId, connectedDevicePtr, 0, matterDeviceInfoList)
@@ -75,11 +75,11 @@ class ClustersHelper(private val chipClient: ChipClient) {
         endpointInt: Int,
         matterDeviceInfoList: ArrayList<DeviceMatterInfo>
     ) {
-        Log.d("AAA", "fetchDeviceMatterInfo(): nodeId [${nodeId}] endpoint [$endpointInt]")
+        Napier.d { "AAA, fetchDeviceMatterInfo(): nodeId [${nodeId}] endpoint [$endpointInt]" }
 
         val partsListAttribute =
             readDescriptorClusterPartsListAttribute(connectedDevicePtr, endpointInt)
-        Log.d("AAA", "partsListAttribute [${partsListAttribute}]")
+        Napier.d { "AAA, partsListAttribute [${partsListAttribute}]" }
 
         // DeviceListAttribute
         val deviceListAttribute =
@@ -107,13 +107,13 @@ class ClustersHelper(private val chipClient: ChipClient) {
         // Recursive call for the parts supported by the endpoint.
         // For each part (endpoint)
         partsListAttribute?.forEach { part ->
-            Log.d("AAA", "part [$part] is [${part.javaClass}]")
+            Napier.d { "AAA, part [$part] is [${part.javaClass}]" }
             val endpointInt =
                 when (part) {
                     is Int -> part
                     else -> return@forEach
                 }
-            Log.d("AAA", "Processing part [$part]")
+            Napier.d { "AAA, Processing part [$part]" }
             fetchDeviceMatterInfo(nodeId, connectedDevicePtr, endpointInt, matterDeviceInfoList)
         }
     }
@@ -267,7 +267,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return emptyList()
             }
         return suspendCoroutine { continuation ->
@@ -300,7 +300,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return null
             }
         return suspendCoroutine { continuation ->
@@ -323,7 +323,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return emptyList()
             }
 
@@ -361,7 +361,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return
             }
 
@@ -394,7 +394,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return ""
             }
 
@@ -427,7 +427,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return ""
             }
 
@@ -460,7 +460,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return null
             }
 
@@ -486,12 +486,12 @@ class ClustersHelper(private val chipClient: ChipClient) {
 
     // CODELAB FEATURED BEGIN
     suspend fun toggleDeviceStateOnOffCluster(deviceId: Long, endpoint: Int) {
-        Log.d("AAA", "toggleDeviceStateOnOffCluster())")
+        Napier.d { "AAA, toggleDeviceStateOnOffCluster())" }
         val connectedDevicePtr =
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return
             }
         return suspendCoroutine { continuation ->
@@ -503,7 +503,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                         }
 
                         override fun onError(ex: Exception) {
-                            Log.e("AAA", "readOnOffAttribute command failure", ex)
+                            Napier.e(ex) { "AAA, readOnOffAttribute command failure" }
                             continuation.resumeWithException(ex)
                         }
                     })
@@ -513,15 +513,14 @@ class ClustersHelper(private val chipClient: ChipClient) {
     // CODELAB FEATURED END
 
     suspend fun setOnOffDeviceStateOnOffCluster(deviceId: Long, isOn: Boolean, endpoint: Int) {
-        Log.d(
-            "AAA",
-            "setOnOffDeviceStateOnOffCluster() [${deviceId}] isOn [${isOn}] endpoint [${endpoint}]"
-        )
+        Napier.d {
+            "AAA, setOnOffDeviceStateOnOffCluster() [${deviceId}] isOn [${isOn}] endpoint [${endpoint}]"
+        }
         val connectedDevicePtr =
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return
             }
         if (isOn) {
@@ -531,15 +530,12 @@ class ClustersHelper(private val chipClient: ChipClient) {
                     .on(
                         object : ChipClusters.DefaultClusterCallback {
                             override fun onSuccess() {
-                                Log.d("AAA", "Success for setOnOffDeviceStateOnOffCluster")
+                                Napier.d { "AAA, Success for setOnOffDeviceStateOnOffCluster" }
                                 continuation.resume(Unit)
                             }
 
                             override fun onError(ex: Exception) {
-                                Log.e(
-                                    "AAA",
-                                    "Failure for setOnOffDeviceStateOnOffCluster, ${ex.localizedMessage}"
-                                )
+                                Napier.e(ex) { "AAA, Failure for setOnOffDeviceStateOnOffCluster, ${ex.localizedMessage}" }
                                 continuation.resumeWithException(ex)
                             }
                         })
@@ -551,12 +547,12 @@ class ClustersHelper(private val chipClient: ChipClient) {
                     .off(
                         object : ChipClusters.DefaultClusterCallback {
                             override fun onSuccess() {
-                                Log.d("AAA", "Success for getOnOffDeviceStateOnOffCluster")
+                                Napier.d { "AAA, Success for getOnOffDeviceStateOnOffCluster" }
                                 continuation.resume(Unit)
                             }
 
                             override fun onError(ex: Exception) {
-                                Log.e("AAA", "Failure for getOnOffDeviceStateOnOffCluster", ex)
+                                Napier.e(ex) { "AAA, Failure for getOnOffDeviceStateOnOffCluster" }
                                 continuation.resumeWithException(ex)
                             }
                         })
@@ -565,12 +561,12 @@ class ClustersHelper(private val chipClient: ChipClient) {
     }
 
     suspend fun getDeviceStateOnOffCluster(deviceId: Long, endpoint: Int): Boolean? {
-        Log.d("AAA", "getDeviceStateOnOffCluster())")
+        Napier.d { "AAA, getDeviceStateOnOffCluster())" }
         val connectedDevicePtr =
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return null
             }
         return suspendCoroutine { continuation ->
@@ -578,15 +574,14 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 .readOnOffAttribute(
                     object : ChipClusters.BooleanAttributeCallback {
                         override fun onSuccess(value: Boolean) {
-                            Log.d("AAA", "readOnOffAttribute success: [$value]")
+                            Napier.d { "AAA, readOnOffAttribute success: [$value]" }
                             continuation.resume(value)
                         }
 
                         override fun onError(ex: Exception) {
-                            Log.e(
-                                "AAA",
-                                "readOnOffAttribute command failure, ${ex.localizedMessage}"
-                            )
+                            Napier.e(ex) {
+                                "AAA, readOnOffAttribute command failure, ${ex.localizedMessage}"
+                            }
                             continuation.resumeWithException(ex)
                         }
                     })
@@ -613,12 +608,12 @@ class ClustersHelper(private val chipClient: ChipClient) {
         salt: ByteArray,
         timedInvokeTimeoutMs: Int
     ) {
-        Log.d("AAA", "openCommissioningWindowAdministratorCommissioningCluster())")
+        Napier.d { "AAA, openCommissioningWindowAdministratorCommissioningCluster())" }
         val connectedDevicePtr =
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Log.e("AAA", "Can't get connectedDevicePointer.${e.localizedMessage}")
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer.${e.localizedMessage}" }
                 return
             }
 
@@ -634,12 +629,9 @@ class ClustersHelper(private val chipClient: ChipClient) {
                         }
 
                         override fun onError(ex: java.lang.Exception?) {
-                            Log.e(
-                                "AAA",
-
-                                "getAdministratorCommissioningClusterForDevice.openCommissioningWindow command failure",
-                                ex,
-                            )
+                            Napier.e(ex) {
+                                "AAA, getAdministratorCommissioningClusterForDevice.openCommissioningWindow command failure"
+                            }
                             continuation.resumeWithException(ex!!)
                         }
                     },
@@ -664,12 +656,12 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val callback =
                 object : ChipClusters.DefaultClusterCallback {
                     override fun onSuccess() {
-                        Log.d("AAA", "Window is closed successfully")
+                        Napier.d { "AAA, Window is closed successfully" }
                         continuation.resume(Unit)
                     }
 
                     override fun onError(ex: Exception) {
-                        Log.e("AAA", "Failed to close window. Cause: ${ex.localizedMessage}")
+                        Napier.e(ex) { "Failed to close window. Cause: ${ex.localizedMessage}" }
                     }
                 }
             ChipClusters.AdministratorCommissioningCluster(devicePtr, 0)
@@ -702,7 +694,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
 //                    }
 //
 //                    override fun onError(ex: Exception) {
-//                        Log.e("AAA", "Failed to check window status. Cause: ${ex.localizedMessage}")
+//                       Napier.e(ex){"Failed to check window status. Cause: ${ex.localizedMessage}")
 //                        continuation.resumeWithException(ex)
 //                    }
 //                }

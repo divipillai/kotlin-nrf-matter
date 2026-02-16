@@ -25,6 +25,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import io.github.aakira.napier.DebugAntilog
+import io.github.aakira.napier.Napier
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
@@ -75,6 +77,7 @@ val LocalCommissionHandler =
 @Composable
 fun App() {
     val homeViewModel: HomeViewModel = getKoin().get()
+    Napier.base(DebugAntilog())
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
 
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)

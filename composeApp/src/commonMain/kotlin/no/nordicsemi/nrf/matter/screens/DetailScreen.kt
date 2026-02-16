@@ -282,7 +282,7 @@ fun PowerCard(
     onToggle: (Boolean) -> Unit
 ) {
     DeviceItemContainer(
-        icon = painterResource(resource = Res.drawable.no_matter_devices),
+        icon = painterResource(resource = Res.drawable.light_bulb_smart_light),
         title = "Power",
         subtitle = "Turn device ON or OFF",
         isOnline = enabled,

@@ -1,12 +1,26 @@
 package no.nordicsemi.nrf.matter.matter
 
-import cnames.structs.__CFString
-import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CValuesRef
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.IntVar
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.allocArrayOf
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.value
 import platform.CoreFoundation.CFDataRef
+import platform.CoreFoundation.CFDictionaryCreate
 import platform.CoreFoundation.CFDictionaryRef
 import platform.CoreFoundation.CFErrorRefVar
+import platform.CoreFoundation.CFNumberCreate
+import platform.CoreFoundation.CFNumberRef
+import platform.CoreFoundation.CFRelease
+import platform.CoreFoundation.kCFAllocatorDefault
+import platform.CoreFoundation.kCFBooleanFalse
+import platform.CoreFoundation.kCFCopyStringDictionaryKeyCallBacks
+import platform.CoreFoundation.kCFNumberIntType
+import platform.CoreFoundation.kCFTypeDictionaryValueCallBacks
 import platform.Foundation.NSData
 import platform.Matter.MTRKeypairProtocol
 import platform.Security.SecKeyCopyPublicKey
@@ -24,6 +38,7 @@ import platform.darwin.NSObject
 
 sealed class MatterKeypairException : Throwable() {
     object CopyPublicKeyFailed : MatterKeypairException()
+
     object GeneratePrivateKeyFailed : MatterKeypairException()
     object GeneratePrivateKeyReturnedNil : MatterKeypairException()
 }
@@ -60,14 +75,56 @@ class MatterKeypair : NSObject(), MTRKeypairProtocol {
     }
 
     private fun generatePrivateKey(): SecKeyRef {
-        val attributes: Map<CPointer<__CFString>?, Any?> = mapOf(
-            kSecAttrKeyType to kSecAttrKeyTypeECSECPrimeRandom,
-            kSecAttrKeyClass to kSecAttrKeyClassPrivate,
-            kSecAttrKeySizeInBits to 256,
-            kSecAttrIsPermanent to false
+        return SecKeyCreateRandomKey(createAttributes(), null) //TODO error
+            ?: throw MatterKeypairException.GeneratePrivateKeyReturnedNil
+    }
+
+    private fun createAttributes(): CFDictionaryRef {
+        val keys = listOf(
+            kSecAttrKeyType,
+            kSecAttrKeyClass,
+            kSecAttrKeySizeInBits,
+            kSecAttrIsPermanent
         )
 
-        return SecKeyCreateRandomKey(attributes as CFDictionaryRef, null) //TODO error
-            ?: throw MatterKeypairException.GeneratePrivateKeyReturnedNil
+        val cfSize = createNumber(256)
+        val cfIsPermanent = kCFBooleanFalse
+
+        val values = listOf(
+            kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrKeyClassPrivate,
+            cfSize,
+            cfIsPermanent
+        )
+
+        val dictionary = memScoped {
+            val keysPtr = allocArrayOf(keys)
+            val valuesPtr = allocArrayOf(values)
+
+            CFDictionaryCreate(
+                kCFAllocatorDefault,
+                keysPtr.reinterpret(),
+                valuesPtr.reinterpret(),
+                keys.size.toLong(),
+                kCFCopyStringDictionaryKeyCallBacks.ptr,
+                kCFTypeDictionaryValueCallBacks.ptr
+            )
+        }
+
+        keys.forEach { CFRelease(it) }
+        values.forEach { CFRelease(it) }
+
+        return dictionary!!
+    }
+
+    private fun createNumber(value: Int): CFNumberRef? = memScoped {
+        val intValue = alloc<IntVar>()
+        intValue.value = value
+
+        CFNumberCreate(
+            null,
+            kCFNumberIntType,
+            intValue.ptr
+        )
     }
 }

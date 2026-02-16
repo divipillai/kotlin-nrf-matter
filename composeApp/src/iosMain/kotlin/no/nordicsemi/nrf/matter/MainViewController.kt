@@ -11,6 +11,7 @@ import androidx.compose.ui.window.ComposeUIViewController
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
+import no.nordicsemi.nrf.matter.matter.MatterController
 
 class IosCommissionHandler(
     private val onCommission: () -> Unit
@@ -56,6 +57,7 @@ fun IosAppRoot() {
 fun startIosCommissioning() {
     // Matter commissioning on iOS
     Napier.d("iOS commissioning has started!")
+    MatterController.commission()
 }
 
 

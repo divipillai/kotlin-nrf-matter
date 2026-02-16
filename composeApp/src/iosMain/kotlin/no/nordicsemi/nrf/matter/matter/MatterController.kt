@@ -19,10 +19,10 @@ import platform.Security.errSecSuccess
 import platform.Security.kSecRandomDefault
 import platform.darwin.NSObject
 
-object MatterExample {
+object MatterController {
 
     @OptIn(ExperimentalForeignApi::class)
-    fun commision() {
+    fun commission() {
         val factory = MTRDeviceControllerFactory.sharedInstance()
 
         val storage = MatterStorage()

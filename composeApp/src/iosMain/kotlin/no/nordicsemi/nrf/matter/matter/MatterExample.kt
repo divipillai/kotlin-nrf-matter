@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.matter
 
+import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSError
 import platform.Foundation.NSMutableData
@@ -71,14 +72,14 @@ val nodeID = NSNumber(1)
 
 class MyControllerDelegate : NSObject(), MTRDeviceControllerDelegateProtocol {
     override fun controller(controller: MTRDeviceController, statusUpdate: MTRCommissioningStatus) {
-
+        Napier.i("Commissioning status $statusUpdate.")
     }
 
     override fun controller(
         controller: MTRDeviceController,
         commissioningSessionEstablishmentDone: NSError?
     ) {
-
+        Napier.i("Commissioning error.")
     }
 
     override fun controller(
@@ -87,6 +88,6 @@ class MyControllerDelegate : NSObject(), MTRDeviceControllerDelegateProtocol {
         nodeID: NSNumber?,
         metrics: MTRMetrics
     ) {
-        Napier
+        Napier.i("Commissioning complete.")
     }
 }

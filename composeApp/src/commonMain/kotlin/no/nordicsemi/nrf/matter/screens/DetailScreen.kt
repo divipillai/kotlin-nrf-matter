@@ -39,6 +39,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +60,8 @@ import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.SectionTitle
 import nrfmatterformobile.composeapp.generated.resources.Res
+import nrfmatterformobile.composeapp.generated.resources.light_bulb_smart_light
+import nrfmatterformobile.composeapp.generated.resources.light_fixture
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -97,6 +100,7 @@ import kotlin.time.Clock
  */
 
 val MatterGreen = Color(0xFF22C55E)
+
 /**
  * The Device Screen shows all the information about the device that was selected in the Home
  * screen. It supports the following actions:
@@ -244,7 +248,7 @@ fun DeviceHeader() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Icon(
-            painter = painterResource(resource = Res.drawable.no_matter_devices),
+            painter = painterResource(resource = Res.drawable.light_fixture),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(80.dp)
@@ -284,9 +288,13 @@ fun PowerCard(
         isOnline = enabled,
         onDeviceClick = { },
     ) {
+        var isChecked by rememberSaveable { mutableStateOf(enabled) }
         Switch(
-            checked = enabled,
-            onCheckedChange = onToggle,
+            checked = isChecked,
+            onCheckedChange = {
+                isChecked = it
+                onToggle(isChecked)
+            },
         )
     }
 }
@@ -467,7 +475,7 @@ fun DeviceItemContainer(
         border = if (isOnline) BorderStroke(
             width = 1.dp,
             color = MaterialTheme.colorScheme.primary.copy(0.3f)
-        ) else CardDefaults.outlinedCardBorder(enabled = false),
+        ) else CardDefaults.outlinedCardBorder(),
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)

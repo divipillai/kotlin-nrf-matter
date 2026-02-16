@@ -127,10 +127,12 @@ class DevicePresenter(
                 updateRemoveDeviceState(RemoveDeviceState.ForceRemove(deviceId))
                 return@launch
             }
-            // Remove device from the app's devices repository.
-            devicesRepository.removeDevice(deviceId)
-            // Notify UI so we navigate back to Home screen.
-            updateRemoveDeviceState(RemoveDeviceState.Removed(deviceId))
+            try {
+                devicesRepository.removeDevice(deviceId)
+                updateRemoveDeviceState(RemoveDeviceState.Removed(deviceId))
+            } catch (e: Exception) {
+                Napier.e(e) { "Error removing device: ${e.message}" }
+            }
 
         }
     }
@@ -146,10 +148,15 @@ class DevicePresenter(
     // repository.
     fun removeDeviceWithoutUnlink(deviceId: Long) {
         scope.launch {
-            // Remove device from the app's devices repository.
-            devicesRepository.removeDevice(deviceId)
-            // Notify UI so we navigate back to Home screen.
-            updateRemoveDeviceState(RemoveDeviceState.Removed(deviceId))
+            try {
+                // Remove device from the app's devices repository.
+                devicesRepository.removeDevice(deviceId)
+                // Notify UI so we navigate back to Home screen.
+                updateRemoveDeviceState(RemoveDeviceState.Removed(deviceId))
+            } catch (e: Exception) {
+                Napier.e(e) { "Error removing device: ${e.message}" }
+            }
+
         }
     }
 

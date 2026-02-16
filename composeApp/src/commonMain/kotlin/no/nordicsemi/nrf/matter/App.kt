@@ -81,7 +81,11 @@ fun App() {
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
 
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)
-    val onBack: () -> Unit = { backStack.removeLastOrNull() }
+    val onBack: () -> Unit = {
+        if (backStack.size > 1) {
+            backStack.removeLastOrNull()
+        }
+    }
 
     val commissionHandler = LocalCommissionHandler.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -124,7 +128,7 @@ fun App() {
                     entryProvider = entryProvider {
                         screens(
                             padding = padding,
-                            snackbarHostState= snackbarHostState,
+                            snackbarHostState = snackbarHostState,
                             onCommissioningStarted = {
                                 commissionHandler.onCommissioningStarted()
                             },
@@ -176,7 +180,11 @@ private fun EntryProviderScope<NavKey>.screens(
             deviceId = key.id,
             padding = padding,
             snackbarHostState = snackbarHostState,
-            onBack = { backStack.removeLastOrNull() }
+            onBack = {
+                if (backStack.size > 1) {
+                    backStack.removeLastOrNull()
+                }
+            }
         )
     }
 }

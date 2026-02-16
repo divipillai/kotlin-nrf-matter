@@ -162,10 +162,10 @@ fun DeviceScreen(
 
         is RemoveDeviceState.Removed -> {
             isRemoving = false
-            LaunchedEffect(Unit) {
+            LaunchedEffect(true) {
                 snackbarHostState.showSnackbar("Device removed")
-                onBack()
             }
+            onBack()
         }
 
         RemoveDeviceState.Removing -> {

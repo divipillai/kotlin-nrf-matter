@@ -46,6 +46,7 @@ object MatterController {
                 fabricID = NSNumber(1),
                 nocSigner = MatterKeypair(),
             )
+            params.vendorID = NSNumber(0x127F)
 
             var controller: MTRDeviceController? = null
             controller = try {

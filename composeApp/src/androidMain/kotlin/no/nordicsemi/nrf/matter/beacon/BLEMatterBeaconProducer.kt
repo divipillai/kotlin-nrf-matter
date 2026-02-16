@@ -43,8 +43,8 @@ import android.content.Context
 import android.content.Context.BLUETOOTH_SERVICE
 import android.os.ParcelUuid
 import android.os.SystemClock
-import android.util.Log
 import androidx.annotation.RequiresPermission
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -54,7 +54,7 @@ import no.nordicsemi.nrf.matter.Transport
 import java.util.concurrent.ConcurrentHashMap
 
 /** [MatterBeaconProducer] which emits Bluetooth LE beacons as they are discovered. */
- class MatterBeaconProducerBle(
+class MatterBeaconProducerBle(
     private val bluetoothLeScanner: BluetoothLeScanner?,
     private val context: Context,
 ) : MatterBeaconProducer {
@@ -73,7 +73,7 @@ import java.util.concurrent.ConcurrentHashMap
                                 ?: 0) > BEACON_EMITTING_DEBOUNCE_IN_MS
                         if (shouldWeEmitItAgain) {
                             beaconEmittedTime[beacon] = currentTime
-                            Log.d("AAA", "Emitting BLE beacon [${beacon}]")
+                            Napier.d("AAA, Emitting BLE beacon [${beacon}]")
                             trySend(beacon)
                         }
                     }
@@ -81,7 +81,7 @@ import java.util.concurrent.ConcurrentHashMap
             }
 
         if (bluetoothLeScanner != null) {
-            Log.d("AAA", "Starting BLE scan.")
+            Napier.d("AAA, Starting BLE scan.")
             bluetoothLeScanner.startScan(
                 listOf(
                     ScanFilter.Builder()
@@ -95,19 +95,19 @@ import java.util.concurrent.ConcurrentHashMap
                 scanCallback,
             )
         } else {
-            Log.d("AAA", "BLE Scanner not available.")
+            Napier.d("AAA, BLE Scanner not available.")
         }
 
         awaitClose {
             if (bluetoothLeScanner == null) {
-                Log.d("AAA", "BLE Scanner not available.")
+                Napier.d("AAA, BLE Scanner not available.")
                 return@awaitClose
             }
 
             val bluetoothAdapter: BluetoothAdapter =
                 (context.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager).adapter
             if (bluetoothAdapter.state == BluetoothAdapter.STATE_ON) {
-                Log.d("AAA", "Stopping BLE scan.")
+                Napier.d("AAA, Stopping BLE scan.")
                 bluetoothLeScanner.stopScan(scanCallback)
             }
         }
@@ -121,14 +121,14 @@ import java.util.concurrent.ConcurrentHashMap
         val data = scanRecord?.bytes ?: return null
         // Full record must be at least 14 bytes.
         if (data.size < 14) {
-            Log.d("AAA", "Dropping BLE ad with record length %d (expected 14) ${data.size}")
+            Napier.d("AAA, Dropping BLE ad with record length %d (expected 14) ${data.size}")
             return null
         }
 
         // Data payload length is byte 4 and should be exactly 10.
         val dataLength = data[3].toInt()
         if (dataLength < 10) {
-            Log.w("AAA", "Dropping BLE ad with data length [${dataLength}] (expected >= 10)")
+            Napier.w("AAA, Dropping BLE ad with data length [${dataLength}] (expected >= 10)")
             return null
         }
 

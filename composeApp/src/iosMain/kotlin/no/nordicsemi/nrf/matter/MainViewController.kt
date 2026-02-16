@@ -55,7 +55,7 @@ fun IosAppRoot() {
 
 fun startIosCommissioning() {
     // Matter commissioning on iOS
-    println("iOS commissioning has started!")
+    Napier.d("iOS commissioning has started!")
 }
 
 

@@ -1,7 +1,7 @@
 package no.nordicsemi.nrf.matter.chip
 
-import android.util.Log
 import chip.devicecontroller.ChipDeviceController
+import io.github.aakira.napier.Napier
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -39,41 +39,41 @@ import chip.devicecontroller.ChipDeviceController
  */
 abstract class BaseCompletionListener : ChipDeviceController.CompletionListener {
     override fun onConnectDeviceComplete() {
-        Log.d("AAA","BaseCompletionListener onConnectDeviceComplete()")
+        Napier.d { "AAA, BaseCompletionListener onConnectDeviceComplete()" }
     }
 
     override fun onStatusUpdate(status: Int) {
-        Log.d("AAA","BaseCompletionListener onStatusUpdate(): status [${status}]")
+        Napier.d { "AAA, BaseCompletionListener onStatusUpdate(): status [${status}]" }
     }
 
     override fun onPairingComplete(code: Int) {
-        Log.d("AAA","BaseCompletionListener onPairingComplete(): code [${code}]")
+        Napier.d { "AAA, BaseCompletionListener onPairingComplete(): code [${code}]" }
     }
 
     override fun onPairingDeleted(code: Int) {
-        Log.d("AAA","BaseCompletionListener onPairingDeleted(): code [${code}]")
+        Napier.d { "AAA, BaseCompletionListener onPairingDeleted(): code [${code}]" }
     }
 
     override fun onCommissioningComplete(nodeId: Long, errorCode: Int) {
-        Log.d("AAA",
-            "BaseCompletionListener onCommissioningComplete(): nodeId [${nodeId}] errorCode [${errorCode}]"
-        )
+        Napier.d {
+            "AAA, BaseCompletionListener onCommissioningComplete (): nodeId [${nodeId}] errorCode [${errorCode}]"
+        }
     }
 
     override fun onNotifyChipConnectionClosed() {
-        Log.d("AAA","BaseCompletionListener onNotifyChipConnectionClosed()")
+        Napier.d { "AAA, BaseCompletionListener onNotifyChipConnectionClosed()" }
     }
 
     override fun onCloseBleComplete() {
-        Log.d("AAA","BaseCompletionListener onCloseBleComplete()")
+        Napier.d { "AAA, BaseCompletionListener onCloseBleComplete()" }
     }
 
     override fun onError(error: Throwable) {
-        Log.d("AAA", "BaseCompletionListener onError()", error)
+        Napier.e(error) { "AAA, BaseCompletionListener onError()" }
     }
 
     override fun onOpCSRGenerationComplete(csr: ByteArray) {
-        Log.d("AAA","BaseCompletionListener onOpCSRGenerationComplete() csr [${csr}]")
+        Napier.d { "AAA, BaseCompletionListener onOpCSRGenerationComplete() csr [${csr}]" }
     }
 
     override fun onReadCommissioningInfo(
@@ -82,14 +82,14 @@ abstract class BaseCompletionListener : ChipDeviceController.CompletionListener 
         wifiEndpointId: Int,
         threadEndpointId: Int
     ) {
-        Log.d("AAA",
-            "onReadCommissioningInfo: vendorId [${vendorId}]  productId [${productId}]  wifiEndpointId [${wifiEndpointId}] threadEndpointId [${threadEndpointId}]"
-        )
+        Napier.d {
+            "AAA, onReadCommissioningInfo: vendorId [${vendorId}]  productId [${productId}]  wifiEndpointId [${wifiEndpointId}] threadEndpointId [${threadEndpointId}]"
+        }
     }
 
     override fun onCommissioningStatusUpdate(nodeId: Long, stage: String?, errorCode: Int) {
-        Log.d("AAA",
-            "onCommissioningStatusUpdate nodeId [${nodeId}]  stage [${stage}]  errorCode [${errorCode}]"
-        )
+        Napier.d {
+            "AAA, onCommissioningStatusUpdate nodeId [${nodeId}]  stage [${stage}]  errorCode [${errorCode}]"
+        }
     }
 }

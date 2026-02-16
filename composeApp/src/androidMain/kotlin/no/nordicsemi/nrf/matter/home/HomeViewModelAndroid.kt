@@ -1,11 +1,11 @@
 package no.nordicsemi.nrf.matter.home
 
 import android.content.Context
-import android.util.Log
 import androidx.activity.result.ActivityResult
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.chip.ChipClient
@@ -75,7 +75,7 @@ class HomeViewModelAndroid(
                 try {
                     clustersHelper.readBasicClusterVendorNameAttribute(deviceId)
                 } catch (ex: Exception) {
-                    Log.e("AAA", "Failed to read VendorName attribute with exception: $ex")
+                    Napier.e(ex) { "AAA, Failed to read VendorName attribute with exception: $ex" }
                     ""
                 }
 
@@ -83,7 +83,7 @@ class HomeViewModelAndroid(
                 try {
                     clustersHelper.readBasicClusterProductNameAttribute(deviceId)
                 } catch (ex: Exception) {
-                    Log.e("AAA", "Failed to read ProductName attribute with exception: $ex")
+                    Napier.e(ex) { "AAA, Failed to read ProductName attribute with exception: $ex" }
                     ""
                 }
 
@@ -104,13 +104,13 @@ class HomeViewModelAndroid(
                 baseViewModel.addCommissionedDevice(device, isOnline = true, isOn = false)
             } catch (e: Exception) {
                 val msg = "Adding device [${deviceId}] [${deviceName}] to app's repository failed."
-                Log.e("BBB", "onCommissionedDeviceNameCaptured: $msg, $e")
+                Napier.e(e) { "BBB, onCommissionedDeviceNameCaptured: $msg, $e" }
             }
 
             val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
             var gotDeviceType = false
             deviceMatterInfoList.forEach { deviceMatterInfo ->
-                Log.d("AAA", "Processing endpoint [${deviceMatterInfo.endpoint}]")
+                Napier.d("AAA, Processing endpoint [${deviceMatterInfo.endpoint}]")
                 // Endpoint 0 is the Root Node, so we disregard it.
                 if (deviceMatterInfo.endpoint != 0) {
                     if (gotDeviceType) {
@@ -132,7 +132,7 @@ class HomeViewModelAndroid(
             try {
                 clustersHelper.writeBasicClusterNodeLabelAttribute(deviceId, deviceName)
             } catch (ex: Exception) {
-                Log.e("AAA", "Failed to write NodeLabel", ex)
+                Napier.e(ex) { "AAA,  Failed to write NodeLabel $deviceName with exception: $ex" }
             }
         }
     }

@@ -1,5 +1,7 @@
 package no.nordicsemi.nrf.matter.matter
 
+import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CValuesRef
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.IntVar
@@ -9,6 +11,9 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.value
+import platform.CoreFoundation.CFDataCreate
+import platform.CoreFoundation.CFDataGetBytePtr
+import platform.CoreFoundation.CFDataGetLength
 import platform.CoreFoundation.CFDataRef
 import platform.CoreFoundation.CFDictionaryCreate
 import platform.CoreFoundation.CFDictionaryRef
@@ -22,6 +27,7 @@ import platform.CoreFoundation.kCFCopyStringDictionaryKeyCallBacks
 import platform.CoreFoundation.kCFNumberIntType
 import platform.CoreFoundation.kCFTypeDictionaryValueCallBacks
 import platform.Foundation.NSData
+import platform.Foundation.create
 import platform.Matter.MTRKeypairProtocol
 import platform.Security.SecKeyCopyPublicKey
 import platform.Security.SecKeyCreateRandomKey
@@ -35,6 +41,7 @@ import platform.Security.kSecAttrKeyType
 import platform.Security.kSecAttrKeyTypeECSECPrimeRandom
 import platform.Security.kSecKeyAlgorithmECDSASignatureMessageX962SHA256
 import platform.darwin.NSObject
+import platform.darwin.UInt8Var
 
 sealed class MatterKeypairException : Throwable() {
     object CopyPublicKeyFailed : MatterKeypairException()
@@ -64,14 +71,15 @@ class MatterKeypair : NSObject(), MTRKeypairProtocol {
         val signature = SecKeyCreateSignature(
             privateKey,
             kSecKeyAlgorithmECDSASignatureMessageX962SHA256,
-            message as CFDataRef,
+            createCFData(message),
             error
-        ) as NSData?
+        )
 
         if (signature == null) {
             throw IllegalStateException("Failed to sign message")
         }
-        return signature
+
+        return createNSData(signature)
     }
 
     private fun generatePrivateKey(): SecKeyRef {
@@ -126,5 +134,21 @@ class MatterKeypair : NSObject(), MTRKeypairProtocol {
             kCFNumberIntType,
             intValue.ptr
         )
+    }
+
+    private fun createCFData(data: NSData): CFDataRef? {
+        val length = data.length.toLong()
+        val bytes = data.bytes?.reinterpret<UInt8Var>() ?: return null
+
+        return CFDataCreate(kCFAllocatorDefault, bytes, length)
+    }
+
+    @OptIn(BetaInteropApi::class)
+    private fun createNSData(data: CFDataRef): NSData {
+        val bytes = CFDataGetBytePtr(data)
+        val opaque: COpaquePointer? = bytes?.reinterpret()
+        val length = CFDataGetLength(data)
+
+        return NSData.create(bytes = opaque, length = length.toULong())
     }
 }

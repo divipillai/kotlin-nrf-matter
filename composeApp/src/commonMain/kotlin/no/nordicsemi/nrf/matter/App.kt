@@ -25,6 +25,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import io.github.aakira.napier.DebugAntilog
+import io.github.aakira.napier.Napier
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
@@ -75,10 +77,15 @@ val LocalCommissionHandler =
 @Composable
 fun App() {
     val homeViewModel: HomeViewModel = getKoin().get()
+    Napier.base(DebugAntilog())
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
 
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)
-    val onBack: () -> Unit = { backStack.removeLastOrNull() }
+    val onBack: () -> Unit = {
+        if (backStack.size > 1) {
+            backStack.removeLastOrNull()
+        }
+    }
 
     val commissionHandler = LocalCommissionHandler.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -121,7 +128,7 @@ fun App() {
                     entryProvider = entryProvider {
                         screens(
                             padding = padding,
-                            snackbarHostState= snackbarHostState,
+                            snackbarHostState = snackbarHostState,
                             onCommissioningStarted = {
                                 commissionHandler.onCommissioningStarted()
                             },
@@ -173,7 +180,11 @@ private fun EntryProviderScope<NavKey>.screens(
             deviceId = key.id,
             padding = padding,
             snackbarHostState = snackbarHostState,
-            onBack = { backStack.removeLastOrNull() }
+            onBack = {
+                if (backStack.size > 1) {
+                    backStack.removeLastOrNull()
+                }
+            }
         )
     }
 }

@@ -22,7 +22,7 @@ import platform.darwin.NSObject
 object MatterController {
 
     @OptIn(ExperimentalForeignApi::class)
-    fun commission() {
+    fun commission(code: String) {
         val factory = MTRDeviceControllerFactory.sharedInstance()
 
         val storage = MatterStorage()
@@ -62,7 +62,7 @@ object MatterController {
             val myDelegate = MyControllerDelegate()
             controller!!.setDeviceControllerDelegate(myDelegate, null)
 
-            val payload = MTRSetupPayload(payload = "")
+            val payload = MTRSetupPayload(payload = code)
 
             controller.setupCommissioningSessionWithPayload(payload = payload, newNodeID = nodeID, error = null)
         }

@@ -2,6 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>App needs access to Bluetooth to commission Matter device.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_matter._tcp</string>
+		<string>_matterc._udp</string>
+		<string>_matterd._udp</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>App needs access to camera to scan QR code for Matter commissining.</string>
 	<key>NSLocalNetworkUsageDescription</key>

@@ -119,7 +119,7 @@ fun QRCodeScanner(onCompletion: (String) -> Unit) {
     )
 }
 
-fun startIosCommissioning(code: String, onError: () -> Unit) {
+suspend fun startIosCommissioning(code: String, onError: () -> Unit) {
     // Matter commissioning on iOS
     Napier.d("iOS commissioning has started!")
     MatterController.commission(code, onError)

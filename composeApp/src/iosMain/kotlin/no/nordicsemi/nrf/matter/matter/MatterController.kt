@@ -10,6 +10,9 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import no.nordicsemi.nrf.matter.model.Device
 import platform.Foundation.NSError
 import platform.Foundation.NSMutableData
 import platform.Foundation.NSNumber
@@ -28,15 +31,16 @@ val nodeID = NSNumber(1)
 
 object MatterController {
 
-    fun commission(code: String, onError: () -> Unit) {
+    suspend fun commission(code: String, onError: () -> Unit): Device? {
         try {
-            commission(code)
+            return commission(code)
         } catch (t: Throwable) {
             onError()
+            return null
         }
     }
 
-    private fun commission(code: String) {
+    private suspend fun commission(code: String): Device {
         Napier.i("Initializing Matter controller factory.")
         val storage = MatterStorage()
         val factoryParams = MTRDeviceControllerFactoryParams(storage)
@@ -66,12 +70,25 @@ object MatterController {
             ?: throw IllegalStateException("Couldn't create a controller")
         Napier.i("Matter controller successfully created.")
 
-        Napier.i("Commissioning Matter device.")
-        val delegate = MatterControllerDelegate()
+        Napier.i("Opening Matter commissioning session.")
+        val delegate = MatterControllerDelegate(nodeID)
         controller.setDeviceControllerDelegate(delegate, null)
         val payload = MTRSetupPayload(payload = code)
         controller.setupCommissioningSessionWithPayload(payload = payload, newNodeID = nodeID, error = null)
-        Napier.i("Matter device successfully commissioned.")
+        Napier.i("Matter commissioning session successfully opened.")
+
+        val successResult = delegate.result.filterIsInstance<MatterControllerResult.Success>().first()
+        successResult.device
+        with (successResult.device) {
+            return Device(
+                vendorName = "Nordic Semiconductor", // TODO
+                productName = "nRF54",
+                vendorId = vendorID?.stringValue,
+                productId = productID?.stringValue,
+                deviceId = nodeID.longValue,
+                name = "Matter device",
+            )
+        }
     }
 
     private fun MTRDeviceControllerFactory.startControllerFactory(params: MTRDeviceControllerFactoryParams): MTRDeviceControllerFactory? = memScoped {

@@ -78,7 +78,6 @@ object MatterController {
         Napier.i("Matter commissioning session successfully opened.")
 
         val successResult = delegate.result.filterIsInstance<MatterControllerResult.Success>().first()
-        successResult.device
         with (successResult.device) {
             return Device(
                 vendorName = "Nordic Semiconductor", // TODO

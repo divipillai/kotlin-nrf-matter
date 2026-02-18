@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.matter.support.extension.device-setup</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>$(PRODUCT_MODULE_NAME).RequestHandler</string>
+	</dict>
 	<key>NSHomeKitUsageDescription</key>
 	<string>Needs HomeKit to manage Matter devices.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>

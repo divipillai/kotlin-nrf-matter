@@ -1,13 +1,17 @@
 package no.nordicsemi.nrf.matter
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeUIViewController
 import io.github.aakira.napier.DebugAntilog
@@ -42,36 +46,56 @@ fun MainViewController() =
 
     }
 
+sealed interface ScreenState {
+    object Initial : ScreenState
+    data class Commissioning(val payload: String) : ScreenState
+    object QrScanner : ScreenState
+    object Error : ScreenState
+}
+
 @Composable
 fun IosAppRoot() {
-    val showQrCodeScanner = remember { mutableStateOf(false) }
-    val qrCode = remember { mutableStateOf<String?>(null) }
+    val state = remember { mutableStateOf<ScreenState>(ScreenState.Initial) }
+
     val commissionHandler = remember {
         IosCommissionHandler {
-            // Call into Swift / iOS commissioning logic
-//            startIosCommissioning()
-            showQrCodeScanner.value = true
+            state.value = ScreenState.QrScanner
         }
     }
 
-    LaunchedEffect(qrCode.value) {
-        qrCode.value?.let {
-            showQrCodeScanner.value = false
-            qrCode.value = null
-            startIosCommissioning(it)
+    LaunchedEffect(state.value) {
+        (state.value as? ScreenState.Commissioning)?.payload?.let {
+            startIosCommissioning(it) {
+                state.value = ScreenState.Error
+            }
         }
     }
 
     CompositionLocalProvider(
         LocalCommissionHandler provides commissionHandler
     ) {
-        if (showQrCodeScanner.value) {
-            QRCodeScanner {
-                qrCode.value = it
+        when (state.value) {
+            is ScreenState.Initial -> App()
+            is ScreenState.QrScanner -> QRCodeScanner {
+                state.value = ScreenState.Commissioning(it)
             }
-        } else {
-            App()
+            is ScreenState.Error -> ErrorScreen()
+            is ScreenState.Commissioning -> CommissioningScreen()
         }
+    }
+}
+
+@Composable
+fun CommissioningScreen() {
+    Box(Modifier.fillMaxSize()) {
+        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+    }
+}
+
+@Composable
+fun ErrorScreen() {
+    Box(Modifier.fillMaxSize()) {
+        Text("Error occurred.", modifier = Modifier.align(Alignment.Center))
     }
 }
 
@@ -79,7 +103,7 @@ fun IosAppRoot() {
 fun QRCodeScanner(onCompletion: (String) -> Unit) {
     QrScanner(
         modifier = Modifier,
-        flashlightOn = true,
+        flashlightOn = false,
         cameraLens = CameraLens.Back,
         openImagePicker = false,
         onCompletion = {
@@ -95,10 +119,10 @@ fun QRCodeScanner(onCompletion: (String) -> Unit) {
     )
 }
 
-fun startIosCommissioning(code: String) {
+fun startIosCommissioning(code: String, onError: () -> Unit) {
     // Matter commissioning on iOS
     Napier.d("iOS commissioning has started!")
-    MatterController.commission(code)
+    MatterController.commission(code, onError)
 }
 
 

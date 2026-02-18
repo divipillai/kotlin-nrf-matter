@@ -1,5 +1,7 @@
 package no.nordicsemi.nrf.matter.model
 
+import kotlinx.serialization.Serializable
+
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -37,6 +39,6 @@ package no.nordicsemi.nrf.matter.model
 data class DeviceMatterInfo(
     val endpoint: Int,
     val types: List<Long>,
-    val serverClusters: List<Any>,
-    val clientClusters: List<Any>
+    val serverClusters: ArrayList<Long>,
+    val clientClusters: List<Long>,
 )

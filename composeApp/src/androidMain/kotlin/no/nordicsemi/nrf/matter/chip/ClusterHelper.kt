@@ -82,13 +82,13 @@ class ClustersHelper(private val chipClient: ChipClient) {
         // ServerListAttribute
         val serverListAttribute =
             readDescriptorClusterServerListAttribute(connectedDevicePtr, endpointInt)
-        val serverClusters = arrayListOf<Any>()
+        val serverClusters = arrayListOf<Long>()
         serverListAttribute.forEach { serverClusters.add(it) }
 
         // ClientListAttribute
         val clientListAttribute =
             readDescriptorClusterClientListAttribute(connectedDevicePtr, endpointInt)
-        val clientClusters = arrayListOf<Any>()
+        val clientClusters = arrayListOf<Long>()
         clientListAttribute.forEach { clientClusters.add(it) }
 
         // Build the DeviceMatterInfo

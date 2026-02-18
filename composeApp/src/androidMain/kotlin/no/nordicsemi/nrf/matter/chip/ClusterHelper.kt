@@ -3,9 +3,10 @@ package no.nordicsemi.nrf.matter.chip
 import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.suspendCancellableCoroutine
+import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -134,7 +135,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         devicePtr: Long,
         endpoint: Int
     ): List<Any>? {
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             getDescriptorClusterForDevice(devicePtr, endpoint)
                 .readPartsListAttribute(
                     object : ChipClusters.DescriptorCluster.PartsListAttributeCallback {
@@ -163,7 +164,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         devicePtr: Long,
         endpoint: Int
     ): List<ChipStructs.DescriptorClusterDeviceTypeStruct> {
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             getDescriptorClusterForDevice(devicePtr, endpoint)
                 .readDeviceTypeListAttribute(
                     object : ChipClusters.DescriptorCluster.DeviceTypeListAttributeCallback {
@@ -214,7 +215,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         devicePtr: Long,
         endpoint: Int
     ): List<Long> {
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             getDescriptorClusterForDevice(devicePtr, endpoint)
                 .readServerListAttribute(
                     object : ChipClusters.DescriptorCluster.ServerListAttributeCallback {
@@ -234,7 +235,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         devicePtr: Long,
         endpoint: Int
     ): List<Long> {
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             getDescriptorClusterForDevice(devicePtr, endpoint)
                 .readClientListAttribute(
                     object : ChipClusters.DescriptorCluster.ClientListAttributeCallback {
@@ -270,7 +271,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return emptyList()
             }
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             getApplicationBasicClusterForDevice(connectedDevicePtr, endpoint)
                 .readAttributeListAttribute(
                     object : ChipClusters.ApplicationBasicCluster.AttributeListAttributeCallback {
@@ -303,7 +304,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return null
             }
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             getBasicClusterForDevice(connectedDevicePtr, endpoint)
                 .readVendorIDAttribute(
                     object : ChipClusters.ApplicationBasicCluster.VendorIDAttributeCallback {
@@ -327,7 +328,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 return emptyList()
             }
 
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             getBasicClusterForDevice(connectedDevicePtr, endpoint)
                 .readAttributeListAttribute(
                     object : ChipClusters.ApplicationBasicCluster.AttributeListAttributeCallback {
@@ -365,7 +366,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 return
             }
 
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             val callback =
                 object : ChipClusters.DefaultClusterCallback {
                     override fun onSuccess() {
@@ -398,7 +399,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 return ""
             }
 
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             val callback =
                 object : ChipClusters.CharStringAttributeCallback {
                     override fun onSuccess(value: String) {
@@ -431,7 +432,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 return ""
             }
 
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             val callback =
                 object : ChipClusters.CharStringAttributeCallback {
                     override fun onSuccess(value: String) {
@@ -464,7 +465,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 return null
             }
 
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             val callback =
                 object : ChipClusters.CharStringAttributeCallback {
                     override fun onSuccess(value: String?) {
@@ -494,7 +495,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return
             }
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             getOnOffClusterForDevice(connectedDevicePtr, endpoint)
                 .toggle(
                     object : ChipClusters.DefaultClusterCallback {
@@ -525,7 +526,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             }
         if (isOn) {
             // ON
-            return suspendCoroutine { continuation ->
+            return suspendCancellableCoroutine { continuation ->
                 getOnOffClusterForDevice(connectedDevicePtr, endpoint)
                     .on(
                         object : ChipClusters.DefaultClusterCallback {
@@ -542,7 +543,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             }
         } else {
             // OFF
-            return suspendCoroutine { continuation ->
+            return suspendCancellableCoroutine { continuation ->
                 getOnOffClusterForDevice(connectedDevicePtr, endpoint)
                     .off(
                         object : ChipClusters.DefaultClusterCallback {
@@ -569,7 +570,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return null
             }
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             getOnOffClusterForDevice(connectedDevicePtr, endpoint)
                 .readOnOffAttribute(
                     object : ChipClusters.BooleanAttributeCallback {
@@ -620,7 +621,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         /*
         ChipClusters.DefaultClusterCallback var1, Integer var2, byte[] var3, Integer var4, Long var5, byte[] var6, int var7
          */
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             getAdministratorCommissioningClusterForDevice(connectedDevicePtr, endpoint)
                 .openCommissioningWindow(
                     object : ChipClusters.DefaultClusterCallback {
@@ -652,7 +653,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
      * @param devicePtr connected device pointer.
      */
     suspend fun closeCommissioningWindow(devicePtr: Long) {
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             val callback =
                 object : ChipClusters.DefaultClusterCallback {
                     override fun onSuccess() {

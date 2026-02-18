@@ -36,6 +36,7 @@ import kotlinx.serialization.Serializable
  * Encapsulates the information of interest when querying a Matter device just after it has been
  * commissioned.
  */
+@Serializable
 data class DeviceMatterInfo(
     val endpoint: Int,
     val types: List<Long>,

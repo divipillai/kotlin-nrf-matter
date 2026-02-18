@@ -86,6 +86,7 @@ class HomeViewModelAndroid(
                     Napier.e(ex) { "AAA, Failed to read ProductName attribute with exception: $ex" }
                     ""
                 }
+            val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
 
             try {
                 val deviceType = convertToAppDeviceType(
@@ -100,33 +101,12 @@ class HomeViewModelAndroid(
                     deviceType = deviceType,
                     deviceId = deviceId,
                     name = gpsCommissioningResult?.deviceName,
+                    deviceMatterInfo = deviceMatterInfoList
                 )
                 baseViewModel.addCommissionedDevice(device, isOnline = true, isOn = false)
             } catch (e: Exception) {
                 val msg = "Adding device [${deviceId}] [${deviceName}] to app's repository failed."
                 Napier.e(e) { "BBB, onCommissionedDeviceNameCaptured: $msg, $e" }
-            }
-
-            val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
-            var gotDeviceType = false
-            deviceMatterInfoList.forEach { deviceMatterInfo ->
-                Napier.d("AAA, Processing endpoint [${deviceMatterInfo.endpoint}]")
-                // Endpoint 0 is the Root Node, so we disregard it.
-                if (deviceMatterInfo.endpoint != 0) {
-                    if (gotDeviceType) {
-                        // TODO: Handle this properly once we have specific examples to learn from.
-                        return@forEach
-                    }
-                    baseViewModel.updateMatterDeviceInfo(deviceId, deviceMatterInfo)
-                    if (deviceMatterInfo.types.isNotEmpty()) {
-                        // TODO: handle for multiple types.
-                        baseViewModel.updateDeviceType(
-                            deviceId,
-                            convertToAppDeviceType(deviceMatterInfo.types.first()),
-                        )
-                        gotDeviceType = true
-                    }
-                }
             }
 
             // update device name

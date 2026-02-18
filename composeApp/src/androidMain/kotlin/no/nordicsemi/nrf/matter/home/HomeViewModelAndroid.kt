@@ -117,8 +117,9 @@ class HomeViewModelAndroid(
                         // TODO: Handle this properly once we have specific examples to learn from.
                         return@forEach
                     }
-                    if (deviceMatterInfo.types.size > 1) {
-                        // TODO: Handle this properly once we have specific examples to learn from.
+                    baseViewModel.updateMatterDeviceInfo(deviceId, deviceMatterInfo)
+                    if (deviceMatterInfo.types.isNotEmpty()) {
+                        // TODO: handle for multiple types.
                         baseViewModel.updateDeviceType(
                             deviceId,
                             convertToAppDeviceType(deviceMatterInfo.types.first()),

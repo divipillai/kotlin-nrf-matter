@@ -77,7 +77,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             readDescriptorClusterDeviceListAttribute(connectedDevicePtr, endpointInt)
         val types = arrayListOf<Long>()
         // todo: device type is deprecated
-//        deviceListAttribute.forEach { types.add(it.deviceType) }
+        deviceListAttribute.forEach { types.add(it.deviceType) }
 
         // ServerListAttribute
         val serverListAttribute =

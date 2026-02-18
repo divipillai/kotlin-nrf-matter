@@ -140,6 +140,15 @@ class HomeViewModel(
 
     fun updateDeviceState(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
         scope.launch {
+            // Get the device matter info from the repository.
+            val device = devicesRepository.getDevice(deviceId)
+            // Get the  ON/OFF endpoints 0x00000006 (6) from the device matter info
+            val onOffClusterId = device.deviceMatterInfo.filter {
+                it.serverClusters.contains(6) // TODO: This is for light on/off. Later it needs to be changed based on the device type.
+            }
+            // Targeted endpoint.
+            val endpoint = onOffClusterId.firstOrNull()?.endpoint
+                ?: 0 // TODO: if endpoint which supports on/off feature then handle properly in the ui.
             try {
                 updateDeviceStateRepository(
                     deviceId = deviceId,
@@ -149,7 +158,8 @@ class HomeViewModel(
                 deviceController.setDeviceOnOff(
                     deviceId = deviceId,
                     isDeviceOnline = isOnline,
-                    isOn = isOn
+                    isOn = isOn,
+                    endpoint,
                 )
             } catch (e: Exception) {
                 Napier.e(e) { "Error updating device state: ${e.message}" }

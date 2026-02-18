@@ -79,6 +79,16 @@ class DevicePresenter(
 
     fun updateDevicePowerState(deviceId: Long, isOn: Boolean) {
         scope.launch {
+            // Get the device from the repository.
+            val device = devicesRepository.getDevice(deviceId)
+            // Get the  ON/OFF endpoints 0x00000006 (6) from the device matter info
+            val onOffClusterId = device.deviceMatterInfo.filter {
+                it.serverClusters.contains(6L) // TODO: This is for light on/off. Later it needs to be changed based on the device type.
+            }
+            // Targeted endpoint.
+            val endpoint = onOffClusterId.firstOrNull()?.endpoint
+                ?: 0 // TODO: if endpoint which supports on/off feature then handle properly in ui.
+
             try {
                 devicesStateRepository.updateDeviceState(
                     deviceId = deviceId,
@@ -89,7 +99,8 @@ class DevicePresenter(
                 deviceController.setDeviceOnOff(
                     deviceId = deviceId,
                     isDeviceOnline = true,
-                    isOn = isOn
+                    isOn = isOn,
+                    endpoint = endpoint
                 )
             } catch (e: Exception) {
                 Napier.e(e) { "AAA, error updating device state: ${e.message}" }

@@ -38,16 +38,6 @@ import kotlin.coroutines.resumeWithException
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/**
- * Encapsulates the information of interest when querying a Matter device just after it has been
- * commissioned.
- */
-data class DeviceMatterInfo(
-    val endpoint: Int,
-    val types: List<Long>,
-    val serverClusters: List<Any>,
-    val clientClusters: List<Any>
-)
 
 class ClustersHelper(private val chipClient: ChipClient) {
 

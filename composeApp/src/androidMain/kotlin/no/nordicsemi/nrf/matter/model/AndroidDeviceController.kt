@@ -42,12 +42,13 @@ class AndroidDeviceController(
     override suspend fun setDeviceOnOff(
         deviceId: Long,
         isDeviceOnline: Boolean,
-        isOn: Boolean
+        isOn: Boolean,
+        endpoint: Int,
     ) {
         clustersHelper.setOnOffDeviceStateOnOffCluster(
             deviceId = deviceId,
             isOn = isOn,
-            endpoint = 0xD // todo: replace the static endpoints with a param.
+            endpoint = endpoint
         )
     }
 

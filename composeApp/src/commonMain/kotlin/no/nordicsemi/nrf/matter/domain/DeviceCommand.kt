@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.model
+package no.nordicsemi.nrf.matter.domain
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -30,13 +30,9 @@ package no.nordicsemi.nrf.matter.model
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-interface DeviceController {
-    suspend fun setDeviceOnOff(
-        deviceId: Long,
-        isDeviceOnline: Boolean,
-        isOn: Boolean,
-        endpoint: Int,
-    )
 
-    suspend fun unlinkDevice(deviceId: Long)
+sealed interface DeviceCommand {
+    data class SetPower(val isOn: Boolean) : DeviceCommand
+    data class SetLock(val locked: Boolean) : DeviceCommand
+    data class SetLevel(val level: Int) : DeviceCommand
 }

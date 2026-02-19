@@ -35,7 +35,8 @@ class IosDeviceController: DeviceController {
     override suspend fun setDeviceOnOff(
         deviceId: Long,
         isDeviceOnline: Boolean,
-        isOn: Boolean
+        isOn: Boolean,
+        endpoint: Int,
     ) {
         TODO("Not yet implemented")
     }

@@ -1,5 +1,7 @@
 package no.nordicsemi.nrf.matter.model
 
+import kotlinx.serialization.Serializable
+
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -30,13 +32,14 @@ package no.nordicsemi.nrf.matter.model
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-interface DeviceController {
-    suspend fun setDeviceOnOff(
-        deviceId: Long,
-        isDeviceOnline: Boolean,
-        isOn: Boolean,
-        endpoint: Int,
-    )
-
-    suspend fun unlinkDevice(deviceId: Long)
-}
+/**
+ * Encapsulates the information of interest when querying a Matter device just after it has been
+ * commissioned.
+ */
+@Serializable
+data class DeviceMatterInfo(
+    val endpoint: Int,
+    val types: List<Long>,
+    val serverClusters: ArrayList<Long>,
+    val clientClusters: List<Long>,
+)

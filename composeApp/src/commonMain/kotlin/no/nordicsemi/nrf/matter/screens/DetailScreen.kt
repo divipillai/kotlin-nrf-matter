@@ -216,7 +216,7 @@ fun DeviceScreen(
             PowerCard(
                 enabled = uiState.deviceUiModel!!.isOn,
                 onToggle = {
-                    devicePresenter.updateDevicePowerState(
+                    devicePresenter.togglePower(
                         device.device.deviceId,
                         it
                     )
@@ -650,6 +650,7 @@ private val DeviceTest =
         deviceId = 1L,
         name = "Living Room Light",
         productName = "My Light",
-        vendorName = "MyVendor"
+        vendorName = "MyVendor",
+        deviceMatterInfo = emptyList()
 
     )

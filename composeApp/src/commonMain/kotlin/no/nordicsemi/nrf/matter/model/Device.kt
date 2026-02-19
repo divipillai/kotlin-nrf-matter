@@ -43,7 +43,8 @@ data class Device(
     val name: String? = null,
 //    val room: String? = null, todo: Removed since it is deprecated in the Matter API.
     val productName: String? = null,
-    val vendorName: String? = null
+    val vendorName: String? = null,
+    val deviceMatterInfo: List<DeviceMatterInfo>,
 )
 
 @Serializable

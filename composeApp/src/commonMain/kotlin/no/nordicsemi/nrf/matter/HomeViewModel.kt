@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.domain.DeviceCommand
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.Devices
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
@@ -82,12 +81,6 @@ class HomeViewModel(
             DevicesListUiModel(emptyList(), showOfflineDevices = true)
         )
 
-    private fun updateDeviceStateRepository(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
-        scope.launch {
-            devicesStateRepository.updateDeviceState(deviceId, isOnline = isOnline, isOn = isOn)
-        }
-    }
-
     private fun processDevices(
         devices: Devices,
         devicesStates: DevicesState,
@@ -118,15 +111,6 @@ class HomeViewModel(
                 isOnline = isOnline,
                 isOn = isOn
             )
-        }
-    }
-
-    fun updateDeviceType(
-        deviceId: Long,
-        deviceType: DeviceType
-    ) {
-        scope.launch {
-            devicesRepository.updateDeviceType(deviceId, deviceType)
         }
     }
 

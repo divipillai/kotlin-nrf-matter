@@ -2,7 +2,6 @@ package no.nordicsemi.nrf.matter.matter
 
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.COpaquePointer
-import kotlinx.cinterop.CValuesRef
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.IntVar
 import kotlinx.cinterop.alloc
@@ -65,26 +64,33 @@ class MatterKeypair : NSObject(), MTRKeypairProtocol {
         return publicKey
     }
 
-    override fun signMessageECDSA_DER(message: NSData): NSData {
-        var error: CValuesRef<CFErrorRefVar>? = null // TODO
+    override fun signMessageECDSA_DER(message: NSData): NSData = memScoped {
+        val error = alloc<CFErrorRefVar>()
 
         val signature = SecKeyCreateSignature(
             privateKey,
             kSecKeyAlgorithmECDSASignatureMessageX962SHA256,
             createCFData(message),
-            error
+            error.ptr
         )
 
-        if (signature == null) {
+        if (signature == null || error.value != null) {
             throw IllegalStateException("Failed to sign message")
         }
 
         return createNSData(signature)
     }
 
-    private fun generatePrivateKey(): SecKeyRef {
-        return SecKeyCreateRandomKey(createAttributes(), null) //TODO error
-            ?: throw MatterKeypairException.GeneratePrivateKeyReturnedNil
+    private fun generatePrivateKey(): SecKeyRef = memScoped {
+        val error = alloc<CFErrorRefVar>()
+
+        val result = SecKeyCreateRandomKey(createAttributes(), error.ptr)
+
+        if (result == null || error.value != null) {
+            throw MatterKeypairException.GeneratePrivateKeyReturnedNil
+        }
+
+        return result
     }
 
     private fun createAttributes(): CFDictionaryRef {

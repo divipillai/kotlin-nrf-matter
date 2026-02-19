@@ -4,6 +4,11 @@ package no.nordicsemi.nrf.matter.matter
 
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCObjectVar
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.value
 import kotlinx.coroutines.flow.MutableStateFlow
 import platform.Foundation.NSError
 import platform.Foundation.NSNumber
@@ -35,14 +40,25 @@ class MatterControllerDelegate(private val nodeId: NSNumber) : NSObject(), MTRDe
         Napier.i("Commissioning commissioningSessionEstablishmentDone.")
 
         try {
-            val params = MTRCommissioningParameters()
-            params.deviceAttestationDelegate = AttestationDelegate()
-            controller.commissionNodeWithID(nodeId, params, null)
-            val device = controller.devices.map { it as MTRDevice }.first { it.nodeID == nodeId }
-            result.tryEmit(MatterControllerResult.Success(device))
+            controller.commissionNodeWithID() ?: throw IllegalStateException("Couldn't commission node.")
+            Napier.i("Successfully commissioned node with id.")
         } catch (t: Throwable) {
-            Napier.i("Commissioning node failed.")
+            Napier.e("Commissioning node failed.", throwable = t)
         }
+    }
+
+    private fun MTRDeviceController.commissionNodeWithID(): MTRDeviceController? = memScoped {
+        val error = alloc<ObjCObjectVar<NSError?>>()
+        val params = MTRCommissioningParameters()
+        params.deviceAttestationDelegate = AttestationDelegate()
+        commissionNodeWithID(nodeId, params, error.ptr)
+
+        if (error.value != null) {
+            Napier.e("Couldn't commission node: ${error.value}")
+            return null
+        }
+
+        return this@commissionNodeWithID
     }
 
     override fun controller(
@@ -51,7 +67,18 @@ class MatterControllerDelegate(private val nodeId: NSNumber) : NSObject(), MTRDe
         nodeID: NSNumber?,
         metrics: MTRMetrics
     ) {
-        Napier.i("Commissioning commissioningComplete.")
+        if (commissioningComplete != null || nodeID == null) {
+            Napier.i("Commissioning error: $commissioningComplete")
+        } else {
+            Napier.i("Commissioning commissioningComplete with metrics: $nodeID.")
+            val device = MTRDevice.deviceWithNodeID(nodeID, controller)
+            Napier.i("Sending success")
+            result.tryEmit(MatterControllerResult.Success(device))
+        }
+    }
+
+    override fun devicesChangedForController(controller: MTRDeviceController) {
+        Napier.i("devicesChangedForController")
     }
 
     override fun controller(
@@ -66,7 +93,11 @@ class MatterControllerDelegate(private val nodeId: NSNumber) : NSObject(), MTRDe
         commissioningComplete: NSError?,
         nodeID: NSNumber?
     ) {
-        Napier.i("Commissioning commissioningComplete.")
+        if (commissioningComplete != null) {
+            Napier.i("Commissioning error: $commissioningComplete")
+        } else {
+            Napier.i("Commissioning commissioningComplete: $nodeID.")
+        }
     }
 
     override fun controller(
@@ -78,5 +109,9 @@ class MatterControllerDelegate(private val nodeId: NSNumber) : NSObject(), MTRDe
 
     override fun controller(controller: MTRDeviceController, suspendedChangedTo: Boolean) {
         Napier.i("Commissioning suspendedChangedTo: $suspendedChangedTo.")
+    }
+
+    override fun finalize() {
+        Napier.i("Finalize delegate.")
     }
 }

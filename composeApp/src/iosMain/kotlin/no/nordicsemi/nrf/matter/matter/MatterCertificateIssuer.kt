@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.matter
 
+import io.github.aakira.napier.Napier
 import platform.Foundation.NSError
 import platform.Matter.MTRDeviceAttestationInfo
 import platform.Matter.MTRDeviceController
@@ -15,10 +16,11 @@ class MatterCertificateIssuer : NSObject(), MTROperationalCertificateIssuerProto
         controller: MTRDeviceController,
         completion: (MTROperationalCertificateChain?, NSError?) -> Unit
     ) {
-
+        Napier.i("MatterCertificateIssuer - issueOperationalCertificateForRequest")
     }
 
     override fun shouldSkipAttestationCertificateValidation(): Boolean {
+        Napier.i("MatterCertificateIssuer - shouldSkipAttestationCertificateValidation")
         return true
     }
 }

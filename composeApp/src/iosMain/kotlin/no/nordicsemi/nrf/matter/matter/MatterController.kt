@@ -61,8 +61,8 @@ object MatterController {
         )
 //            params.vendorID = NSNumber(0x127F)
         params.vendorID = NSNumber(0x1234)
-        params.operationalCertificateIssuer = MatterCertificateIssuer()
-        params.operationalCertificateIssuerQueue = dispatch_queue_create("no.nordicsemi.nrf.matter.certissuer", null)
+//        params.operationalCertificateIssuer = MatterCertificateIssuer()
+//        params.operationalCertificateIssuerQueue = dispatch_queue_create("no.nordicsemi.nrf.matter.certissuer", null)
 
         Napier.i("Creating Matter controller.")
         val controller: MTRDeviceController = factory.createControllerOnNewFabric(params)
@@ -72,12 +72,14 @@ object MatterController {
 
         Napier.i("Opening Matter commissioning session.")
         val delegate = MatterControllerDelegate(nodeID)
-        controller.setDeviceControllerDelegate(delegate, null)
-        val payload = MTRSetupPayload(payload = code)
-        controller.setupCommissioningSessionWithPayload(payload = payload, newNodeID = nodeID, error = null)
+        controller.setDeviceControllerDelegate(delegate, dispatch_queue_create("no.nordicsemi.nrf.matter.controller", null))
+
+        controller.setupCommissioningSessionWithPayload(code)
+            ?: throw IllegalStateException("Couldn't start commissioning session.")
         Napier.i("Matter commissioning session successfully opened.")
 
         val successResult = delegate.result.filterIsInstance<MatterControllerResult.Success>().first()
+        Napier.i("Received success")
         with (successResult.device) {
             return Device(
                 vendorName = "Nordic Semiconductor", // TODO
@@ -88,6 +90,19 @@ object MatterController {
                 name = "Matter device",
             )
         }
+    }
+
+    private fun MTRDeviceController.setupCommissioningSessionWithPayload(code: String): MTRDeviceController? = memScoped {
+        val error = alloc<ObjCObjectVar<NSError?>>()
+        val payload = MTRSetupPayload(payload = code)
+        setupCommissioningSessionWithPayload(payload = payload, newNodeID = nodeID, error = error.ptr)
+
+        if (error.value != null) {
+            Napier.e("Couldn't start commissioning session: ${error.value}")
+            return null
+        }
+
+        return this@setupCommissioningSessionWithPayload
     }
 
     private fun MTRDeviceControllerFactory.startControllerFactory(params: MTRDeviceControllerFactoryParams): MTRDeviceControllerFactory? = memScoped {

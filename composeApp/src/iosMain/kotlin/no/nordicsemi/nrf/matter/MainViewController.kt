@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeUIViewController
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.delay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
 import no.nordicsemi.nrf.matter.matter.MatterController
 import no.nordicsemi.nrf.matter.model.Device
@@ -68,10 +69,12 @@ fun IosAppRoot() {
 
     LaunchedEffect(state.value) {
         (state.value as? ScreenState.Commissioning)?.payload?.let {
+            delay(1000)
             val device = startIosCommissioning(it) {
                 state.value = ScreenState.Error
             }
             device?.let {
+                state.value = ScreenState.Initial
                 homeViewModel.addCommissionedDevice(it, true, false)
             }
         }
@@ -81,7 +84,7 @@ fun IosAppRoot() {
         LocalCommissionHandler provides commissionHandler
     ) {
         when (state.value) {
-            is ScreenState.Initial -> App()
+            is ScreenState.Initial -> App(homeViewModel)
             is ScreenState.QrScanner -> QRCodeScanner {
                 state.value = ScreenState.Commissioning(it)
             }

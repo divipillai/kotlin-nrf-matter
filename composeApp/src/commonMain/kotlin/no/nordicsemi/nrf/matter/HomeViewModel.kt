@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.domain.DeviceCommand
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.Devices
@@ -59,7 +58,6 @@ class HomeViewModel(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     userPreferencesRepository: UserPreferencesRepository,
-    private val deviceController: DeviceController,
     private val deviceCommandHandler: DeviceCommandHandler,
 ) : ViewModel() {
     private val scope = CoroutineScope(

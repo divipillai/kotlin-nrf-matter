@@ -88,6 +88,7 @@ object MatterController {
                 productId = productID?.stringValue,
                 deviceId = nodeID.longValue,
                 name = "Matter device",
+                deviceMatterInfo = listOf()
             )
         }
     }

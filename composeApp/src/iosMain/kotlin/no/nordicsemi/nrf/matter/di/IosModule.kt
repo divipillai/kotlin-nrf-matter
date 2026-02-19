@@ -5,6 +5,7 @@ import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.device.DevicePresenter
+import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.IosDeviceController
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
@@ -82,7 +83,8 @@ val iosModule = module {
         DevicePresenter(
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
-            get<DeviceController>()
+            get<DeviceController>(),
+            get<DeviceCommandHandler>()
         )
     }
 

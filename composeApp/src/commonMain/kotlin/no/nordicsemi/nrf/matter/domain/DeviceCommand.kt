@@ -1,14 +1,4 @@
-package no.nordicsemi.nrf.matter.di
-
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.device.DevicePresenter
-import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
-import no.nordicsemi.nrf.matter.model.DeviceController
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.module
+package no.nordicsemi.nrf.matter.domain
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -41,33 +31,8 @@ import org.koin.dsl.module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val commonModule = module {
-    // Beacon.
-    singleOf(::BeaconRepository)
-
-    // Repositories
-    singleOf(::DevicesRepository)
-    singleOf(::DevicesStateRepository)
-    singleOf(::UserPreferencesRepository)
-
-    // Device viewmodel.
-    single {
-        DevicePresenter(
-            get<DevicesRepository>(),
-            get<DevicesStateRepository>(),
-            get<DeviceController>(),
-            get<DeviceCommandHandler>()
-        )
-    }
-
-    // Device command handler.
-    single {
-        DeviceCommandHandler(
-            get<DevicesRepository>(),
-            get<DevicesStateRepository>(),
-            get<DeviceController>()
-        )
-    }
-
+sealed interface DeviceCommand {
+    data class SetPower(val isOn: Boolean) : DeviceCommand
+    data class SetLock(val locked: Boolean) : DeviceCommand
+    data class SetLevel(val level: Int) : DeviceCommand
 }
-

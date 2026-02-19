@@ -138,7 +138,7 @@ fun App() {
                                 backStack.add(DetailsRoute(deviceId))
                             },
                             onOnOffClick = { deviceId, onOff ->
-                                homeViewModel.updateDeviceState(
+                                homeViewModel.toggleDevice(
                                     deviceId = deviceId,
                                     isOnline = true,
                                     isOn = onOff,

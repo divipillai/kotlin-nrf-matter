@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter
 
 import androidx.lifecycle.ViewModel
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -11,6 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.domain.DeviceCommand
+import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceType
@@ -59,6 +60,7 @@ class HomeViewModel(
     private val devicesStateRepository: DevicesStateRepository,
     userPreferencesRepository: UserPreferencesRepository,
     private val deviceController: DeviceController,
+    private val deviceCommandHandler: DeviceCommandHandler,
 ) : ViewModel() {
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
@@ -138,37 +140,12 @@ class HomeViewModel(
         }
     }
 
-    fun updateDeviceState(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
+    fun toggleDevice(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
         scope.launch {
-            // Get the device matter info from the repository.
-            val device = devicesRepository.getDevice(deviceId)
-            // Get the  ON/OFF endpoints 0x00000006 (6) from the device matter info
-            val onOffClusterId = device.deviceMatterInfo.filter {
-                it.serverClusters.contains(6) // TODO: This is for light on/off. Later it needs to be changed based on the device type.
-            }
-            // Targeted endpoint.
-            val endpoint = onOffClusterId.firstOrNull()?.endpoint
-                ?: 0 // TODO: if endpoint which supports on/off feature then handle properly in the ui.
-            try {
-                updateDeviceStateRepository(
-                    deviceId = deviceId,
-                    isOn = isOn,
-                    isOnline = isOnline
-                )
-                deviceController.setDeviceOnOff(
-                    deviceId = deviceId,
-                    isDeviceOnline = isOnline,
-                    isOn = isOn,
-                    endpoint,
-                )
-            } catch (e: Exception) {
-                Napier.e(e) { "Error updating device state: ${e.message}" }
-                updateDeviceStateRepository(
-                    deviceId = deviceId,
-                    isOnline = false,
-                    isOn = !isOn
-                )
-            }
+            deviceCommandHandler.execute(
+                deviceId,
+                DeviceCommand.SetPower(isOn)
+            )
         }
     }
 }

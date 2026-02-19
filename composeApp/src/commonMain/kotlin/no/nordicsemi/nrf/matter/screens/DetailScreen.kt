@@ -216,7 +216,7 @@ fun DeviceScreen(
             PowerCard(
                 enabled = uiState.deviceUiModel!!.isOn,
                 onToggle = {
-                    devicePresenter.updateDevicePowerState(
+                    devicePresenter.togglePower(
                         device.device.deviceId,
                         it
                     )

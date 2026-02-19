@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.domain.DeviceCommand
+import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
@@ -49,6 +51,7 @@ class DevicePresenter(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
+    private val deviceCommandHandler: DeviceCommandHandler
 ) {
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
@@ -61,7 +64,7 @@ class DevicePresenter(
         if (deviceId == _uiState.value.deviceUiModel?.device?.deviceId) return
 
         scope.launch {
-            val device = devicesRepository.getDevice(deviceId)
+            val device = devicesRepository.getDeviceOrNull(deviceId) ?: return@launch
             val state = devicesStateRepository.loadDeviceState(deviceId)
 
             _uiState.update {
@@ -72,43 +75,6 @@ class DevicePresenter(
                         isOn = state?.on ?: false
                     ),
                     removeDeviceState = RemoveDeviceState.Idle
-                )
-            }
-        }
-    }
-
-    fun updateDevicePowerState(deviceId: Long, isOn: Boolean) {
-        scope.launch {
-            // Get the device from the repository.
-            val device = devicesRepository.getDevice(deviceId)
-            // Get the  ON/OFF endpoints 0x00000006 (6) from the device matter info
-            val onOffClusterId = device.deviceMatterInfo.filter {
-                it.serverClusters.contains(6L) // TODO: This is for light on/off. Later it needs to be changed based on the device type.
-            }
-            // Targeted endpoint.
-            val endpoint = onOffClusterId.firstOrNull()?.endpoint
-                ?: 0 // TODO: if endpoint which supports on/off feature then handle properly in ui.
-
-            try {
-                devicesStateRepository.updateDeviceState(
-                    deviceId = deviceId,
-                    isOnline = true,
-                    isOn = isOn
-                )
-
-                deviceController.setDeviceOnOff(
-                    deviceId = deviceId,
-                    isDeviceOnline = true,
-                    isOn = isOn,
-                    endpoint = endpoint
-                )
-            } catch (e: Exception) {
-                Napier.e(e) { "AAA, error updating device state: ${e.message}" }
-                // rollback
-                devicesStateRepository.updateDeviceState(
-                    deviceId = deviceId,
-                    isOnline = false,
-                    isOn = !isOn
                 )
             }
         }
@@ -170,5 +136,15 @@ class DevicePresenter(
 
         }
     }
+
+    fun togglePower(deviceId: Long, isOn: Boolean) {
+        scope.launch {
+            deviceCommandHandler.execute(
+                deviceId,
+                DeviceCommand.SetPower(isOn)
+            )
+        }
+    }
+
 
 }

@@ -113,7 +113,7 @@ class DeviceCommandHandler(
     private fun resolveEndpoint(device: Device, clusterId: Long): Int {
         return device.deviceMatterInfo
             .firstOrNull { it.serverClusters.contains(clusterId) }
-            ?.endpoint ?: 0
+            ?.endpoint ?: 0 // TODO: change to exception and handle from UI.
     }
 
 }

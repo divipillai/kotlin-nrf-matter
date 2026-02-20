@@ -2,6 +2,7 @@ package no.nordicsemi.nrf.matter.home
 
 import android.content.Context
 import androidx.activity.result.ActivityResult
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
@@ -12,6 +13,7 @@ import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
+import kotlin.time.Clock
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -48,8 +50,6 @@ class HomeViewModelAndroid(
     private val baseViewModel: HomeViewModel,
     context: Context,
 ) : ViewModel() {
-    val devicesUiModelLiveData = baseViewModel.devicesUiModelFlow
-
     private var gpsCommissioningResult: CommissioningResult? = null
     val chipsClient: ChipClient = ChipClient(context)
     val clustersHelper: ClustersHelper = ClustersHelper(chipsClient)
@@ -87,23 +87,32 @@ class HomeViewModelAndroid(
                     ""
                 }
             val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
-
+            val deviceType = mutableStateListOf<DeviceType>()
             try {
-                val deviceType = convertToAppDeviceType(
-                    gpsCommissioningResult?.commissionedDeviceDescriptor?.deviceType?.toLong()!!
-                )
+                deviceMatterInfoList.forEach {
+                    // Ignore the first endpoint because this is the root node.
+                    if (it.endpoint != 0) {
+                        // Get the device type from the rest of the endpoint.
+                        it.types.forEach { type ->
+                            val type = convertToAppDeviceType(type)
+                            deviceType.add(type)
+                        }
+                    }
+                }
                 val device = Device(
                     vendorName = vendorName,
                     productName = productName,
-                    dateCommissioned = gpsCommissioningResult?.token?.toLong(),
+                    dateCommissioned = Clock.System.now()
+                        .toEpochMilliseconds(), // Date when the device was commissioned.
                     vendorId = gpsCommissioningResult?.commissionedDeviceDescriptor?.vendorId.toString(),
                     productId = gpsCommissioningResult?.commissionedDeviceDescriptor?.productId.toString(),
-                    deviceType = deviceType,
+                    deviceType = deviceType.first(), // TODO: Change it to take list of device types.
                     deviceId = deviceId,
                     name = gpsCommissioningResult?.deviceName,
-                    deviceMatterInfo = deviceMatterInfoList
+                    deviceMatterInfo = deviceMatterInfoList,
                 )
                 baseViewModel.addCommissionedDevice(device, isOnline = true, isOn = false)
+
             } catch (e: Exception) {
                 val msg = "Adding device [${deviceId}] [${deviceName}] to app's repository failed."
                 Napier.e(e) { "BBB, onCommissionedDeviceNameCaptured: $msg, $e" }

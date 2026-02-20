@@ -1,6 +1,10 @@
-package no.nordicsemi.nrf.matter.model
+package no.nordicsemi.nrf.matter.utils
 
-import kotlinx.serialization.Serializable
+import androidx.compose.ui.text.intl.Locale
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -33,45 +37,7 @@ import kotlinx.serialization.Serializable
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@Serializable
-data class Device(
-    val dateCommissioned: Long? = null,
-    val vendorId: String? = null,
-    val productId: String? = null,
-    val deviceType: DeviceType = DeviceType.UNKNOWN, // TODO: device type is no longer provided by the DeviceDescriptor.
-    val deviceId: Long = 0L,
-    val name: String? = null,
-//    val room: String? = null, todo: Removed since it is deprecated in the Matter API.
-    val productName: String? = null,
-    val vendorName: String? = null,
-    val deviceMatterInfo: List<DeviceMatterInfo>,
-)
-
-@Serializable
-enum class DeviceType {
-    UNKNOWN,
-    LIGHT_ON_OFF,
-    DIMMABLE_LIGHT,
-    LIGHT_SWITCH,
-    OUTLET,
-    COLOR_TEMPERATURE_LIGHT,
-    EXTENDED_COLOR_LIGHT, ;
-
-    override fun toString(): String {
-        return when (this) {
-            UNKNOWN -> "Unknown"
-            LIGHT_ON_OFF -> "Light On/Off"
-            DIMMABLE_LIGHT -> "Dimmable Light"
-            LIGHT_SWITCH -> "Light Switch"
-            OUTLET -> "Outlet"
-            COLOR_TEMPERATURE_LIGHT -> "Color Temperature Light"
-            EXTENDED_COLOR_LIGHT -> "Extended Color Light"
-        }
-    }
+fun Long.toDateString(): String {
+    val instant = Instant.fromEpochMilliseconds(this)
+    return instant.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
 }
-
-@Serializable
-data class Devices(
-    val lastDeviceId: Long = 0L,
-    val devicesList: List<Device> = emptyList()
-)

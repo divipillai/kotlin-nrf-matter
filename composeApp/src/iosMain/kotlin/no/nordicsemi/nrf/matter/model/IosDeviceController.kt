@@ -56,15 +56,10 @@ class IosDeviceController: DeviceController {
         isOn: Boolean,
         endpoint: Int,
     ) {
-        val endpoint = 13
+        val endpoint = 13 // Todo
         Napier.i("setDeviceOnOff - deviceId: $deviceId, isDeviceOnline: $isDeviceOnline, isOn: $isOn, endpoint: $endpoint")
         val device = MatterDevicesProvider.getDevice() ?: return
         val baseDevice = MTRBaseDevice.deviceWithNodeID(device.nodeID, device.deviceController!!)
-//        val cluster = MTRClusterOnOff.create(
-//            device = device,
-//            endpointID = NSNumber(endpoint),
-//            queue = dispatch_queue_create("no.nordicsemi.nrf.matter.clusteronoff", null)
-//        )
 
         val baseCluster = MTRBaseClusterOnOff.create(
             device = baseDevice,
@@ -89,83 +84,6 @@ class IosDeviceController: DeviceController {
                 }
             }
         }
-//
-//        baseCluster!!.invokeCommandWithEndpointID(
-////            endpoint = NSNumber(endpoint),
-////            clusterID = NSNumber(endpoint),
-//        )
-//
-//        val cluster = MTRClusterLevelControl.create(
-//            device = device,
-//            endpointID = NSNumber(endpoint),
-//            queue = dispatch_queue_create("no.nordicsemi.nrf.matter.clusteronoff", null)
-//        )
-//
-//        val params = MTROnOffClusterToggleParams()
-//        val expectedValueInterval = NSNumber(5000)\
-//
-//        val descriptor = MTRClusterDescriptor.create(
-//            device = device,
-//            endpoint.toUShort(),
-//            dispatch_queue_create("no.nordicsemi.nrf.matter.clusteronoff", null)
-//        )
-//
-//        val readParams = MTRReadParams()
-//        val partsList = descriptor!!.readAttributePartsListWithParams(readParams)
-//        Napier.i("partsList: $partsList")
-//
-//        val serverParams = MTRReadParams()
-//        val serverList = descriptor!!.readAttributeServerListWithParams(serverParams)
-//        Napier.i("serverList: $serverList")
-//
-////        suspendCancellableCoroutine { continuation ->
-////
-////            descriptor!!.readAttributePartsListWithCompletion { list, error ->
-////                Napier.i("Child endpoints: $list")
-////                continuation.resume(list) { cause, _, _ ->
-////                    // TODO
-////                }
-////            }
-////        }
-////
-////        suspendCancellableCoroutine { continuation ->
-////            descriptor!!.readAttributeServerListWithCompletion { list, error ->
-////                Napier.i("Supported clusters on endpoint $list")
-////                continuation.resume(list) { cause, _, _ ->
-////                    // TODO
-////                }
-////            }
-////        }
-////        descriptor?.
-////
-////        descriptor.readAttributePartsList { values, error in
-////            // tu masz listę endpointów
-////        }
-//
-//        suspendCancellableCoroutine { continuation ->
-//            val params = MTRLevelControlClusterMoveToLevelWithOnOffParams()
-//            params.level = NSNumber(if (isOn) 254 else 0)
-//
-//            cluster!!.moveToLevelWithOnOffWithParams(params = params, expectedValues = null, expectedValueInterval = expectedValueInterval) {
-//                if (it != null) {
-//                    continuation.resumeWithException(Exception("Operation failed exception"))
-//                } else {
-//                    continuation.resume(value = Unit) { cause, _, _ ->
-//                        // TODO
-//                    }
-//                }
-//            }
-//
-////            cluster!!.toggleWithParams(params = params, expectedValues = null, expectedValueInterval = expectedValueInterval) {
-////                if (it != null) {
-////                    continuation.resumeWithException(Exception("Operation failed exception"))
-////                } else {
-////                    continuation.resume(value = Unit) { cause, _, _ ->
-////                        // TODO
-////                    }
-////                }
-////            }
-//        }
     }
 
     override suspend fun unlinkDevice(deviceId: Long) {

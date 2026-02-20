@@ -56,9 +56,11 @@ import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.SectionTitle
+import no.nordicsemi.nrf.matter.utils.toDateString
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.light_bulb_smart_light
 import nrfmatterformobile.composeapp.generated.resources.light_fixture
@@ -227,7 +229,7 @@ fun DeviceScreen(
             ShareCard { /* todo: Add share device feature. */ }
 
             SectionTitle("Technical Details")
-            TechnicalDetailsCard()
+            TechnicalDetailsCard(device.device)
 
             Spacer(modifier = Modifier.height(16.dp))
             RemoveDeviceSection {
@@ -281,14 +283,14 @@ fun PowerCard(
     enabled: Boolean,
     onToggle: (Boolean) -> Unit
 ) {
+    var isChecked by rememberSaveable { mutableStateOf(enabled) }
     DeviceItemContainer(
         icon = painterResource(resource = Res.drawable.light_bulb_smart_light),
         title = "Power",
         subtitle = "Turn device ON or OFF",
-        isOnline = enabled,
+        isOnline = isChecked,
         onDeviceClick = { },
     ) {
-        var isChecked by rememberSaveable { mutableStateOf(enabled) }
         Switch(
             checked = isChecked,
             onCheckedChange = {
@@ -368,9 +370,8 @@ private fun ShareCardPreview() {
     ShareCard { }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun TechnicalDetailsCard() {
+private fun TechnicalDetailsCard(device: Device) {
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
         border = CardDefaults.outlinedCardBorder(enabled = false),
@@ -379,10 +380,20 @@ fun TechnicalDetailsCard() {
             .padding(8.dp)
     ) {
         Column {
-            DetailRow("Vendor ID", "0x1234")
-            DetailRow("Product ID", "0xABCD")
-            DetailRow("Device Type", "Dimmable Light")
-            DetailRow("Added Date", "Oct 24, 2023", divider = false)
+            DetailRow("Vendor ID", device.vendorId ?: "N/A")
+            DetailRow("Product ID", device.productId ?: "N/A")
+            DetailRow("Product Name", device.productName ?: "N/A")
+            device.vendorName?.let {
+                DetailRow("Vendor Name", it)
+            }
+            DetailRow("Device Type", device.deviceType.toString())
+            device.dateCommissioned?.let {
+                DetailRow("Date Commissioned", it.toDateString(), divider = false)
+            }
+//            DetailRow("Specification Version", "N/A") // TODO: Get this from the device. what is specification version??
+//            DetailRow("Software Version", "N/A") // TODO: Get this from the device. what is software version??
+//            DetailRow("Serial Number", "N/A") // TODO: Get this from the device. what is serial number??
+//            DetailRow("Unique ID", "N/A") // TODO: Get this from the device. what is unique ID??
         }
     }
 }
@@ -407,12 +418,19 @@ private fun DetailRow(
         Text(
             value,
             style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 8.dp)
         )
     }
 
     if (divider) HorizontalDivider(
         modifier = Modifier.alpha(0.3f)
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TechnicalDetailsCardPreview() {
+    TechnicalDetailsCard(DeviceTest)
 }
 
 @Preview(showBackground = true)
@@ -488,14 +506,17 @@ fun DeviceItemContainer(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            val boxColor = if (isOnline)
+                NordicSun
+            else MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f)
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
+                        boxColor,
                         RoundedCornerShape(12.dp)
                     ),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     icon,
@@ -650,7 +671,7 @@ private val DeviceTest =
         deviceId = 1L,
         name = "Living Room Light",
         productName = "My Light",
-        vendorName = "MyVendor",
+        vendorName = "Nordic Semiconductor ASA Nordic Semiconductor ASA",
         deviceMatterInfo = emptyList()
 
     )

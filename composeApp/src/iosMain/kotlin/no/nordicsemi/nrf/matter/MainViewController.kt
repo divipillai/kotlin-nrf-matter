@@ -63,7 +63,9 @@ fun IosAppRoot() {
 
     val commissionHandler = remember {
         IosCommissionHandler {
-            state.value = ScreenState.QrScanner
+            if (state.value != ScreenState.QrScanner) {
+                state.value = ScreenState.QrScanner
+            }
         }
     }
 

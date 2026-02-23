@@ -22,6 +22,7 @@ import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
 import no.nordicsemi.nrf.matter.service.AppCommissioningService
 import no.nordicsemi.nrf.matter.theme.NordicActivity
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.getKoin
 
 class MainActivity : NordicActivity() {
 
@@ -72,7 +73,7 @@ fun AndroidAppRoot() {
     CompositionLocalProvider(
         LocalCommissionHandler provides commissionHandler
     ) {
-        App()
+        App(homeViewModel = getKoin().get())
     }
 }
 

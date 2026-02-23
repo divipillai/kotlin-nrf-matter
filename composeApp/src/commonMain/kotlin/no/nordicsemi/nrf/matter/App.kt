@@ -75,8 +75,7 @@ val LocalCommissionHandler =
     }
 
 @Composable
-fun App() {
-    val homeViewModel: HomeViewModel = getKoin().get()
+fun App(homeViewModel: HomeViewModel) {
     Napier.base(DebugAntilog())
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
 

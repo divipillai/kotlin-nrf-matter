@@ -1,5 +1,23 @@
 package no.nordicsemi.nrf.matter.model
 
+import io.github.aakira.napier.Napier
+import kotlinx.coroutines.suspendCancellableCoroutine
+import no.nordicsemi.nrf.matter.matter.MatterDevicesProvider
+import platform.Foundation.NSNumber
+import platform.Matter.MTRBaseClusterDescriptor
+import platform.Matter.MTRBaseClusterOnOff
+import platform.Matter.MTRBaseDevice
+import platform.Matter.MTRClusterDescriptor
+import platform.Matter.MTRClusterLevelControl
+import platform.Matter.MTRLevelControlClusterMoveParams
+import platform.Matter.MTRLevelControlClusterMoveToLevelWithOnOffParams
+import platform.Matter.MTRLevelControlClusterMoveWithOnOffParams
+import platform.Matter.MTROnOffClusterToggleParams
+import platform.Matter.MTRReadParams
+import platform.Matter.create
+import platform.darwin.dispatch_queue_create
+import kotlin.coroutines.resumeWithException
+
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -38,7 +56,34 @@ class IosDeviceController: DeviceController {
         isOn: Boolean,
         endpoint: Int,
     ) {
-        TODO("Not yet implemented")
+        val endpoint = 13 // Todo
+        Napier.i("setDeviceOnOff - deviceId: $deviceId, isDeviceOnline: $isDeviceOnline, isOn: $isOn, endpoint: $endpoint")
+        val device = MatterDevicesProvider.getDevice() ?: return
+        val baseDevice = MTRBaseDevice.deviceWithNodeID(device.nodeID, device.deviceController!!)
+
+        val baseCluster = MTRBaseClusterOnOff.create(
+            device = baseDevice,
+            endpointID = NSNumber(endpoint),
+            queue = dispatch_queue_create("no.nordicsemi.nrf.matter.clusteronoff", null)
+        )
+
+        if (isOn) {
+            suspendCancellableCoroutine { continuation ->
+                baseCluster?.onWithCompletion {
+                    continuation.resume(Unit) { cause, _, _ ->
+                        // TODO
+                    }
+                }
+            }
+        } else {
+            suspendCancellableCoroutine { continuation ->
+                baseCluster?.offWithCompletion {
+                    continuation.resume(Unit) { cause, _, _ ->
+                        // TODO
+                    }
+                }
+            }
+        }
     }
 
     override suspend fun unlinkDevice(deviceId: Long) {

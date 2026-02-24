@@ -51,6 +51,7 @@ class MatterControllerDelegate(private val nodeId: NSNumber) : NSObject(), MTRDe
         val error = alloc<ObjCObjectVar<NSError?>>()
         val params = MTRCommissioningParameters()
         params.deviceAttestationDelegate = AttestationDelegate()
+//        params.threadOperationalDataset =
         commissionNodeWithID(nodeId, params, error.ptr)
 
         if (error.value != null) {

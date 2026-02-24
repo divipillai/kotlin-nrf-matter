@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter
 
 import no.nordicsemi.nrf.matter.model.Device
+import platform.Foundation.NSData
 
 interface SwiftCodeProvider {
 
@@ -11,7 +12,7 @@ interface SwiftCodeProvider {
 
 interface ThreadNetworkProvider {
 
-    fun getAvailableThreadNetworks(): List<ThreadNetwork>
+    suspend fun getAvailableThreadNetworks(): List<ThreadNetwork>
 }
 
 interface MatterSupportKt {
@@ -20,5 +21,6 @@ interface MatterSupportKt {
 }
 
 data class ThreadNetwork(
-    val name: String
+    val name: String,
+    val data: NSData?,
 )

@@ -18,6 +18,8 @@ import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.delay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
+import no.nordicsemi.nrf.matter.matter.MatterController
+import no.nordicsemi.nrf.matter.model.Device
 import org.koin.compose.getKoin
 import qrscanner.CameraLens
 import qrscanner.QrScanner
@@ -70,7 +72,17 @@ fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
     LaunchedEffect(state.value) {
         (state.value as? ScreenState.Commissioning)?.payload?.let {
             delay(1000)
-            val device = swiftCodeProvider.getMatterSupport().startIosCommissioning(it) {
+            try {
+                Napier.i("AAATESTAAA - Get network erros.")
+                val threadNetworks = swiftCodeProvider.getThreadNetworkProvider().getAvailableThreadNetworks()
+                Napier.i("AAATESTAAA - thread networks: $threadNetworks")
+            } catch (t: Throwable) {
+                Napier.i("AAATESTAAA - Error: $t")
+            }
+
+
+//            val device = swiftCodeProvider.getMatterSupport().startIosCommissioning(it) {
+            val device = startIosCommissioning(it) {
                 state.value = ScreenState.Error
             }
             device?.let {
@@ -128,10 +140,10 @@ fun QRCodeScanner(onCompletion: (String) -> Unit) {
     )
 }
 
-//suspend fun startIosCommissioning(code: String, onError: () -> Unit): Device? {
-//    // Matter commissioning on iOS
-//    Napier.d("iOS commissioning has started!")
-//    return MatterController.commission(code, onError)
-//}
+suspend fun startIosCommissioning(code: String, onError: () -> Unit): Device? {
+    // Matter commissioning on iOS
+    Napier.d("iOS commissioning has started!")
+    return MatterController.commission(code, onError)
+}
 
 

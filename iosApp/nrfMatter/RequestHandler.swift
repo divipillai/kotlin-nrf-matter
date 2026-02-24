@@ -23,7 +23,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
 
     override init() {
         super.init()
-        logger.debug("MatterAddDeviceExtensionRequestHandler initialized")
+        logger.debug("AAATESTAAA - MatterAddDeviceExtensionRequestHandler initialized")
     }
 
 
@@ -33,7 +33,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
 
 
         // In your app, fetch rooms from your database or ecosystem.
-        let rooms: [String] = ["Living Room", "Bedroom", "Office", "Kitchen", "Dining Room"]
+        let rooms: [String] = ["Living Room", "Bedroom", "Office", "Kitchen", "Dining Room", "AAATESTAAA"]
         return rooms.map { MatterAddDeviceRequest.Room(displayName: $0) }
     }
 

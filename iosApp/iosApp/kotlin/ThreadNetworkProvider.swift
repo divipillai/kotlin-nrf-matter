@@ -6,10 +6,19 @@
 //
 
 import ComposeApp
+import ThreadNetwork
 
 class ThreadNetworkProviderImpl : ThreadNetworkProvider {
     
-    func getAvailableThreadNetworks() -> [ThreadNetwork] {
-        return []
+    func getAvailableThreadNetworks() async throws -> [ThreadNetwork] {
+        let client = THClient()
+        let result = try await client.allCredentials().map { item in
+            let credential: THCredentials = item
+            return ThreadNetwork(name: credential.description, data: credential.activeOperationalDataSet)
+        }
+        
+        print("AAATESTAAA - result: \(result)")
+        
+        return result
     }
 }

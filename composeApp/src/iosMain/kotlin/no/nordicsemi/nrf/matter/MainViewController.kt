@@ -18,8 +18,6 @@ import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.delay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
-import no.nordicsemi.nrf.matter.matter.MatterController
-import no.nordicsemi.nrf.matter.model.Device
 import org.koin.compose.getKoin
 import qrscanner.CameraLens
 import qrscanner.QrScanner
@@ -32,7 +30,7 @@ class IosCommissionHandler(
     }
 }
 
-fun MainViewController() =
+fun MainViewController(swiftCodeProvider: SwiftCodeProvider) =
     ComposeUIViewController {
         // Initialize koin
         initKoin()
@@ -44,7 +42,7 @@ fun MainViewController() =
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            IosAppRoot()
+            IosAppRoot(swiftCodeProvider)
         }
 
     }
@@ -57,7 +55,7 @@ sealed interface ScreenState {
 }
 
 @Composable
-fun IosAppRoot() {
+fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
     val homeViewModel: HomeViewModel = getKoin().get()
     val state = remember { mutableStateOf<ScreenState>(ScreenState.Initial) }
 
@@ -72,7 +70,7 @@ fun IosAppRoot() {
     LaunchedEffect(state.value) {
         (state.value as? ScreenState.Commissioning)?.payload?.let {
             delay(1000)
-            val device = startIosCommissioning(it) {
+            val device = swiftCodeProvider.getMatterSupport().startIosCommissioning(it) {
                 state.value = ScreenState.Error
             }
             device?.let {
@@ -130,10 +128,10 @@ fun QRCodeScanner(onCompletion: (String) -> Unit) {
     )
 }
 
-suspend fun startIosCommissioning(code: String, onError: () -> Unit): Device? {
-    // Matter commissioning on iOS
-    Napier.d("iOS commissioning has started!")
-    return MatterController.commission(code, onError)
-}
+//suspend fun startIosCommissioning(code: String, onError: () -> Unit): Device? {
+//    // Matter commissioning on iOS
+//    Napier.d("iOS commissioning has started!")
+//    return MatterController.commission(code, onError)
+//}
 
 

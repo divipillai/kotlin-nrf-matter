@@ -2,10 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSHomeKitUsageDescription</key>
-	<string>Needs HomeKit to manage Matter devices.</string>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>App needs access to Bluetooth to commission Matter device.</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_matter._tcp.local</string>
@@ -13,20 +11,12 @@
 		<string>_matterc._udp</string>
 		<string>_matterd._udp</string>
 	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>App needs access to camera to scan QR code for Matter commissining.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>App needs access to local network to discover Matter devices.</string>
-	<key>UILaunchStoryboardName</key>
-	<string>SplashScreen.storyboard</string>
 	<key>UILaunchScreen</key>
 	<dict>
-		<key>UIImageRespectsSafeAreaInsets</key>
-		<false/>
 		<key>UIImageName</key>
 		<string></string>
+		<key>UIImageRespectsSafeAreaInsets</key>
+		<false/>
 	</dict>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
 </dict>
 </plist>

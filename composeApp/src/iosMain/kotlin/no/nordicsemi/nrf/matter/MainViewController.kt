@@ -50,11 +50,13 @@ fun MainViewController(swiftCodeProvider: SwiftCodeProvider) =
     }
 
 sealed interface ScreenState {
-    object Initial : ScreenState
+    data object Initial : ScreenState
     data class Commissioning(val payload: String) : ScreenState
-    object QrScanner : ScreenState
-    object Error : ScreenState
+    data object QrScanner : ScreenState
+    data object Error : ScreenState
 }
+
+private var isStarted = false
 
 @Composable
 fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
@@ -63,17 +65,20 @@ fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
 
     val commissionHandler = remember {
         IosCommissionHandler {
-            if (state.value != ScreenState.QrScanner) {
+            if (!isStarted && state.value != ScreenState.QrScanner) {
+                Napier.i("Statting qr scanner")
                 state.value = ScreenState.QrScanner
             }
+            isStarted = true
         }
     }
 
+    Napier.i("State: ${state.value}")
     LaunchedEffect(state.value) {
         (state.value as? ScreenState.Commissioning)?.payload?.let {
             delay(1000)
             try {
-                Napier.i("AAATESTAAA - Get network erros.")
+                Napier.i("AAATESTAAA - Get network networks.")
                 val threadNetworks = swiftCodeProvider.getThreadNetworkProvider().getAvailableThreadNetworks()
                 Napier.i("AAATESTAAA - thread networks: $threadNetworks")
             } catch (t: Throwable) {

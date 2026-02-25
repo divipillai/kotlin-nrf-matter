@@ -3,6 +3,7 @@
 package no.nordicsemi.nrf.matter.matter
 
 import io.github.aakira.napier.Napier
+import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCObjectVar
 import kotlinx.cinterop.alloc
@@ -10,12 +11,15 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
 import kotlinx.coroutines.flow.MutableStateFlow
+import no.nordicsemi.nrf.matter.ThreadNetwork
 import platform.Foundation.NSError
 import platform.Foundation.NSNumber
 import platform.Matter.MTRCommissioneeInfo
 import platform.Matter.MTRCommissioningParameters
 import platform.Matter.MTRCommissioningStatus
 import platform.Matter.MTRDevice
+import platform.Matter.MTRDeviceAttestationDelegateProtocol
+import platform.Matter.MTRDeviceAttestationDeviceInfo
 import platform.Matter.MTRDeviceController
 import platform.Matter.MTRDeviceControllerDelegateProtocol
 import platform.Matter.MTRMetrics
@@ -26,7 +30,7 @@ sealed interface MatterControllerResult {
     data class Success(val device: MTRDevice) : MatterControllerResult
 }
 
-class MatterControllerDelegate(private val nodeId: NSNumber) : NSObject(), MTRDeviceControllerDelegateProtocol {
+class MatterControllerDelegate(private val nodeId: NSNumber, private val threadNetwork: ThreadNetwork?) : NSObject(), MTRDeviceControllerDelegateProtocol {
     val result = MutableStateFlow<MatterControllerResult?>(null)
 
     override fun controller(controller: MTRDeviceController, statusUpdate: MTRCommissioningStatus) {
@@ -51,7 +55,11 @@ class MatterControllerDelegate(private val nodeId: NSNumber) : NSObject(), MTRDe
         val error = alloc<ObjCObjectVar<NSError?>>()
         val params = MTRCommissioningParameters()
         params.deviceAttestationDelegate = AttestationDelegate()
-//        params.threadOperationalDataset =
+        Napier.i("Commision node with id: $threadNetwork")
+        threadNetwork?.data?.let {
+            params.threadOperationalDataset = it
+            params.deviceAttestationDelegate = MatterDeviceAttestationDelegate()
+        }
         commissionNodeWithID(nodeId, params, error.ptr)
 
         if (error.value != null) {

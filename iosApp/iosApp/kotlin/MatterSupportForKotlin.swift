@@ -25,6 +25,7 @@ class MatterSupportForKotlin : MatterSupportKt {
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "MyEcosystemName", homes: homes)
         
         var request = MatterAddDeviceRequest(topology: topology)
+
 //        request.setupPayload = MTRSetupPayload(payload: payload)
         
         Task {
@@ -43,3 +44,4 @@ class MatterSupportForKotlin : MatterSupportKt {
 
     }
 }
+

@@ -12,6 +12,7 @@ import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
+import no.nordicsemi.nrf.matter.ThreadNetwork
 import no.nordicsemi.nrf.matter.model.Device
 import platform.Foundation.NSError
 import platform.Foundation.NSMutableData
@@ -31,16 +32,16 @@ val nodeID = NSNumber(1)
 
 object MatterController {
 
-    suspend fun commission(code: String, onError: () -> Unit): Device? {
+    suspend fun commission(code: String, threadNetwork: ThreadNetwork?, onError: () -> Unit): Device? {
         try {
-            return commission(code)
+            return commission(code, threadNetwork)
         } catch (t: Throwable) {
             onError()
             return null
         }
     }
 
-    private suspend fun commission(code: String): Device {
+    private suspend fun commission(code: String, threadNetwork: ThreadNetwork?): Device {
         Napier.i("Initializing Matter controller factory.")
         val storage = MatterStorage()
         val factoryParams = MTRDeviceControllerFactoryParams(storage)
@@ -71,7 +72,7 @@ object MatterController {
         Napier.i("Matter controller successfully created.")
 
         Napier.i("Opening Matter commissioning session.")
-        val delegate = MatterControllerDelegate(nodeID)
+        val delegate = MatterControllerDelegate(nodeID, threadNetwork)
         controller.setDeviceControllerDelegate(delegate, dispatch_queue_create("no.nordicsemi.nrf.matter.controller", null))
 
         controller.setupCommissioningSessionWithPayload(code)

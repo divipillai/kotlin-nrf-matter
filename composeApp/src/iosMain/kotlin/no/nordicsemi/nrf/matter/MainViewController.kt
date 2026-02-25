@@ -77,17 +77,16 @@ fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
     LaunchedEffect(state.value) {
         (state.value as? ScreenState.Commissioning)?.payload?.let {
             delay(1000)
-            try {
+            val threadNetwork = try {
                 Napier.i("AAATESTAAA - Get network networks.")
-                val threadNetworks = swiftCodeProvider.getThreadNetworkProvider().getAvailableThreadNetworks()
-                Napier.i("AAATESTAAA - thread networks: $threadNetworks")
+                swiftCodeProvider.getThreadNetworkProvider().getAvailableThreadNetworks().first()
             } catch (t: Throwable) {
                 Napier.i("AAATESTAAA - Error: $t")
+                null
             }
 
-
 //            val device = swiftCodeProvider.getMatterSupport().startIosCommissioning(it) {
-            val device = startIosCommissioning(it) {
+            val device = startIosCommissioning(it, threadNetwork) {
                 state.value = ScreenState.Error
             }
             device?.let {
@@ -134,7 +133,7 @@ fun QRCodeScanner(onCompletion: (String) -> Unit) {
         openImagePicker = false,
         onCompletion = {
             onCompletion(it)
-            Napier.i("On completion $it")
+            //  Napier.i("On completion $it")
         },
         imagePickerHandler = {
             Napier.i("Image picker handler $it")
@@ -145,10 +144,10 @@ fun QRCodeScanner(onCompletion: (String) -> Unit) {
     )
 }
 
-suspend fun startIosCommissioning(code: String, onError: () -> Unit): Device? {
+suspend fun startIosCommissioning(code: String, threadNetwork: ThreadNetwork?, onError: () -> Unit): Device? {
     // Matter commissioning on iOS
     Napier.d("iOS commissioning has started!")
-    return MatterController.commission(code, onError)
+    return MatterController.commission(code, threadNetwork, onError)
 }
 
 

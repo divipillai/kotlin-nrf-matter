@@ -76,7 +76,6 @@ val LocalCommissionHandler =
 
 @Composable
 fun App(homeViewModel: HomeViewModel) {
-    Napier.base(DebugAntilog())
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
 
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalAtomicApi::class)
+
 package no.nordicsemi.nrf.matter
 
 import androidx.compose.foundation.layout.Box
@@ -18,11 +20,12 @@ import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.delay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
-import no.nordicsemi.nrf.matter.matter.MatterController
-import no.nordicsemi.nrf.matter.model.Device
-import org.koin.compose.getKoin
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import qrscanner.CameraLens
 import qrscanner.QrScanner
+import kotlin.concurrent.atomics.AtomicBoolean
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 class IosCommissionHandler(
     private val onCommission: () -> Unit
@@ -39,6 +42,7 @@ fun MainViewController(swiftCodeProvider: SwiftCodeProvider) =
 
         // Initialize Napier for logging
         Napier.base(DebugAntilog())
+        Napier.i("Napier log initiated")
 
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -58,14 +62,17 @@ sealed interface ScreenState {
 
 private var isStarted = false
 
+private val isRunning = AtomicBoolean(false)
+
 @Composable
 fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
-    val homeViewModel: HomeViewModel = getKoin().get()
+    val commissioningViewModel: CommissioningViewModel = koinViewModel { parametersOf(swiftCodeProvider) }
+    val homeViewModel: HomeViewModel = koinViewModel()
     val state = remember { mutableStateOf<ScreenState>(ScreenState.Initial) }
 
     val commissionHandler = remember {
         IosCommissionHandler {
-            if (!isStarted && state.value != ScreenState.QrScanner) {
+            if (isRunning.compareAndSet(false, state.value == ScreenState.QrScanner )) {
                 Napier.i("Statting qr scanner")
                 state.value = ScreenState.QrScanner
             }
@@ -85,8 +92,7 @@ fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
                 null
             }
 
-//            val device = swiftCodeProvider.getMatterSupport().startIosCommissioning(it) {
-            val device = startIosCommissioning(it, threadNetwork) {
+            val device = commissioningViewModel.startIosCommissioning(it, threadNetwork) {
                 state.value = ScreenState.Error
             }
             device?.let {
@@ -143,11 +149,3 @@ fun QRCodeScanner(onCompletion: (String) -> Unit) {
         }
     )
 }
-
-suspend fun startIosCommissioning(code: String, threadNetwork: ThreadNetwork?, onError: () -> Unit): Device? {
-    // Matter commissioning on iOS
-    Napier.d("iOS commissioning has started!")
-    return MatterController.commission(code, threadNetwork, onError)
-}
-
-

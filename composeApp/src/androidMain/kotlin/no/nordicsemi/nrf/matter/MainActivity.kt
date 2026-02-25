@@ -17,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.home.matter.Matter
 import com.google.android.gms.home.matter.commissioning.CommissioningRequest
+import io.github.aakira.napier.DebugAntilog
+import io.github.aakira.napier.Napier
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
 import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
 import no.nordicsemi.nrf.matter.service.AppCommissioningService
@@ -29,6 +31,7 @@ class MainActivity : NordicActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        Napier.base(DebugAntilog())
         setContent {
             AndroidAppRoot()
         }

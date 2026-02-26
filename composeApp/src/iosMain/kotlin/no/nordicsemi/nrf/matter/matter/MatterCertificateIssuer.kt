@@ -17,6 +17,11 @@ class MatterCertificateIssuer : NSObject(), MTROperationalCertificateIssuerProto
         completion: (MTROperationalCertificateChain?, NSError?) -> Unit
     ) {
         Napier.i("MatterCertificateIssuer - issueOperationalCertificateForRequest")
+
+        val dummyCertChain: MTROperationalCertificateChain? = null // albo stwórz prawdziwy obiekt
+        val error: NSError? = null
+
+        completion(dummyCertChain, error)
     }
 
     override fun shouldSkipAttestationCertificateValidation(): Boolean {

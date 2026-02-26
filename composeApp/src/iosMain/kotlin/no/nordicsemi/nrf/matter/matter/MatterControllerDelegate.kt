@@ -54,7 +54,7 @@ class MatterControllerDelegate(private val nodeId: NSNumber, private val threadN
     private fun MTRDeviceController.commissionNodeWithID(): MTRDeviceController? = memScoped {
         val error = alloc<ObjCObjectVar<NSError?>>()
         val params = MTRCommissioningParameters()
-        params.deviceAttestationDelegate = AttestationDelegate()
+        params.deviceAttestationDelegate = MatterDeviceAttestationDelegate()
         Napier.i("Commision node with id: $threadNetwork")
         threadNetwork?.data?.let {
             params.threadOperationalDataset = it

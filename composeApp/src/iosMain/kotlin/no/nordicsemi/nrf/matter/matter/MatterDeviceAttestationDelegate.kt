@@ -19,7 +19,12 @@ class MatterDeviceAttestationDelegate : NSObject(), MTRDeviceAttestationDelegate
         attestationDeviceInfo: MTRDeviceAttestationDeviceInfo,
         error: NSError?
     ) {
-        Napier.i("BBBTESTAAA - completedForDevice")
+        try {
+            Napier.i("BBBTESTAAA - completedForDevice")
+            controller.continueCommissioningDevice(completedForDevice, ignoreAttestationFailure = true, null)
+        } catch (t: Throwable) {
+            Napier.i("BBBTESTAAA - completedForDevice error")
+        }
     }
 
     override fun deviceAttestationCompletedForController(
@@ -28,7 +33,12 @@ class MatterDeviceAttestationDelegate : NSObject(), MTRDeviceAttestationDelegate
         attestationDeviceInfo: MTRDeviceAttestationDeviceInfo,
         error: NSError?
     ) {
-        Napier.i("BBBTESTAAA - deviceAttestationCompletedForController")
+        try {
+            Napier.i("BBBTESTAAA - deviceAttestationCompletedForController")
+            controller.continueCommissioningDevice(opaqueDeviceHandle, ignoreAttestationFailure = true, null)
+        } catch (t: Throwable) {
+            Napier.i("BBBTESTAAA - deviceAttestationCompletedForController error")
+        }
     }
 
     override fun deviceAttestationFailedForController(
@@ -36,7 +46,12 @@ class MatterDeviceAttestationDelegate : NSObject(), MTRDeviceAttestationDelegate
         opaqueDeviceHandle: COpaquePointer?,
         error: NSError
     ) {
-        Napier.i("BBBTESTAAA - deviceAttestationFailedForController")
+        try {
+            Napier.i("BBBTESTAAA - deviceAttestationFailedForController")
+            controller.continueCommissioningDevice(opaqueDeviceHandle, ignoreAttestationFailure = true, null)
+        } catch (t: Throwable) {
+            Napier.i("BBBTESTAAA - deviceAttestationFailedForController error")
+        }
     }
 
     override fun deviceAttestation(
@@ -44,6 +59,11 @@ class MatterDeviceAttestationDelegate : NSObject(), MTRDeviceAttestationDelegate
         failedForDevice: COpaquePointer?,
         error: NSError
     ) {
-        Napier.i("BBBTESTAAA - failedForDevice")
+        try {
+            Napier.i("BBBTESTAAA - failedForDevice")
+            controller.continueCommissioningDevice(failedForDevice, ignoreAttestationFailure = true, null)
+        } catch (t: Throwable) {
+            Napier.i("BBBTESTAAA - failedForDevice error")
+        }
     }
 }

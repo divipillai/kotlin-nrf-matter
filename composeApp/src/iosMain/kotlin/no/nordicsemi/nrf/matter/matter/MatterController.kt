@@ -61,7 +61,7 @@ object MatterController {
             nocSigner = MatterKeypair(),
         )
 //            params.vendorID = NSNumber(0x127F)
-        params.vendorID = NSNumber(0x1234)
+        params.vendorID = NSNumber(0xFFF1)
 //        params.operationalCertificateIssuer = MatterCertificateIssuer()
 //        params.operationalCertificateIssuerQueue = dispatch_queue_create("no.nordicsemi.nrf.matter.certissuer", null)
 

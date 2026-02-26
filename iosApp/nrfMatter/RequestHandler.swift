@@ -8,6 +8,7 @@
 import MatterSupport
 import Matter
 import os.log
+import ComposeApp
 
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     // Define an error type for pairing failures.
@@ -16,10 +17,8 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
         case pairingFailed
     }
 
-
     // Use OSLog to log debugging information.
     private let logger = Logger(subsystem: "com.yourcompany.matterapp", category: "DeviceSetup")
-
 
     override init() {
         super.init()

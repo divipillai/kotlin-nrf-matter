@@ -22,16 +22,18 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
         print("MatterControllerDelegate - statusUpdate: \(status).")
     }
 
-
     func controller(_ controller: MTRDeviceController, commissioningSessionEstablishmentDone error: Error?) {
         // Check for error and handle it.
         print("MatterControllerDelegate - commissioningSessionEstablishmentDone.")
         do {
+            let commissioningParams = MTRCommissioningParameters()
+            commissioningParams.deviceAttestationDelegate = MatterAttestationDelegate()
+            
             // `myDesiredNodeID` must match the node ID passed to
             // `setupCommissioningSessionWithPayload`.
             try controller.commissionNode(
                 withID: nodeID,
-                commissioningParams: MTRCommissioningParameters()
+                commissioningParams: commissioningParams,
             )
             print("Succcessfully commissioned device.")
         } catch {

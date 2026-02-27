@@ -42,6 +42,8 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
         logger.debug("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
 
 
+        let commissioner = MatterCommissioner()
+        try await commissioner.commision(payload: onboardingPayload)
 //        do {
 //            // Parse the onboarding payload and commission the device to your app using the Matter framework APIs.
 //            logger.info("Successfully commissioned device with ID: \(commissioningID)")

@@ -9,7 +9,7 @@ import Matter
 
 class MatterCommissioner {
     
-    func commision(payload: String) throws {
+    func commision(payload: String) async throws {
         let nodeID: NSNumber = 1 // todo
         
         let factory = MTRDeviceControllerFactory.sharedInstance()
@@ -49,10 +49,12 @@ class MatterCommissioner {
         }
         guard let controller = controller else { return }
         
-        let delegate = MatterControllerDelegate(nodeID: nodeID) //todo nodeID
-        controller.setDeviceControllerDelegate(delegate, queue: DispatchQueue.main)
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let delegate = MatterControllerDelegate(nodeID: nodeID, continuation: continuation) //todo nodeID
+            controller.setDeviceControllerDelegate(delegate, queue: DispatchQueue.main)
 
-        let payload = MTRSetupPayload(payload: payload)!
-        try! controller.setupCommissioningSession(with: payload, newNodeID: nodeID)
+            let payload = MTRSetupPayload(payload: payload)!
+            try! controller.setupCommissioningSession(with: payload, newNodeID: nodeID)
+        }
     }
 }

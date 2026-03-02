@@ -8,7 +8,6 @@
 import MatterSupport
 import Matter
 import os.log
-import ComposeApp
 
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     // Define an error type for pairing failures.

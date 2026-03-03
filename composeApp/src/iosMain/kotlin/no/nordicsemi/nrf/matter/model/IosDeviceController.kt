@@ -9,12 +9,14 @@ import platform.Matter.MTRBaseClusterOnOff
 import platform.Matter.MTRBaseDevice
 import platform.Matter.MTRClusterDescriptor
 import platform.Matter.MTRClusterLevelControl
+import platform.Matter.MTRDeviceController
 import platform.Matter.MTRLevelControlClusterMoveParams
 import platform.Matter.MTRLevelControlClusterMoveToLevelWithOnOffParams
 import platform.Matter.MTRLevelControlClusterMoveWithOnOffParams
 import platform.Matter.MTROnOffClusterToggleParams
 import platform.Matter.MTRReadParams
 import platform.Matter.create
+import platform.Matter.getBaseDevice
 import platform.darwin.dispatch_queue_create
 import kotlin.coroutines.resumeWithException
 
@@ -59,9 +61,97 @@ class IosDeviceController: DeviceController {
         val endpoint = 13 // Todo
         Napier.i("setDeviceOnOff - deviceId: $deviceId, isDeviceOnline: $isDeviceOnline, isOn: $isOn, endpoint: $endpoint")
         val device = MatterDevicesProvider.getDevice() ?: return
-
         Napier.i("Device not null")
-        val baseDevice = MTRBaseDevice.deviceWithNodeID(device.nodeID, device.deviceController!!)
+//        val baseDevice = MTRBaseDevice.deviceWithNodeID(device.nodeID, device.deviceController!!)
+
+        val baseDevice = suspendCancellableCoroutine { continuation ->
+            Napier.i("getBaseDevice")
+            (device.deviceController as MTRDeviceController).getBaseDevice(
+                device.nodeID.unsignedLongValue,
+                dispatch_queue_create("no.nordicsemi.nrf.matter.clusteronoff", null)
+            ) { device, error ->
+                Napier.i("base device: $device, error: $error")
+                continuation.resume(device!!) { cause, _, _ ->
+                    Napier.e("Exception base device", throwable =  cause)
+                }
+            }
+        }
+
+
+        Napier.i("Base device not null")
+//        baseCluster!!.invokeCommandWithEndpointID(
+////            endpoint = NSNumber(endpoint),
+////            clusterID = NSNumber(endpoint),
+//        )
+//
+//        val cluster = MTRClusterLevelControl.create(
+//            device = device,
+//            endpointID = NSNumber(endpoint),
+//            queue = dispatch_queue_create("no.nordicsemi.nrf.matter.clusteronoff", null)
+//        )
+//
+//        val params = MTROnOffClusterToggleParams()
+//        val expectedValueInterval = NSNumber(5000)\
+//
+        val descriptor = MTRBaseClusterDescriptor.create(
+            device = baseDevice,
+            0.toUShort(),
+            dispatch_queue_create("no.nordicsemi.nrf.matter.clusteronoff", null)
+        )
+
+        Napier.i("Descriptor: $descriptor")
+
+        suspendCancellableCoroutine { continuation ->
+
+            Napier.i("readAttributePartsListWithCompletion")
+            descriptor!!.readAttributePartsListWithCompletion { list, error ->
+                Napier.i("Child endpoints: $list")
+                continuation.resume(list) { cause, _, _ ->
+                    // TODO
+                }
+            }
+        }
+
+        suspendCancellableCoroutine { continuation ->
+            Napier.i("readAttributeServerListWithCompletion")
+            descriptor!!.readAttributeServerListWithCompletion { list, error ->
+                Napier.i("Supported clusters on endpoint $list")
+                continuation.resume(list) { cause, _, _ ->
+                    // TODO
+                }
+            }
+        }
+////        descriptor?.
+////
+////        descriptor.readAttributePartsList { values, error in
+////            // tu masz listę endpointów
+////        }
+//
+//        suspendCancellableCoroutine { continuation ->
+//            val params = MTRLevelControlClusterMoveToLevelWithOnOffParams()
+//            params.level = NSNumber(if (isOn) 254 else 0)
+//
+//            cluster!!.moveToLevelWithOnOffWithParams(params = params, expectedValues = null, expectedValueInterval = expectedValueInterval) {
+//                if (it != null) {
+//                    continuation.resumeWithException(Exception("Operation failed exception"))
+//                } else {
+//                    continuation.resume(value = Unit) { cause, _, _ ->
+//                        // TODO
+//                    }
+//                }
+//            }
+//
+////            cluster!!.toggleWithParams(params = params, expectedValues = null, expectedValueInterval = expectedValueInterval) {
+////                if (it != null) {
+////                    continuation.resumeWithException(Exception("Operation failed exception"))
+////                } else {
+////                    continuation.resume(value = Unit) { cause, _, _ ->
+////                        // TODO
+////                    }
+////                }
+////            }
+//        }
+
 
         val baseCluster = MTRBaseClusterOnOff.create(
             device = baseDevice,

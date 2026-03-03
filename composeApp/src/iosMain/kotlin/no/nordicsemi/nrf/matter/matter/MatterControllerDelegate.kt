@@ -56,10 +56,10 @@ class MatterControllerDelegate(private val nodeId: NSNumber, private val threadN
         val params = MTRCommissioningParameters()
         params.deviceAttestationDelegate = MatterDeviceAttestationDelegate()
         Napier.i("Commision node with id: $threadNetwork")
-        threadNetwork?.data?.let {
-            params.threadOperationalDataset = it
-            params.deviceAttestationDelegate = MatterDeviceAttestationDelegate()
-        }
+//        threadNetwork?.data?.let {
+//            params.threadOperationalDataset = it
+//            params.deviceAttestationDelegate = MatterDeviceAttestationDelegate()
+//        }
         commissionNodeWithID(nodeId, params, error.ptr)
 
         if (error.value != null) {

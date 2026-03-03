@@ -45,9 +45,7 @@ class MatterSupportForKotlin : MatterSupportKt {
             print("AAATESTAAA - storing device")
             MatterDevicesProvider.shared.saveDevice(device: device)
             
-            print("AAATESTAAA - Returning a device!")
-            
-            return Device(
+            let result = Device(
                 dateCommissioned: nil,
                 vendorId: device.vendorID?.stringValue,
                 productId: device.productID?.stringValue,
@@ -58,6 +56,10 @@ class MatterSupportForKotlin : MatterSupportKt {
                 vendorName: "Nordic Semiconductor",
                 deviceMatterInfo: []
             )
+            
+            print("AAATESTAAA - Returning a device!")
+            
+            return result
             
             // Handle the success full setup request and update your app's UI, register the device in your database, or set up any default automations.
         } catch {

@@ -40,7 +40,6 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
         logger.debug("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
 
-
         let commissioner = MatterCommissioner()
         try await commissioner.commision(payload: onboardingPayload)
 //        do {
@@ -119,10 +118,15 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     override func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
         logger.debug("Selecting Thread network from \(threadScanResults.count) scan results")
 
+        
+        threadScanResults.forEach { item in
+            logger.debug("Thread network: \(item.networkName)")
+        }
 
         // Check if a specific network is available by name.
         let preferredNetworkName = "HomeThread"
         let preferredNetwork = threadScanResults.first { result in
+            
             result.networkName == preferredNetworkName
         }
 
@@ -135,6 +139,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
 //            logger.info("Using default system Thread network")
 //            return .defaultSystemNetwork
 //        }
-        return .defaultSystemNetwork
+        let scanResult = threadScanResults[0]
+        return ThreadNetworkAssociation.network(extendedPANID: scanResult.extendedPANID)
     }
 }

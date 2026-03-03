@@ -24,7 +24,7 @@ class MatterSupportForKotlin : MatterSupportKt {
         let homes = [MatterAddDeviceRequest.Home(displayName: "My Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "MyEcosystemName", homes: homes)
         
-        var request = MatterAddDeviceRequest(topology: topology)
+        var request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
 
 //        request.setupPayload = MTRSetupPayload(payload: payload)
         

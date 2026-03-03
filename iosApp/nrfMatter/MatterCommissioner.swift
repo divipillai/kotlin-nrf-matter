@@ -49,8 +49,12 @@ class MatterCommissioner {
         }
         guard let controller = controller else { return }
         
+        let thread = ThreadNetworkProviderImpl()
+        let network = try await thread.getAvailableThreadNetworks()!
+        
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            let delegate = MatterControllerDelegate(nodeID: nodeID, continuation: continuation) //todo nodeID
+     
+            let delegate = MatterControllerDelegate(nodeID: nodeID, continuation: continuation, threadNetwork: nil) //todo nodeID
             controller.setDeviceControllerDelegate(delegate, queue: DispatchQueue.main)
 
             let payload = MTRSetupPayload(payload: payload)!

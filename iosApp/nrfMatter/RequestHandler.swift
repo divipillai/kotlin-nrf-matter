@@ -139,7 +139,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
 //            logger.info("Using default system Thread network")
 //            return .defaultSystemNetwork
 //        }
-        let scanResult = threadScanResults[0]
+        let scanResult = threadScanResults[1]
         return ThreadNetworkAssociation.network(extendedPANID: scanResult.extendedPANID)
     }
 }

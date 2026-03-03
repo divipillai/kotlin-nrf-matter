@@ -59,6 +59,8 @@ class IosDeviceController: DeviceController {
         val endpoint = 13 // Todo
         Napier.i("setDeviceOnOff - deviceId: $deviceId, isDeviceOnline: $isDeviceOnline, isOn: $isOn, endpoint: $endpoint")
         val device = MatterDevicesProvider.getDevice() ?: return
+
+        Napier.i("Device not null")
         val baseDevice = MTRBaseDevice.deviceWithNodeID(device.nodeID, device.deviceController!!)
 
         val baseCluster = MTRBaseClusterOnOff.create(
@@ -66,6 +68,9 @@ class IosDeviceController: DeviceController {
             endpointID = NSNumber(endpoint),
             queue = dispatch_queue_create("no.nordicsemi.nrf.matter.clusteronoff", null)
         )
+
+        Napier.i("Cluster $baseCluster")
+        Napier.i("Trigger an action")
 
         if (isOn) {
             suspendCancellableCoroutine { continuation ->

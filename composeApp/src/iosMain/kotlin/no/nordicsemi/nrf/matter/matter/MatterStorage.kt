@@ -6,7 +6,7 @@ import platform.Matter.MTRStorageProtocol
 import platform.darwin.NSObject
 
 class MatterStorage : NSObject(), MTRStorageProtocol {
-    private val defaults = NSUserDefaults.standardUserDefaults
+    private val defaults = NSUserDefaults(suiteName = "group.P3R8YQEV4L.nordicsemi.nrf.matter")
 
     override fun removeStorageDataForKey(key: String): Boolean {
         defaults.removeObjectForKey(key)

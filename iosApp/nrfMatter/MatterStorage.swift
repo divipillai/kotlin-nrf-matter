@@ -9,7 +9,7 @@ import Matter
 
 class MatterStorage : NSObject, MTRStorage {
     
-    private let defaults = UserDefaults.standard
+    private let defaults = UserDefaults(suiteName: "group.P3R8YQEV4L.nordicsemi.nrf.matter")!
     
     func storageData(forKey key: String) -> Data? {
         return defaults.data(forKey: key)

@@ -10,7 +10,6 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.nordicsemi</string>
 		<string>group.nordicsemi.nrf.matter</string>
 	</array>
 </dict>

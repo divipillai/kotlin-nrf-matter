@@ -19,6 +19,8 @@ class MatterSupportForKotlin : MatterSupportKt {
     
     func commission(payload: String) async -> Device? {
         print("AAATESTAAA - commission device: \(payload)")
+        
+        let key = MatterKeypair()
         let homes = [MatterAddDeviceRequest.Home(displayName: "My Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "MyEcosystemName", homes: homes)
         

@@ -13,18 +13,55 @@ class MatterKeypair: NSObject, MTRKeypair {
     private let privateKey: SecKey
     private let _publicKey: SecKey
     
-    private let logger = Logger(subsystem: "nrf.matter", category: "DeviceSetup")
+    private static let logger = Logger(subsystem: "nrf.matter", category: "DeviceSetup")
 
     override init() {
-        let privateKey = try! Self.generatePrivateKey()
-        self._publicKey = SecKeyCopyPublicKey(privateKey)!
-        self.privateKey = privateKey
+        let existingKey = Self.getPrivateKey()
+        let privateKey = existingKey != nil ? existingKey : (try! Self.generatePrivateKey())
+        self._publicKey = SecKeyCopyPublicKey(privateKey!)!
+        self.privateKey = privateKey!
         super.init()
         
-        logger.debug("BBBESTBBB - Printing private key in app.")
-        self.printSecKey(privateKey)
-        logger.debug("BBBESTBBB - Printing public key in app.")
+        Self.logger.debug("BBBESTBBB - Printing private key in app.")
+        self.printSecKey(privateKey!)
+        Self.logger.debug("BBBESTBBB - Printing public key in app.")
         self.printSecKey(_publicKey)
+    }
+    
+    private static let name = "nordicsemi.nrf.matter"
+    
+    public static func getPrivateKey() -> SecKey? {
+        let tag = name.data(using: .utf8)!
+//        logger.debug("BBBESTBBB - Deleting private key.")
+//        
+//        let deleteQuery: [String: Any] = [
+//            kSecClass as String: kSecClassKey,
+//            kSecAttrApplicationTag as String: tag
+//        ]
+//        SecItemDelete(deleteQuery as CFDictionary)
+        
+        logger.debug("BBBESTBBB - Getting private key.")
+
+        let query: [String: Any] = [
+            kSecClass as String                 : kSecClassKey,
+            kSecAttrApplicationTag as String    : tag,
+            kSecAttrKeyType as String           : kSecAttrKeyTypeECSECPrimeRandom,
+            kSecReturnRef as String             : kCFBooleanTrue as Any,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        guard status == errSecSuccess else {
+            logger.debug("BBBESTBBB - Private key not found.")
+            return nil
+        }
+        logger.debug("BBBESTBBB - Private key found.")
+        guard item != nil else {
+            logger.debug("BBBESTBBB - Private key is nil.")
+            return nil
+        }
+        return (item as! SecKey)
     }
 
     public func signMessageECDSA_DER(_ message: Data) -> Data {
@@ -52,14 +89,24 @@ class MatterKeypair: NSObject, MTRKeypair {
     }
 
     private static func generatePrivateKey() throws -> SecKey {
+        logger.debug("BBBESTBBB - Generating new key.")
 
         let tag = "nordicsemi.nrf.matter".data(using: .utf8)!
 
-        let attributes: [CFString: Any] = [
-            kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom,
-            kSecAttrKeyClass: kSecAttrKeyClassPrivate,
-            kSecAttrKeySizeInBits: 256,
-            kSecAttrIsPermanent: false,
+//        let attributes: [CFString: Any] = [
+//            kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom,
+//            kSecAttrKeyClass: kSecAttrKeyClassPrivate,
+//            kSecAttrKeySizeInBits: 256,
+//            kSecAttrIsPermanent: false,
+//        ]
+        
+        let attributes: [String: Any] = [
+            kSecAttrKeyType as String           : kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrKeySizeInBits as String     : 256,
+            kSecPrivateKeyAttrs as String : [
+                kSecAttrIsPermanent as String       : true,
+                kSecAttrApplicationTag as String    : tag,
+            ]
         ]
 
         var error: Unmanaged<CFError>? = nil
@@ -67,31 +114,35 @@ class MatterKeypair: NSObject, MTRKeypair {
         let secKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error)
 
         if error != nil {
+            logger.debug("BBBESTBBB - Error during generation of a new key.")
             throw Error.generatePrivateKeyFailed
         }
 
         guard let secKey = secKey else {
+            logger.debug("BBBESTBBB - Error during generation of a new key.")
             throw Error.generatePrivateKeyReturnedNil
         }
+        
+        logger.debug("BBBESTBBB - Returning newly generated key.")
 
         return secKey
     }
     
     func printSecKey(_ key: SecKey) {
         var error: Unmanaged<CFError>?
-        logger.debug("BBBESTBBB - printSecKey")
+        Self.logger.debug("BBBESTBBB - printSecKey")
         
         // Export the key to its external representation (usually DER format)
         if let keyData = SecKeyCopyExternalRepresentation(key, &error) as Data? {
             // Print as Base64 (standard for keys)
-            logger.debug("BBBESTBBB - Key Base64: \(keyData.base64EncodedString())")
+            Self.logger.debug("BBBESTBBB - Key Base64: \(keyData.base64EncodedString())")
             
             // Or print as Hex for a more "raw" look
             let hexString = keyData.map { String(format: "%02hhx", $0) }.joined()
-            logger.debug("BBBESTBBB - Key Hex: \(hexString)")
+            Self.logger.debug("BBBESTBBB - Key Hex: \(hexString)")
         } else {
             if let error = error?.takeRetainedValue() {
-                logger.debug("BBBESTBBB - Error extracting key data: \(error.localizedDescription)")
+                Self.logger.debug("BBBESTBBB - Error extracting key data: \(error.localizedDescription)")
             }
         }
     }

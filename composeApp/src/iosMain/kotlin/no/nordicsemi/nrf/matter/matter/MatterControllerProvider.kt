@@ -9,6 +9,7 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
+import no.nordicsemi.nrf.matter.SwiftCodeProvider
 import platform.Foundation.NSError
 import platform.Foundation.NSMutableData
 import platform.Foundation.NSNumber
@@ -17,11 +18,12 @@ import platform.Matter.MTRDeviceController
 import platform.Matter.MTRDeviceControllerFactory
 import platform.Matter.MTRDeviceControllerFactoryParams
 import platform.Matter.MTRDeviceControllerStartupParams
+import platform.Matter.MTRKeypairProtocol
 import platform.Security.SecRandomCopyBytes
 import platform.Security.errSecSuccess
 import platform.Security.kSecRandomDefault
 
-object MatterControllerProvider {
+class MatterControllerProvider(private val swiftCodeProvider: SwiftCodeProvider) {
     fun create(): MTRDeviceController {
         Napier.i("Initializing Matter controller factory.")
         val storage = MatterStorage()
@@ -39,16 +41,14 @@ object MatterControllerProvider {
             throw IllegalStateException("Error during copy bytes.")
         }
 
-        val keypair = MatterKeypair()
-
-        Napier.i("CCCTESTCCC - ipk: $ipk")
-        Napier.i("CCCTESTCCC - private key: ${keypair.privateKey.asString()}")
-        Napier.i("CCCTESTCCC - public key: ${keypair.publicKey.asString()}")
+//        Napier.i("CCCTESTCCC - ipk: $ipk")
+//        Napier.i("CCCTESTCCC - private key: ${keypair.privateKey.asString()}")
+//        Napier.i("CCCTESTCCC - public key: ${keypair.publicKey.asString()}")
 
         val params = MTRDeviceControllerStartupParams(
             iPK = ipk,
             fabricID = NSNumber(1),
-            nocSigner = keypair,
+            nocSigner = swiftCodeProvider.getKeypair(),
         )
 //            params.vendorID = NSNumber(0x127F)
         params.vendorID = NSNumber(0xFFF1)

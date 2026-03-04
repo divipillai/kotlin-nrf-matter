@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import no.nordicsemi.nrf.matter.matter.MatterController
 import no.nordicsemi.nrf.matter.model.Device
 
 class CommissioningViewModel(
@@ -18,7 +17,7 @@ class CommissioningViewModel(
             Napier.d("startIosCommissioning: $this")
             Napier.d("iOS commissioning has started!")
             return swiftCodeProvider.getMatterSupport().startIosCommissioning(code, onError)
-            return MatterController.commission(code, threadNetwork, onError)
+//            return MatterController.commission(code, threadNetwork, onError)
         }
     }
 }

@@ -28,56 +28,56 @@ import platform.Security.errSecSuccess
 import platform.Security.kSecRandomDefault
 import platform.darwin.dispatch_queue_create
 
-val nodeID = NSNumber(1)
-
-object MatterController {
-
-    suspend fun commission(code: String, threadNetwork: ThreadNetwork?, onError: () -> Unit): Device? {
-        try {
-            return commission(code, threadNetwork)
-        } catch (t: Throwable) {
-            onError()
-            return null
-        }
-    }
-
-    private suspend fun commission(code: String, threadNetwork: ThreadNetwork?): Device {
-        val controller: MTRDeviceController = MatterControllerProvider.create()
-
-        Napier.i("Opening Matter commissioning session.")
-        val delegate = MatterControllerDelegate(nodeID, threadNetwork)
-        controller.setDeviceControllerDelegate(delegate, dispatch_queue_create("no.nordicsemi.nrf.matter.controller", null))
-
-        controller.setupCommissioningSessionWithPayload(code)
-            ?: throw IllegalStateException("Couldn't start commissioning session.")
-        Napier.i("Matter commissioning session successfully opened.")
-
-        val successResult = delegate.result.filterIsInstance<MatterControllerResult.Success>().first()
-        Napier.i("Received success")
-        with (successResult.device) {
-            return Device(
-                vendorName = "Nordic Semiconductor", // TODO
-                productName = "nRF54",
-                vendorId = vendorID?.stringValue,
-                productId = productID?.stringValue,
-                deviceId = nodeID.longValue,
-                name = "Matter device",
-                deviceMatterInfo = listOf()
-            )
-        }
-    }
-
-    private fun MTRDeviceController.setupCommissioningSessionWithPayload(code: String): MTRDeviceController? = memScoped {
-        val error = alloc<ObjCObjectVar<NSError?>>()
-        val payload = MTRSetupPayload(payload = code)
-        setupCommissioningSessionWithPayload(payload = payload, newNodeID = nodeID, error = error.ptr)
-
-        if (error.value != null) {
-            Napier.e("Couldn't start commissioning session: ${error.value}")
-            return null
-        }
-
-        return this@setupCommissioningSessionWithPayload
-    }
-
-}
+//val nodeID = NSNumber(1)
+//
+//object MatterController {
+//
+//    suspend fun commission(code: String, threadNetwork: ThreadNetwork?, onError: () -> Unit): Device? {
+//        try {
+//            return commission(code, threadNetwork)
+//        } catch (t: Throwable) {
+//            onError()
+//            return null
+//        }
+//    }
+//
+//    private suspend fun commission(code: String, threadNetwork: ThreadNetwork?): Device {
+//        val controller: MTRDeviceController = MatterControllerProvider.create()
+//
+//        Napier.i("Opening Matter commissioning session.")
+//        val delegate = MatterControllerDelegate(nodeID, threadNetwork)
+//        controller.setDeviceControllerDelegate(delegate, dispatch_queue_create("no.nordicsemi.nrf.matter.controller", null))
+//
+//        controller.setupCommissioningSessionWithPayload(code)
+//            ?: throw IllegalStateException("Couldn't start commissioning session.")
+//        Napier.i("Matter commissioning session successfully opened.")
+//
+//        val successResult = delegate.result.filterIsInstance<MatterControllerResult.Success>().first()
+//        Napier.i("Received success")
+//        with (successResult.device) {
+//            return Device(
+//                vendorName = "Nordic Semiconductor", // TODO
+//                productName = "nRF54",
+//                vendorId = vendorID?.stringValue,
+//                productId = productID?.stringValue,
+//                deviceId = nodeID.longValue,
+//                name = "Matter device",
+//                deviceMatterInfo = listOf()
+//            )
+//        }
+//    }
+//
+//    private fun MTRDeviceController.setupCommissioningSessionWithPayload(code: String): MTRDeviceController? = memScoped {
+//        val error = alloc<ObjCObjectVar<NSError?>>()
+//        val payload = MTRSetupPayload(payload = code)
+//        setupCommissioningSessionWithPayload(payload = payload, newNodeID = nodeID, error = error.ptr)
+//
+//        if (error.value != null) {
+//            Napier.e("Couldn't start commissioning session: ${error.value}")
+//            return null
+//        }
+//
+//        return this@setupCommissioningSessionWithPayload
+//    }
+//
+//}

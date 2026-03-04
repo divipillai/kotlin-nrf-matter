@@ -20,8 +20,10 @@ import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.delay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
+import org.koin.compose.getKoin
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import org.koin.dsl.module
 import qrscanner.CameraLens
 import qrscanner.QrScanner
 import kotlin.concurrent.atomics.AtomicBoolean
@@ -38,7 +40,11 @@ class IosCommissionHandler(
 fun MainViewController(swiftCodeProvider: SwiftCodeProvider) =
     ComposeUIViewController {
         // Initialize koin
-        initKoin()
+        initKoin (
+            module {
+                single { swiftCodeProvider }
+            }
+        )
 
         // Initialize Napier for logging
         Napier.base(DebugAntilog())

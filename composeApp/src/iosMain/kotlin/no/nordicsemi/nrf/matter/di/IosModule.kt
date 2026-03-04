@@ -7,6 +7,7 @@ import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
+import no.nordicsemi.nrf.matter.matter.MatterControllerProvider
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.IosDeviceController
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
@@ -74,11 +75,11 @@ val iosModule = module {
         UserPreferencesRepository(dataSource = get())
     }
 
-    // Device Controller
-    single<DeviceController> {
-        IosDeviceController()
-    }
+    single<MatterControllerProvider> { MatterControllerProvider(get()) }
 
+    // Device Controller
+    single<DeviceController> { IosDeviceController(get()) }
+    
     // View models.
     viewModelOf(::HomeViewModel)
 

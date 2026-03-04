@@ -57,7 +57,7 @@ fun MTRDeviceController.getDeviceById(id: Long): MTRDevice? {
         .firstOrNull { it.nodeID == NSNumber(long = id) }
 }
 
-class IosDeviceController: DeviceController {
+class IosDeviceController(private val matterControllerProvider: MatterControllerProvider): DeviceController {
     override suspend fun setDeviceOnOff(
         deviceId: Long,
         isDeviceOnline: Boolean,
@@ -65,7 +65,7 @@ class IosDeviceController: DeviceController {
         endpoint: Int,
     ) {
         val endpoint = 13 // Todo
-        val controller: MTRDeviceController = MatterControllerProvider.create()
+        val controller: MTRDeviceController = matterControllerProvider.create()
 
         Napier.i("setDeviceOnOff - deviceId: $deviceId, isDeviceOnline: $isDeviceOnline, isOn: $isOn, endpoint: $endpoint")
         val device = controller.getDeviceById(deviceId) ?: return

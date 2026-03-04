@@ -30,7 +30,7 @@ class ThreadNetworkProviderImpl : ThreadNetworkProvider {
             print("AAATESTAAA - pskc: \(preferredCredentials.pskc)")
             result = [ThreadNetwork(name: preferredCredentials.networkName ?? "Unknown", data: preferredCredentials.activeOperationalDataSet)]
         }
-        
+
         let allActiveCredentials = try? await client.allActiveCredentials()
         let allCredentials = try? await client.allCredentials()
         print("AAATESTAAA - allActiveCredentials: \(allActiveCredentials)")

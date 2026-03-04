@@ -81,7 +81,7 @@ class MatterControllerDelegate(private val nodeId: NSNumber, private val threadN
         } else {
             Napier.i("Commissioning commissioningComplete with metrics: $nodeID.")
             val device = MTRDevice.deviceWithNodeID(nodeID, controller)
-            MatterDevicesProvider.saveDevice(device)
+//            MatterDevicesProvider.saveDevice(device)
             Napier.i("Sending success")
             result.tryEmit(MatterControllerResult.Success(device))
         }

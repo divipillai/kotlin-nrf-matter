@@ -2,13 +2,14 @@ package no.nordicsemi.nrf.matter.model
 
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.nrf.matter.matter.MatterDevicesProvider
+import no.nordicsemi.nrf.matter.matter.MatterControllerProvider
 import platform.Foundation.NSNumber
 import platform.Matter.MTRBaseClusterDescriptor
 import platform.Matter.MTRBaseClusterOnOff
 import platform.Matter.MTRBaseDevice
 import platform.Matter.MTRClusterDescriptor
 import platform.Matter.MTRClusterLevelControl
+import platform.Matter.MTRDevice
 import platform.Matter.MTRDeviceController
 import platform.Matter.MTRLevelControlClusterMoveParams
 import platform.Matter.MTRLevelControlClusterMoveToLevelWithOnOffParams
@@ -51,6 +52,11 @@ import kotlin.coroutines.resumeWithException
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+fun MTRDeviceController.getDeviceById(id: Long): MTRDevice? {
+    return devices.map { it as MTRDevice }
+        .firstOrNull { it.nodeID == NSNumber(long = id) }
+}
+
 class IosDeviceController: DeviceController {
     override suspend fun setDeviceOnOff(
         deviceId: Long,
@@ -59,8 +65,10 @@ class IosDeviceController: DeviceController {
         endpoint: Int,
     ) {
         val endpoint = 13 // Todo
+        val controller: MTRDeviceController = MatterControllerProvider.create()
+
         Napier.i("setDeviceOnOff - deviceId: $deviceId, isDeviceOnline: $isDeviceOnline, isOn: $isOn, endpoint: $endpoint")
-        val device = MatterDevicesProvider.getDevice() ?: return
+        val device = controller.getDeviceById(deviceId) ?: return
         Napier.i("Device not null")
 //        val baseDevice = MTRBaseDevice.deviceWithNodeID(device.nodeID, device.deviceController!!)
 

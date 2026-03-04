@@ -12,5 +12,9 @@
 	<array>
 		<string>group.nordicsemi.nrf.matter</string>
 	</array>
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)nordicsemi.nrf.matter</string>
+	</array>
 </dict>
 </plist>

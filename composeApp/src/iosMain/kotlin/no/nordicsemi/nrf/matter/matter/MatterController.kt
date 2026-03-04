@@ -42,34 +42,7 @@ object MatterController {
     }
 
     private suspend fun commission(code: String, threadNetwork: ThreadNetwork?): Device {
-        Napier.i("Initializing Matter controller factory.")
-        val storage = MatterStorage()
-        val factoryParams = MTRDeviceControllerFactoryParams(storage)
-        val factory = MTRDeviceControllerFactory.sharedInstance().startControllerFactory(factoryParams)
-            ?: throw IllegalStateException("Couldn't start Matter controller factory.")
-        Napier.i("Matter controller factory successfully initialized.")
-
-        val ipk = NSMutableData.create(length = 16u)!!
-        val status = SecRandomCopyBytes(kSecRandomDefault, ipk.length, ipk.mutableBytes)
-        if (status != errSecSuccess) {
-            throw IllegalStateException("Error during copy bytes.")
-        }
-
-        val params = MTRDeviceControllerStartupParams(
-            iPK = ipk,
-            fabricID = NSNumber(1),
-            nocSigner = MatterKeypair(),
-        )
-//            params.vendorID = NSNumber(0x127F)
-        params.vendorID = NSNumber(0xFFF1)
-//        params.operationalCertificateIssuer = MatterCertificateIssuer()
-//        params.operationalCertificateIssuerQueue = dispatch_queue_create("no.nordicsemi.nrf.matter.certissuer", null)
-
-        Napier.i("Creating Matter controller.")
-        val controller: MTRDeviceController = factory.createControllerOnNewFabric(params)
-            ?: factory.createControllerOnExistingFabric(params)
-            ?: throw IllegalStateException("Couldn't create a controller")
-        Napier.i("Matter controller successfully created.")
+        val controller: MTRDeviceController = MatterControllerProvider.create()
 
         Napier.i("Opening Matter commissioning session.")
         val delegate = MatterControllerDelegate(nodeID, threadNetwork)
@@ -107,36 +80,4 @@ object MatterController {
         return this@setupCommissioningSessionWithPayload
     }
 
-    private fun MTRDeviceControllerFactory.startControllerFactory(params: MTRDeviceControllerFactoryParams): MTRDeviceControllerFactory? = memScoped {
-        val error = alloc<ObjCObjectVar<NSError?>>()
-        startControllerFactory(params, error.ptr)
-
-        if (error.value != null) {
-            Napier.e("Couldn't create controller on a new fabric: ${error.value}")
-            return null
-        }
-
-        return this@startControllerFactory
-    }
-
-    private fun MTRDeviceControllerFactory.createControllerOnNewFabric(params: MTRDeviceControllerStartupParams): MTRDeviceController? = memScoped {
-        val error = alloc<ObjCObjectVar<NSError?>>()
-        val result = createControllerOnNewFabric(params, error = error.ptr)
-
-        if (result == null) {
-            Napier.e("Couldn't create controller on a new fabric: ${error.value}")
-        }
-
-        return result
-    }
-
-    private fun MTRDeviceControllerFactory.createControllerOnExistingFabric(params: MTRDeviceControllerStartupParams): MTRDeviceController? = memScoped {
-        val error = alloc<ObjCObjectVar<NSError?>>()
-        val result = createControllerOnExistingFabric(params, error = error.ptr)
-
-        if (result == null) {
-            Napier.e("Couldn't create controller on the existing fabric: ${error.value}")
-        }
-        return result
-    }
 }

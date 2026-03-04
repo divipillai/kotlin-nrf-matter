@@ -6,6 +6,9 @@
 	<true/>
 	<key>NSBonjourServices</key>
 	<array>
+		<string>_ghp._tcp</string>
+		<string>_googlecrossdevice._tcp</string>
+		<string>_googcrossdevice._tcp</string>
 		<string>_matter._tcp.local</string>
 		<string>_matter._tcp</string>
 		<string>_matterc._udp</string>

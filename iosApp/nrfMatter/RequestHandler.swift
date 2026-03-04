@@ -17,7 +17,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     }
 
     // Use OSLog to log debugging information.
-    private let logger = Logger(subsystem: "com.yourcompany.matterapp", category: "DeviceSetup")
+    private let logger = Logger(subsystem: "nrf.matter", category: "DeviceSetup")
 
     override init() {
         super.init()

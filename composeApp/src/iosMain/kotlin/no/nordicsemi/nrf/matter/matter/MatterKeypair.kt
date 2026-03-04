@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package no.nordicsemi.nrf.matter.matter
 
 import kotlinx.cinterop.BetaInteropApi
@@ -26,8 +28,10 @@ import platform.CoreFoundation.kCFCopyStringDictionaryKeyCallBacks
 import platform.CoreFoundation.kCFNumberIntType
 import platform.CoreFoundation.kCFTypeDictionaryValueCallBacks
 import platform.Foundation.NSData
+import platform.Foundation.base64EncodedStringWithOptions
 import platform.Foundation.create
 import platform.Matter.MTRKeypairProtocol
+import platform.Security.SecKeyCopyExternalRepresentation
 import platform.Security.SecKeyCopyPublicKey
 import platform.Security.SecKeyCreateRandomKey
 import platform.Security.SecKeyCreateSignature
@@ -48,12 +52,17 @@ sealed class MatterKeypairException : Throwable() {
     object GeneratePrivateKeyFailed : MatterKeypairException()
     object GeneratePrivateKeyReturnedNil : MatterKeypairException()
 }
+fun SecKeyRef.asString(): String? = memScoped {
+    val error = alloc<CFErrorRefVar>()
+    val data = SecKeyCopyExternalRepresentation(this@asString, error.ptr)
+    return createNSData(data!!)?.base64EncodedStringWithOptions(0.toULong())
+}
 
 @ExperimentalForeignApi
 class MatterKeypair : NSObject(), MTRKeypairProtocol {
 
-    private val privateKey: SecKeyRef
-    private val publicKey: SecKeyRef
+     val privateKey: SecKeyRef
+     val publicKey: SecKeyRef
 
     init {
         this.privateKey = generatePrivateKey()
@@ -142,19 +151,21 @@ class MatterKeypair : NSObject(), MTRKeypairProtocol {
         )
     }
 
-    private fun createCFData(data: NSData): CFDataRef? {
-        val length = data.length.toLong()
-        val bytes = data.bytes?.reinterpret<UInt8Var>() ?: return null
 
-        return CFDataCreate(kCFAllocatorDefault, bytes, length)
-    }
+}
 
-    @OptIn(BetaInteropApi::class)
-    private fun createNSData(data: CFDataRef): NSData {
-        val bytes = CFDataGetBytePtr(data)
-        val opaque: COpaquePointer? = bytes?.reinterpret()
-        val length = CFDataGetLength(data)
+private fun createCFData(data: NSData): CFDataRef? {
+    val length = data.length.toLong()
+    val bytes = data.bytes?.reinterpret<UInt8Var>() ?: return null
 
-        return NSData.create(bytes = opaque, length = length.toULong())
-    }
+    return CFDataCreate(kCFAllocatorDefault, bytes, length)
+}
+
+@OptIn(BetaInteropApi::class)
+private fun createNSData(data: CFDataRef): NSData {
+    val bytes = CFDataGetBytePtr(data)
+    val opaque: COpaquePointer? = bytes?.reinterpret()
+    val length = CFDataGetLength(data)
+
+    return NSData.create(bytes = opaque, length = length.toULong())
 }

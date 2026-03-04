@@ -43,7 +43,7 @@ class MatterSupportForKotlin : MatterSupportKt {
             let device = MTRDevice(nodeID: nodeID, controller: controller)
             
             print("AAATESTAAA - storing device")
-            MatterDevicesProvider.shared.saveDevice(device: device)
+//            MatterDevicesProvider.shared.saveDevice(device: device)
             
             let result = Device(
                 dateCommissioned: nil,

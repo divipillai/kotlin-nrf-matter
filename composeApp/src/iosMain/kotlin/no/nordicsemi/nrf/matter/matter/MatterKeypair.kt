@@ -2,6 +2,7 @@
 
 package no.nordicsemi.nrf.matter.matter
 
+import io.github.aakira.napier.Napier
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -22,26 +23,36 @@ import platform.CoreFoundation.CFErrorRefVar
 import platform.CoreFoundation.CFNumberCreate
 import platform.CoreFoundation.CFNumberRef
 import platform.CoreFoundation.CFRelease
+import platform.CoreFoundation.CFTypeRefVar
 import platform.CoreFoundation.kCFAllocatorDefault
 import platform.CoreFoundation.kCFBooleanFalse
+import platform.CoreFoundation.kCFBooleanTrue
 import platform.CoreFoundation.kCFCopyStringDictionaryKeyCallBacks
 import platform.CoreFoundation.kCFNumberIntType
 import platform.CoreFoundation.kCFTypeDictionaryValueCallBacks
 import platform.Foundation.NSData
+import platform.Foundation.NSString
+import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.base64EncodedStringWithOptions
 import platform.Foundation.create
+import platform.Foundation.dataUsingEncoding
 import platform.Matter.MTRKeypairProtocol
+import platform.Security.SecItemCopyMatching
 import platform.Security.SecKeyCopyExternalRepresentation
 import platform.Security.SecKeyCopyPublicKey
 import platform.Security.SecKeyCreateRandomKey
 import platform.Security.SecKeyCreateSignature
 import platform.Security.SecKeyRef
+import platform.Security.errSecSuccess
+import platform.Security.kSecAttrApplicationTag
 import platform.Security.kSecAttrIsPermanent
 import platform.Security.kSecAttrKeyClass
 import platform.Security.kSecAttrKeyClassPrivate
 import platform.Security.kSecAttrKeySizeInBits
 import platform.Security.kSecAttrKeyType
 import platform.Security.kSecAttrKeyTypeECSECPrimeRandom
+import platform.Security.kSecClass
+import platform.Security.kSecClassKey
 import platform.Security.kSecKeyAlgorithmECDSASignatureMessageX962SHA256
 import platform.darwin.NSObject
 import platform.darwin.UInt8Var
@@ -93,17 +104,46 @@ class MatterKeypair : NSObject(), MTRKeypairProtocol {
     private fun generatePrivateKey(): SecKeyRef = memScoped {
         val error = alloc<CFErrorRefVar>()
 
+        val existingKey = createOrGetCKey()
+
+        if (existingKey == null) {
+            Napier.i("Haven't found an existing key. Creating new.")
+        } else {
+            Napier.i("Existing key found.")
+            return existingKey
+        }
+
         val result = SecKeyCreateRandomKey(createAttributes(), error.ptr)
 
         if (result == null || error.value != null) {
+            Napier.i("Couldn't create a new key.")
             throw MatterKeypairException.GeneratePrivateKeyReturnedNil
         }
+
+        Napier.i("Successfully create new key.")
 
         return result
     }
 
+    fun createOrGetCKey(): SecKeyRef? = memScoped {
+        val result = alloc<CFTypeRefVar>()
+
+        val status = SecItemCopyMatching(createAttributes(), result.ptr)
+
+        Napier.i("Matching key status: $status.")
+
+        if (status != errSecSuccess) {
+            return null
+        }
+
+        return result.value as SecKeyRef?
+    }
+
     private fun createAttributes(): CFDictionaryRef {
+        val tag = createCFData("nordicsemi.nrf.matter".nsdata()!!)
+
         val keys = listOf(
+            kSecAttrApplicationTag,
             kSecAttrKeyType,
             kSecAttrKeyClass,
             kSecAttrKeySizeInBits,
@@ -114,6 +154,7 @@ class MatterKeypair : NSObject(), MTRKeypairProtocol {
         val cfIsPermanent = kCFBooleanFalse
 
         val values = listOf(
+            tag,
             kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrKeyClassPrivate,
             cfSize,
@@ -169,3 +210,9 @@ private fun createNSData(data: CFDataRef): NSData {
 
     return NSData.create(bytes = opaque, length = length.toULong())
 }
+
+fun String.nsdata(): NSData? =
+    NSString.create(string = this).dataUsingEncoding(NSUTF8StringEncoding)
+
+fun NSData.string(): String? =
+    NSString.create(data = this, encoding = NSUTF8StringEncoding)?.toString()

@@ -25,7 +25,6 @@ import platform.CoreFoundation.CFNumberRef
 import platform.CoreFoundation.CFRelease
 import platform.CoreFoundation.CFTypeRefVar
 import platform.CoreFoundation.kCFAllocatorDefault
-import platform.CoreFoundation.kCFBooleanFalse
 import platform.CoreFoundation.kCFBooleanTrue
 import platform.CoreFoundation.kCFCopyStringDictionaryKeyCallBacks
 import platform.CoreFoundation.kCFNumberIntType
@@ -51,9 +50,8 @@ import platform.Security.kSecAttrKeyClassPrivate
 import platform.Security.kSecAttrKeySizeInBits
 import platform.Security.kSecAttrKeyType
 import platform.Security.kSecAttrKeyTypeECSECPrimeRandom
-import platform.Security.kSecClass
-import platform.Security.kSecClassKey
 import platform.Security.kSecKeyAlgorithmECDSASignatureMessageX962SHA256
+import platform.Security.kSecReturnRef
 import platform.darwin.NSObject
 import platform.darwin.UInt8Var
 
@@ -113,7 +111,7 @@ class MatterKeypair : NSObject(), MTRKeypairProtocol {
             return existingKey
         }
 
-        val result = SecKeyCreateRandomKey(createAttributes(), error.ptr)
+        val result = SecKeyCreateRandomKey(createNewAttributes(), error.ptr)
 
         if (result == null || error.value != null) {
             Napier.i("Couldn't create a new key.")
@@ -128,7 +126,7 @@ class MatterKeypair : NSObject(), MTRKeypairProtocol {
     fun createOrGetCKey(): SecKeyRef? = memScoped {
         val result = alloc<CFTypeRefVar>()
 
-        val status = SecItemCopyMatching(createAttributes(), result.ptr)
+        val status = SecItemCopyMatching(createExistingAttributes(), result.ptr)
 
         Napier.i("Matching key status: $status.")
 
@@ -139,7 +137,48 @@ class MatterKeypair : NSObject(), MTRKeypairProtocol {
         return result.value as SecKeyRef?
     }
 
-    private fun createAttributes(): CFDictionaryRef {
+    private fun createExistingAttributes(): CFDictionaryRef {
+        val tag = createCFData("nordicsemi.nrf.matter".nsdata()!!)
+
+        val keys = listOf(
+            kSecAttrApplicationTag,
+            kSecAttrKeyType,
+            kSecAttrKeyClass,
+            kSecAttrKeySizeInBits,
+            kSecReturnRef
+        )
+
+        val cfSize = createNumber(256)
+
+        val values = listOf(
+            tag,
+            kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrKeyClassPrivate,
+            cfSize,
+            kCFBooleanTrue
+        )
+
+        val dictionary = memScoped {
+            val keysPtr = allocArrayOf(keys)
+            val valuesPtr = allocArrayOf(values)
+
+            CFDictionaryCreate(
+                kCFAllocatorDefault,
+                keysPtr.reinterpret(),
+                valuesPtr.reinterpret(),
+                keys.size.toLong(),
+                kCFCopyStringDictionaryKeyCallBacks.ptr,
+                kCFTypeDictionaryValueCallBacks.ptr
+            )
+        }
+
+        keys.forEach { CFRelease(it) }
+        values.forEach { CFRelease(it) }
+
+        return dictionary!!
+    }
+
+    private fun createNewAttributes(): CFDictionaryRef {
         val tag = createCFData("nordicsemi.nrf.matter".nsdata()!!)
 
         val keys = listOf(
@@ -151,7 +190,7 @@ class MatterKeypair : NSObject(), MTRKeypairProtocol {
         )
 
         val cfSize = createNumber(256)
-        val cfIsPermanent = kCFBooleanFalse
+        val cfIsPermanent = kCFBooleanTrue
 
         val values = listOf(
             tag,

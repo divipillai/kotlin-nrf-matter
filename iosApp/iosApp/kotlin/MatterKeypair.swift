@@ -14,6 +14,7 @@ class MatterKeypair: NSObject, MTRKeypair {
     private let _publicKey: SecKey
     
     private static let logger = Logger(subsystem: "nrf.matter", category: "DeviceSetup")
+    private static let tag = name.data(using: .utf8)!
 
     override init() {
         let existingKey = Self.getPrivateKey()
@@ -31,15 +32,6 @@ class MatterKeypair: NSObject, MTRKeypair {
     private static let name = "nordicsemi.nrf.matter"
     
     public static func getPrivateKey() -> SecKey? {
-        let tag = name.data(using: .utf8)!
-//        logger.debug("BBBESTBBB - Deleting private key.")
-//        
-//        let deleteQuery: [String: Any] = [
-//            kSecClass as String: kSecClassKey,
-//            kSecAttrApplicationTag as String: tag
-//        ]
-//        SecItemDelete(deleteQuery as CFDictionary)
-        
         logger.debug("BBBESTBBB - Getting private key.")
 
         let query: [String: Any] = [
@@ -58,10 +50,21 @@ class MatterKeypair: NSObject, MTRKeypair {
         }
         logger.debug("BBBESTBBB - Private key found.")
         guard item != nil else {
-            logger.debug("BBBESTBBB - Private key is nil.")
+            logger.debug("BBBESTBBB - Private key is nil. Deleting.")
+            deletePrivateKey()
             return nil
         }
         return (item as! SecKey)
+    }
+    
+    public static func deletePrivateKey() {
+        logger.debug("BBBESTBBB - Deleting private key.")
+        
+        let deleteQuery: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrApplicationTag as String: tag
+        ]
+        SecItemDelete(deleteQuery as CFDictionary)
     }
 
     public func signMessageECDSA_DER(_ message: Data) -> Data {
@@ -92,13 +95,6 @@ class MatterKeypair: NSObject, MTRKeypair {
         logger.debug("BBBESTBBB - Generating new key.")
 
         let tag = "nordicsemi.nrf.matter".data(using: .utf8)!
-
-//        let attributes: [CFString: Any] = [
-//            kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom,
-//            kSecAttrKeyClass: kSecAttrKeyClassPrivate,
-//            kSecAttrKeySizeInBits: 256,
-//            kSecAttrIsPermanent: false,
-//        ]
         
         let attributes: [String: Any] = [
             kSecAttrKeyType as String           : kSecAttrKeyTypeECSECPrimeRandom,

@@ -53,6 +53,9 @@ import kotlin.coroutines.resumeWithException
  */
 
 fun MTRDeviceController.getDeviceById(id: Long): MTRDevice? {
+    Napier.i("Devices: ${devices.count()}")
+    Napier.i("Nodes: ${nodesWithStoredData.count()}")
+    
     return devices.map { it as MTRDevice }
         .firstOrNull { it.nodeID == NSNumber(long = id) }
 }
@@ -74,8 +77,8 @@ class IosDeviceController(private val matterControllerProvider: MatterController
 
         val baseDevice = suspendCancellableCoroutine { continuation ->
             Napier.i("getBaseDevice")
-            (device.deviceController as MTRDeviceController).getBaseDevice(
-                device.nodeID.unsignedLongValue,
+            controller.getBaseDevice(
+                deviceId.toULong(),
                 dispatch_queue_create("no.nordicsemi.nrf.matter.clusteronoff", null)
             ) { device, error ->
                 Napier.i("base device: $device, error: $error")

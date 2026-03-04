@@ -40,11 +40,11 @@ class MatterControllerProvider {
         
         var controller: MTRDeviceController? = nil
         do {
-            logger.debug("Controller from existing fabric")
+            logger.debug("BBBTESTBBB - Controller from existing fabric")
             controller = try factory.createController(onExistingFabric: params)
         } catch {
             do {
-                logger.debug("Controller from new fabric")
+                logger.debug("BBBTESTBBB - Controller from new fabric")
                 controller = try factory.createController(onNewFabric: params)
             } catch {
                 return nil

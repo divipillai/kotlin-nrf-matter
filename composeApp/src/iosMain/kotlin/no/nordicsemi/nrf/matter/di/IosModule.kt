@@ -79,7 +79,7 @@ val iosModule = module {
 
     // Device Controller
     single<DeviceController> { IosDeviceController(get()) }
-    
+
     // View models.
     viewModelOf(::HomeViewModel)
 

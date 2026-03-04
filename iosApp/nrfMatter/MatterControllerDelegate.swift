@@ -61,6 +61,7 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
     func controller(_ controller: MTRDeviceController, commissioningComplete error: Error?, nodeID: NSNumber?) {
         print("MatterControllerDelegate - commissioningComplete.")
         continuation.resume()
+        controller.shutdown()
         // Check for error and handle it.
         // If no error, node is commissioned with `nodeID` as its node ID.
     }

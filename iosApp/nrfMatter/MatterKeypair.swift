@@ -131,11 +131,11 @@ class MatterKeypair: NSObject, MTRKeypair {
         // Export the key to its external representation (usually DER format)
         if let keyData = SecKeyCopyExternalRepresentation(key, &error) as Data? {
             // Print as Base64 (standard for keys)
-            Self.logger.debug("AAATESTAAA - Key Base64: \(keyData.base64EncodedString())")
+            Self.logger.debug("AAATESTAAA - Key Base64: \(keyData.base64EncodedString(), privacy: .public)")
             
             // Or print as Hex for a more "raw" look
             let hexString = keyData.map { String(format: "%02hhx", $0) }.joined()
-            Self.logger.debug("AAATESTAAA - Key Hex: \(hexString)")
+            Self.logger.debug("AAATESTAAA - Key Hex: \(hexString, privacy: .public)")
         } else {
             if let error = error?.takeRetainedValue() {
                 Self.logger.debug("AAATESTAAA - Error extracting key data: \(error.localizedDescription)")

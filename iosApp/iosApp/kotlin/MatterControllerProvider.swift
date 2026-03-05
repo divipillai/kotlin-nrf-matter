@@ -7,6 +7,7 @@
 
 import Matter
 import os.log
+import SharedCode
 
 class MatterControllerProvider {
     
@@ -16,7 +17,6 @@ class MatterControllerProvider {
         let nodeID: NSNumber = 1 // todo
         
         let factory = MTRDeviceControllerFactory.sharedInstance()
-
 
         let storage = MatterStorage()
         let factoryParams = MTRDeviceControllerFactoryParams(storage: storage)

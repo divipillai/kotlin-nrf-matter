@@ -55,7 +55,7 @@ import kotlin.coroutines.resumeWithException
 fun MTRDeviceController.getDeviceById(id: Long): MTRDevice? {
     Napier.i("Devices: ${devices.count()}")
     Napier.i("Nodes: ${nodesWithStoredData.count()}")
-    
+
     return devices.map { it as MTRDevice }
         .firstOrNull { it.nodeID == NSNumber(long = id) }
 }

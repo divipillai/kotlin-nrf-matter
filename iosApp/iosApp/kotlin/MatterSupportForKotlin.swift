@@ -10,6 +10,7 @@ import Matter
 import MatterSupport
 import os.log
 import nrfMatter
+import SharedCode
 
 class MatterSupportForKotlin : MatterSupportKt {
     

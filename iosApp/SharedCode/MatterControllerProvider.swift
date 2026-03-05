@@ -2,30 +2,33 @@
 //  MatterControllerProvider.swift
 //  iosApp
 //
-//  Created by Sylwester Zielinski on 03/03/2026.
+//  Created by Sylwester Zielinski on 05/03/2026.
 //
 
 import Matter
 import os.log
-import SharedCode
 
-class MatterControllerProvider {
+public class MatterControllerProvider {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "DeviceSetup")
     
-    func getController() throws -> MTRDeviceController? {
+    public init() {
+        
+    }
+    
+    public func getController() throws -> MTRDeviceController? {
         let nodeID: NSNumber = 1 // todo
         
         let factory = MTRDeviceControllerFactory.sharedInstance()
 
         let storage = MatterStorage()
         let factoryParams = MTRDeviceControllerFactoryParams(storage: storage)
-
+        
         try factory.start(factoryParams)
         
-        logger.debug("AAATESTAAA - known fabrics: \(factory.knownFabrics?.count ?? 0)")
+        logger.debug("BBBTESTBBB - known fabrics: \(factory.knownFabrics?.count ?? 0)")
         factory.knownFabrics?.forEach { fabric in
-            logger.debug("AAATESTAAA - fabric id: \(fabric.fabricID)")
+            logger.debug("BBBTESTBBB - fabric id: \(fabric.fabricID)")
         }
         
         guard let ipk = loadOrCreateIPK(storage: storage) else {
@@ -41,11 +44,11 @@ class MatterControllerProvider {
         
         var controller: MTRDeviceController? = nil
         do {
-            logger.debug("Controller from existing fabric")
+            logger.debug("BBBTESTBBB - Controller from existing fabric")
             controller = try factory.createController(onExistingFabric: params)
         } catch {
             do {
-                logger.debug("Controller from new fabric")
+                logger.debug("BBBTESTBBB - Controller from new fabric")
                 controller = try factory.createController(onNewFabric: params)
             } catch {
                 return nil

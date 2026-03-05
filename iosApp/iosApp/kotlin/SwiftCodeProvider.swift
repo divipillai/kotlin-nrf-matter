@@ -7,6 +7,7 @@
 
 import Matter
 import ComposeApp
+import SharedCode
 
 class SwiftCodeProviderImpl : SwiftCodeProvider {
     

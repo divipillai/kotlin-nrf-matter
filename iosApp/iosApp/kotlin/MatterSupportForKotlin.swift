@@ -19,9 +19,8 @@ class MatterSupportForKotlin : MatterSupportKt {
     }
     
     func commission(payload: String) async -> Device? {
-        print("AAATESTAAA - commission device: \(payload)")
+        print("EEETESTEEE - commission device: \(payload)")
         
-        let key = MatterKeypair()
         let homes = [MatterAddDeviceRequest.Home(displayName: "My Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "MyEcosystemName", homes: homes)
         
@@ -30,22 +29,22 @@ class MatterSupportForKotlin : MatterSupportKt {
 //        request.setupPayload = MTRSetupPayload(payload: payload)
         
         do {
-            print("AAATESTAAA - Start a request")
+            print("EEETESTEEE - Start a request")
             try await request.perform()
-            print("AAATESTAAA - Successfully set up device!")
+            print("EEETESTEEE - Successfully set up device!")
             
             let nodeID: NSNumber = 1 // todo
             
-            let provider = MatterControllerProvider()
+            let provider = MatterControllerProvider(logTag: "EEETESTEEE")
             
-            print("AAATESTAAA - Create controller.")
+            print("EEETESTEEE - Create controller.")
             guard let controller = try? provider.getController() else { return nil }
             
-            print("AAATESTAAA - Creating device")
+            print("EEETESTEEE - Creating device")
             
             let device = MTRDevice(nodeID: nodeID, controller: controller)
             
-            print("AAATESTAAA - storing device")
+            print("EEETESTEEE - storing device")
 //            MatterDevicesProvider.shared.saveDevice(device: device)
             
             let result = Device(
@@ -60,7 +59,7 @@ class MatterSupportForKotlin : MatterSupportKt {
                 deviceMatterInfo: []
             )
             
-            print("AAATESTAAA - Returning a device!")
+            print("EEETESTEEE - Returning a device!")
             
             return result
             

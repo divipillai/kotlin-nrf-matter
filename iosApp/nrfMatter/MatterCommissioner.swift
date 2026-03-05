@@ -10,10 +10,11 @@ import SharedCode
 
 class MatterCommissioner {
     
+    let provider = MatterControllerProvider(logTag: "EEETESTEEE")
+    
     func commision(payload: String) async throws {
         let nodeID: NSNumber = 1 // todo
         
-        let provider = MatterControllerProvider()
         guard let controller = try? provider.getController() else { return }
         
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
@@ -24,5 +25,9 @@ class MatterCommissioner {
             let payload = MTRSetupPayload(payload: payload)!
             try! controller.setupCommissioningSession(with: payload, newNodeID: nodeID)
         }
+    }
+    
+    func release() {
+        provider.release()
     }
 }

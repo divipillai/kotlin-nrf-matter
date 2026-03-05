@@ -57,7 +57,6 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
         // Keep waiting for `commissioningComplete`.
     }
 
-
     func controller(_ controller: MTRDeviceController, commissioningComplete error: Error?, nodeID: NSNumber?) {
         print("MatterControllerDelegate - commissioningComplete.")
         continuation.resume()

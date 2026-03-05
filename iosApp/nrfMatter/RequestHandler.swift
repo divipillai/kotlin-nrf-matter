@@ -10,6 +10,9 @@ import Matter
 import os.log
 
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
+    
+    private let commissioner = MatterCommissioner()
+    
     // Define an error type for pairing failures.
     enum PairingError: Error {
         case invalidCredentials
@@ -24,7 +27,6 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
         logger.debug("AAATESTAAA - MatterAddDeviceExtensionRequestHandler initialized")
     }
 
-
     // Override this method to return the rooms in the home.
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
         logger.debug("Received request to fetch rooms in home: \(String(describing: home?.displayName)).")
@@ -35,12 +37,10 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
         return rooms.map { MatterAddDeviceRequest.Room(displayName: $0) }
     }
 
-
     // Override this method to commission the device to your application.
     override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
         logger.debug("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
 
-        let commissioner = MatterCommissioner()
         try await commissioner.commision(payload: onboardingPayload)
 //        do {
 //            // Parse the onboarding payload and commission the device to your app using the Matter framework APIs.
@@ -58,7 +58,6 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
 //        }
     }
 
-
     // Override this method to configure the device to your application.
     override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
         logger.debug("Configuring device '\(name)' in room: \(String(describing: room?.displayName))")
@@ -67,8 +66,9 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
         // Retrieve and configure the newly paired device in your ecosystem;
         // for example, find the device, set its name or room, apply default configurations, and save information in your database.
         logger.info("Device '\(name)' successfully configured")
+        
+        commissioner.release()
     }
-
 
     // Override this method to validate the device's credentials.
     override func validateDeviceCredential(_ deviceCredential: MatterAddDeviceExtensionRequestHandler.DeviceCredential) async throws {
@@ -112,7 +112,6 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
 //        }
         return .defaultSystemNetwork
     }
-
 
     // Override this method to select a specific Thread network or to ask the Matter framework to select the default Thread network.
     override func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {

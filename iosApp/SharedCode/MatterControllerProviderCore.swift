@@ -10,7 +10,7 @@ import os.log
 
 public class MatterControllerProviderCore {
     
-    private let logger = Logger(subsystem: "nrf.matter", category: "DeviceSetup")
+    private let logger = Logger(subsystem: "nrf.matter", category: "MatterControllerProviderCore")
     private let logTag: String
     private let factory = MTRDeviceControllerFactory.sharedInstance()
     
@@ -25,8 +25,6 @@ public class MatterControllerProviderCore {
     }
     
     public func getController() throws -> MTRDeviceController? {
-        print("AAATESTAAA - controller: \(Self.controller)")
-        print("AAATESTAAA - isRunning: \(Self.controller?.isRunning)")
         if (Self.controller != nil && Self.controller?.isRunning == true) {
             return Self.controller
         }
@@ -38,11 +36,6 @@ public class MatterControllerProviderCore {
         
         if (!factory.isRunning) {
             try factory.start(factoryParams)
-        }
-        
-        logger.debug("\(self.logTag) - known fabrics: \(self.factory.knownFabrics?.count ?? 0)")
-        factory.knownFabrics?.forEach { fabric in
-            logger.debug("\(self.logTag) - fabric id: \(fabric.fabricID)")
         }
         
         guard let ipk = loadOrCreateIPK(storage: storage) else {
@@ -75,9 +68,6 @@ public class MatterControllerProviderCore {
     
     private func loadOrCreateIPK(storage: MatterStorage) -> Data? {
         if let storedIpk = storage.getKey(forKey: "MatterIPK") {
-            logger.debug("\(self.logTag) StorageDataIPK: \(storedIpk.count, privacy: .public)")
-            let string = (storedIpk as Data).map { String(format: "%02x", $0) }.joined()
-            logger.debug("\(self.logTag) IPK: \(string, privacy: .public)")
             return storedIpk as Data
         }
 
@@ -93,9 +83,6 @@ public class MatterControllerProviderCore {
         }
 
         _ = storage.setKey(ipkMutable as Data, forKey: "MatterIPK")
-        
-        let string = (ipkMutable as Data).map { String(format: "%02x", $0) }.joined()
-        logger.debug("\(self.logTag) IPK: \(string, privacy: .public)")
 
         return ipkMutable as Data
     }

@@ -10,7 +10,7 @@ import SharedCode
 
 class MatterCommissioner {
     
-    let provider = MatterControllerProviderCore(logTag: "EEETESTEEE")
+    let provider = MatterControllerProviderCore(logTag: "MatterCommissioner")
     
     func commision(payload: String) async throws {
         let nodeID: NSNumber = NodeIdProvider.id // todo

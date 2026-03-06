@@ -6,25 +6,23 @@
 //
 
 import Security
-import os.log
+import OSLog
 import Foundation
 
 class KeypairHelper {
     
     private let logTag: String
     private let tag: Data
-    private let logger = Logger(subsystem: "nrf.matter", category: "DeviceSetup")
+    private let logger = Logger(subsystem: "nrf.matter", category: "KeypairHelper")
     
     init(logTag: String) {
         self.logTag = logTag
-        let name = "nordicsemi.nrf.matter"
+        let name = "com.nordicsemi.nrf.matter"
         tag = name.data(using: .utf8)!
     }
     
     func generatePrivateKey() throws -> SecKey {
         logger.debug("\(self.logTag) - Generating new key.")
-
-        let tag = "nordicsemi.nrf.matter".data(using: .utf8)!
         
         let attributes: [String: Any] = [
             kSecAttrKeyType as String           : kSecAttrKeyTypeECSECPrimeRandom,

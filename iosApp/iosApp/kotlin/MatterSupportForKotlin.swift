@@ -14,7 +14,7 @@ import SharedCode
 
 class MatterSupportForKotlin : MatterSupportKt {
     
-    private let logger = Logger(subsystem: "nrf.matter", category: "DeviceSetup")
+    private let logger = Logger(subsystem: "nrf.matter", category: "MatterSupport")
     
     func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {
         return await commission()
@@ -26,29 +26,10 @@ class MatterSupportForKotlin : MatterSupportKt {
         
         var request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
         
-        let sharedStorage = MatterStorage()
-        sharedStorage.setKey("Hello".data(using: .utf8)!, forKey: "Hello")
-
-//        request.setupPayload = MTRSetupPayload(payload: payload)
-        
         do {
-            logger.info("EEETESTEEE - Start a request")
             try await request.perform()
-            logger.info("EEETESTEEE - Successfully set up device!")
             
             let nodeID: NSNumber = NodeIdProvider.id // todo
-            
-//            let provider = MatterControllerProvider(logTag: "EEETESTEEE")
-//            
-//            logger.info("EEETESTEEE - Create controller.")
-//            guard let controller = try? provider.getController() else { return nil }
-//            
-//            logger.info("EEETESTEEE - Creating device")
-//            
-//            let device = MTRDevice(nodeID: nodeID, controller: controller)
-//            
-            logger.info("EEETESTEEE - storing device")
-//            MatterDevicesProvider.shared.saveDevice(device: device)
             
             let result = Device(
                 dateCommissioned: nil,
@@ -62,13 +43,8 @@ class MatterSupportForKotlin : MatterSupportKt {
                 deviceMatterInfo: []
             )
             
-            logger.info("EEETESTEEE - Returning a device!")
-            
             return result
-            
-            // Handle the success full setup request and update your app's UI, register the device in your database, or set up any default automations.
         } catch {
-            // Handle other errors.
             logger.info("Failed to set up device with error: \(error.localizedDescription).")
         }
         return nil

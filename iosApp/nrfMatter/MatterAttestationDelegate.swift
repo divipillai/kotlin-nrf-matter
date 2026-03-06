@@ -10,33 +10,35 @@ import Matter
 import OSLog
 
 class MatterAttestationDelegate: NSObject, MTRDeviceAttestationDelegate {
-
-  // MARK: - MTRDeviceAttestationDelegate
-
-  func deviceAttestationCompleted(
-    for controller: MTRDeviceController,
-    opaqueDeviceHandle: UnsafeMutableRawPointer,
-    attestationDeviceInfo: MTRDeviceAttestationDeviceInfo,
-    error: (any Error)?
-  ) {
-    Logger().info("AttestationDelegate - deviceAttestationCompleted (error: \(error)).")
-    do {
-      try controller.continueCommissioningDevice(opaqueDeviceHandle, ignoreAttestationFailure: true)
-    } catch {
-      Logger().error("AttestationDelegate - failed to continue commissioning device error: \(error).")
+    
+    private let logger = Logger(subsystem: "nrf.matter", category: "MatterAttestationDelegate")
+    
+    // MARK: - MTRDeviceAttestationDelegate
+    
+    func deviceAttestationCompleted(
+        for controller: MTRDeviceController,
+        opaqueDeviceHandle: UnsafeMutableRawPointer,
+        attestationDeviceInfo: MTRDeviceAttestationDeviceInfo,
+        error: (any Error)?
+    ) {
+        logger.info("DeviceAttestationCompleted (error: \(error)).")
+        do {
+            try controller.continueCommissioningDevice(opaqueDeviceHandle, ignoreAttestationFailure: true)
+        } catch {
+            logger.error("Failed to continue commissioning device error: \(error).")
+        }
     }
-  }
-
-  func deviceAttestationFailed(
-    for controller: MTRDeviceController,
-    opaqueDeviceHandle: UnsafeMutableRawPointer,
-    error: any Error
-  ) {
-    Logger().error("AttestationDelegate - deviceAttestationFailed with error: \(error).")
-    do {
-      try controller.continueCommissioningDevice(opaqueDeviceHandle, ignoreAttestationFailure: true)
-    } catch {
-      Logger().error("AttestationDelegate - failed to continue commissioning device error: \(error).")
+    
+    func deviceAttestationFailed(
+        for controller: MTRDeviceController,
+        opaqueDeviceHandle: UnsafeMutableRawPointer,
+        error: any Error
+    ) {
+        logger.error("DeviceAttestationFailed with error: \(error).")
+        do {
+            try controller.continueCommissioningDevice(opaqueDeviceHandle, ignoreAttestationFailure: true)
+        } catch {
+            logger.error("Failed to continue commissioning device error: \(error).")
+        }
     }
-  }
 }

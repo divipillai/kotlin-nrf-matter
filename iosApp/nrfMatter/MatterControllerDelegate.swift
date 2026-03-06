@@ -7,8 +7,11 @@
 
 import Matter
 import ThreadNetwork
+import OSLog
 
 class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
+    
+    private let logger = Logger(subsystem: "nrf.matter", category: "MatterControllerDelegate")
     
     let nodeID: NSNumber
     let continuation: CheckedContinuation<Void, Never>
@@ -21,13 +24,11 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
     }
     
     func controller(_ controller: MTRDeviceController, statusUpdate status: MTRCommissioningStatus) {
-        // Check for `MTRCommissioningStatus.failed`, and if so, handle it.
-        print("MatterControllerDelegate - statusUpdate: \(status).")
+        logger.debug("Status update: \(status.rawValue).")
     }
 
     func controller(_ controller: MTRDeviceController, commissioningSessionEstablishmentDone error: Error?) {
-        // Check for error and handle it.
-        print("MatterControllerDelegate - commissioningSessionEstablishmentDone.")
+        logger.debug("Commissioning session establishement done.")
         do {
             let commissioningParams = MTRCommissioningParameters()
             commissioningParams.deviceAttestationDelegate = MatterAttestationDelegate()
@@ -41,27 +42,19 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
                 // Fallback on earlier versions
             }
             
-            // `myDesiredNodeID` must match the node ID passed to
-            // `setupCommissioningSessionWithPayload`.
             try controller.commissionNode(
                 withID: nodeID,
                 commissioningParams: commissioningParams,
             )
-            print("Succcessfully commissioned device.")
+            logger.debug("Succcessfully commissioned device.")
         } catch {
-            // Handle failure to start commissioning the node.
-            print("Commissioning node failed.")
+            logger.debug("Commissioning node failed.")
         }
-
-
-        // Keep waiting for `commissioningComplete`.
     }
 
     func controller(_ controller: MTRDeviceController, commissioningComplete error: Error?, nodeID: NSNumber?) {
-        print("MatterControllerDelegate - commissioningComplete.")
+        logger.debug("Commissioning complete.")
         continuation.resume()
         controller.shutdown()
-        // Check for error and handle it.
-        // If no error, node is commissioned with `nodeID` as its node ID.
     }
 }

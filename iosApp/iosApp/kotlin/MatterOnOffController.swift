@@ -8,11 +8,14 @@
 import ComposeApp
 import Matter
 import SharedCode
+import OSLog
 
 class MatterOnOffControllerImpl : MatterOnOffController {
     
     private let device: MTRDevice
     private let baseDevice: MTRBaseDevice
+    
+    private let logger = Logger(subsystem: "nrf.matter", category: "MatterOnOffController")
     
     init() {
         let controller = MatterControllerProviderImpl().getController()!
@@ -21,25 +24,35 @@ class MatterOnOffControllerImpl : MatterOnOffController {
     }
     
     func turnOn() {
-        let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: 13, queue: DispatchQueue.global())
-        print("AAATESTAAA - Cluster created: \(cluster)")
-        cluster?.on { error in
+        let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: 1, queue: DispatchQueue.global())
+        logger.debug("Cluster created: \(cluster)")
+        cluster?.on { [weak self] error in
             if let error {
-                print("AAATESTAAA - error during on")
+                self?.logger.debug("Error during on")
             } else {
-                print("AAATESTAAA - success during on")
+                self?.logger.debug("Success during on")
             }
         }
     }
     
     func turnOff() {
-        let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: 13, queue: DispatchQueue.global())
-        print("AAATESTAAA - Cluster created: \(cluster)")
-        cluster?.off { error in
+        let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: 1, queue: DispatchQueue.global())
+        logger.debug("Cluster created: \(cluster)")
+        cluster?.off { [weak self] error in
             if let error {
-                print("AAATESTAAA - error during off")
+                self?.logger.debug("Error during off")
             } else {
-                print("AAATESTAAA - success during off")
+                self?.logger.debug("Success during off")
+            }
+        }
+    }
+    
+    private func getDescriptors() {
+        let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
+        logger.debug("Descriptor: \(descriptor)")
+        descriptor?.readAttributePartsList { [weak self] (partsList: [Any]?, error: Error?) in
+            if let endpoints = partsList {
+                self?.logger.debug("Supported Endpoints: \(endpoints)")
             }
         }
     }

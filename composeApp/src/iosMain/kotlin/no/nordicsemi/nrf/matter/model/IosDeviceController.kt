@@ -2,7 +2,7 @@ package no.nordicsemi.nrf.matter.model
 
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.nrf.matter.matter.MatterControllerProvider
+import no.nordicsemi.nrf.matter.MatterControllerProvider
 import platform.Foundation.NSNumber
 import platform.Matter.MTRBaseClusterDescriptor
 import platform.Matter.MTRBaseClusterOnOff
@@ -68,7 +68,7 @@ class IosDeviceController(private val matterControllerProvider: MatterController
         endpoint: Int,
     ) {
         val endpoint = 13 // Todo
-        val controller: MTRDeviceController = matterControllerProvider.create()
+        val controller: MTRDeviceController = matterControllerProvider.getController()!!
 
         Napier.i("setDeviceOnOff - deviceId: $deviceId, isDeviceOnline: $isDeviceOnline, isOn: $isOn, endpoint: $endpoint")
         val device = controller.getDeviceById(deviceId) ?: return

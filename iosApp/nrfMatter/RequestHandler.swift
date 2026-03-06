@@ -8,6 +8,7 @@
 import MatterSupport
 import Matter
 import os.log
+import SharedCode
 
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     
@@ -25,6 +26,9 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     override init() {
         super.init()
         logger.debug("AAATESTAAA - MatterAddDeviceExtensionRequestHandler initialized")
+        
+        let sharedStorage = MatterStorage()
+        sharedStorage.getKey(forKey: "Hello")
     }
 
     // Override this method to return the rooms in the home.
@@ -66,6 +70,8 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
         // Retrieve and configure the newly paired device in your ecosystem;
         // for example, find the device, set its name or room, apply default configurations, and save information in your database.
         logger.info("Device '\(name)' successfully configured")
+        
+        logger.info("EEETESTEEE - releasing commissioner")
         
         commissioner.release()
     }

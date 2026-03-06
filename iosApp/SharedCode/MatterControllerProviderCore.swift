@@ -8,11 +8,13 @@
 import Matter
 import os.log
 
-public class MatterControllerProvider {
+public class MatterControllerProviderCore {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "DeviceSetup")
     private let logTag: String
     private let factory = MTRDeviceControllerFactory.sharedInstance()
+    
+    private static var controller: MTRDeviceController? = nil
     
     public init(logTag: String) {
         self.logTag = logTag
@@ -23,14 +25,22 @@ public class MatterControllerProvider {
     }
     
     public func getController() throws -> MTRDeviceController? {
+        print("AAATESTAAA - controller: \(Self.controller)")
+        print("AAATESTAAA - isRunning: \(Self.controller?.isRunning)")
+        if (Self.controller != nil && Self.controller?.isRunning == true) {
+            return Self.controller
+        }
+        
         let nodeID: NSNumber = 1 // todo
 
         let storage = MatterStorage()
         let factoryParams = MTRDeviceControllerFactoryParams(storage: storage)
         
-        try factory.start(factoryParams)
+        if (!factory.isRunning) {
+            try factory.start(factoryParams)
+        }
         
-        logger.debug("\(self.logTag) - known fabrics: \(factory.knownFabrics?.count ?? 0)")
+        logger.debug("\(self.logTag) - known fabrics: \(self.factory.knownFabrics?.count ?? 0)")
         factory.knownFabrics?.forEach { fabric in
             logger.debug("\(self.logTag) - fabric id: \(fabric.fabricID)")
         }
@@ -58,11 +68,16 @@ public class MatterControllerProvider {
                 return nil
             }
         }
+        
+        Self.controller = controller
         return controller
     }
     
-    func loadOrCreateIPK(storage: MatterStorage) -> Data? {
-        if let storedIpk = storage.storageData(forKey: "MatterIPK") {
+    private func loadOrCreateIPK(storage: MatterStorage) -> Data? {
+        if let storedIpk = storage.getKey(forKey: "MatterIPK") {
+            logger.debug("\(self.logTag) StorageDataIPK: \(storedIpk.count, privacy: .public)")
+            let string = (storedIpk as Data).map { String(format: "%02x", $0) }.joined()
+            logger.debug("\(self.logTag) IPK: \(string, privacy: .public)")
             return storedIpk as Data
         }
 
@@ -77,7 +92,10 @@ public class MatterControllerProvider {
             return nil
         }
 
-        _ = storage.setStorageData(ipkMutable as Data, forKey: "MatterIPK")
+        _ = storage.setKey(ipkMutable as Data, forKey: "MatterIPK")
+        
+        let string = (ipkMutable as Data).map { String(format: "%02x", $0) }.joined()
+        logger.debug("\(self.logTag) IPK: \(string, privacy: .public)")
 
         return ipkMutable as Data
     }

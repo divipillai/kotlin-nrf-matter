@@ -11,11 +11,14 @@ import SharedCode
 
 class SwiftCodeProviderImpl : SwiftCodeProvider {
     
+    func getMatterControllerProvider() -> any MatterControllerProvider {
+        return MatterControllerProviderImpl()
+    }
+    
     func getMatterSupport() -> any MatterSupportKt {
         return MatterSupportForKotlin()
     }
-    
-    
+
     func getThreadNetworkProvider() -> any ThreadNetworkProvider {
         return ThreadNetworkProviderImpl()
     }

@@ -23,7 +23,6 @@ import no.nordicsemi.nrf.matter.commission.CommissionHandler
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
-import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 class IosCommissionHandler(
@@ -65,8 +64,6 @@ sealed interface ScreenState {
 
 private var isStarted = false
 
-private val isRunning = AtomicBoolean(false)
-
 @Composable
 fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
     val commissioningViewModel: CommissioningViewModel = koinViewModel { parametersOf(swiftCodeProvider) }
@@ -84,13 +81,6 @@ fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
     LaunchedEffect(state.value) {
         (state.value as? ScreenState.Commissioning)?.let {
             delay(1000)
-            val threadNetwork = try {
-                Napier.i("AAATESTAAA - Get network networks.")
-                swiftCodeProvider.getThreadNetworkProvider().getAvailableThreadNetworks().first()
-            } catch (t: Throwable) {
-                Napier.i("AAATESTAAA - Error: $t")
-                null
-            }
 
             val device = commissioningViewModel.startIosCommissioning {
                 state.value = ScreenState.Error

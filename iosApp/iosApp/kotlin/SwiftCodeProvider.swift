@@ -10,6 +10,7 @@ import ComposeApp
 import SharedCode
 
 class SwiftCodeProviderImpl : SwiftCodeProvider {
+
     func getMatterOnOffController() -> any MatterOnOffController {
         return MatterOnOffControllerImpl()
     }
@@ -20,10 +21,6 @@ class SwiftCodeProviderImpl : SwiftCodeProvider {
     
     func getMatterSupport() -> any MatterSupportKt {
         return MatterSupportForKotlin()
-    }
-
-    func getThreadNetworkProvider() -> any ThreadNetworkProvider {
-        return ThreadNetworkProviderImpl()
     }
     
     func getKeypair() -> any MTRKeypair {

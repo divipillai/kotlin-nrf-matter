@@ -7,6 +7,7 @@
 
 import ComposeApp
 import Matter
+import SharedCode
 
 class MatterOnOffControllerImpl : MatterOnOffController {
     
@@ -15,12 +16,13 @@ class MatterOnOffControllerImpl : MatterOnOffController {
     
     init() {
         let controller = MatterControllerProviderImpl().getController()!
-        device = MTRDevice(nodeID: 1, controller: controller)
-        baseDevice = MTRBaseDevice(nodeID: 1, controller: controller)
+        device = MTRDevice(nodeID: NodeIdProvider.id, controller: controller)
+        baseDevice = MTRBaseDevice(nodeID: NodeIdProvider.id, controller: controller)
     }
     
     func turnOn() {
         let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: 13, queue: DispatchQueue.global())
+        print("AAATESTAAA - Cluster created: \(cluster)")
         cluster?.on { error in
             if let error {
                 print("AAATESTAAA - error during on")
@@ -32,7 +34,8 @@ class MatterOnOffControllerImpl : MatterOnOffController {
     
     func turnOff() {
         let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: 13, queue: DispatchQueue.global())
-        cluster?.on { error in
+        print("AAATESTAAA - Cluster created: \(cluster)")
+        cluster?.off { error in
             if let error {
                 print("AAATESTAAA - error during off")
             } else {

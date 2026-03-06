@@ -36,7 +36,7 @@ class MatterSupportForKotlin : MatterSupportKt {
             try await request.perform()
             logger.info("EEETESTEEE - Successfully set up device!")
             
-            let nodeID: NSNumber = 1 // todo
+            let nodeID: NSNumber = NodeIdProvider.id // todo
             
 //            let provider = MatterControllerProvider(logTag: "EEETESTEEE")
 //            

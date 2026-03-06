@@ -31,7 +31,7 @@ public class MatterControllerProviderCore {
             return Self.controller
         }
         
-        let nodeID: NSNumber = 1 // todo
+        let nodeID = NodeIdProvider.id // todo
 
         let storage = MatterStorage()
         let factoryParams = MTRDeviceControllerFactoryParams(storage: storage)

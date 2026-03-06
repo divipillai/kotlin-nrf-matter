@@ -66,7 +66,6 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
         logger.debug("Configuring device '\(name)' in room: \(String(describing: room?.displayName))")
 
-
         // Retrieve and configure the newly paired device in your ecosystem;
         // for example, find the device, set its name or room, apply default configurations, and save information in your database.
         logger.info("Device '\(name)' successfully configured")
@@ -146,5 +145,6 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
 //        }
         let scanResult = threadScanResults[0]
         return ThreadNetworkAssociation.network(extendedPANID: scanResult.extendedPANID)
+//        return .defau
     }
 }

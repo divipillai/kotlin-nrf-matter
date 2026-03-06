@@ -13,7 +13,7 @@ class MatterCommissioner {
     let provider = MatterControllerProviderCore(logTag: "EEETESTEEE")
     
     func commision(payload: String) async throws {
-        let nodeID: NSNumber = 1 // todo
+        let nodeID: NSNumber = NodeIdProvider.id // todo
         
         guard let controller = try? provider.getController() else { return }
         

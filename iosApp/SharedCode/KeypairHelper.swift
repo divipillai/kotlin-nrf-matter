@@ -7,7 +7,7 @@
 
 import Security
 import os.log
-internal import Foundation
+import Foundation
 
 class KeypairHelper {
     

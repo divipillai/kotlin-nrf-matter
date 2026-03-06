@@ -14,6 +14,8 @@ interface SwiftCodeProvider {
     fun getMatterSupport(): MatterSupportKt
 
     fun getKeypair(): MTRKeypairProtocol
+
+    fun getMatterOnOffController(): MatterOnOffController
 }
 
 interface ThreadNetworkProvider {
@@ -31,6 +33,11 @@ interface MatterControllerProvider {
     fun getController(): MTRDeviceController?
 
     fun release()
+}
+
+interface MatterOnOffController {
+    fun turnOn()
+    fun turnOff()
 }
 
 data class ThreadNetwork(

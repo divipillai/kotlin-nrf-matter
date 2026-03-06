@@ -10,6 +10,9 @@ import ComposeApp
 import SharedCode
 
 class SwiftCodeProviderImpl : SwiftCodeProvider {
+    func getMatterOnOffController() -> any MatterOnOffController {
+        return MatterOnOffControllerImpl()
+    }
     
     func getMatterControllerProvider() -> any MatterControllerProvider {
         return MatterControllerProviderImpl()

@@ -20,12 +20,9 @@ import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.delay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
-import org.koin.compose.getKoin
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
-import qrscanner.CameraLens
-import qrscanner.QrScanner
 import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
@@ -61,8 +58,8 @@ fun MainViewController(swiftCodeProvider: SwiftCodeProvider) =
 
 sealed interface ScreenState {
     data object Initial : ScreenState
-    data class Commissioning(val payload: String) : ScreenState
-    data object QrScanner : ScreenState
+    data object Commissioning : ScreenState
+
     data object Error : ScreenState
 }
 
@@ -78,17 +75,14 @@ fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
 
     val commissionHandler = remember {
         IosCommissionHandler {
-            if (isRunning.compareAndSet(false, state.value == ScreenState.QrScanner )) {
-                Napier.i("Statting qr scanner")
-                state.value = ScreenState.QrScanner
-            }
+            state.value = ScreenState.Commissioning
             isStarted = true
         }
     }
 
     Napier.i("State: ${state.value}")
     LaunchedEffect(state.value) {
-        (state.value as? ScreenState.Commissioning)?.payload?.let {
+        (state.value as? ScreenState.Commissioning)?.let {
             delay(1000)
             val threadNetwork = try {
                 Napier.i("AAATESTAAA - Get network networks.")
@@ -98,7 +92,7 @@ fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
                 null
             }
 
-            val device = commissioningViewModel.startIosCommissioning(it, threadNetwork) {
+            val device = commissioningViewModel.startIosCommissioning {
                 state.value = ScreenState.Error
             }
             device?.let {
@@ -113,9 +107,6 @@ fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
     ) {
         when (state.value) {
             is ScreenState.Initial -> App(homeViewModel)
-            is ScreenState.QrScanner -> QRCodeScanner {
-                state.value = ScreenState.Commissioning(it)
-            }
             is ScreenState.Error -> ErrorScreen()
             is ScreenState.Commissioning -> CommissioningScreen()
         }
@@ -134,24 +125,4 @@ fun ErrorScreen() {
     Box(Modifier.fillMaxSize()) {
         Text("Error occurred.", modifier = Modifier.align(Alignment.Center))
     }
-}
-
-@Composable
-fun QRCodeScanner(onCompletion: (String) -> Unit) {
-    QrScanner(
-        modifier = Modifier,
-        flashlightOn = false,
-        cameraLens = CameraLens.Back,
-        openImagePicker = false,
-        onCompletion = {
-            onCompletion(it)
-            //  Napier.i("On completion $it")
-        },
-        imagePickerHandler = {
-            Napier.i("Image picker handler $it")
-        },
-        onFailure = {
-            Napier.i("On failure $it")
-        }
-    )
 }

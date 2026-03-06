@@ -25,7 +25,7 @@ interface ThreadNetworkProvider {
 
 interface MatterSupportKt {
 
-    suspend fun startIosCommissioning(code: String, onError: () -> Unit): Device?
+    suspend fun startIosCommissioning(onError: () -> Unit): Device?
 }
 
 interface MatterControllerProvider {

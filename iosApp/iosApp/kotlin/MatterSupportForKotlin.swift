@@ -16,13 +16,11 @@ class MatterSupportForKotlin : MatterSupportKt {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "DeviceSetup")
     
-    func startIosCommissioning(code: String, onError: @escaping () -> Void) async throws -> Device? {
-        return await commission(payload: code)
+    func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {
+        return await commission()
     }
     
-    func commission(payload: String) async -> Device? {
-        logger.info("EEETESTEEE - commission device: \(payload)")
-        
+    func commission() async -> Device? {
         let homes = [MatterAddDeviceRequest.Home(displayName: "My Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "MyEcosystemName", homes: homes)
         

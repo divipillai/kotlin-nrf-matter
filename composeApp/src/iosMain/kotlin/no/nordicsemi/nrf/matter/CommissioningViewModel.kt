@@ -12,12 +12,11 @@ class CommissioningViewModel(
 
     private val mutex = Mutex()
 
-    suspend fun startIosCommissioning(code: String, threadNetwork: ThreadNetwork?, onError: () -> Unit): Device? {
+    suspend fun startIosCommissioning(onError: () -> Unit): Device? {
         mutex.withLock {
             Napier.d("startIosCommissioning: $this")
             Napier.d("iOS commissioning has started!")
-            return swiftCodeProvider.getMatterSupport().startIosCommissioning(code, onError)
-//            return MatterController.commission(code, threadNetwork, onError)
+            return swiftCodeProvider.getMatterSupport().startIosCommissioning(onError)
         }
     }
 }

@@ -8,5 +8,5 @@
 import Foundation
 
 public class NodeIdProvider {
-    public static let id: NSNumber = 5
+    public static let id: NSNumber = 6
 }

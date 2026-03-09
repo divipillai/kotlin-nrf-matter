@@ -72,8 +72,6 @@ kotlin {
             implementation(libs.compose.cloudy)
             // Logger
             implementation(libs.napier)
-            // QR Code Scanner
-            implementation(libs.qr.kit)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

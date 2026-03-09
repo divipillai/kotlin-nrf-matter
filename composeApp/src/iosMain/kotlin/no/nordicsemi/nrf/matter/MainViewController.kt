@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalAtomicApi::class)
+
 package no.nordicsemi.nrf.matter
 
 import androidx.compose.foundation.layout.Box
@@ -18,11 +20,10 @@ import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.delay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
-import no.nordicsemi.nrf.matter.matter.MatterController
-import no.nordicsemi.nrf.matter.model.Device
-import org.koin.compose.getKoin
-import qrscanner.CameraLens
-import qrscanner.QrScanner
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
+import org.koin.dsl.module
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 class IosCommissionHandler(
     private val onCommission: () -> Unit
@@ -32,47 +33,56 @@ class IosCommissionHandler(
     }
 }
 
-fun MainViewController() =
+fun MainViewController(swiftCodeProvider: SwiftCodeProvider) =
     ComposeUIViewController {
         // Initialize koin
-        initKoin()
+        initKoin (
+            module {
+                single { swiftCodeProvider }
+            }
+        )
 
         // Initialize Napier for logging
         Napier.base(DebugAntilog())
+        Napier.i("Napier log initiated")
 
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            IosAppRoot()
+            IosAppRoot(swiftCodeProvider)
         }
 
     }
 
 sealed interface ScreenState {
-    object Initial : ScreenState
-    data class Commissioning(val payload: String) : ScreenState
-    object QrScanner : ScreenState
-    object Error : ScreenState
+    data object Initial : ScreenState
+    data object Commissioning : ScreenState
+
+    data object Error : ScreenState
 }
 
+private var isStarted = false
+
 @Composable
-fun IosAppRoot() {
-    val homeViewModel: HomeViewModel = getKoin().get()
+fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
+    val commissioningViewModel: CommissioningViewModel = koinViewModel { parametersOf(swiftCodeProvider) }
+    val homeViewModel: HomeViewModel = koinViewModel()
     val state = remember { mutableStateOf<ScreenState>(ScreenState.Initial) }
 
     val commissionHandler = remember {
         IosCommissionHandler {
-            if (state.value != ScreenState.QrScanner) {
-                state.value = ScreenState.QrScanner
-            }
+            state.value = ScreenState.Commissioning
+            isStarted = true
         }
     }
 
+    Napier.i("State: ${state.value}")
     LaunchedEffect(state.value) {
-        (state.value as? ScreenState.Commissioning)?.payload?.let {
+        (state.value as? ScreenState.Commissioning)?.let {
             delay(1000)
-            val device = startIosCommissioning(it) {
+
+            val device = commissioningViewModel.startIosCommissioning {
                 state.value = ScreenState.Error
             }
             device?.let {
@@ -87,9 +97,6 @@ fun IosAppRoot() {
     ) {
         when (state.value) {
             is ScreenState.Initial -> App(homeViewModel)
-            is ScreenState.QrScanner -> QRCodeScanner {
-                state.value = ScreenState.Commissioning(it)
-            }
             is ScreenState.Error -> ErrorScreen()
             is ScreenState.Commissioning -> CommissioningScreen()
         }
@@ -109,31 +116,3 @@ fun ErrorScreen() {
         Text("Error occurred.", modifier = Modifier.align(Alignment.Center))
     }
 }
-
-@Composable
-fun QRCodeScanner(onCompletion: (String) -> Unit) {
-    QrScanner(
-        modifier = Modifier,
-        flashlightOn = false,
-        cameraLens = CameraLens.Back,
-        openImagePicker = false,
-        onCompletion = {
-            onCompletion(it)
-            Napier.i("On completion $it")
-        },
-        imagePickerHandler = {
-            Napier.i("Image picker handler $it")
-        },
-        onFailure = {
-            Napier.i("On failure $it")
-        }
-    )
-}
-
-suspend fun startIosCommissioning(code: String, onError: () -> Unit): Device? {
-    // Matter commissioning on iOS
-    Napier.d("iOS commissioning has started!")
-    return MatterController.commission(code, onError)
-}
-
-

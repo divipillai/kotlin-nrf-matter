@@ -1,12 +1,13 @@
 package no.nordicsemi.nrf.matter.di
 
+import no.nordicsemi.nrf.matter.CommissioningViewModel
 import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.SwiftCodeProvider
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
-import no.nordicsemi.nrf.matter.matter.MatterDevicesProvider
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.IosDeviceController
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
@@ -15,6 +16,7 @@ import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
 import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -74,12 +76,13 @@ val iosModule = module {
     }
 
     // Device Controller
-    single<DeviceController> {
-        IosDeviceController()
-    }
+    single<DeviceController> { IosDeviceController(get<SwiftCodeProvider>().getMatterOnOffController()) }
 
     // View models.
     viewModelOf(::HomeViewModel)
+
+    viewModel { params -> CommissioningViewModel(params.get()) }
+
     single {
         DevicePresenter(
             get<DevicesRepository>(),

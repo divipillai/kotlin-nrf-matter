@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter
 import no.nordicsemi.nrf.matter.di.commonModule
 import no.nordicsemi.nrf.matter.di.iosModule
 import org.koin.core.context.startKoin
+import org.koin.core.module.Module
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -35,8 +36,8 @@ import org.koin.core.context.startKoin
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-fun initKoin() {
+fun initKoin(nativeIos: Module) {
     startKoin {
-        modules(commonModule, iosModule)
+        modules(commonModule, iosModule, nativeIos)
     }
 }

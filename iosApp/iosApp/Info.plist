@@ -14,6 +14,8 @@
 		<string>_matterc._udp</string>
 		<string>_matterd._udp</string>
 	</array>
+    <key>UILaunchStoryboardName</key>
+    <string>SplashScreen.storyboard</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIImageName</key>

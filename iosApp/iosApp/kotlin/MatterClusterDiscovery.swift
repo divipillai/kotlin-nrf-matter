@@ -51,31 +51,17 @@ class MatterClusterDiscoveryImpl : MatterClusterDiscovery {
 //    
     func readEndpoints() async -> [NSNumber] {
         logger.debug("readEndpoints")
-        return await withCheckedContinuation { (continuation: CheckedContinuation<[NSNumber], Never>) in
-            let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-            logger.debug("Descriptor: \(descriptor)")
-            descriptor?.readAttributePartsList { [weak self] (partsList: [Any]?, error: Error?) in
-                if let endpoints = partsList {
-                    self?.logger.debug("Supported Endpoints: \(endpoints)")
-                    let result = endpoints.map { $0 as! NSNumber}
-                    continuation.resume(returning: result)
-                }
-            }
-        }
+        let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
+        let result = (try? await descriptor?.readAttributePartsList())?.map { $0 as! NSNumber} ?? []
+        logger.debug("Supported endpoints: \(result)")
+        return result
     }
     
-    func readClusters(endpoint: NSNumber) async -> [Int] {
+    func readClusters(endpoint: NSNumber) async -> [NSNumber] {
         logger.debug("readClusters")
-        return await withCheckedContinuation { (continuation: CheckedContinuation<[Int], Never>) in
-            let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: endpoint, queue: DispatchQueue.global())
-            logger.debug("Descriptor: \(descriptor)")
-            descriptor?.readAttributeServerList { [weak self] (clusters: [Any]?, error: Error?) in
-                if let endpoints = clusters {
-                    self?.logger.debug("Supported clusters: \(endpoints)")
-                    let result = endpoints.map { $0 as! Int}
-                    continuation.resume(returning: result)
-                }
-            }
-        }
+        let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
+        let result = (try? await descriptor?.readAttributeServerList())?.map { $0 as! NSNumber} ?? []
+        logger.debug("Supported clusters: \(result)")
+        return result
     }
 }

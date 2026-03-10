@@ -53,7 +53,7 @@ class MatterClusterDiscoveryImpl : MatterClusterDiscovery {
     
     func readClusters(endpoint: NSNumber) async -> [NSNumber] {
         logger.debug("readClusters")
-        let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
+        let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: endpoint, queue: DispatchQueue.global())
         let result = (try? await descriptor?.readAttributeServerList())?.map { $0 as! NSNumber} ?? []
         logger.debug("Supported clusters: \(result)")
         return result

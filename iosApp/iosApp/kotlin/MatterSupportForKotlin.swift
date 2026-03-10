@@ -31,6 +31,9 @@ class MatterSupportForKotlin : MatterSupportKt {
             
             let nodeID: NSNumber = NodeIdProvider.id // todo
             
+//            let deviceDiscovery = MatterClusterDiscoveryHelper(nodeId: nodeID).discoverClusters()
+            
+            
             let result = Device(
                 dateCommissioned: nil,
                 vendorId: "TODO",

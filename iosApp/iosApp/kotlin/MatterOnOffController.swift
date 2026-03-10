@@ -54,6 +54,6 @@ class MatterOnOffControllerImpl : MatterOnOffController {
     private func getData() async {
         let clusterDiscovery = MatterClusterDiscoveryImpl()
         
-        await clusterDiscovery.discoverClusters()
+        try! await clusterDiscovery.discoverClusters(nodeId: Int32(truncating: NodeIdProvider.id))
     }
 }

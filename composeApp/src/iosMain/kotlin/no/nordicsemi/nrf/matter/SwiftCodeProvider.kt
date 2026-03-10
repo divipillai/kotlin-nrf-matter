@@ -35,5 +35,5 @@ interface MatterOnOffController {
 }
 
 interface MatterClusterDiscovery {
-    suspend fun discoverClusters()
+    suspend fun discoverClusters(nodeId: Int)
 }

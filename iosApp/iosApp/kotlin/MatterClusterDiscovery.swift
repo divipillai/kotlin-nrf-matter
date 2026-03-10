@@ -24,7 +24,7 @@ class MatterClusterDiscoveryImpl : MatterClusterDiscovery {
     }
     
     func discoverClusters() async {
- 
+        let deviceTypes = await getDeviceType()
         
         let endpoints = await readEndpoints()
         for endpoint in endpoints {
@@ -34,21 +34,15 @@ class MatterClusterDiscoveryImpl : MatterClusterDiscovery {
         logger.debug("discoverClusters - finished")
     }
     
-//    func getDeviceType() async {
-//        logger.debug("readClusters")
-//        return await withCheckedContinuation { (continuation: CheckedContinuation<[Int], Never>) in
-//            let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: endpoint, queue: DispatchQueue.global())
-//            logger.debug("Descriptor: \(descriptor)")
-//            descriptor?.readAttributeServerList { [weak self] (clusters: [Any]?, error: Error?) in
-//                if let endpoints = clusters {
-//                    self?.logger.debug("Supported clusters: \(endpoints)")
-//                    let result = endpoints.map { $0 as! Int}
-//                    continuation.resume(returning: result)
-//                }
-//            }
-//        }
-//    }
-//    
+    func getDeviceType() async -> [MTRDescriptorClusterDeviceTypeStruct] {
+        logger.debug("getDeviceType")
+        let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
+        let result = (try? await descriptor?.readAttributeDeviceTypeList())?.map { $0 as! MTRDescriptorClusterDeviceTypeStruct} ?? []
+        let printableResult = result.map { $0.deviceType }
+        logger.debug("Supported device types: \(result)")
+        return result
+    }
+    
     func readEndpoints() async -> [NSNumber] {
         logger.debug("readEndpoints")
         let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())

@@ -21,9 +21,12 @@ class MatterOnOffControllerImpl : MatterOnOffController {
         let controller = MatterControllerProviderImpl().getController()!
         device = MTRDevice(nodeID: NodeIdProvider.id, controller: controller)
         baseDevice = MTRBaseDevice(nodeID: NodeIdProvider.id, controller: controller)
+        
+        
     }
     
-    func turnOn() {
+    func turnOn() async {
+        await getData()
         let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: 1, queue: DispatchQueue.global())
         logger.debug("Cluster created: \(cluster)")
         cluster?.on { [weak self] error in
@@ -35,7 +38,8 @@ class MatterOnOffControllerImpl : MatterOnOffController {
         }
     }
     
-    func turnOff() {
+    func turnOff() async {
+        await getData()
         let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: 1, queue: DispatchQueue.global())
         logger.debug("Cluster created: \(cluster)")
         cluster?.off { [weak self] error in
@@ -47,13 +51,9 @@ class MatterOnOffControllerImpl : MatterOnOffController {
         }
     }
     
-    private func getDescriptors() {
-        let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        logger.debug("Descriptor: \(descriptor)")
-        descriptor?.readAttributePartsList { [weak self] (partsList: [Any]?, error: Error?) in
-            if let endpoints = partsList {
-                self?.logger.debug("Supported Endpoints: \(endpoints)")
-            }
-        }
+    private func getData() async {
+        let clusterDiscovery = MatterClusterDiscoveryImpl()
+        
+        await clusterDiscovery.discoverClusters()
     }
 }

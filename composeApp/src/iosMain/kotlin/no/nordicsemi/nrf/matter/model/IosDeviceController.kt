@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.model
 
+import no.nordicsemi.nrf.matter.MatterDecommissioner
 import no.nordicsemi.nrf.matter.MatterOnOffController
 
 /*
@@ -33,7 +34,11 @@ import no.nordicsemi.nrf.matter.MatterOnOffController
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class IosDeviceController(private val matterOnOffController: MatterOnOffController): DeviceController {
+class IosDeviceController(
+    private val matterOnOffController: MatterOnOffController,
+    private val matterDecommissioner: MatterDecommissioner,
+): DeviceController {
+
     override suspend fun setDeviceOnOff(
         deviceId: Long,
         isDeviceOnline: Boolean,
@@ -44,6 +49,6 @@ class IosDeviceController(private val matterOnOffController: MatterOnOffControll
     }
 
     override suspend fun unlinkDevice(deviceId: Long) {
-        TODO("Not yet implemented")
+        matterDecommissioner.decommission(deviceId)
     }
 }

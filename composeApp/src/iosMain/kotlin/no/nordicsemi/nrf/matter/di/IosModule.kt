@@ -76,7 +76,10 @@ val iosModule = module {
     }
 
     // Device Controller
-    single<DeviceController> { IosDeviceController(get<SwiftCodeProvider>().getMatterOnOffController()) }
+    single<DeviceController> { IosDeviceController(
+        get<SwiftCodeProvider>().getMatterOnOffController(),
+        get<SwiftCodeProvider>().getDecommissioner(),
+    ) }
 
     // View models.
     viewModelOf(::HomeViewModel)

@@ -26,4 +26,8 @@ class SwiftCodeProviderImpl : SwiftCodeProvider {
     func getKeypair() -> any MTRKeypair {
         return MatterKeypair()
     }
+    
+    func getDecommissioner() -> any MatterDecommissioner {
+        return MatterDecommissionerImpl()
+    }
 }

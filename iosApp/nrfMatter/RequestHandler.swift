@@ -24,9 +24,6 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     override init() {
         super.init()
         logger.debug("MatterAddDeviceExtensionRequestHandler initialized")
-        
-        let sharedStorage = MatterStorage()
-        sharedStorage.getKey(forKey: "Hello")
     }
 
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {

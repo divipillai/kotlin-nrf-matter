@@ -13,6 +13,8 @@ interface SwiftCodeProvider {
     fun getKeypair(): MTRKeypairProtocol
 
     fun getMatterOnOffController(): MatterOnOffController
+
+    fun getDecommissioner(): MatterDecommissioner
 }
 
 interface MatterSupportKt {
@@ -25,6 +27,11 @@ interface MatterControllerProvider {
     fun getController(): MTRDeviceController?
 
     fun release()
+}
+
+interface MatterDecommissioner {
+
+    fun decommission(nodeId: Long)
 }
 
 interface MatterOnOffController {

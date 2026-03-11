@@ -17,10 +17,7 @@ class MatterOnOffControllerImpl : MatterOnOffController {
     func setDeviceOnOff(deviceId: Int64, isDeviceOnline: Bool, isOn: Bool, endpoint: Int32) async throws {
         let controller = MatterControllerProviderImpl().getController()!
         let baseDevice = MTRBaseDevice(nodeID: deviceId as NSNumber, controller: controller)
-        logger.debug("AAATESTAAA - deviceId: \(deviceId)")
-        logger.debug("AAATESTAAA - isDeviceOnline: \(isDeviceOnline)")
-        logger.debug("AAATESTAAA - isOn: \(isOn)")
-        logger.debug("AAATESTAAA - endpoint: \(endpoint)")
+
         let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
         logger.debug("Cluster created: \(cluster)")
         if (isOn) {

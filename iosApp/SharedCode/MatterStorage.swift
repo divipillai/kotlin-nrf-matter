@@ -17,7 +17,6 @@ public class MatterStorage : NSObject, MTRStorage {
         return defaults.data(forKey: key)
     }
 
-
     public func setStorageData(_ value: Data, forKey key: String) -> Bool {
         defaults.setValue(value, forKey: key)
         return true

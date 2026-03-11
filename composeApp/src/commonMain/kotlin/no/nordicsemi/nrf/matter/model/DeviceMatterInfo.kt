@@ -40,6 +40,6 @@ import kotlinx.serialization.Serializable
 data class DeviceMatterInfo(
     val endpoint: Int,
     val types: List<Long>,
-    val serverClusters: ArrayList<Long>,
+    val serverClusters: List<Long>,
     val clientClusters: List<Long>,
 )

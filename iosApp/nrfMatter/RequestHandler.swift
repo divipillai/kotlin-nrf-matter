@@ -24,22 +24,19 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     override init() {
         super.init()
         logger.debug("MatterAddDeviceExtensionRequestHandler initialized")
-        
-        let sharedStorage = MatterStorage()
-        sharedStorage.getKey(forKey: "Hello")
     }
 
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
         logger.debug("Received request to fetch rooms in home: \(String(describing: home?.displayName)).")
 
-        let rooms: [String] = ["Living Room", "Bedroom", "Office", "Kitchen", "Dining Room", "AAATESTAAA"]
+        let rooms: [String] = ["Living Room", "Bedroom", "Office", "Kitchen", "Dining Room"]
         return rooms.map { MatterAddDeviceRequest.Room(displayName: $0) }
     }
 
     override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
         logger.debug("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
 
-        try await commissioner.commision(payload: onboardingPayload)
+        try await commissioner.commision(payload: onboardingPayload, nodeID: NodeIdProvider.id)  // todo
     }
 
     override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {

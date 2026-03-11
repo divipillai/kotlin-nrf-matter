@@ -28,6 +28,11 @@ interface MatterControllerProvider {
 }
 
 interface MatterOnOffController {
-    fun turnOn()
-    fun turnOff()
+
+    suspend fun setDeviceOnOff(
+        deviceId: Long,
+        isDeviceOnline: Boolean,
+        isOn: Boolean,
+        endpoint: Int,
+    )
 }

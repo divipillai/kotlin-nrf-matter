@@ -418,7 +418,8 @@ private fun DetailRow(
         Text(
             value,
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier.padding(start = 8.dp),
+            textAlign = TextAlign.End,
         )
     }
 

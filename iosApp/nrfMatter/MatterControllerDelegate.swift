@@ -41,7 +41,6 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
             } else {
                 // Fallback on earlier versions
             }
-            
             try controller.commissionNode(
                 withID: nodeID,
                 commissioningParams: commissioningParams,

@@ -13,8 +13,6 @@ interface SwiftCodeProvider {
     fun getKeypair(): MTRKeypairProtocol
 
     fun getMatterOnOffController(): MatterOnOffController
-
-    fun getMatterClusterDiscovery(): MatterClusterDiscovery
 }
 
 interface MatterSupportKt {
@@ -30,10 +28,11 @@ interface MatterControllerProvider {
 }
 
 interface MatterOnOffController {
-    suspend fun turnOn()
-    suspend fun turnOff()
-}
 
-interface MatterClusterDiscovery {
-    suspend fun discoverClusters(nodeId: Int)
+    suspend fun setDeviceOnOff(
+        deviceId: Long,
+        isDeviceOnline: Boolean,
+        isOn: Boolean,
+        endpoint: Int,
+    )
 }

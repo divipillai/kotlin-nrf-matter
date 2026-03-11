@@ -24,29 +24,15 @@ class MatterSupportForKotlin : MatterSupportKt {
         let homes = [MatterAddDeviceRequest.Home(displayName: "My Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "MyEcosystemName", homes: homes)
         
-        var request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
+        let request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
         
         do {
             try await request.perform()
             
             let nodeID: NSNumber = NodeIdProvider.id // todo
             
-//            let deviceDiscovery = MatterClusterDiscoveryHelper(nodeId: nodeID).discoverClusters()
-            
-            
-            let result = Device(
-                dateCommissioned: nil,
-                vendorId: "TODO",
-                productId: "TODO",
-                deviceType: DeviceType.lightOnOff,
-                deviceId: nodeID.int64Value,
-                name: "Matter device",
-                productName: "nRF54",
-                vendorName: "Nordic Semiconductor",
-                deviceMatterInfo: []
-            )
-            
-            return result
+            let device = await MatterClusterDiscovery(nodeId: nodeID).discoverClusters()
+            return device
         } catch {
             logger.info("Failed to set up device with error: \(error.localizedDescription).")
         }

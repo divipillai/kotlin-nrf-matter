@@ -26,8 +26,4 @@ class SwiftCodeProviderImpl : SwiftCodeProvider {
     func getKeypair() -> any MTRKeypair {
         return MatterKeypair()
     }
-    
-    func getMatterClusterDiscovery() -> any MatterClusterDiscovery {
-        return MatterClusterDiscoveryImpl()
-    }
 }

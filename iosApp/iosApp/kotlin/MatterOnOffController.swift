@@ -21,39 +21,34 @@ class MatterOnOffControllerImpl : MatterOnOffController {
         let controller = MatterControllerProviderImpl().getController()!
         device = MTRDevice(nodeID: NodeIdProvider.id, controller: controller)
         baseDevice = MTRBaseDevice(nodeID: NodeIdProvider.id, controller: controller)
-        
-        
     }
     
-    func turnOn() async {
-        await getData()
-        let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: 1, queue: DispatchQueue.global())
+    func setDeviceOnOff(deviceId: Int64, isDeviceOnline: Bool, isOn: Bool, endpoint: Int32) async throws {
+        let controller = MatterControllerProviderImpl().getController()!
+        let baseDevice = MTRBaseDevice(nodeID: NodeIdProvider.id, controller: controller)
+        logger.debug("AAATESTAAA - deviceId: \(deviceId)")
+        logger.debug("AAATESTAAA - isDeviceOnline: \(isDeviceOnline)")
+        logger.debug("AAATESTAAA - isOn: \(isOn)")
+        logger.debug("AAATESTAAA - endpoint: \(endpoint)")
+        let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
         logger.debug("Cluster created: \(cluster)")
-        cluster?.on { [weak self] error in
-            if let error {
-                self?.logger.debug("Error during on")
-            } else {
-                self?.logger.debug("Success during on")
+        if (isOn) {
+            cluster?.on { [weak self] error in
+                if let error {
+                    self?.logger.debug("Error during on")
+                } else {
+                    self?.logger.debug("Success during on")
+                }
+            }
+        } else {
+            cluster?.off { [weak self] error in
+                if let error {
+                    self?.logger.debug("Error during off")
+                } else {
+                    self?.logger.debug("Success during off")
+                }
             }
         }
-    }
-    
-    func turnOff() async {
-        await getData()
-        let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: 1, queue: DispatchQueue.global())
-        logger.debug("Cluster created: \(cluster)")
-        cluster?.off { [weak self] error in
-            if let error {
-                self?.logger.debug("Error during off")
-            } else {
-                self?.logger.debug("Success during off")
-            }
-        }
-    }
-    
-    private func getData() async {
-        let clusterDiscovery = MatterClusterDiscoveryImpl()
         
-        try! await clusterDiscovery.discoverClusters(nodeId: Int32(truncating: NodeIdProvider.id))
     }
 }

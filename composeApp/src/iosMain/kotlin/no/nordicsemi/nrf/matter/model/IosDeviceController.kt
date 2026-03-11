@@ -40,11 +40,7 @@ class IosDeviceController(private val matterOnOffController: MatterOnOffControll
         isOn: Boolean,
         endpoint: Int,
     ) {
-        if (isOn) {
-            matterOnOffController.turnOn()
-        } else {
-            matterOnOffController.turnOff()
-        }
+        matterOnOffController.setDeviceOnOff(deviceId, isDeviceOnline, isOn, endpoint)
     }
 
     override suspend fun unlinkDevice(deviceId: Long) {

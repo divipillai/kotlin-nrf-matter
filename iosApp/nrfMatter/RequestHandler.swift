@@ -36,7 +36,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
         logger.debug("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
 
-        try await commissioner.commision(payload: onboardingPayload)
+        try await commissioner.commision(payload: onboardingPayload, nodeID: NodeIdProvider.id)  // todo
     }
 
     override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {

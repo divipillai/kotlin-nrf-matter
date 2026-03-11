@@ -28,8 +28,6 @@ public class MatterControllerProviderCore {
         if (Self.controller != nil && Self.controller?.isRunning == true) {
             return Self.controller
         }
-        
-        let nodeID = NodeIdProvider.id // todo
 
         let storage = MatterStorage()
         let factoryParams = MTRDeviceControllerFactoryParams(storage: storage)
@@ -44,7 +42,7 @@ public class MatterControllerProviderCore {
         
         let params = MTRDeviceControllerStartupParams(
             ipk: ipk as Data,
-            fabricID: 1,
+            fabricID: 1, // todo
             nocSigner: MatterKeypair(),
         )
         params.vendorID = 0xFFF1

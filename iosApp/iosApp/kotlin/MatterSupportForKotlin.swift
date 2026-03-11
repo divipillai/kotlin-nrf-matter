@@ -39,4 +39,3 @@ class MatterSupportForKotlin : MatterSupportKt {
         return nil
     }
 }
-

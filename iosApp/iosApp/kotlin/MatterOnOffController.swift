@@ -12,20 +12,11 @@ import OSLog
 
 class MatterOnOffControllerImpl : MatterOnOffController {
     
-    private let device: MTRDevice
-    private let baseDevice: MTRBaseDevice
-    
     private let logger = Logger(subsystem: "nrf.matter", category: "MatterOnOffController")
-    
-    init() {
-        let controller = MatterControllerProviderImpl().getController()!
-        device = MTRDevice(nodeID: NodeIdProvider.id, controller: controller)
-        baseDevice = MTRBaseDevice(nodeID: NodeIdProvider.id, controller: controller)
-    }
-    
+
     func setDeviceOnOff(deviceId: Int64, isDeviceOnline: Bool, isOn: Bool, endpoint: Int32) async throws {
         let controller = MatterControllerProviderImpl().getController()!
-        let baseDevice = MTRBaseDevice(nodeID: NodeIdProvider.id, controller: controller)
+        let baseDevice = MTRBaseDevice(nodeID: deviceId as NSNumber, controller: controller)
         logger.debug("AAATESTAAA - deviceId: \(deviceId)")
         logger.debug("AAATESTAAA - isDeviceOnline: \(isDeviceOnline)")
         logger.debug("AAATESTAAA - isOn: \(isOn)")

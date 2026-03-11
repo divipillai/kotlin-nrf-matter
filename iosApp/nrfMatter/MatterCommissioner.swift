@@ -12,9 +12,7 @@ class MatterCommissioner {
     
     let provider = MatterControllerProviderCore(logTag: "MatterCommissioner")
     
-    func commision(payload: String) async throws {
-        let nodeID: NSNumber = NodeIdProvider.id // todo
-        
+    func commision(payload: String, nodeID: NSNumber) async throws {
         guard let controller = try? provider.getController() else { return }
         
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in

@@ -61,7 +61,7 @@ class MatterClusterDiscovery {
     }
     
     func discoverClusters() async -> Device {
-        let name = await getName()
+        let name = "Matter device: \(nodeId)"
         let vendorId = await getVendorId()
         let vendorName = await getVendorName()
         let productId = await getProductId()
@@ -86,7 +86,7 @@ class MatterClusterDiscovery {
         logger.debug("discoverClusters - finished")
         
         return Device(
-            dateCommissioned: nil,
+            dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),
             vendorId: vendorId?.stringValue ?? "unknown",
             productId: productId?.stringValue ?? "unknown",
             deviceType: .lightOnOff, // TODO

@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -35,8 +36,9 @@ import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
 import nrfmatterformobile.composeapp.generated.resources.Res
-import nrfmatterformobile.composeapp.generated.resources.light_bulb_smart_light
-import nrfmatterformobile.composeapp.generated.resources.light_fixture
+import nrfmatterformobile.composeapp.generated.resources.door_lock
+import nrfmatterformobile.composeapp.generated.resources.light_bulb
+import nrfmatterformobile.composeapp.generated.resources.power_settings
 import nrfmatterformobile.composeapp.generated.resources.temperature
 import org.jetbrains.compose.resources.painterResource
 import kotlin.time.Clock
@@ -72,14 +74,12 @@ import kotlin.time.Clock
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val MatterGreen = Color(0xFF22C55E)
-
 // Specific Device: Dimmable Light
 @Preview(showBackground = true)
 @Composable
 fun DimmableLightItem() {
     DeviceItemContainer(
-        icon = painterResource(resource = Res.drawable.light_bulb_smart_light),
+        icon = painterResource(resource = Res.drawable.light_bulb),
         title = "Living Room Lamp",
         subtitle = "Dimmable Light",
         onDeviceClick = {
@@ -90,13 +90,14 @@ fun DimmableLightItem() {
             Text("50%", fontWeight = FontWeight.Bold)
             Spacer(Modifier.width(8.dp))
             LinearProgressIndicator(
-                progress = 0.5f,
+                progress = { 0.5f },
                 modifier = Modifier
                     .width(64.dp)
                     .height(6.dp)
                     .clip(CircleShape),
                 color = Color(0xFFF59E0B),
-                trackColor = Color.LightGray.copy(alpha = 0.3f)
+                trackColor = Color.LightGray.copy(alpha = 0.3f),
+                strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
             )
         }
     }
@@ -112,7 +113,7 @@ fun SwitchDeviceItem(
     onDeviceClick: () -> Unit
 ) {
     DeviceItemContainer(
-        icon = painterResource(resource = Res.drawable.light_fixture),// TODO: Change it to the Power icon
+        icon = painterResource(resource = Res.drawable.power_settings),
         title = title,
         subtitle = subtitle,
         isOnline = checked,
@@ -181,6 +182,7 @@ internal fun DeviceList(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // --- Section: Lights ---
+        // TODO: Need to find out all the device with type LIGHT_ON_OFF and add them to the list.
         this.items(devicesList, key = { device -> device.device.deviceId }) { device ->
             SectionTitle("Lights")
             SwitchDeviceItem(
@@ -191,6 +193,21 @@ internal fun DeviceList(
             ) { onDeviceClick(device) }
 
         }
+        // FIXME: show only one ui per device type.
+        // --- Section: Light Switch ---
+        this.items(devicesList, key = { device -> device.device.deviceId }) { device ->
+            SectionTitle("Light Switch")
+            SwitchDeviceItem(
+                title = device.device.name ?: "Living Room Switch",
+                subtitle = "Light Switch",
+                checked = device.isOn,
+                onOnOffClick = { deviceId, value -> onOnOffClick(deviceId, value) },
+            ) { onDeviceClick(device) }
+
+        }
+        // --- Section: Power ---
+
+
         /*
                 item { SectionHeader("Lights") }
                 item { DimmableLightItem() }
@@ -248,7 +265,7 @@ fun ThermostatItem() {
 @Composable
 fun LockItem() {
     DeviceItemContainer(
-        icon = painterResource(Res.drawable.light_bulb_smart_light),// TODO: Change it to the door lock icon.
+        icon = painterResource(Res.drawable.door_lock),// TODO: Change it based on the lock/unlock command.
         title = "Front Door",
         subtitle = "Smart Lock",
         onDeviceClick = {}

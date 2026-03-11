@@ -57,15 +57,17 @@ import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.SectionTitle
 import no.nordicsemi.nrf.matter.utils.toDateString
 import nrfmatterformobile.composeapp.generated.resources.Res
-import nrfmatterformobile.composeapp.generated.resources.light_bulb_smart_light
+import nrfmatterformobile.composeapp.generated.resources.light_bulb
 import nrfmatterformobile.composeapp.generated.resources.light_fixture
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
+import nrfmatterformobile.composeapp.generated.resources.power_settings
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.getKoin
 import kotlin.time.Clock
@@ -206,43 +208,111 @@ fun DeviceScreen(
             .then(if (isRemoving) Modifier.cloudy() else Modifier)
     ) {
 
-        Column(
-            modifier = Modifier
-                .padding(8.dp)
-                .verticalScroll(rememberScrollState())
-                .fillMaxWidth()
-        ) {
-
-            DeviceHeader()
-
-            PowerCard(
-                enabled = uiState.deviceUiModel!!.isOn,
-                onToggle = {
-                    devicePresenter.togglePower(
-                        device.device.deviceId,
-                        it
-                    )
-                }
-            )
-
-            SectionTitle("Sharing")
-            ShareCard { /* todo: Add share device feature. */ }
-
-            SectionTitle("Technical Details")
-            TechnicalDetailsCard(device.device)
-
-            Spacer(modifier = Modifier.height(16.dp))
-            RemoveDeviceSection {
-                devicePresenter.updateRemoveDeviceState(RemoveDeviceState.ConfirmRemove)
-            }
-        }
+        DeviceDetails(device, uiState.deviceUiModel, devicePresenter)
     }
 
 }
 
+@Composable
+private fun DeviceDetails(
+    device: DeviceUiModel,
+    deviceUiModel: DeviceUiModel?,
+    devicePresenter: DevicePresenter
+) {
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .verticalScroll(rememberScrollState())
+            .fillMaxWidth()
+    ) {
+        // Implement ui based on the device type.
+        when (device.device.deviceType) {
+            DeviceType.UNKNOWN -> TODO()
+            DeviceType.LIGHT_ON_OFF,
+            DeviceType.EXTENDED_COLOR_LIGHT,
+            DeviceType.COLOR_TEMPERATURE_LIGHT -> {
+                DeviceHeader()
+
+                PowerCard(
+                    enabled = deviceUiModel!!.isOn,
+                    onToggle = {
+                        devicePresenter.togglePower(
+                            device.device.deviceId,
+                            it
+                        )
+                    }
+                )
+
+            }
+
+            DeviceType.DIMMABLE_LIGHT -> {
+                DeviceHeader(
+                    header = "Dimmable light"
+                )
+
+                PowerCard(
+                    enabled = deviceUiModel!!.isOn,
+                    onToggle = {
+                        devicePresenter.togglePower(
+                            device.device.deviceId,
+                            it
+                        )
+                    }
+                )
+            }
+
+            DeviceType.LIGHT_SWITCH, DeviceType.OUTLET -> {
+                DeviceHeader(
+                    header = "Light switch"
+                )
+
+                LightSwitchCard(
+                    enabled = deviceUiModel!!.isOn,
+                    onToggle = {
+                        devicePresenter.togglePower(
+                            device.device.deviceId,
+                            it
+                        )
+                    }
+                )
+
+            }
+
+            DeviceType.DOOR_LOCK -> {
+                // TODO: Add ui for door lock.
+            }
+        }
+
+        DeviceHeader()
+
+        PowerCard(
+            enabled = deviceUiModel!!.isOn,
+            onToggle = {
+                devicePresenter.togglePower(
+                    device.device.deviceId,
+                    it
+                )
+            }
+        )
+
+        SectionTitle("Sharing")
+        ShareCard { /* todo: Add share device feature. */ }
+
+        SectionTitle("Technical Details")
+        TechnicalDetailsCard(device.device)
+
+        Spacer(modifier = Modifier.height(16.dp))
+        RemoveDeviceSection {
+            devicePresenter.updateRemoveDeviceState(RemoveDeviceState.ConfirmRemove)
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
-fun DeviceHeader() {
+fun DeviceHeader(
+    header: String = "Living Room Light"
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth(),
@@ -256,7 +326,7 @@ fun DeviceHeader() {
             modifier = Modifier.size(80.dp)
         )
         Text(
-            "Living Room Light",
+            header,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
@@ -285,7 +355,7 @@ fun PowerCard(
 ) {
     var isChecked by rememberSaveable { mutableStateOf(enabled) }
     DeviceItemContainer(
-        icon = painterResource(resource = Res.drawable.light_bulb_smart_light),
+        icon = painterResource(resource = Res.drawable.light_bulb),
         title = "Power",
         subtitle = "Turn device ON or OFF",
         isOnline = isChecked,
@@ -299,6 +369,31 @@ fun PowerCard(
             },
         )
     }
+}
+
+@Preview
+@Composable
+private fun LightSwitchCard(
+    enabled: Boolean = true,
+    onToggle: (Boolean) -> Unit = {}
+) {
+    var isChecked by rememberSaveable { mutableStateOf(enabled) }
+    DeviceItemContainer(
+        icon = painterResource(resource = Res.drawable.power_settings),
+        title = "Power",
+        subtitle = "Turn device ON or OFF",
+        isOnline = isChecked,
+        onDeviceClick = { },
+    ) {
+        Switch(
+            checked = isChecked,
+            onCheckedChange = {
+                isChecked = it
+                onToggle(isChecked)
+            },
+        )
+    }
+
 }
 
 @Preview(showBackground = true)

@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.cloudy.cloudy
@@ -66,7 +67,6 @@ import nrfmatterformobile.composeapp.generated.resources.light_bulb_smart_light
 import nrfmatterformobile.composeapp.generated.resources.light_fixture
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.getKoin
 import kotlin.time.Clock
 

@@ -29,7 +29,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
         logger.debug("Received request to fetch rooms in home: \(String(describing: home?.displayName)).")
 
-        let rooms: [String] = ["Living Room", "Bedroom", "Office", "Kitchen", "Dining Room", "AAATESTAAA"]
+        let rooms: [String] = ["Living Room", "Bedroom", "Office", "Kitchen", "Dining Room"]
         return rooms.map { MatterAddDeviceRequest.Room(displayName: $0) }
     }
 

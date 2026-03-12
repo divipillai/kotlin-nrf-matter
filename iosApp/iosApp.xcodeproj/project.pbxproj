@@ -287,6 +287,9 @@
 			);
 			mainGroup = 7A153F9AB70F98838999796F;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A74A47212F62F64000A31286 /* XCLocalSwiftPackageReference "ThirdParty/GoogleHomeSDK" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5A2551E95002C7375D5F5A16 /* Products */;
 			projectDirPath = "";
@@ -786,6 +789,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A74A47212F62F64000A31286 /* XCLocalSwiftPackageReference "ThirdParty/GoogleHomeSDK" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ThirdParty/GoogleHomeSDK;
+		};
+/* End XCLocalSwiftPackageReference section */
 	};
 	rootObject = 1D3437AFA1B1BD836742FA45 /* Project object */;
 }

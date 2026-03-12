@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -55,22 +53,22 @@ import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.SectionTitle
+import no.nordicsemi.nrf.matter.ui.ToggleDeviceItem
 import no.nordicsemi.nrf.matter.utils.toDateString
 import nrfmatterformobile.composeapp.generated.resources.Res
+import nrfmatterformobile.composeapp.generated.resources.door_lock
 import nrfmatterformobile.composeapp.generated.resources.light_bulb
 import nrfmatterformobile.composeapp.generated.resources.light_fixture
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
-import nrfmatterformobile.composeapp.generated.resources.power_settings
+import nrfmatterformobile.composeapp.generated.resources.smart_outlet
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.getKoin
-import kotlin.time.Clock
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -207,8 +205,7 @@ fun DeviceScreen(
             .fillMaxWidth()
             .then(if (isRemoving) Modifier.cloudy() else Modifier)
     ) {
-
-        DeviceDetails(device, uiState.deviceUiModel, devicePresenter)
+        DeviceDetails(device, devicePresenter)
     }
 
 }
@@ -216,7 +213,6 @@ fun DeviceScreen(
 @Composable
 private fun DeviceDetails(
     device: DeviceUiModel,
-    deviceUiModel: DeviceUiModel?,
     devicePresenter: DevicePresenter
 ) {
     Column(
@@ -225,86 +221,76 @@ private fun DeviceDetails(
             .verticalScroll(rememberScrollState())
             .fillMaxWidth()
     ) {
-        // Implement ui based on the device type.
-        when (device.device.deviceType) {
-            DeviceType.UNKNOWN -> TODO()
-            DeviceType.LIGHT_ON_OFF,
-            DeviceType.EXTENDED_COLOR_LIGHT,
-            DeviceType.COLOR_TEMPERATURE_LIGHT -> {
-                DeviceHeader()
 
-                PowerCard(
-                    enabled = deviceUiModel!!.isOn,
-                    onToggle = {
-                        devicePresenter.togglePower(
-                            device.device.deviceId,
-                            it
-                        )
-                    }
-                )
+        DeviceHeader(device.device.name ?: "Device")
 
-            }
-
-            DeviceType.DIMMABLE_LIGHT -> {
-                DeviceHeader(
-                    header = "Dimmable light"
-                )
-
-                PowerCard(
-                    enabled = deviceUiModel!!.isOn,
-                    onToggle = {
-                        devicePresenter.togglePower(
-                            device.device.deviceId,
-                            it
-                        )
-                    }
-                )
-            }
-
-            DeviceType.LIGHT_SWITCH, DeviceType.OUTLET -> {
-                DeviceHeader(
-                    header = "Light switch"
-                )
-
-                LightSwitchCard(
-                    enabled = deviceUiModel!!.isOn,
-                    onToggle = {
-                        devicePresenter.togglePower(
-                            device.device.deviceId,
-                            it
-                        )
-                    }
-                )
-
-            }
-
-            DeviceType.DOOR_LOCK -> {
-                // TODO: Add ui for door lock.
-            }
-        }
-
-        DeviceHeader()
-
-        PowerCard(
-            enabled = deviceUiModel!!.isOn,
-            onToggle = {
-                devicePresenter.togglePower(
-                    device.device.deviceId,
-                    it
-                )
-            }
-        )
+        DeviceControlSection(device, devicePresenter)
 
         SectionTitle("Sharing")
-        ShareCard { /* todo: Add share device feature. */ }
+        ShareCard {}
 
         SectionTitle("Technical Details")
         TechnicalDetailsCard(device.device)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
+
         RemoveDeviceSection {
             devicePresenter.updateRemoveDeviceState(RemoveDeviceState.ConfirmRemove)
         }
+    }
+}
+
+@Composable
+private fun DeviceControlSection(
+    device: DeviceUiModel,
+    presenter: DevicePresenter
+) {
+
+    val deviceId = device.device.deviceId
+
+    when (device.device.deviceType) {
+
+        DeviceType.LIGHT_ON_OFF,
+        DeviceType.DIMMABLE_LIGHT,
+        DeviceType.COLOR_TEMPERATURE_LIGHT,
+        DeviceType.EXTENDED_COLOR_LIGHT -> {
+
+            ToggleDeviceItem(
+                deviceId = deviceId,
+                title = "Light",
+                subtitle = "Turn light ON or OFF",
+                icon = painterResource(Res.drawable.light_bulb),
+                enabled = device.isOn,
+                onToggle = { id, value ->
+                    presenter.togglePower(id, value)
+                },
+                onClick = {}
+            )
+        }
+
+        DeviceType.LIGHT_SWITCH,
+        DeviceType.OUTLET -> {
+
+            ToggleDeviceItem(
+                deviceId = deviceId,
+                title = "Power Outlet",
+                subtitle = "Turn device ON or OFF",
+                icon = painterResource(Res.drawable.smart_outlet),
+                enabled = device.isOn,
+                onToggle = { id, value ->
+                    presenter.togglePower(id, value)
+                },
+                onClick = {}
+            )
+        }
+
+        DeviceType.DOOR_LOCK -> {
+            LockItem(
+                icon = painterResource(Res.drawable.door_lock)
+            )
+        }
+
+        else -> Unit
     }
 }
 
@@ -348,29 +334,6 @@ fun DeviceHeader(
     }
 }
 
-@Composable
-fun PowerCard(
-    enabled: Boolean,
-    onToggle: (Boolean) -> Unit
-) {
-    var isChecked by rememberSaveable { mutableStateOf(enabled) }
-    DeviceItemContainer(
-        icon = painterResource(resource = Res.drawable.light_bulb),
-        title = "Power",
-        subtitle = "Turn device ON or OFF",
-        isOnline = isChecked,
-        onDeviceClick = { },
-    ) {
-        Switch(
-            checked = isChecked,
-            onCheckedChange = {
-                isChecked = it
-                onToggle(isChecked)
-            },
-        )
-    }
-}
-
 @Preview
 @Composable
 private fun LightSwitchCard(
@@ -379,7 +342,7 @@ private fun LightSwitchCard(
 ) {
     var isChecked by rememberSaveable { mutableStateOf(enabled) }
     DeviceItemContainer(
-        icon = painterResource(resource = Res.drawable.power_settings),
+        icon = painterResource(resource = Res.drawable.smart_outlet),
         title = "Power",
         subtitle = "Turn device ON or OFF",
         isOnline = isChecked,
@@ -394,12 +357,6 @@ private fun LightSwitchCard(
         )
     }
 
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun PowerCardPreview() {
-    PowerCard(enabled = true) { }
 }
 
 @Composable
@@ -688,76 +645,9 @@ fun LockItem(icon: Painter) {
     }
 }
 
-// Thermostat Item
-@Composable
-fun ThermostatItem(icon: Painter) {
-    DeviceItemContainer(
-        icon = icon,
-        title = "Downstairs AC",
-        subtitle = "Target: 70°F", onDeviceClick = {}
-    ) {
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                "72°",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-            Text("Cooling", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-        }
-    }
-}
-
-@Composable
-fun FilterChipsRow() {
-    val filters = listOf("All", "Living Room", "Kitchen", "Bedroom")
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(filters) { filter ->
-            val isSelected = filter == "All"
-            Surface(
-                shape = CircleShape,
-                border = if (isSelected) null else BorderStroke(
-                    1.dp,
-                    Color.LightGray.copy(alpha = 0.5f)
-                )
-            ) {
-                Text(
-                    text = filter,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-                    color = if (isSelected) Color.White else Color.Unspecified,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-    }
-}
 
 // -----------------------------------------------------------------------------------------------
 // Constant objects used in Compose Preview
-
-// DeviceState -- Online and On
-private val DeviceState_OnlineOn =
-    DeviceState(
-        dateCaptured = Clock.System.now(),
-        deviceId = 1L,
-        on = true,
-        online = true
-
-    )
-
-// DeviceState -- Offline
-private val DeviceState_Offline =
-    DeviceState(
-        dateCaptured = Clock.System.now(),
-        deviceId = 1L,
-        on = true,
-        online = false
-
-    )
-
 private val DeviceTest =
     Device(
         dateCommissioned = 123456789L,

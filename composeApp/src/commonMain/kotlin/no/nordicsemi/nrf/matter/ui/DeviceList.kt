@@ -13,13 +13,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -104,9 +99,9 @@ internal fun DeviceList(
                     title = device.device.name ?: "Device",
                     subtitle = device.device.deviceType.toString(),
                     icon = deviceIcon(device),
-                    checked = device.isOn,
-                    onOnOffClick = onOnOffClick,
-                    onDeviceClick = { onDeviceClick(device) }
+                    enabled = device.isOn,
+                    onToggle = onOnOffClick,
+                    onClick = { onDeviceClick(device) }
                 )
             }
         }
@@ -224,36 +219,6 @@ fun deviceIcon(device: DeviceUiModel): Painter {
 
         else ->
             painterResource(Res.drawable.power_settings)
-    }
-}
-
-@Composable
-fun ToggleDeviceItem(
-    deviceId: Long,
-    title: String,
-    subtitle: String,
-    icon: Painter,
-    checked: Boolean,
-    onOnOffClick: (deviceId: Long, value: Boolean) -> Unit,
-    onDeviceClick: () -> Unit
-) {
-
-    var enabled by rememberSaveable { mutableStateOf(checked) }
-
-    DeviceItemContainer(
-        icon = icon,
-        title = title,
-        subtitle = subtitle,
-        isOnline = enabled,
-        onDeviceClick = onDeviceClick
-    ) {
-        Switch(
-            checked = enabled,
-            onCheckedChange = {
-                enabled = it
-                onOnOffClick(deviceId, enabled)
-            }
-        )
     }
 }
 

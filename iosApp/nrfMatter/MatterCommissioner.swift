@@ -17,7 +17,7 @@ class MatterCommissioner {
         
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
      
-            let delegate = MatterControllerDelegate(nodeID: nodeID, continuation: continuation, threadNetwork: nil) //todo nodeID
+            let delegate = MatterControllerDelegate(nodeID: nodeID, continuation: continuation) //todo nodeID
             controller.setDeviceControllerDelegate(delegate, queue: DispatchQueue.main)
 
             let payload = MTRSetupPayload(payload: payload)!

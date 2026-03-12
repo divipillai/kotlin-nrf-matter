@@ -77,3 +77,13 @@ data class Devices(
     val lastDeviceId: Long = 0L,
     val devicesList: List<Device> = emptyList()
 )
+
+/**
+ * Group devices by category (Lights, Security, etc.)
+ */
+enum class DeviceSection {
+    LIGHTS,
+    SECURITY,
+    OUTLETS,
+    OTHER
+}

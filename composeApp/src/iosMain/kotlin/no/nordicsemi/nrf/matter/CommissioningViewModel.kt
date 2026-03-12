@@ -16,7 +16,7 @@ class CommissioningViewModel(
         mutex.withLock {
             Napier.d("startIosCommissioning: $this")
             Napier.d("iOS commissioning has started!")
-            return swiftCodeProvider.getMatterSupport().startIosCommissioning(onError)
+            return swiftCodeProvider.getMatterCommissioner().startIosCommissioning(onError)
         }
     }
 }

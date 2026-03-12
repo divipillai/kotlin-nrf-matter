@@ -12,7 +12,7 @@ import os.log
 import nrfMatter
 import SharedCode
 
-class MatterSupportForKotlin : MatterSupportKt {
+class LocalMatterCommissioner : MatterCommissioner {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "MatterSupport")
     

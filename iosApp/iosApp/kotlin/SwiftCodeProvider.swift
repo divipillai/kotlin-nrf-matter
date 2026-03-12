@@ -10,21 +10,12 @@ import ComposeApp
 import SharedCode
 
 class SwiftCodeProviderImpl : SwiftCodeProvider {
-
+    func getMatterCommissioner() -> any MatterCommissioner {
+        return LocalMatterCommissioner()
+    }
+    
     func getMatterOnOffController() -> any MatterOnOffController {
         return MatterOnOffControllerImpl()
-    }
-    
-    func getMatterControllerProvider() -> any MatterControllerProvider {
-        return MatterControllerProviderImpl()
-    }
-    
-    func getMatterSupport() -> any MatterSupportKt {
-        return MatterSupportForKotlin()
-    }
-    
-    func getKeypair() -> any MTRKeypair {
-        return MatterKeypair()
     }
     
     func getDecommissioner() -> any MatterDecommissioner {

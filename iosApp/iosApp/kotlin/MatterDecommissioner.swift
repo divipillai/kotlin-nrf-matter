@@ -6,11 +6,12 @@
 //
 
 import ComposeApp
+import SharedCode
 
 class MatterDecommissionerImpl : MatterDecommissioner {
     
     func decommission(nodeId: Int64) {
-        let controller = MatterControllerProviderImpl().getController()!
+        let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()!
 
         controller.forgetDevice(withNodeID: nodeId as NSNumber)
     }

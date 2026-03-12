@@ -10,7 +10,7 @@ import SharedCode
 
 class MatterCommissioner {
     
-    let provider = MatterControllerProviderCore(logTag: "MatterCommissioner")
+    let provider = LocalControllerProvider(logTag: "MatterCommissioner")
     
     func commision(payload: String, nodeID: NSNumber) async throws {
         guard let controller = try? provider.getController() else { return }

@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.domain.DeviceCommand
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
@@ -122,11 +121,11 @@ class HomeViewModel(
         }
     }
 
-    fun toggleDevice(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
+    fun changeDeviceState(deviceId: Long, isOn: Boolean) {
         scope.launch {
             deviceCommandHandler.execute(
                 deviceId,
-                DeviceCommand.SetPower(isOn)
+                isOn
             )
         }
     }

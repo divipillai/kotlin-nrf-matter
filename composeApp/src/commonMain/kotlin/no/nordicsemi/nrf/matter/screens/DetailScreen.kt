@@ -19,8 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -56,13 +56,15 @@ import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
+import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
+import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.SectionTitle
-import no.nordicsemi.nrf.matter.ui.ToggleDeviceItem
 import no.nordicsemi.nrf.matter.utils.toDateString
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.door_lock
+import nrfmatterformobile.composeapp.generated.resources.door_lock_open_right
 import nrfmatterformobile.composeapp.generated.resources.light_bulb
 import nrfmatterformobile.composeapp.generated.resources.light_fixture
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
@@ -255,13 +257,13 @@ private fun DeviceControlSection(
         DeviceType.COLOR_TEMPERATURE_LIGHT,
         DeviceType.EXTENDED_COLOR_LIGHT -> {
 
-            ToggleDeviceItem(
+            DeviceControlItem(
                 deviceId = deviceId,
                 title = "Light",
                 subtitle = "Turn light ON or OFF",
                 icon = painterResource(Res.drawable.light_bulb),
                 enabled = device.isOn,
-                onToggle = { id, value ->
+                updateDeviceState = { id, value ->
                     presenter.togglePower(id, value)
                 },
                 onClick = {}
@@ -271,13 +273,13 @@ private fun DeviceControlSection(
         DeviceType.LIGHT_SWITCH,
         DeviceType.OUTLET -> {
 
-            ToggleDeviceItem(
+            DeviceControlItem(
                 deviceId = deviceId,
                 title = "Power Outlet",
                 subtitle = "Turn device ON or OFF",
                 icon = painterResource(Res.drawable.smart_outlet),
                 enabled = device.isOn,
-                onToggle = { id, value ->
+                updateDeviceState = { id, value ->
                     presenter.togglePower(id, value)
                 },
                 onClick = {}
@@ -286,7 +288,13 @@ private fun DeviceControlSection(
 
         DeviceType.DOOR_LOCK -> {
             LockItem(
-                icon = painterResource(Res.drawable.door_lock)
+                deviceId = deviceId,
+                title = "Front Door",
+                subtitle = "Smart Lock",
+                isLocked = device.isOn,
+                onDeviceClick = { id, value ->
+                    presenter.togglePower(id, value)
+                }
             )
         }
 
@@ -411,7 +419,11 @@ fun ShareCard(onShare: () -> Unit) {
                 )
             }
 
-            Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = Color.Gray)
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = Color.Gray
+            )
         }
     }
 }
@@ -623,25 +635,52 @@ fun DeviceItemContainerPreview() {
 
 // Lock Item
 @Composable
-fun LockItem(icon: Painter) {
+fun LockItem(
+    onDeviceClick: (deviceId: Long, value: Boolean) -> Unit,
+    deviceId: Long,
+    title: String,
+    subtitle: String,
+    isLocked: Boolean
+) {
+    var isDoorLocked by rememberSaveable { mutableStateOf(isLocked) }
+    val icon = if (isDoorLocked)
+        painterResource(Res.drawable.door_lock)
+    else painterResource(Res.drawable.door_lock_open_right)
+
     DeviceItemContainer(
-        icon = icon,// TODO: Change it to the door lock icon.
-        title = "Front Door",
-        subtitle = "Smart Lock",
-        onDeviceClick = {}
+        icon = icon,
+        title = title,
+        subtitle = subtitle,
+        onDeviceClick = {
+            onDeviceClick(deviceId, !isDoorLocked)
+        }
     ) {
         Surface(
             color = Color.LightGray.copy(alpha = 0.2f),
             shape = RoundedCornerShape(8.dp)
         ) {
             Text(
-                "LOCKED",
+                if (isDoorLocked) "Locked" else "Unlocked",
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFE11D48)
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LockItemPreview() {
+    NordicTheme {
+        LockItem(
+            onDeviceClick = { _, _ -> },
+            deviceId = 1L,
+            title = "Front Door",
+            subtitle = "Smart Lock",
+            isLocked = false
+        )
     }
 }
 

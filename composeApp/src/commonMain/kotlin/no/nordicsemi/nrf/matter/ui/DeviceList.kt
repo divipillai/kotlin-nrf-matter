@@ -74,7 +74,7 @@ import org.jetbrains.compose.resources.painterResource
 internal fun DeviceList(
     devicesList: List<DeviceUiModel>,
     onDeviceClick: (DeviceUiModel) -> Unit,
-    onOnOffClick: (deviceId: Long, value: Boolean) -> Unit
+    updateDeviceState: (deviceId: Long, value: Boolean) -> Unit
 ) {
 
     val groupedDevices = devicesList.groupBy { it.device.deviceType.toSection() }
@@ -94,13 +94,13 @@ internal fun DeviceList(
 
             items(devices, key = { it.device.deviceId }) { device ->
 
-                ToggleDeviceItem(
+                DeviceControlItem(
                     deviceId = device.device.deviceId,
                     title = device.device.name ?: "Device",
                     subtitle = device.device.deviceType.toString(),
                     icon = deviceIcon(device),
                     enabled = device.isOn,
-                    onToggle = onOnOffClick,
+                    updateDeviceState = updateDeviceState,
                     onClick = { onDeviceClick(device) }
                 )
             }
@@ -115,7 +115,7 @@ private fun DeviceListPreview() {
         DeviceList(
             devicesList = DeviceUiModel_Test,
             onDeviceClick = {},
-            onOnOffClick = { _, _ -> }
+            updateDeviceState = { _, _ -> }
         )
     }
 }

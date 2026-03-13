@@ -10,13 +10,13 @@ import androidx.compose.ui.graphics.painter.Painter
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
 
 @Composable
-internal fun ToggleDeviceItem(
+internal fun DeviceControlItem(
     deviceId: Long,
     title: String,
     subtitle: String,
     icon: Painter,
     enabled: Boolean,
-    onToggle: (deviceId: Long, Boolean) -> Unit,
+    updateDeviceState: (deviceId: Long, Boolean) -> Unit,
     onClick: () -> Unit
 ) {
 
@@ -33,7 +33,7 @@ internal fun ToggleDeviceItem(
             checked = checked,
             onCheckedChange = {
                 checked = it
-                onToggle(deviceId, checked)
+                updateDeviceState(deviceId, checked)
             }
         )
     }

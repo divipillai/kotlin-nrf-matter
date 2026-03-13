@@ -2,6 +2,7 @@ package no.nordicsemi.nrf.matter.domain
 
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
+import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 
@@ -43,23 +44,23 @@ class DeviceCommandHandler(
 
     suspend fun execute(
         deviceId: Long,
-        command: DeviceCommand
+        command: Boolean
     ) {
         val device = devicesRepository.getDeviceOrNull(deviceId) ?: return
 
-        when (command) {
-
-            is DeviceCommand.SetPower -> {
-                handlePower(device, deviceId, command.isOn)
+        when (device.deviceType) {
+            DeviceType.UNKNOWN -> {
+                // TODO: Handle unknown devices.
             }
 
-            is DeviceCommand.SetLock -> {
-                handleLock(device, deviceId, command.locked)
-            }
+            DeviceType.LIGHT_ON_OFF,
+            DeviceType.DIMMABLE_LIGHT,
+            DeviceType.LIGHT_SWITCH,
+            DeviceType.COLOR_TEMPERATURE_LIGHT,
+            DeviceType.EXTENDED_COLOR_LIGHT -> handlePower(device, deviceId, command)
 
-            is DeviceCommand.SetLevel -> {
-                handleLevel(device, deviceId, command.level)
-            }
+            DeviceType.LIGHT_SWITCH, DeviceType.OUTLET -> handleOutlet(device, deviceId, command)
+            DeviceType.DOOR_LOCK -> handleLock(device, deviceId, command)
         }
     }
 
@@ -95,19 +96,73 @@ class DeviceCommandHandler(
             throw e
         }
     }
+
     private suspend fun handleLock(
         device: Device,
         deviceId: Long,
-        isOn: Boolean
+        isLocked: Boolean
     ) {
-        // TODO: implement this.
+        val endpoint =
+            resolveEndpoint(device, clusterId = 0x0101.toLong()) // todo: use the proper cluster id
+
+        try {
+            devicesStateRepository.updateDeviceState(
+                deviceId = deviceId,
+                isOnline = true,
+                isOn = isLocked
+            )
+
+            deviceController.setDeviceOnOff(
+                deviceId = deviceId,
+                isDeviceOnline = true,
+                isOn = isLocked,
+                endpoint = endpoint
+            )
+
+        } catch (e: Exception) {
+
+            devicesStateRepository.updateDeviceState(
+                deviceId = deviceId,
+                isOnline = false,
+                isOn = !isLocked
+            )
+
+            throw e
+        }
     }
-    private suspend fun handleLevel(
+
+    private suspend fun handleOutlet(
         device: Device,
         deviceId: Long,
-        level: Int,
+        isSwitchOn: Boolean,
     ) {
-       // TODO: implement this.
+        val endpoint =
+            resolveEndpoint(device, clusterId = 6L) // Looks like it is the same as light on/off
+
+        try {
+            devicesStateRepository.updateDeviceState(
+                deviceId = deviceId,
+                isOnline = true,
+                isOn = isSwitchOn
+            )
+
+            deviceController.setDeviceOnOff(
+                deviceId = deviceId,
+                isDeviceOnline = true,
+                isOn = isSwitchOn,
+                endpoint = endpoint
+            )
+
+        } catch (e: Exception) {
+
+            devicesStateRepository.updateDeviceState(
+                deviceId = deviceId,
+                isOnline = false,
+                isOn = !isSwitchOn
+            )
+
+            throw e
+        }
     }
 
     private fun resolveEndpoint(device: Device, clusterId: Long): Int {

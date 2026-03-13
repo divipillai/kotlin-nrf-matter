@@ -10,7 +10,7 @@ import Matter
 import OSLog
 import SharedCode
 
-class MatterClusterDiscovery {
+class LocalMatterClusterDiscovery {
     
     private let nodeId: NSNumber
     private let device: MTRDevice

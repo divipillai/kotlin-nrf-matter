@@ -8,7 +8,7 @@
 import ComposeApp
 import SharedCode
 
-class MatterDecommissionerImpl : MatterDecommissioner {
+class LocalMatterDecommissioner : MatterDecommissioner {
     
     func decommission(nodeId: Int64) {
         let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()!

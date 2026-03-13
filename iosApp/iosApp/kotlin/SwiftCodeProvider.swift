@@ -11,14 +11,14 @@ import SharedCode
 
 class SwiftCodeProviderImpl : SwiftCodeProvider {
     func getMatterCommissioner() -> any MatterCommissioner {
-        return LocalMatterCommissioner()
+        return HomeKitCommissioner()
     }
     
     func getMatterOnOffController() -> any MatterOnOffController {
-        return MatterOnOffControllerImpl()
+        return LocalMatterOnOffController()
     }
     
     func getDecommissioner() -> any MatterDecommissioner {
-        return MatterDecommissionerImpl()
+        return LocalMatterDecommissioner()
     }
 }

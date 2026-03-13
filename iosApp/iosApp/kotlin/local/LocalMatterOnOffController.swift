@@ -10,9 +10,9 @@ import Matter
 import SharedCode
 import OSLog
 
-class MatterOnOffControllerImpl : MatterOnOffController {
+class LocalMatterOnOffController : MatterOnOffController {
     
-    private let logger = Logger(subsystem: "nrf.matter", category: "MatterOnOffController")
+    private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterOnOffController")
 
     func setDeviceOnOff(deviceId: Int64, isDeviceOnline: Bool, isOn: Bool, endpoint: Int32) async throws {
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()!

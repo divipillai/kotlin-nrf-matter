@@ -145,11 +145,10 @@ class DeviceCommandHandler(
                 isOn = isSwitchOn
             )
 
-            deviceController.setDeviceOnOff(
+            deviceController.handleOutlet(
                 deviceId = deviceId,
-                isDeviceOnline = true,
-                isOn = isSwitchOn,
-                endpoint = endpoint
+                isSwitchOn = isSwitchOn,
+                endpoint = endpoint,
             )
 
         } catch (e: Exception) {

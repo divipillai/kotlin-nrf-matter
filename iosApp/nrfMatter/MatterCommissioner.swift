@@ -10,14 +10,14 @@ import SharedCode
 
 class MatterCommissioner {
     
-    let provider = MatterControllerProviderCore(logTag: "MatterCommissioner")
+    let provider = LocalControllerProvider(logTag: "MatterCommissioner")
     
     func commision(payload: String, nodeID: NSNumber) async throws {
         guard let controller = try? provider.getController() else { return }
         
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
      
-            let delegate = MatterControllerDelegate(nodeID: nodeID, continuation: continuation, threadNetwork: nil) //todo nodeID
+            let delegate = MatterControllerDelegate(nodeID: nodeID, continuation: continuation) //todo nodeID
             controller.setDeviceControllerDelegate(delegate, queue: DispatchQueue.main)
 
             let payload = MTRSetupPayload(payload: payload)!

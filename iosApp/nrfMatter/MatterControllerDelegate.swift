@@ -6,7 +6,6 @@
 //
 
 import Matter
-import ThreadNetwork
 import OSLog
 
 class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
@@ -15,12 +14,10 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
     
     let nodeID: NSNumber
     let continuation: CheckedContinuation<Void, Never>
-    let threadNetwork: THCredentials?
     
-    init(nodeID: NSNumber, continuation: CheckedContinuation<Void, Never>, threadNetwork: THCredentials?) {
+    init(nodeID: NSNumber, continuation: CheckedContinuation<Void, Never>) {
         self.nodeID = nodeID
         self.continuation = continuation
-        self.threadNetwork = threadNetwork
     }
     
     func controller(_ controller: MTRDeviceController, statusUpdate status: MTRCommissioningStatus) {
@@ -32,15 +29,11 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
         do {
             let commissioningParams = MTRCommissioningParameters()
             commissioningParams.deviceAttestationDelegate = MatterAttestationDelegate()
-            if let threadNetwork {
-                commissioningParams.threadOperationalDataset = threadNetwork.activeOperationalDataSet
-            }
        
             if #available(iOS 26.2, *) {
                 commissioningParams.forceThreadScan = true
-            } else {
-                // Fallback on earlier versions
             }
+            
             try controller.commissionNode(
                 withID: nodeID,
                 commissioningParams: commissioningParams,

@@ -8,7 +8,7 @@
 import Matter
 import os.log
 
-public class MatterControllerProviderCore {
+public class LocalControllerProvider {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "MatterControllerProviderCore")
     private let logTag: String

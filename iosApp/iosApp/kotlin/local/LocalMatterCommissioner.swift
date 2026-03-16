@@ -12,9 +12,9 @@ import os.log
 import nrfMatter
 import SharedCode
 
-class MatterSupportForKotlin : MatterSupportKt {
+class LocalMatterCommissioner : MatterCommissioner {
     
-    private let logger = Logger(subsystem: "nrf.matter", category: "MatterSupport")
+    private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterCommissioner")
     
     func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {
         return await commission()
@@ -31,7 +31,7 @@ class MatterSupportForKotlin : MatterSupportKt {
             
             let nodeID: NSNumber = NodeIdProvider.id // todo
             
-            let device = await MatterClusterDiscovery(nodeId: nodeID).discoverClusters()
+            let device = await LocalMatterClusterDiscovery(nodeId: nodeID).discoverClusters()
             return device
         } catch {
             logger.info("Failed to set up device with error: \(error.localizedDescription).")

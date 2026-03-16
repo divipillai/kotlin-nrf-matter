@@ -1,37 +1,24 @@
 package no.nordicsemi.nrf.matter
 
 import no.nordicsemi.nrf.matter.model.Device
-import platform.Matter.MTRDeviceController
-import platform.Matter.MTRKeypairProtocol
 
 interface SwiftCodeProvider {
 
-    fun getMatterControllerProvider(): MatterControllerProvider
-
-    fun getMatterSupport(): MatterSupportKt
-
-    fun getKeypair(): MTRKeypairProtocol
+    fun getMatterCommissioner(): MatterCommissioner
 
     fun getMatterOnOffController(): MatterOnOffController
 
     fun getDecommissioner(): MatterDecommissioner
 }
 
-interface MatterSupportKt {
+interface MatterCommissioner {
 
     suspend fun startIosCommissioning(onError: () -> Unit): Device?
 }
 
-interface MatterControllerProvider {
-
-    fun getController(): MTRDeviceController?
-
-    fun release()
-}
-
 interface MatterDecommissioner {
 
-    fun decommission(nodeId: Long)
+    suspend fun decommission(nodeId: Long)
 }
 
 interface MatterOnOffController {

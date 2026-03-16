@@ -10,7 +10,7 @@ import os.log
 
 public class MatterStorage : NSObject, MTRStorage {
     
-    private let defaults = UserDefaults(suiteName: "group.nordicsemi.nrf.matter")!
+    private let defaults = UserDefaults(suiteName: SharedConsts.appGroup)!
     private let logger = Logger(subsystem: "nrf.matter", category: "MatterStorage")
     
     public func storeString(key: String, value: String) {

@@ -12,6 +12,7 @@
 		A75B954D2F58845E00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
 		A75B954E2F58845E00902BE8 /* SharedCode.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A75B95522F58846C00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
+		A7679E6F2F685317001A6842 /* GoogleHomeSDK in Frameworks */ = {isa = PBXBuildFile; productRef = A7679E6E2F685317001A6842 /* GoogleHomeSDK */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -130,6 +131,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A75B95522F58846C00902BE8 /* SharedCode.framework in Frameworks */,
+				A7679E6F2F685317001A6842 /* GoogleHomeSDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -231,6 +233,7 @@
 			);
 			name = nrfMatter;
 			packageProductDependencies = (
+				A7679E6E2F685317001A6842 /* GoogleHomeSDK */,
 			);
 			productName = nrfMatter;
 			productReference = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */;
@@ -804,6 +807,11 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		A74A47242F63F26400A31286 /* GoogleHomeSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A74A47212F62F64000A31286 /* XCLocalSwiftPackageReference "ThirdParty/GoogleHomeSDK" */;
+			productName = GoogleHomeSDK;
+		};
+		A7679E6E2F685317001A6842 /* GoogleHomeSDK */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A74A47212F62F64000A31286 /* XCLocalSwiftPackageReference "ThirdParty/GoogleHomeSDK" */;
 			productName = GoogleHomeSDK;

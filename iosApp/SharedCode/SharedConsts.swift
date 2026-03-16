@@ -6,5 +6,6 @@
 //
 
 public class SharedConsts {
+    public static var appGroup = "group.nordicsemi.nrf.matte"
     public static let matterEnvStorageKey = "MatterEnvironment"
 }

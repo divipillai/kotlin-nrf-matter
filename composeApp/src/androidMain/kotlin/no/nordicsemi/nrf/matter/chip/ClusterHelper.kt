@@ -248,99 +248,6 @@ class ClustersHelper(private val chipClient: ChipClient) {
         return ChipClusters.DescriptorCluster(devicePtr, endpoint)
     }
 
-    // -----------------------------------------------------------------------------------------------
-    // ApplicationCluster functions
-
-    suspend fun readApplicationBasicClusterAttributeList(
-        deviceId: Long,
-        endpoint: Int
-    ): List<Long> {
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId)
-            } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
-                return emptyList()
-            }
-        return suspendCancellableCoroutine { continuation ->
-            getApplicationBasicClusterForDevice(connectedDevicePtr, endpoint)
-                .readAttributeListAttribute(
-                    object : ChipClusters.ApplicationBasicCluster.AttributeListAttributeCallback {
-                        override fun onSuccess(value: MutableList<Long>) {
-                            continuation.resume(value)
-                        }
-
-                        override fun onError(ex: Exception) {
-                            continuation.resumeWithException(ex)
-                        }
-                    })
-        }
-    }
-
-    private fun getApplicationBasicClusterForDevice(
-        devicePtr: Long,
-        endpoint: Int
-    ): ChipClusters.ApplicationBasicCluster {
-        return ChipClusters.ApplicationBasicCluster(devicePtr, endpoint)
-    }
-
-    // -----------------------------------------------------------------------------------------------
-    // BasicCluster functions
-
-    suspend fun readBasicClusterVendorIDAttribute(deviceId: Long, endpoint: Int): Int? {
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId)
-            } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
-                return null
-            }
-        return suspendCancellableCoroutine { continuation ->
-            getBasicClusterForDevice(connectedDevicePtr, endpoint)
-                .readVendorIDAttribute(
-                    object : ChipClusters.ApplicationBasicCluster.VendorIDAttributeCallback {
-                        override fun onSuccess(value: Int?) {
-                            continuation.resume(value)
-                        }
-
-                        override fun onError(ex: Exception) {
-                            continuation.resumeWithException(ex)
-                        }
-                    })
-        }
-    }
-
-    suspend fun readBasicClusterAttributeList(deviceId: Long, endpoint: Int): List<Long> {
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId)
-            } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
-                return emptyList()
-            }
-
-        return suspendCancellableCoroutine { continuation ->
-            getBasicClusterForDevice(connectedDevicePtr, endpoint)
-                .readAttributeListAttribute(
-                    object : ChipClusters.ApplicationBasicCluster.AttributeListAttributeCallback {
-                        override fun onSuccess(values: MutableList<Long>) {
-                            continuation.resume(values)
-                        }
-
-                        override fun onError(ex: Exception) {
-                            continuation.resumeWithException(ex)
-                        }
-                    })
-        }
-    }
-
-    private fun getBasicClusterForDevice(
-        devicePtr: Long,
-        endpoint: Int
-    ): ChipClusters.ApplicationBasicCluster {
-        return ChipClusters.ApplicationBasicCluster(devicePtr, endpoint)
-    }
-
     /**
      * Writes NodeLabel attribute. See spec section "11.1.6.3. Attributes" of the "Basic Information
      * Cluster".
@@ -440,70 +347,6 @@ class ClustersHelper(private val chipClient: ChipClient) {
         }
     }
 
-    /**
-     * Reads NodeLabel attribute. See spec section "11.1.6.3. Attributes" of the "Basic Information
-     * Cluster".
-     *
-     * @param deviceId device identifier
-     * @return the NodeLabel
-     */
-    suspend fun readBasicClusterNodeLabelAttribute(deviceId: Long): String? {
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId)
-            } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
-                return null
-            }
-
-        return suspendCancellableCoroutine { continuation ->
-            val callback =
-                object : ChipClusters.CharStringAttributeCallback {
-                    override fun onSuccess(value: String?) {
-                        continuation.resume(value)
-                    }
-
-                    override fun onError(ex: Exception) {
-                        continuation.resumeWithException(ex)
-                    }
-                }
-
-            ChipClusters.BasicInformationCluster(connectedDevicePtr, 0)
-                .readNodeLabelAttribute(callback)
-        }
-    }
-
-    // -----------------------------------------------------------------------------------------------
-    // OnOffCluster functions
-
-    // CODELAB FEATURED BEGIN
-    suspend fun toggleDeviceStateOnOffCluster(deviceId: Long, endpoint: Int) {
-        Napier.d { "AAA, toggleDeviceStateOnOffCluster())" }
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId)
-            } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
-                return
-            }
-        return suspendCancellableCoroutine { continuation ->
-            getOnOffClusterForDevice(connectedDevicePtr, endpoint)
-                .toggle(
-                    object : ChipClusters.DefaultClusterCallback {
-                        override fun onSuccess() {
-                            continuation.resume(Unit)
-                        }
-
-                        override fun onError(ex: Exception) {
-                            Napier.e(ex) { "AAA, readOnOffAttribute command failure" }
-                            continuation.resumeWithException(ex)
-                        }
-                    })
-        }
-    }
-
-    // CODELAB FEATURED END
-
     suspend fun setOnOffDeviceStateOnOffCluster(deviceId: Long, isOn: Boolean, endpoint: Int) {
         Napier.d {
             "AAA, setOnOffDeviceStateOnOffCluster() [${deviceId}] isOn [${isOn}] endpoint [${endpoint}]"
@@ -592,34 +435,6 @@ class ClustersHelper(private val chipClient: ChipClient) {
             } else {
                 cluster.unlockDoor(callback, pinOptional, 10000)
             }
-        }
-    }
-
-    suspend fun getDeviceStateOnOffCluster(deviceId: Long, endpoint: Int): Boolean? {
-        Napier.d { "AAA, getDeviceStateOnOffCluster())" }
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId)
-            } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
-                return null
-            }
-        return suspendCancellableCoroutine { continuation ->
-            getOnOffClusterForDevice(connectedDevicePtr, endpoint)
-                .readOnOffAttribute(
-                    object : ChipClusters.BooleanAttributeCallback {
-                        override fun onSuccess(value: Boolean) {
-                            Napier.d { "AAA, readOnOffAttribute success: [$value]" }
-                            continuation.resume(value)
-                        }
-
-                        override fun onError(ex: Exception) {
-                            Napier.e(ex) {
-                                "AAA, readOnOffAttribute command failure, ${ex.localizedMessage}"
-                            }
-                            continuation.resumeWithException(ex)
-                        }
-                    })
         }
     }
 

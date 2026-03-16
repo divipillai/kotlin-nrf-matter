@@ -24,7 +24,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
 
     override init() {
         let storage = MatterStorage()
-        let value = storage.getString(key: "Technology")
+        let value = storage.getString(key: SharedConsts.matterEnvStorageKey)
         let env = MatterEnv(rawValue: value!)
         
         handler = switch env {

@@ -17,7 +17,7 @@ class HomeKitMatterOnOffController : MatterOnOffController {
 
     func setDeviceOnOff(deviceId: Int64, isDeviceOnline: Bool, isOn: Bool, endpoint: Int32) async throws {
         let controller = HomeKitController.shared()
-        let accessory = controller.getAccesory(nodeId: deviceId)
+        let accessory = controller.getAccessory(nodeId: deviceId)
         
         guard let accessory else { return }
         

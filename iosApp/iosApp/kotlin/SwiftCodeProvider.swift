@@ -15,10 +15,10 @@ class SwiftCodeProviderImpl : SwiftCodeProvider {
     }
     
     func getMatterOnOffController() -> any MatterOnOffController {
-        return LocalMatterOnOffController()
+        return HomeKitMatterOnOffController()
     }
     
     func getDecommissioner() -> any MatterDecommissioner {
-        return LocalMatterDecommissioner()
+        return HomeKitDecommissioner()
     }
 }

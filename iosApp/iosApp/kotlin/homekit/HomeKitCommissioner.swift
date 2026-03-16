@@ -31,9 +31,17 @@ class HomeKitCommissioner : MatterCommissioner {
         let nodeId = accessory.matterNodeID
         
         guard let nodeId else { return nil }
-        let clusterDiscovery = LocalMatterClusterDiscovery(nodeId: nodeId as NSNumber)
-        let device = await clusterDiscovery.discoverClusters()
         
-        return device
+        return Device(
+            dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),
+            vendorId: nil,
+            productId: nil,
+            deviceType: .lightOnOff,
+            deviceId: Int64(nodeId),
+            name: accessory.name,
+            productName: accessory.model,
+            vendorName: accessory.manufacturer,
+            deviceMatterInfo: []
+        )
     }
 }

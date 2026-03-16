@@ -55,11 +55,21 @@ class HomeKitController: NSObject, ObservableObject, HMHomeManagerDelegate {
         return manager.homes.reduce(0) { $0 + $1.accessories.count }
     }
     
-    func getAccesory(nodeId: Int64) -> HMAccessory? {
+    func removeAccessory(nodeId: Int64) async -> Bool {
+        for home in manager.homes {
+            let accessory = home.accessories.first(where: { $0.isNode(nodeId: nodeId) })
+            if let accessory {
+                return (try? await home.removeAccessory(accessory)) != nil
+            }
+        }
+        return false
+    }
+    
+    func getAccessory(nodeId: Int64) -> HMAccessory? {
         return manager.homes
             .flatMap(\.accessories)
             .filter { $0.matterNodeID != nil }
-            .first { $0.matterNodeID! == nodeId }
+            .first { $0.isNode(nodeId: nodeId)}
     }
     
     func getAccessory(uuid: UUID) -> HMAccessory? {
@@ -73,5 +83,15 @@ class HomeKitController: NSObject, ObservableObject, HMHomeManagerDelegate {
         let request = HMAccessorySetupRequest()
         let result = try? await accessoryManager.performAccessorySetup(using: request)
         return result?.accessoryUniqueIdentifiers.first
+    }
+}
+
+extension HMAccessory {
+    func isNode(nodeId: Int64) -> Bool {
+        if let matterNodeId = matterNodeID {
+            return matterNodeId == nodeId
+        } else {
+            return false
+        }
     }
 }

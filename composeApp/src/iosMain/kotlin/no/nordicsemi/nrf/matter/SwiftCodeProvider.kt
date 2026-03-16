@@ -18,7 +18,7 @@ interface MatterCommissioner {
 
 interface MatterDecommissioner {
 
-    fun decommission(nodeId: Long)
+    suspend fun decommission(nodeId: Long)
 }
 
 interface MatterOnOffController {

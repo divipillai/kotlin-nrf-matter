@@ -35,13 +35,13 @@ class HomeKitCommissioner : MatterCommissioner {
         return Device(
             deviceId: DeviceId(value: String(nodeId)),
             dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),
-            vendorId: nil,
-            productId: nil,
+            vendorId: nil, //todo
+            productId: nil, //todo
             deviceType: .lightOnOff,
             name: accessory.name,
             productName: accessory.model,
             vendorName: accessory.manufacturer,
-            deviceMatterInfo: []
+            deviceMatterInfo: [] //todo
         )
     }
 }

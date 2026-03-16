@@ -13,14 +13,27 @@ import HomeKit
 class HomeKitCommissioner : MatterCommissioner {
 
     func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {
-        print("AAATESTAAA - aaa")
-        let accessoryManager = HMAccessorySetupManager()
-        print("AAATESTAAA - bbb")
-        let request = HMAccessorySetupRequest()
-        print("AAATESTAAA - ccc")
-        let result = try! await accessoryManager.performAccessorySetup(using: request)
+        let controller = HomeKitController.shared()
+        let uuid = await controller.addAccessory()
         
-        print("AAATESTAAA - result: \(result)")
-        return nil
+        guard let uuid else {
+            print("Couldn't add accessory.")
+            return nil
+        }
+      
+        let accessory = controller.getAccessory(uuid: uuid)
+        
+        guard let accessory else {
+            print("Couldn't find accessory.")
+            return nil
+        }
+        
+        let nodeId = accessory.matterNodeID
+        
+        guard let nodeId else { return nil }
+        let clusterDiscovery = LocalMatterClusterDiscovery(nodeId: nodeId as NSNumber)
+        let device = await clusterDiscovery.discoverClusters()
+        
+        return device
     }
 }

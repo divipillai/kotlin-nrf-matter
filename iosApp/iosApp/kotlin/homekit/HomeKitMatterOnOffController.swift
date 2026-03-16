@@ -16,8 +16,11 @@ class HomeKitMatterOnOffController : MatterOnOffController {
     private let logger = Logger(subsystem: "nrf.matter", category: "HomeKitMatterOnOffController")
 
     func setDeviceOnOff(deviceId: Int64, isDeviceOnline: Bool, isOn: Bool, endpoint: Int32) async throws {
-        let controller = HomeKitControllerProvider.shared()
-        let accessory = controller.getAccessory(id: deviceId)
+        let controller = HomeKitController.shared()
+        let accessory = controller.getAccesory(nodeId: deviceId)
+        
+        guard let accessory else { return }
+        
         guard let service = accessory.services.first(where: {
             $0.serviceType == HMServiceTypeLightbulb
         }) else { return }

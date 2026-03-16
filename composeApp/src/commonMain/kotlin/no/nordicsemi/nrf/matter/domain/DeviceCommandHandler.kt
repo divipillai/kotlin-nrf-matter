@@ -112,11 +112,10 @@ class DeviceCommandHandler(
                 isOn = isLocked
             )
 
-            deviceController.setDeviceOnOff(
+            deviceController.lockUnlockDoor(
                 deviceId = deviceId,
-                isDeviceOnline = true,
-                isOn = isLocked,
-                endpoint = endpoint
+                isLocked = isLocked,
+                endpoint = endpoint,
             )
 
         } catch (e: Exception) {

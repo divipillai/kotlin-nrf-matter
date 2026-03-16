@@ -39,4 +39,17 @@ interface DeviceController {
     )
 
     suspend fun unlinkDevice(deviceId: Long)
+
+    suspend fun lockUnlockDoor(
+        deviceId: Long,
+        isLocked: Boolean,
+        endpoint: Int,
+    )
+
+    // function to handle outlet
+    suspend fun handleOutlet(
+        deviceId: Long,
+        isSwitchOn: Boolean,
+        endpoint: Int,
+    )
 }

@@ -5,6 +5,7 @@ import chip.devicecontroller.ChipStructs
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
+import java.util.Optional
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -551,6 +552,49 @@ class ClustersHelper(private val chipClient: ChipClient) {
         }
     }
 
+    suspend fun lockUnlockDoor(
+        deviceId: Long,
+        isLocked: Boolean,
+        endpoint: Int,
+        pinCode: String? = null
+    ) {
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
+                return
+            }
+
+        // If pin code is not provided then pull empty value.
+        val pinOptional = pinCode?.let {
+            Optional.of(it.toByteArray(Charsets.UTF_8))
+        } ?: Optional.empty()
+
+        return suspendCancellableCoroutine { continuation ->
+            val cluster = getLockUnlockClusterForDevice(connectedDevicePtr, endpoint)
+            val callback = object : ChipClusters.DefaultClusterCallback {
+                override fun onSuccess() {
+                    if (continuation.isActive) continuation.resume(Unit)
+                }
+
+                override fun onError(ex: Exception?) {
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(
+                            ex ?: RuntimeException("Unknown Matter Error")
+                        )
+                    }
+                }
+            }
+
+            if (isLocked) {
+                cluster.lockDoor(callback, pinOptional, 10000)
+            } else {
+                cluster.unlockDoor(callback, pinOptional, 10000)
+            }
+        }
+    }
+
     suspend fun getDeviceStateOnOffCluster(deviceId: Long, endpoint: Int): Boolean? {
         Napier.d { "AAA, getDeviceStateOnOffCluster())" }
         val connectedDevicePtr =
@@ -586,119 +630,10 @@ class ClustersHelper(private val chipClient: ChipClient) {
         return ChipClusters.OnOffCluster(devicePtr, endpoint)
     }
 
-    // -----------------------------------------------------------------------------------------------
-    // Administrator Commissioning Cluster (11.19)
-
-    suspend fun openCommissioningWindowAdministratorCommissioningCluster(
-        deviceId: Long,
-        endpoint: Int,
-        timeoutSeconds: Int,
-        pakeVerifier: ByteArray,
-        discriminator: Int,
-        iterations: Long,
-        salt: ByteArray,
-        timedInvokeTimeoutMs: Int
-    ) {
-        Napier.d { "AAA, openCommissioningWindowAdministratorCommissioningCluster())" }
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId)
-            } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer.${e.localizedMessage}" }
-                return
-            }
-
-        /*
-        ChipClusters.DefaultClusterCallback var1, Integer var2, byte[] var3, Integer var4, Long var5, byte[] var6, int var7
-         */
-        return suspendCancellableCoroutine { continuation ->
-            getAdministratorCommissioningClusterForDevice(connectedDevicePtr, endpoint)
-                .openCommissioningWindow(
-                    object : ChipClusters.DefaultClusterCallback {
-                        override fun onSuccess() {
-                            continuation.resume(Unit)
-                        }
-
-                        override fun onError(ex: java.lang.Exception?) {
-                            Napier.e(ex) {
-                                "AAA, getAdministratorCommissioningClusterForDevice.openCommissioningWindow command failure"
-                            }
-                            continuation.resumeWithException(ex!!)
-                        }
-                    },
-                    timeoutSeconds,
-                    pakeVerifier,
-                    discriminator,
-                    iterations,
-                    salt,
-                    timedInvokeTimeoutMs
-                )
-        }
-    }
-
-    /**
-     * Closes a node's commissioning window. See spec section "11.18.8.3. RevokeCommissioning
-     * Command".
-     *
-     * @param devicePtr connected device pointer.
-     */
-    suspend fun closeCommissioningWindow(devicePtr: Long) {
-        return suspendCancellableCoroutine { continuation ->
-            val callback =
-                object : ChipClusters.DefaultClusterCallback {
-                    override fun onSuccess() {
-                        Napier.d { "AAA, Window is closed successfully" }
-                        continuation.resume(Unit)
-                    }
-
-                    override fun onError(ex: Exception) {
-                        Napier.e(ex) { "Failed to close window. Cause: ${ex.localizedMessage}" }
-                    }
-                }
-            ChipClusters.AdministratorCommissioningCluster(devicePtr, 0)
-                .revokeCommissioning(callback, 100)
-        }
-    }
-
-    /**
-     * Checks if a device has an open commissioning window. See spec section "11.18.7. Attributes" of
-     * the "Administrator Commissioning Cluster".
-     *
-     * @param devicePtr connected device pointer.
-     * @return true if a window is open, false otherwise.
-    //     */
-    // TODO: Fix it later.
-//    suspend fun isCommissioningWindowOpen(devicePtr: Long): Boolean {
-//        return suspendCoroutine { continuation ->
-//            val callback =
-//                object : ChipClusters.IntegerAttributeCallback {
-//                    override fun onSuccess(value: Int) {
-//                        when (value) {
-//                            CommissioningWindowStatus.WindowNotOpen.status -> {
-//                                continuation.resume(false)
-//                            }
-//                            CommissioningWindowStatus.EnhancedWindowOpen.status,
-//                            CommissioningWindowStatus.BasicWindowOpen.status -> {
-//                                continuation.resume(true)
-//                            }
-//                        }
-//                    }
-//
-//                    override fun onError(ex: Exception) {
-//                       Napier.e(ex){"Failed to check window status. Cause: ${ex.localizedMessage}")
-//                        continuation.resumeWithException(ex)
-//                    }
-//                }
-//
-//            ChipClusters.AdministratorCommissioningCluster(devicePtr, 0)
-//                .readWindowStatusAttribute(callback)
-//        }
-//    }
-
-    private fun getAdministratorCommissioningClusterForDevice(
+    private fun getLockUnlockClusterForDevice(
         devicePtr: Long,
         endpoint: Int
-    ): ChipClusters.AdministratorCommissioningCluster {
-        return ChipClusters.AdministratorCommissioningCluster(devicePtr, endpoint)
+    ): ChipClusters.DoorLockCluster {
+        return ChipClusters.DoorLockCluster(devicePtr, endpoint)
     }
 }

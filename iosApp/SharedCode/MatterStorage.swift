@@ -13,6 +13,14 @@ public class MatterStorage : NSObject, MTRStorage {
     private let defaults = UserDefaults(suiteName: "group.nordicsemi.nrf.matter")!
     private let logger = Logger(subsystem: "nrf.matter", category: "MatterStorage")
     
+    public func storeString(key: String, value: String) {
+        defaults.set(key, forKey: key)
+    }
+    
+    public func getString(key: String) -> String? {
+        defaults.string(forKey: key)
+    }
+    
     public func storageData(forKey key: String) -> Data? {
         return defaults.data(forKey: key)
     }

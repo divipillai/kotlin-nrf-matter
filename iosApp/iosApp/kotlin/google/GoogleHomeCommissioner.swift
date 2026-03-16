@@ -8,7 +8,7 @@
 import ComposeApp
 import GoogleHomeSDK
 
-class GoogleCommissioner : MatterCommissioner {
+class GoogleHomeCommissioner : MatterCommissioner {
     
     func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {
         return nil

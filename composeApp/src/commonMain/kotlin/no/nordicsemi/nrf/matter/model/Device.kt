@@ -54,6 +54,7 @@ enum class DeviceType {
     DIMMABLE_LIGHT,
     LIGHT_SWITCH,
     OUTLET,
+    DOOR_LOCK,
     COLOR_TEMPERATURE_LIGHT,
     EXTENDED_COLOR_LIGHT, ;
 
@@ -66,6 +67,7 @@ enum class DeviceType {
             OUTLET -> "Outlet"
             COLOR_TEMPERATURE_LIGHT -> "Color Temperature Light"
             EXTENDED_COLOR_LIGHT -> "Extended Color Light"
+            DOOR_LOCK -> "Door Lock"
         }
     }
 }
@@ -75,3 +77,13 @@ data class Devices(
     val lastDeviceId: Long = 0L,
     val devicesList: List<Device> = emptyList()
 )
+
+/**
+ * Group devices by category (Lights, Security, etc.)
+ */
+enum class DeviceSection {
+    LIGHTS,
+    SECURITY,
+    OUTLETS,
+    OTHER
+}

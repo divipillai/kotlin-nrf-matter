@@ -55,4 +55,24 @@ class AndroidDeviceController(
     override suspend fun unlinkDevice(deviceId: Long) {
         chipClient.awaitUnpairDevice(deviceId)
     }
+
+    override suspend fun lockUnlockDoor(
+        deviceId: Long,
+        isLocked: Boolean,
+        endpoint: Int
+    ) {
+        clustersHelper.lockUnlockDoor(
+            deviceId = deviceId,
+            isLocked = isLocked,
+            endpoint = endpoint,
+        )
+    }
+
+    override suspend fun handleOutlet(
+        deviceId: Long,
+        isSwitchOn: Boolean,
+        endpoint: Int
+    ) {
+        TODO("Not yet implemented")
+    }
 }

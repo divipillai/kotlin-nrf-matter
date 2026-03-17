@@ -25,8 +25,6 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import io.github.aakira.napier.DebugAntilog
-import io.github.aakira.napier.Napier
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
@@ -36,7 +34,6 @@ import no.nordicsemi.nrf.matter.navigation.config
 import no.nordicsemi.nrf.matter.screens.DeviceScreen
 import no.nordicsemi.nrf.matter.screens.HomeScreen
 import no.nordicsemi.nrf.matter.theme.NordicTheme
-import org.koin.compose.getKoin
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -135,10 +132,9 @@ fun App(homeViewModel: HomeViewModel) {
                             onDeviceClick = { deviceId ->
                                 backStack.add(DetailsRoute(deviceId))
                             },
-                            onOnOffClick = { deviceId, onOff ->
-                                homeViewModel.toggleDevice(
+                            updateDeviceState = { deviceId, onOff ->
+                                homeViewModel.changeDeviceState(
                                     deviceId = deviceId,
-                                    isOnline = true,
                                     isOn = onOff,
                                 )
                             }
@@ -161,7 +157,7 @@ private fun EntryProviderScope<NavKey>.screens(
     backStack: NavBackStack<NavKey>,
     onCommissioningStarted: () -> Unit,
     onDeviceClick: (deviceId: Long) -> Unit,
-    onOnOffClick: (deviceId: Long, Boolean) -> Unit,
+    updateDeviceState: (deviceId: Long, Boolean) -> Unit,
 ) {
     entry<HomeRoute> {
         HomeScreen(
@@ -169,7 +165,7 @@ private fun EntryProviderScope<NavKey>.screens(
             homeViewModel = homeViewModel,
             onCommissionClick = onCommissioningStarted,
             onDeviceClick = { onDeviceClick(it) },
-            onOnOffClick = onOnOffClick
+            updateDeviceState = updateDeviceState
         )
 
     }

@@ -51,4 +51,20 @@ class IosDeviceController(
     override suspend fun unlinkDevice(deviceId: Long) {
         matterDecommissioner.decommission(deviceId)
     }
+
+    override suspend fun lockUnlockDoor(
+        deviceId: Long,
+        isLocked: Boolean,
+        endpoint: Int
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun handleOutlet(
+        deviceId: Long,
+        isSwitchOn: Boolean,
+        endpoint: Int
+    ) {
+        TODO("Not yet implemented")
+    }
 }

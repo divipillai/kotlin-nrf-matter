@@ -4,42 +4,40 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
+import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.utils.title
+import no.nordicsemi.nrf.matter.utils.toSection
 import nrfmatterformobile.composeapp.generated.resources.Res
-import nrfmatterformobile.composeapp.generated.resources.light_bulb_smart_light
-import nrfmatterformobile.composeapp.generated.resources.light_fixture
+import nrfmatterformobile.composeapp.generated.resources.door_lock
+import nrfmatterformobile.composeapp.generated.resources.door_lock_open_right
+import nrfmatterformobile.composeapp.generated.resources.light_bulb
+import nrfmatterformobile.composeapp.generated.resources.power_settings
+import nrfmatterformobile.composeapp.generated.resources.smart_outlet
 import nrfmatterformobile.composeapp.generated.resources.temperature
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import kotlin.time.Clock
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -72,71 +70,90 @@ import kotlin.time.Clock
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val MatterGreen = Color(0xFF22C55E)
-
-// Specific Device: Dimmable Light
-@Preview(showBackground = true)
 @Composable
-fun DimmableLightItem() {
-    DeviceItemContainer(
-        icon = painterResource(resource = Res.drawable.light_bulb_smart_light),
-        title = "Living Room Lamp",
-        subtitle = "Dimmable Light",
-        onDeviceClick = {
-            /* TODO: Add onClick handler */
-        }
+internal fun DeviceList(
+    devicesList: List<DeviceUiModel>,
+    onDeviceClick: (DeviceUiModel) -> Unit,
+    updateDeviceState: (deviceId: Long, value: Boolean) -> Unit
+) {
+
+    val groupedDevices = devicesList.groupBy { it.device.deviceType.toSection() }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("50%", fontWeight = FontWeight.Bold)
-            Spacer(Modifier.width(8.dp))
-            LinearProgressIndicator(
-                progress = 0.5f,
-                modifier = Modifier
-                    .width(64.dp)
-                    .height(6.dp)
-                    .clip(CircleShape),
-                color = Color(0xFFF59E0B),
-                trackColor = Color.LightGray.copy(alpha = 0.3f)
-            )
+
+        groupedDevices.forEach { (section, devices) ->
+
+            item {
+                SectionTitle(section.title())
+            }
+
+            items(devices, key = { it.device.deviceId }) { device ->
+
+                when (device.device.deviceType) {
+
+                    DeviceType.LIGHT_ON_OFF,
+                    DeviceType.DIMMABLE_LIGHT,
+                    DeviceType.COLOR_TEMPERATURE_LIGHT,
+                    DeviceType.EXTENDED_COLOR_LIGHT -> {
+
+                        DeviceControlItem(
+                            deviceId = device.device.deviceId,
+                            title = "Light",
+                            subtitle = "Turn light ON or OFF",
+                            icon = painterResource(Res.drawable.light_bulb),
+                            enabled = device.isOn,
+                            updateDeviceState = updateDeviceState,
+                            onClick = { onDeviceClick(device) }
+                        )
+                    }
+
+                    DeviceType.LIGHT_SWITCH,
+                    DeviceType.OUTLET -> {
+
+                        DeviceControlItem(
+                            deviceId = device.device.deviceId,
+                            title = "Power Outlet",
+                            subtitle = "Turn device ON or OFF",
+                            icon = painterResource(Res.drawable.smart_outlet),
+                            enabled = device.isOn,
+                            updateDeviceState = updateDeviceState,
+                            onClick = { onDeviceClick(device) }
+                        )
+                    }
+
+                    DeviceType.DOOR_LOCK -> {
+                        LockItem(
+                            deviceId = device.device.deviceId,
+                            title = "Front Door",
+                            subtitle = "Smart Lock",
+                            isLocked = device.isOn,
+                            onLockUnlockDoor = updateDeviceState,
+                            onDeviceClick = { onDeviceClick(device) }
+                        )
+                    }
+
+                    else -> {}
+                }
+            }
         }
     }
 }
 
-// Specific Device: Smart Switch
+@Preview(showBackground = true)
 @Composable
-fun SwitchDeviceItem(
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onOnOffClick: (deviceId: Long, value: Boolean) -> Unit,
-    onDeviceClick: () -> Unit
-) {
-    DeviceItemContainer(
-        icon = painterResource(resource = Res.drawable.light_fixture),// TODO: Change it to the Power icon
-        title = title,
-        subtitle = subtitle,
-        isOnline = checked,
-        onDeviceClick = { onDeviceClick() }
-    ) {
-        Switch(
-            checked = checked,
-            onCheckedChange = {
-                onOnOffClick(1L, it)
-            },
+private fun DeviceListPreview() {
+    NordicTheme {
+        DeviceList(
+            devicesList = DeviceUiModel_Test,
+            onDeviceClick = {},
+            updateDeviceState = { _, _ -> }
         )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun SwitchDeviceItemPreview() {
-    SwitchDeviceItem(
-        title = "Living Room Lamp",
-        subtitle = "Smart Switch",
-        checked = true,
-        onOnOffClick = { _, _ -> },
-        onDeviceClick = {},
-    )
 }
 
 @Preview(showBackground = true)
@@ -168,61 +185,6 @@ fun FilterChipsRow() {
     }
 }
 
-@Composable
-internal fun DeviceList(
-    devicesList: List<DeviceUiModel>,
-    onDeviceClick: (DeviceUiModel) -> Unit,
-    onOnOffClick: (deviceId: Long, value: Boolean) -> Unit
-) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        // --- Section: Lights ---
-        this.items(devicesList, key = { device -> device.device.deviceId }) { device ->
-            SectionTitle("Lights")
-            SwitchDeviceItem(
-                title = device.device.name ?: "Living Room Lamp",
-                subtitle = "Smart Light",
-                checked = device.isOn,
-                onOnOffClick = { deviceId, value -> onOnOffClick(deviceId, value) },
-            ) { onDeviceClick(device) }
-
-        }
-        /*
-                item { SectionHeader("Lights") }
-                item { DimmableLightItem() }
-                item {
-                    SwitchDeviceItem(
-                        title = "Hallway Light",
-                        subtitle = "Smart Light",
-                        initialState = false
-                    )
-                }
-
-                        // --- Section: Power & Energy ---
-                        item { SectionHeader("Power & Energy") }
-                        item {
-                            SwitchDeviceItem(
-                                title = "Coffee Maker",
-                                subtitle = "Smart Plug",
-                                initialState = true
-                            )
-                        }
-
-                        // --- Section: Climate & Security ---
-                        item { SectionHeader("Climate & Security") }
-                        item { ThermostatItem() }
-                        item { LockItem() }
-
-                        // --- Empty State / Add Suggestion ---
-                        item { AddDeviceSuggestion() }
-                  */
-    }
-}
-
 // Thermostat Item
 @Preview(showBackground = true)
 @Composable
@@ -248,7 +210,7 @@ fun ThermostatItem() {
 @Composable
 fun LockItem() {
     DeviceItemContainer(
-        icon = painterResource(Res.drawable.light_bulb_smart_light),// TODO: Change it to the door lock icon.
+        icon = painterResource(Res.drawable.door_lock),// TODO: Change it based on the lock/unlock command.
         title = "Front Door",
         subtitle = "Smart Lock",
         onDeviceClick = {}
@@ -268,30 +230,38 @@ fun LockItem() {
     }
 }
 
+@Composable
+fun deviceIcon(device: DeviceUiModel): Painter {
+
+    return when (device.device.deviceType) {
+
+        DeviceType.LIGHT_ON_OFF,
+        DeviceType.DIMMABLE_LIGHT,
+        DeviceType.COLOR_TEMPERATURE_LIGHT,
+        DeviceType.EXTENDED_COLOR_LIGHT ->
+            painterResource(Res.drawable.light_bulb)
+
+        DeviceType.OUTLET ->
+            painterResource(Res.drawable.smart_outlet)
+
+        DeviceType.DOOR_LOCK ->
+            if (device.isOn)
+                painterResource(Res.drawable.door_lock_open_right)
+            else
+                painterResource(Res.drawable.door_lock)
+
+        DeviceType.LIGHT_SWITCH ->
+            painterResource(Res.drawable.power_settings)
+
+        else ->
+            painterResource(Res.drawable.power_settings)
+    }
+}
+
 // -----------------------------------------------------------------------------------------------
 // Constant objects used in Compose Preview
 
-// DeviceState -- Online and On
-private val DeviceState_OnlineOn =
-    DeviceState(
-        dateCaptured = Clock.System.now(),
-        deviceId = 1L,
-        on = true,
-        online = true
-
-    )
-
-// DeviceState -- Offline
-private val DeviceState_Offline =
-    DeviceState(
-        dateCaptured = Clock.System.now(),
-        deviceId = 1L,
-        on = true,
-        online = false
-
-    )
-
-private val DeviceTest =
+private val DeviceTest_LIGHT =
     Device(
         dateCommissioned = 123456789L,
         vendorId = "1234",
@@ -302,6 +272,31 @@ private val DeviceTest =
         productName = "My Light",
         vendorName = "MyVendor",
         deviceMatterInfo = emptyList()
+    )
 
+private val DeviceTest_DOORLOCK =
+    Device(
+        dateCommissioned = 123456789L,
+        vendorId = "1234",
+        productId = "5678",
+        deviceType = DeviceType.DOOR_LOCK,
+        deviceId = 2L, // Fix: Changed deviceId to 2L to ensure unique keys in LazyColumn
+        name = "Front Door", // Updated name for consistency
+        productName = "My Lock",
+        vendorName = "MyVendor",
+        deviceMatterInfo = emptyList()
+    )
 
+private val DeviceUiModel_Test =
+    listOf(
+        DeviceUiModel(
+            device = DeviceTest_LIGHT,
+            isOnline = true,
+            isOn = true
+        ),
+        DeviceUiModel(
+            device = DeviceTest_DOORLOCK,
+            isOnline = true,
+            isOn = false
+        ),
     )

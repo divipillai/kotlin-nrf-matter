@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.domain.DeviceCommand
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
@@ -141,7 +140,7 @@ class DevicePresenter(
         scope.launch {
             deviceCommandHandler.execute(
                 deviceId,
-                DeviceCommand.SetPower(isOn)
+                isOn
             )
         }
     }

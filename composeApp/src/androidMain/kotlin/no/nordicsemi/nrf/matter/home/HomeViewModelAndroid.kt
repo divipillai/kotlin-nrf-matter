@@ -135,6 +135,8 @@ class HomeViewModelAndroid(
             266L -> DeviceType.OUTLET // 0x010A (On/Off Plug-in Unit)
             268L -> DeviceType.COLOR_TEMPERATURE_LIGHT // 0x010C Color Temperature Light
             269L -> DeviceType.EXTENDED_COLOR_LIGHT // 0x010D Extended Color Light
+            10L -> DeviceType.DOOR_LOCK // 0x000A door lock // todo need to review the hex value
+//            11L ->   Door Lock Controller // (0x000B)
             else -> DeviceType.UNKNOWN
         }
     }

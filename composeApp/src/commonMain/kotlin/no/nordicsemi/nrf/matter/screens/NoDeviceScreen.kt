@@ -40,7 +40,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import no.nordicsemi.nrf.matter.theme.NordicTheme
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
 import org.jetbrains.compose.resources.painterResource
@@ -148,6 +150,15 @@ fun NoDevicesScreen(
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun NoDevicesScreenPreview() {
+    NordicTheme {
+        NoDevicesScreen()
+    }
+}
+
 
 @Composable
 private fun EmptyStateIllustration() {

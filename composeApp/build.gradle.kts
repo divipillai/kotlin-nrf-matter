@@ -45,15 +45,19 @@ kotlin {
 
         }
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
+            implementation(libs.jetbrains.compose.runtime)
+            implementation(libs.foundation)
             implementation(libs.material.icons.extended)
             implementation(libs.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.jetbrains.compose.ui)
+            implementation(libs.components.resources)
+            // Preview
+
+            implementation(libs.jetbrains.ui.tooling.preview)
+            // Lifecycle
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            // Data time
             implementation(libs.kotlinx.datetime)
             // Koin
             implementation(libs.koin.core)

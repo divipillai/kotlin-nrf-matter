@@ -1,9 +1,9 @@
 package no.nordicsemi.nrf.matter.utils
 
-import androidx.compose.ui.text.intl.Locale
-import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import no.nordicsemi.nrf.matter.model.DeviceSection
+import no.nordicsemi.nrf.matter.model.DeviceType
 import kotlin.time.Instant
 
 /*
@@ -41,3 +41,25 @@ fun Long.toDateString(): String {
     val instant = Instant.fromEpochMilliseconds(this)
     return instant.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
 }
+
+fun DeviceType.toSection(): DeviceSection =
+    when (this) {
+        DeviceType.LIGHT_ON_OFF,
+        DeviceType.DIMMABLE_LIGHT,
+        DeviceType.COLOR_TEMPERATURE_LIGHT,
+        DeviceType.EXTENDED_COLOR_LIGHT -> DeviceSection.LIGHTS
+
+        DeviceType.OUTLET, DeviceType.LIGHT_SWITCH -> DeviceSection.OUTLETS
+
+        DeviceType.DOOR_LOCK -> DeviceSection.SECURITY
+
+        else -> DeviceSection.OTHER
+    }
+
+internal fun DeviceSection.title(): String =
+    when (this) {
+        DeviceSection.LIGHTS -> "Lights"
+        DeviceSection.OUTLETS -> "Outlets"
+        DeviceSection.SECURITY -> "Security"
+        DeviceSection.OTHER -> "Others"
+    }

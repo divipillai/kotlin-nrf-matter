@@ -263,7 +263,7 @@ fun deviceIcon(device: DeviceUiModel): Painter {
 // -----------------------------------------------------------------------------------------------
 // Constant objects used in Compose Preview
 
-private val DeviceTest_LIGHT =
+internal val DeviceTest_LIGHT =
     Device(
         dateCommissioned = 123456789L,
         vendorId = "1234",
@@ -276,7 +276,7 @@ private val DeviceTest_LIGHT =
         deviceMatterInfo = emptyList()
     )
 
-private val DeviceTest_DOORLOCK =
+internal val DeviceTest_DOORLOCK =
     Device(
         dateCommissioned = 123456789L,
         vendorId = "1234",
@@ -289,7 +289,10 @@ private val DeviceTest_DOORLOCK =
         deviceMatterInfo = emptyList()
     )
 
-private val DeviceUiModel_Test =
+internal val DEVICE_LIST_TEST =
+    listOf(DeviceTest_LIGHT, DeviceTest_DOORLOCK)
+
+val DeviceUiModel_Test =
     listOf(
         DeviceUiModel(
             device = DeviceTest_LIGHT,

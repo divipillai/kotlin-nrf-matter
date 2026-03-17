@@ -279,6 +279,8 @@ private fun DeviceControlSection(
                 },
                 onClick = {}
             )
+
+            // TODO: Add an option to
         }
 
         DeviceType.DOOR_LOCK -> {

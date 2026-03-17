@@ -13,6 +13,7 @@
 		A75B954E2F58845E00902BE8 /* SharedCode.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A75B95522F58846C00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
 		A7679E6F2F685317001A6842 /* GoogleHomeSDK in Frameworks */ = {isa = PBXBuildFile; productRef = A7679E6E2F685317001A6842 /* GoogleHomeSDK */; };
+		A7B6EDB42F696CD400E65235 /* GoogleHomeTypes in Frameworks */ = {isa = PBXBuildFile; productRef = A7B6EDB32F696CD400E65235 /* GoogleHomeTypes */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -121,6 +122,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A7B6EDB42F696CD400E65235 /* GoogleHomeTypes in Frameworks */,
 				A75B954D2F58845E00902BE8 /* SharedCode.framework in Frameworks */,
 				A74A47252F63F26400A31286 /* GoogleHomeSDK in Frameworks */,
 			);
@@ -197,6 +199,7 @@
 				FE4039EABDDF65A40A74A283 /* Resources */,
 				A725F1C62F4DAACB005BC977 /* Embed Foundation Extensions */,
 				A75B95392F5883B500902BE8 /* Embed Frameworks */,
+				A7B6EDB52F697C4D00E65235 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -210,6 +213,7 @@
 			name = iosApp;
 			packageProductDependencies = (
 				A74A47242F63F26400A31286 /* GoogleHomeSDK */,
+				A7B6EDB32F696CD400E65235 /* GoogleHomeTypes */,
 			);
 			productName = iosApp;
 			productReference = 503AE3C9DDF68C5089274E2D /* NRFMatterforMobile.app */;
@@ -333,6 +337,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		A7B6EDB52F697C4D00E65235 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 12;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Techo \"Removing wrongly embedded static framework...\"\nrm -rf \"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleHomeTypes.framework\"\n";
+		};
 		CDF8714A2AA6774EF55697B2 /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -815,6 +837,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A74A47212F62F64000A31286 /* XCLocalSwiftPackageReference "ThirdParty/GoogleHomeSDK" */;
 			productName = GoogleHomeSDK;
+		};
+		A7B6EDB32F696CD400E65235 /* GoogleHomeTypes */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A74A47212F62F64000A31286 /* XCLocalSwiftPackageReference "ThirdParty/GoogleHomeSDK" */;
+			productName = GoogleHomeTypes;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

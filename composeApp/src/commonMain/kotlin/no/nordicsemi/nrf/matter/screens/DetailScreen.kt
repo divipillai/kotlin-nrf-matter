@@ -28,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,15 +55,13 @@ import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
-import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.Loader
+import no.nordicsemi.nrf.matter.ui.LockItem
 import no.nordicsemi.nrf.matter.ui.SectionTitle
 import no.nordicsemi.nrf.matter.utils.toDateString
 import nrfmatterformobile.composeapp.generated.resources.Res
-import nrfmatterformobile.composeapp.generated.resources.door_lock
-import nrfmatterformobile.composeapp.generated.resources.door_lock_open_right
 import nrfmatterformobile.composeapp.generated.resources.light_bulb
 import nrfmatterformobile.composeapp.generated.resources.light_fixture
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
@@ -292,9 +289,10 @@ private fun DeviceControlSection(
                 title = "Front Door",
                 subtitle = "Smart Lock",
                 isLocked = device.isOn,
-                onDeviceClick = { id, value ->
+                onLockUnlockDoor = { id, value ->
                     presenter.togglePower(id, value)
-                }
+                },
+                onDeviceClick = {}
             )
         }
 
@@ -632,58 +630,6 @@ fun DeviceItemContainerPreview() {
     }
 
 }
-
-// Lock Item
-@Composable
-fun LockItem(
-    onDeviceClick: (deviceId: Long, value: Boolean) -> Unit,
-    deviceId: Long,
-    title: String,
-    subtitle: String,
-    isLocked: Boolean
-) {
-    var isDoorLocked by rememberSaveable { mutableStateOf(isLocked) }
-    val icon = if (isDoorLocked)
-        painterResource(Res.drawable.door_lock)
-    else painterResource(Res.drawable.door_lock_open_right)
-
-    DeviceItemContainer(
-        icon = icon,
-        title = title,
-        subtitle = subtitle,
-        onDeviceClick = {
-            onDeviceClick(deviceId, !isDoorLocked)
-        }
-    ) {
-        Surface(
-            color = Color.LightGray.copy(alpha = 0.2f),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text(
-                if (isDoorLocked) "Locked" else "Unlocked",
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFE11D48)
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun LockItemPreview() {
-    NordicTheme {
-        LockItem(
-            onDeviceClick = { _, _ -> },
-            deviceId = 1L,
-            title = "Front Door",
-            subtitle = "Smart Lock",
-            isLocked = false
-        )
-    }
-}
-
 
 // -----------------------------------------------------------------------------------------------
 // Constant objects used in Compose Preview

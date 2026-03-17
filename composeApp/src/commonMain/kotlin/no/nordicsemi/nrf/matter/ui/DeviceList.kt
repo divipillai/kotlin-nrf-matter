@@ -94,15 +94,51 @@ internal fun DeviceList(
 
             items(devices, key = { it.device.deviceId }) { device ->
 
-                DeviceControlItem(
-                    deviceId = device.device.deviceId,
-                    title = device.device.name ?: "Device",
-                    subtitle = device.device.deviceType.toString(),
-                    icon = deviceIcon(device),
-                    enabled = device.isOn,
-                    updateDeviceState = updateDeviceState,
-                    onClick = { onDeviceClick(device) }
-                )
+                when (device.device.deviceType) {
+
+                    DeviceType.LIGHT_ON_OFF,
+                    DeviceType.DIMMABLE_LIGHT,
+                    DeviceType.COLOR_TEMPERATURE_LIGHT,
+                    DeviceType.EXTENDED_COLOR_LIGHT -> {
+
+                        DeviceControlItem(
+                            deviceId = device.device.deviceId,
+                            title = "Light",
+                            subtitle = "Turn light ON or OFF",
+                            icon = painterResource(Res.drawable.light_bulb),
+                            enabled = device.isOn,
+                            updateDeviceState = updateDeviceState,
+                            onClick = { onDeviceClick(device) }
+                        )
+                    }
+
+                    DeviceType.LIGHT_SWITCH,
+                    DeviceType.OUTLET -> {
+
+                        DeviceControlItem(
+                            deviceId = device.device.deviceId,
+                            title = "Power Outlet",
+                            subtitle = "Turn device ON or OFF",
+                            icon = painterResource(Res.drawable.smart_outlet),
+                            enabled = device.isOn,
+                            updateDeviceState = updateDeviceState,
+                            onClick = { onDeviceClick(device) }
+                        )
+                    }
+
+                    DeviceType.DOOR_LOCK -> {
+                        LockItem(
+                            deviceId = device.device.deviceId,
+                            title = "Front Door",
+                            subtitle = "Smart Lock",
+                            isLocked = device.isOn,
+                            onLockUnlockDoor = updateDeviceState,
+                            onDeviceClick = { onDeviceClick(device) }
+                        )
+                    }
+
+                    else -> {}
+                }
             }
         }
     }
@@ -261,6 +297,6 @@ private val DeviceUiModel_Test =
         DeviceUiModel(
             device = DeviceTest_DOORLOCK,
             isOnline = true,
-            isOn = true
+            isOn = false
         ),
     )

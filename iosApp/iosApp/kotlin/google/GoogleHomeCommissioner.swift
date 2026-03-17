@@ -11,6 +11,7 @@ import MatterSupport
 import os.log
 import nrfMatter
 import SharedCode
+import GoogleHomeSDK
 
 class GoogleHomeCommissioner : MatterCommissioner {
     
@@ -21,6 +22,16 @@ class GoogleHomeCommissioner : MatterCommissioner {
     }
     
     func commission() async -> Device? {
+        let home = try? await Home.connect()
+        
+        guard let home else { return nil }
+        
+        let allStructuresChanges = home.structures()
+        let allStructures = (try? await allStructuresChanges.list()) ?? []
+        let structure = allStructures.first
+
+        guard let structure else { return nil }
+        
         let homes = [MatterAddDeviceRequest.Home(displayName: "Nordic Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "Nordic Ecosystem", homes: homes)
         

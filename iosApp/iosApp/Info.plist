@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>GIDTeamID</key>
+	<string>P3R8YQEV4L</string>
+	<key>GIDClientID</key>
+	<string>24901298591-d7j7m6qkfvebl4bj1974cf9elrufns4o.apps.googleusercontent.com</string>
+	<key>Cloud Project Number</key>
+	<string>24901298591</string>
 	<key>NSHomeKitUsageDescription</key>
 	<string>App needs access to HomeKit to commission and control Matter devices.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>

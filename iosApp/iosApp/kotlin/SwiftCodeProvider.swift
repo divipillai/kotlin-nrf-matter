@@ -11,7 +11,7 @@ import SharedCode
 
 class SwiftCodeProviderImpl : SwiftCodeProvider {
     func getMatterCommissioner() -> any MatterCommissioner {
-        return HomeKitCommissioner()
+        return GoogleHomeCommissioner()
     }
     
     func getMatterOnOffController() -> any MatterOnOffController {

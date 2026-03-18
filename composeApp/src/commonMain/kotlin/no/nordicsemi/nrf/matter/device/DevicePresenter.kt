@@ -7,6 +7,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
@@ -59,23 +61,26 @@ class DevicePresenter(
     private val _uiState = MutableStateFlow(DeviceUiState())
     val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
 
-    fun loadDevice(deviceId: Long) {
-        if (deviceId == _uiState.value.deviceUiModel?.device?.deviceId) return
-
+    fun observeDevice(deviceId: Long) {
         scope.launch {
-            val device = devicesRepository.getDeviceOrNull(deviceId) ?: return@launch
-            val state = devicesStateRepository.loadDeviceState(deviceId)
-
-            _uiState.update {
-                it.copy(
-                    deviceUiModel = DeviceUiModel(
-                        device = device,
-                        isOnline = state?.online ?: false,
-                        isOn = state?.on ?: false
-                    ),
-                    removeDeviceState = RemoveDeviceState.Idle
-                )
-            }
+            devicesStateRepository.devicesStateFlow
+                .map { states ->
+                    val state = states.devicesStateList.find { it.deviceId == deviceId }
+                    state?.on ?: false
+                }
+                .distinctUntilChanged() // optional
+                .collect { isOn ->
+                    val device = devicesRepository.getDeviceOrNull(deviceId) ?: return@collect
+                    _uiState.update {
+                        it.copy(
+                            deviceUiModel = DeviceUiModel(
+                                device = device,
+                                isOnline = true, // or from state
+                                isOn = isOn
+                            )
+                        )
+                    }
+                }
         }
     }
 

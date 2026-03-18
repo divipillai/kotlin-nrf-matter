@@ -122,11 +122,14 @@ class HomeViewModel(
     }
 
     fun changeDeviceState(deviceId: Long, isOn: Boolean) {
-        scope.launch {
-            deviceCommandHandler.execute(
-                deviceId,
-                isOn
-            )
+        try {
+            scope.launch {
+                devicesStateRepository.updateDeviceState(deviceId, true, isOn)
+                deviceCommandHandler.execute(deviceId, isOn)
+            }
+        } catch (e: Exception) {
+            // revert or show error
+            Napier.e { "Error toggling power: ${e.message}" }
         }
     }
 }

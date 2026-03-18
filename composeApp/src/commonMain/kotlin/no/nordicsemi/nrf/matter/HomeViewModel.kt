@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter
 
 import androidx.lifecycle.ViewModel
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -67,6 +68,7 @@ class HomeViewModel(
             devicesStateRepository.devicesStateFlow,
             userPreferencesRepository.userPreferencesFlow
         ) { devices, states, prefs ->
+            Napier.i { "AAA, combine devices: $devices states: ${states.devicesStateList}" }
             DevicesListUiModel(
                 devices = processDevices(devices, states, prefs),
                 showOfflineDevices = !prefs.hideOfflineDevices
@@ -122,11 +124,14 @@ class HomeViewModel(
     }
 
     fun changeDeviceState(deviceId: Long, isOn: Boolean) {
-        scope.launch {
-            deviceCommandHandler.execute(
-                deviceId,
-                isOn
-            )
+        try {
+            scope.launch {
+                devicesStateRepository.updateDeviceState(deviceId, true, isOn)
+                deviceCommandHandler.execute(deviceId, isOn)
+            }
+        } catch (e: Exception) {
+            // revert or show error
+            Napier.e { "Error toggling power: ${e.message}" }
         }
     }
 }

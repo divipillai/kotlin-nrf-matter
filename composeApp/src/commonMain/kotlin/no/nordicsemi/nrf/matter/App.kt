@@ -131,12 +131,6 @@ fun App(homeViewModel: HomeViewModel) {
                             homeViewModel = homeViewModel,
                             onDeviceClick = { deviceId ->
                                 backStack.add(DetailsRoute(deviceId))
-                            },
-                            updateDeviceState = { deviceId, onOff ->
-                                homeViewModel.changeDeviceState(
-                                    deviceId = deviceId,
-                                    isOn = onOff,
-                                )
                             }
                         )
                     },
@@ -157,15 +151,13 @@ private fun EntryProviderScope<NavKey>.screens(
     backStack: NavBackStack<NavKey>,
     onCommissioningStarted: () -> Unit,
     onDeviceClick: (deviceId: Long) -> Unit,
-    updateDeviceState: (deviceId: Long, Boolean) -> Unit,
 ) {
     entry<HomeRoute> {
         HomeScreen(
             innerPaddings = padding,
             homeViewModel = homeViewModel,
             onCommissionClick = onCommissioningStarted,
-            onDeviceClick = { onDeviceClick(it) },
-            updateDeviceState = updateDeviceState
+            onDeviceClick = { onDeviceClick(it) }
         )
 
     }

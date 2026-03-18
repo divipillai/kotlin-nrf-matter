@@ -6,10 +6,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -33,8 +29,7 @@ internal fun LockItem(
     onLockUnlockDoor: (deviceId: Long, value: Boolean) -> Unit,
     onDeviceClick: () -> Unit,
 ) {
-    var isDoorLocked by rememberSaveable { mutableStateOf(isLocked) }
-    val icon = if (isDoorLocked)
+    val icon = if (isLocked)
         painterResource(Res.drawable.door_lock)
     else painterResource(Res.drawable.door_lock_open_right)
 
@@ -48,11 +43,11 @@ internal fun LockItem(
             color = Color.LightGray.copy(alpha = 0.2f),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.clickable {
-                onLockUnlockDoor(deviceId, !isDoorLocked)
+                onLockUnlockDoor(deviceId, !isLocked)
             }
         ) {
             Text(
-                if (isDoorLocked) "Locked" else "Unlocked",
+                if (isLocked) "Locked" else "Unlocked",
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,

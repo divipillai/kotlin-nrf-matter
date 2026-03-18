@@ -47,7 +47,6 @@ fun HomeScreen(
     homeViewModel: HomeViewModel,
     onCommissionClick: () -> Unit,
     onDeviceClick: (deviceId: Long) -> Unit,
-    updateDeviceState: (deviceId: Long, value: Boolean) -> Unit,
 ) {
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
 
@@ -59,7 +58,9 @@ fun HomeScreen(
         } else {
             DeviceList(
                 onDeviceClick = { onDeviceClick(it.device.deviceId) },
-                updateDeviceState = updateDeviceState,
+                updateDeviceState = { deviceId, value ->
+                    homeViewModel.changeDeviceState(deviceId, value)
+                },
                 devicesList = devicesUiModel.devices,
             )
         }

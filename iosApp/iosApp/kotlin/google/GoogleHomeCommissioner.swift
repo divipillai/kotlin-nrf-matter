@@ -23,38 +23,61 @@ class GoogleHomeCommissioner : MatterCommissioner {
     }
     
     func commission() async -> Device? {
-        let home = try? await Home.connect()
-        
-        guard let home else { return nil }
-        
-        let allStructuresChanges = home.structures()
-        let allStructures = (try? await allStructuresChanges.list()) ?? []
-        let structure = allStructures.first
-
-        guard let structure else { return nil }
-        
-        let homes = [MatterAddDeviceRequest.Home(displayName: "Nordic Home")]
-        let topology = MatterAddDeviceRequest.Topology(ecosystemName: "Nordic Ecosystem", homes: homes)
-        
-        let request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
+        var structure: Structure? = nil
+        var home: Home? = nil
         
         do {
+            print("AAATESTAAA - Home.connect()")
+            
+            home = try await Home.connect()
+            
+            print("AAATESTAAA - home.structures()")
+            
+            let allStructuresChanges = home!.structures()
+            let allStructures = try await allStructuresChanges.list()
+            structure = allStructures.first
+        } catch {
+            print("AAATESTAAA - error")
+        }
+        
+        guard let structure, let home else {
+            print("AAATESTAAA - structures are null")
+            return nil
+        }
+        
+        do {
+            print("AAATESTAAA - structure not null")
+            
+            let homes = [MatterAddDeviceRequest.Home(displayName: "Nordic Home")]
+            let topology = MatterAddDeviceRequest.Topology(ecosystemName: "Nordic Ecosystem", homes: homes)
+            
+            let request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
+            
+            print("AAATESTAAA - structure.prepareForMatterCommissioning()")
+            
             try await structure.prepareForMatterCommissioning()
             
             let storage = MatterStorage()
             storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.google.rawValue)
             
+            print("AAATESTAAA - structure.perform()")
+            
             try await request.perform()
+            
+            print("AAATESTAAA - structure.completeMatterCommissioning()")
             
             guard let commissionedDeviceID = (try await structure.completeMatterCommissioning()).first else {
                 return nil
             }
             
             print("AAATESTAAA - id: \(commissionedDeviceID)")
+            print("AAATESTAAA - structure.devices()")
             
             guard let device = try await home.devices().list().first(where: { $0.id == commissionedDeviceID }) else {
                 return nil
             }
+            
+            print("AAATESTAAA - parts")
             
             let rootDevice = await device.parts.get(RootNodeDeviceType.self)
             if let basicInformationTrait = rootDevice?.traits[Matter.BasicInformationTrait.self] {
@@ -77,6 +100,7 @@ class GoogleHomeCommissioner : MatterCommissioner {
                 )
             }
         } catch {
+            print("AAATESTAAA - error")
             let result = structure.markMatterCommissioningFailed(error: error)
             Logger().error("Failed to complete MatterAddDeviceRequest: \(result.detailedError).")
         }

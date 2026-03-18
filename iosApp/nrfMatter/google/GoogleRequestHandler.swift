@@ -21,7 +21,8 @@ final class GoogleRequestHandler: MatterAddDeviceExtensionRequestHandler {
           return fetchedRooms
         } catch {
           // Failed to fetch rooms with error
-          return []
+            let rooms: [String] = ["Fallback"]
+            return rooms.map { MatterAddDeviceRequest.Room(displayName: $0) }
         }
     }
 

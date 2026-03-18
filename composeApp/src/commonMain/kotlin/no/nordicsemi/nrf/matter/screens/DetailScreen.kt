@@ -244,9 +244,6 @@ private fun DeviceControlSection(
     device: DeviceUiModel,
     presenter: DevicePresenter
 ) {
-
-    val deviceId = device.device.deviceId
-
     when (device.device.deviceType) {
 
         DeviceType.LIGHT_ON_OFF,
@@ -255,7 +252,7 @@ private fun DeviceControlSection(
         DeviceType.EXTENDED_COLOR_LIGHT -> {
 
             DeviceControlItem(
-                deviceId = deviceId,
+                deviceId = device.device.deviceId,
                 title = "Light",
                 subtitle = "Turn light ON or OFF",
                 icon = painterResource(Res.drawable.light_bulb),
@@ -271,7 +268,7 @@ private fun DeviceControlSection(
         DeviceType.OUTLET -> {
 
             DeviceControlItem(
-                deviceId = deviceId,
+                deviceId = device.device.deviceId,
                 title = "Power Outlet",
                 subtitle = "Turn device ON or OFF",
                 icon = painterResource(Res.drawable.smart_outlet),
@@ -285,7 +282,7 @@ private fun DeviceControlSection(
 
         DeviceType.DOOR_LOCK -> {
             LockItem(
-                deviceId = deviceId,
+                deviceId = device.device.deviceId,
                 title = "Front Door",
                 subtitle = "Smart Lock",
                 isLocked = device.isOn,

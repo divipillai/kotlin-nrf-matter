@@ -6,24 +6,23 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.model.Device
@@ -57,7 +55,6 @@ internal fun TargetLightSettings(
         AnimatedVisibility(isExpanded) {
             // Your AlertDialog content here
             TargetLightSettingsDialog(
-                selectedItems = selectedItems,
                 onConfirmation = onItemSelected,
                 onDismiss = { isExpanded = false }
             )
@@ -67,13 +64,13 @@ internal fun TargetLightSettings(
 
 @Composable
 internal fun TargetLightSettingsDialog(
-    selectedItems: List<Device>,
     onDismiss: () -> Unit,
     onConfirmation: () -> Unit,
 ) {
     val updateOptions = DEVICE_LIST_TEST // TODO: get all light on/off devices.
-    val (selectedOption, onOptionSelected) = remember { mutableStateOf(selectedItems) }
-
+    val selectedOptions = remember {
+        mutableStateListOf(DEVICE_LIST_TEST.first())
+    }
     AlertDialog(
         title = {
             Column(
@@ -96,59 +93,55 @@ internal fun TargetLightSettingsDialog(
             ) {
 
                 Column(Modifier.selectableGroup()) {
-                    updateOptions.forEach { text ->
+                    updateOptions.forEach { device ->
                         OutlinedCard(
                             modifier = Modifier.padding(8.dp)
                         ) {
                             Row(
                                 Modifier
                                     .fillMaxWidth()
-                                    .selectable(
-                                        selected = (text == selectedOption),
-                                        onClick = { },
-                                        role = Role.RadioButton
-                                    )
-                                    .padding(16.dp),
+                                    .padding(8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column {
+                                Checkbox(
+                                    checked = selectedOptions.contains(device),
+                                    onCheckedChange = { isChecked ->
+                                        if (isChecked) {
+                                            selectedOptions.add(device)
+                                        } else {
+                                            selectedOptions.remove(device)
+                                        }
+                                    }
+                                )
+
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(start = 8.dp)
+                                ) {
                                     Text(
-                                        text = text.name ?: "Unknown",
+                                        text = device.name ?: "Unknown",
                                         style = MaterialTheme.typography.bodyLarge,
                                     )
                                     Text(
-                                        text = "${text.deviceType}",
+                                        text = "${device.productName}",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
-                                Spacer(modifier = Modifier.weight(1f))
-                                // TODO: ADD the Multiple choice options.
+
 
                             }
                         }
                     }
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.WarningAmber,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.scrim
-                    )
-                    Text(text = "Warning message")
-                }
             }
-
-
         },
         onDismissRequest = { onDismiss() },
         confirmButton = {
             Button(
                 onClick = {
-                    onDismiss()
+                    onConfirmation()
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -176,7 +169,6 @@ internal fun TargetLightSettingsDialog(
 @Composable
 private fun TargetLightSettingsDialogPreview() {
     TargetLightSettingsDialog(
-        selectedItems = DEVICE_LIST_TEST,
         onDismiss = {},
         onConfirmation = {}
     )

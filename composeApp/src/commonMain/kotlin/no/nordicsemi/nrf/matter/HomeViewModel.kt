@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter
 
 import androidx.lifecycle.ViewModel
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -67,6 +68,7 @@ class HomeViewModel(
             devicesStateRepository.devicesStateFlow,
             userPreferencesRepository.userPreferencesFlow
         ) { devices, states, prefs ->
+            Napier.i { "AAA, combine devices: $devices states: ${states.devicesStateList}" }
             DevicesListUiModel(
                 devices = processDevices(devices, states, prefs),
                 showOfflineDevices = !prefs.hideOfflineDevices

@@ -2,10 +2,6 @@ package no.nordicsemi.nrf.matter.ui
 
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.painter.Painter
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
 
@@ -19,21 +15,17 @@ internal fun DeviceControlItem(
     updateDeviceState: (deviceId: Long, Boolean) -> Unit,
     onClick: () -> Unit
 ) {
-
-    var checked by rememberSaveable { mutableStateOf(enabled) }
-
     DeviceItemContainer(
         icon = icon,
         title = title,
         subtitle = subtitle,
-        isOnline = checked,
+        isOnline = enabled,
         onDeviceClick = onClick
     ) {
         Switch(
-            checked = checked,
+            checked = enabled,
             onCheckedChange = {
-                checked = it
-                updateDeviceState(deviceId, checked)
+                updateDeviceState(deviceId, it)
             }
         )
     }

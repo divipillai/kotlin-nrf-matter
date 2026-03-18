@@ -129,7 +129,7 @@ fun DeviceScreen(
     }
 
     LaunchedEffect(deviceId) {
-        devicePresenter.loadDevice(deviceId)
+        devicePresenter.observeDevice(deviceId)
     }
     if (uiState.deviceUiModel == null) {
         Text("Still loading the device information")

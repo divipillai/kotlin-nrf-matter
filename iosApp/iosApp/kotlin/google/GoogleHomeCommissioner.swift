@@ -48,8 +48,10 @@ class GoogleHomeCommissioner : MatterCommissioner {
         do {
             print("AAATESTAAA - structure not null")
             
-            let homes = [MatterAddDeviceRequest.Home(displayName: "Nordic Home")]
-            let topology = MatterAddDeviceRequest.Topology(ecosystemName: "Nordic Ecosystem", homes: homes)
+            let topology = MatterAddDeviceRequest.Topology(
+              ecosystemName: "Google Home",
+              homes: [MatterAddDeviceRequest.Home(displayName: structure.name)]
+            )
             
             let request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
             

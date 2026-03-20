@@ -27,7 +27,7 @@ class LocalMatterCommissioner : MatterCommissioner {
         let request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
         
         do {
-            let storage = MatterStorage()
+            let storage = SharedStorage()
             storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.local.rawValue)
             
             try await request.perform()

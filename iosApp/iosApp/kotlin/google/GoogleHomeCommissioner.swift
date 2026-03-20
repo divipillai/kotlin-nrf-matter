@@ -14,6 +14,10 @@ import SharedCode
 import GoogleHomeSDK
 import GoogleHomeTypes
 
+enum PairingError: Error {
+    case test
+}
+
 class GoogleHomeCommissioner : MatterCommissioner {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "GoogleHomeCommissioner")
@@ -53,13 +57,12 @@ class GoogleHomeCommissioner : MatterCommissioner {
               homes: [MatterAddDeviceRequest.Home(displayName: structure.name)]
             )
             
-            let request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
+            let request = MatterAddDeviceRequest(topology: topology)
             
             print("AAATESTAAA - structure.prepareForMatterCommissioning()")
-            
             try await structure.prepareForMatterCommissioning()
             
-            let storage = MatterStorage()
+            let storage = SharedStorage()
             storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.google.rawValue)
             
             print("AAATESTAAA - structure.perform()")
@@ -69,6 +72,7 @@ class GoogleHomeCommissioner : MatterCommissioner {
             print("AAATESTAAA - structure.completeMatterCommissioning()")
             
             guard let commissionedDeviceID = (try await structure.completeMatterCommissioning()).first else {
+                print("AAATESTAAA - commissionedDeviceID is nil")
                 return nil
             }
             
@@ -76,6 +80,7 @@ class GoogleHomeCommissioner : MatterCommissioner {
             print("AAATESTAAA - structure.devices()")
             
             guard let device = try await home.devices().list().first(where: { $0.id == commissionedDeviceID }) else {
+                print("AAATESTAAA - device is nil")
                 return nil
             }
             
@@ -102,7 +107,7 @@ class GoogleHomeCommissioner : MatterCommissioner {
                 )
             }
         } catch {
-            print("AAATESTAAA - error")
+            print("AAATESTAAA - error: \(error)")
             let result = structure.markMatterCommissioningFailed(error: error)
             Logger().error("Failed to complete MatterAddDeviceRequest: \(result.detailedError).")
         }

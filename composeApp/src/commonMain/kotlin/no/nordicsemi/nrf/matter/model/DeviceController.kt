@@ -52,4 +52,10 @@ interface DeviceController {
         isSwitchOn: Boolean,
         endpoint: Int,
     )
+
+    // Bind switch to light
+    suspend fun bindSwitchToLight(
+        switchNodeId: Long,
+        lightNodeId: Long
+    )
 }

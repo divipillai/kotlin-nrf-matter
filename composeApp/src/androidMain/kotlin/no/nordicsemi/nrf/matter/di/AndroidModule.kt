@@ -8,6 +8,7 @@ import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
 import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
+import no.nordicsemi.nrf.matter.chip.BindingLightSwitch
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
@@ -83,6 +84,7 @@ val androidModule = module {
 
     single<ChipClient> { ChipClient(context = androidContext()) }
     single<ClustersHelper> { ClustersHelper(chipClient = get()) }
+    single { BindingLightSwitch(chipClient = get()) }
 
 
     // Define CoroutineScope as a singleton
@@ -94,7 +96,7 @@ val androidModule = module {
     single<UserPreferencesRepository> { UserPreferencesRepository(get()) }
 
     // Inject DeviceController
-    single<DeviceController> { AndroidDeviceController(get(), get()) }
+    single<DeviceController> { AndroidDeviceController(get(), get(), get ()) }
 
     // Binding Viewmodel
     viewModelOf(::BeaconViewModel)

@@ -30,7 +30,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,7 +38,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -234,7 +232,10 @@ private fun DeviceDetails(
 
         if (device.device.deviceType == DeviceType.LIGHT_SWITCH) {
             SectionTitle("Linked Lights")
-            LightSwitchBindingCard()
+            LightSwitchBindingCard() {
+                // TODO: Call the callback function here
+                // devicePresenter.initiateBinding(deviceId, bulbNodeIde)
+            }
         }
 
         SectionTitle("Sharing")
@@ -682,6 +683,7 @@ fun DeviceItemContainerPreview() {
 @Preview(showBackground = true)
 @Composable
 internal fun LightSwitchBindingCard(
+    onLightSelected: (lightBulbNodeId: Long) -> Unit = {},
 ) {
     var isDialogOpen by remember { mutableStateOf(false) }
     val selectedLightItem = remember { mutableStateListOf<Device>(DEVICE_LIST_TEST.first()) }

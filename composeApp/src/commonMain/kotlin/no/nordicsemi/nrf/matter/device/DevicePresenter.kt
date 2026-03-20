@@ -155,4 +155,14 @@ class DevicePresenter(
     }
 
 
+    // Method to call binding.
+    fun initiateBinding(switchNodeId: Long, lightNodeId: Long) {
+        scope.launch {
+            try {
+                deviceController.bindSwitchToLight(switchNodeId, lightNodeId)
+            } catch (e: Exception) {
+                Napier.e(e) { "AAA, Error initiating binding: ${e.message}" }
+            }
+        }
+    }
 }

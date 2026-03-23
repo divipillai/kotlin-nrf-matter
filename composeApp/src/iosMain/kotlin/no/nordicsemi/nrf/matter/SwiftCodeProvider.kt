@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter
 
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceId
 
 interface SwiftCodeProvider {
 
@@ -18,13 +19,13 @@ interface MatterCommissioner {
 
 interface MatterDecommissioner {
 
-    suspend fun decommission(nodeId: Long)
+    suspend fun decommission(deviceId: DeviceId)
 }
 
 interface MatterOnOffController {
 
     suspend fun setDeviceOnOff(
-        deviceId: Long,
+        deviceId: DeviceId,
         isDeviceOnline: Boolean,
         isOn: Boolean,
         endpoint: Int,

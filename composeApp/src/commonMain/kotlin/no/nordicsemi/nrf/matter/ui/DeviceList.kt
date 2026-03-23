@@ -24,8 +24,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.utils.title
@@ -74,7 +76,7 @@ import org.jetbrains.compose.resources.painterResource
 internal fun DeviceList(
     devicesList: List<DeviceUiModel>,
     onDeviceClick: (DeviceUiModel) -> Unit,
-    updateDeviceState: (deviceId: Long, value: Boolean) -> Unit
+    updateDeviceState: (deviceId: DeviceId, value: Boolean) -> Unit
 ) {
 
     val groupedDevices = devicesList.groupBy { it.device.deviceType.toSection() }
@@ -267,7 +269,7 @@ private val DeviceTest_LIGHT =
         vendorId = "1234",
         productId = "5678",
         deviceType = DeviceType.LIGHT_ON_OFF,
-        deviceId = 1L,
+        deviceId = 1L.toDeviceId(),
         name = "Living Room Light",
         productName = "My Light",
         vendorName = "MyVendor",
@@ -280,7 +282,7 @@ private val DeviceTest_DOORLOCK =
         vendorId = "1234",
         productId = "5678",
         deviceType = DeviceType.DOOR_LOCK,
-        deviceId = 2L, // Fix: Changed deviceId to 2L to ensure unique keys in LazyColumn
+        deviceId = 2L.toDeviceId(), // Fix: Changed deviceId to 2L to ensure unique keys in LazyColumn
         name = "Front Door", // Updated name for consistency
         productName = "My Lock",
         vendorName = "MyVendor",

@@ -52,6 +52,7 @@ import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
@@ -117,7 +118,7 @@ val MatterGreen = Color(0xFF22C55E)
  */
 @Composable
 fun DeviceScreen(
-    deviceId: Long,
+    deviceId: DeviceId,
     padding: PaddingValues,
     snackbarHostState: SnackbarHostState,
     onBack: () -> Unit
@@ -636,7 +637,7 @@ private val DeviceTest =
         vendorId = "1234",
         productId = "5678",
         deviceType = DeviceType.LIGHT_ON_OFF,
-        deviceId = 1L,
+        deviceId = DeviceId.Zero,
         name = "Living Room Light",
         productName = "My Light",
         vendorName = "Nordic Semiconductor ASA Nordic Semiconductor ASA",

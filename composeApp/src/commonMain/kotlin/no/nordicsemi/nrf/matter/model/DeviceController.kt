@@ -32,23 +32,23 @@ package no.nordicsemi.nrf.matter.model
  */
 interface DeviceController {
     suspend fun setDeviceOnOff(
-        deviceId: Long,
+        deviceId: DeviceId,
         isDeviceOnline: Boolean,
         isOn: Boolean,
         endpoint: Int,
     )
 
-    suspend fun unlinkDevice(deviceId: Long)
+    suspend fun unlinkDevice(deviceId: DeviceId)
 
     suspend fun lockUnlockDoor(
-        deviceId: Long,
+        deviceId: DeviceId,
         isLocked: Boolean,
         endpoint: Int,
     )
 
     // function to handle outlet
     suspend fun handleOutlet(
-        deviceId: Long,
+        deviceId: DeviceId,
         isSwitchOn: Boolean,
         endpoint: Int,
     )

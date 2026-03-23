@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.device
 
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 
 /*
@@ -39,11 +40,11 @@ sealed interface RemoveDeviceState {
     data object ConfirmRemove : RemoveDeviceState
 
     data class Removed(
-        val deviceId: Long,
+        val deviceId: DeviceId,
     ) : RemoveDeviceState
 
     data class ForceRemove(
-        val deviceId: Long,
+        val deviceId: DeviceId,
     ) : RemoveDeviceState
 }
 

@@ -6,6 +6,7 @@ import androidx.datastore.core.okio.OkioStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DevicesState
 import no.nordicsemi.nrf.matter.serializer.DevicesStateOkioSerializer
 import okio.FileSystem
@@ -72,7 +73,7 @@ class IosDevicesStateDataSource(
         }
     }
 
-    override suspend fun removeDevice(deviceId: Long) {
+    override suspend fun removeDevice(deviceId: DeviceId) {
         dataStore.updateData { current ->
             current.copy(
                 devicesStateList = current.devicesStateList

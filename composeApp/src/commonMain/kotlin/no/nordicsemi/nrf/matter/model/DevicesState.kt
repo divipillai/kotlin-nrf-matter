@@ -43,7 +43,7 @@ data class DeviceState @OptIn(ExperimentalTime::class) constructor(
     val dateCaptured: kotlin.time.Instant,
 
     /** Device ID within the app's fabric. */
-    val deviceId: Long,
+    val deviceId: DeviceId,
 
     /** Whether the device is offline (false) or online (true). */
     val online: Boolean,

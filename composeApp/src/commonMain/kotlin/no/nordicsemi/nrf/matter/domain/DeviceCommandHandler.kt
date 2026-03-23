@@ -2,6 +2,7 @@ package no.nordicsemi.nrf.matter.domain
 
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
@@ -43,7 +44,7 @@ class DeviceCommandHandler(
 ) {
 
     suspend fun execute(
-        deviceId: Long,
+        deviceId: DeviceId,
         command: Boolean
     ) {
         val device = devicesRepository.getDeviceOrNull(deviceId) ?: return
@@ -66,7 +67,7 @@ class DeviceCommandHandler(
 
     private suspend fun handlePower(
         device: Device,
-        deviceId: Long,
+        deviceId: DeviceId,
         isOn: Boolean
     ) {
         val endpoint = resolveEndpoint(device, clusterId = 6L)
@@ -99,7 +100,7 @@ class DeviceCommandHandler(
 
     private suspend fun handleLock(
         device: Device,
-        deviceId: Long,
+        deviceId: DeviceId,
         isLocked: Boolean
     ) {
         val endpoint =
@@ -132,7 +133,7 @@ class DeviceCommandHandler(
 
     private suspend fun handleOutlet(
         device: Device,
-        deviceId: Long,
+        deviceId: DeviceId,
         isSwitchOn: Boolean,
     ) {
         val endpoint =

@@ -34,12 +34,34 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
+data class DeviceId(val value: String) {
+
+    val longValue
+        get() = value.toLong()
+
+    val stringValue
+        get() = value
+
+    companion object {
+        val Zero = 0L.toDeviceId()
+    }
+}
+
+fun String.toDeviceId(): DeviceId {
+    return DeviceId(this)
+}
+
+fun Long.toDeviceId(): DeviceId {
+    return DeviceId(this.toString())
+}
+
+@Serializable
 data class Device(
+    val deviceId: DeviceId,
     val dateCommissioned: Long? = null,
     val vendorId: String? = null,
     val productId: String? = null,
     val deviceType: DeviceType = DeviceType.UNKNOWN, // TODO: device type is no longer provided by the DeviceDescriptor.
-    val deviceId: Long = 0L,
     val name: String? = null,
 //    val room: String? = null, todo: Removed since it is deprecated in the Matter API.
     val productName: String? = null,
@@ -74,7 +96,7 @@ enum class DeviceType {
 
 @Serializable
 data class Devices(
-    val lastDeviceId: Long = 0L,
+    val lastDeviceId: DeviceId = DeviceId.Zero,
     val devicesList: List<Device> = emptyList()
 )
 

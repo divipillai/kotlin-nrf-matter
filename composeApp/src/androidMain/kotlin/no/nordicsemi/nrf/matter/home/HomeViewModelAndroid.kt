@@ -13,6 +13,7 @@ import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.toDeviceId
 import kotlin.time.Clock
 
 /*
@@ -70,7 +71,7 @@ class HomeViewModelAndroid(
 
     fun onCommissionedDeviceNameCaptured(deviceName: String) {
         viewModelScope.launch {
-            val deviceId = gpsCommissioningResult?.token?.toLong()!!
+            val deviceId = gpsCommissioningResult?.token!!.toDeviceId()
             val vendorName =
                 try {
                     clustersHelper.readBasicClusterVendorNameAttribute(deviceId)

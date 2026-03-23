@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter.repository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DevicesState
 import kotlin.time.Clock
@@ -46,7 +47,7 @@ class DevicesStateRepository(
         dataSource.devicesFlow
 
     suspend fun addDeviceState(
-        deviceId: Long,
+        deviceId: DeviceId,
         isOnline: Boolean,
         isOn: Boolean
     ) {
@@ -66,7 +67,7 @@ class DevicesStateRepository(
     }
 
     suspend fun updateDeviceState(
-        deviceId: Long,
+        deviceId: DeviceId,
         isOnline: Boolean,
         isOn: Boolean
     ) {
@@ -99,7 +100,7 @@ class DevicesStateRepository(
         }
     }
 
-    suspend fun loadDeviceState(deviceId: Long): DeviceState? =
+    suspend fun loadDeviceState(deviceId: DeviceId): DeviceState? =
         devicesStateFlow
             .first()
             .devicesStateList
@@ -112,7 +113,7 @@ class DevicesStateRepository(
         dataSource.update { DevicesState() }
     }
 
-    suspend fun removeDevice(deviceId: Long) {
+    suspend fun removeDevice(deviceId: DeviceId) {
         dataSource.removeDevice(deviceId)
     }
 }

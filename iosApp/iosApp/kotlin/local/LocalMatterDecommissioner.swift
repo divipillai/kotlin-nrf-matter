@@ -10,9 +10,9 @@ import SharedCode
 
 class LocalMatterDecommissioner : MatterDecommissioner {
     
-    func decommission(nodeId: Int64) async {
+    func decommission(deviceId: DeviceId) async {
         let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()!
 
-        controller.forgetDevice(withNodeID: nodeId as NSNumber)
+        controller.forgetDevice(withNodeID: deviceId.nsNumber())
     }
 }

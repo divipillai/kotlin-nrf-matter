@@ -12,6 +12,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -22,11 +24,11 @@ import org.jetbrains.compose.resources.painterResource
 // Lock Item
 @Composable
 internal fun LockItem(
-    deviceId: Long,
+    deviceId: DeviceId,
     title: String,
     subtitle: String,
     isLocked: Boolean,
-    onLockUnlockDoor: (deviceId: Long, value: Boolean) -> Unit,
+    onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
     onDeviceClick: () -> Unit,
 ) {
     val icon = if (isLocked)
@@ -63,7 +65,7 @@ private fun LockItemPreview() {
     NordicTheme {
         LockItem(
             onLockUnlockDoor = { _, _ -> },
-            deviceId = 1L,
+            deviceId = 1L.toDeviceId(),
             title = "Front Door",
             subtitle = "Smart Lock",
             isLocked = false,

@@ -6,6 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+import no.nordicsemi.nrf.matter.model.DeviceId
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -44,7 +45,7 @@ data object HomeRoute : NavKey
 
 @Serializable
 @SerialName("Details")
-data class DetailsRoute(val id: Long) : NavKey
+data class DetailsRoute(val id: DeviceId) : NavKey
 
 val config = SavedStateConfiguration {
     serializersModule = SerializersModule {

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
@@ -61,7 +62,7 @@ class DevicePresenter(
     private val _uiState = MutableStateFlow(DeviceUiState())
     val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
 
-    fun observeDevice(deviceId: Long) {
+    fun observeDevice(deviceId: DeviceId) {
         scope.launch {
             devicesStateRepository.devicesStateFlow
                 .map { states ->
@@ -94,7 +95,7 @@ class DevicePresenter(
     // is shown so the user has the option to force remove the device without unlinking
     // the fabric at the device. If a forced removal is selected, then function
     // removeDeviceWithoutUnlink is called.
-    fun removeDevice(deviceId: Long) {
+    fun removeDevice(deviceId: DeviceId) {
         _uiState.update {
             it.copy(removeDeviceState = RemoveDeviceState.Removing)
         }
@@ -127,7 +128,7 @@ class DevicePresenter(
     // This function is called after removeDevice() has failed trying to unlink the device
     // and the user has confirmed that the device should still be removed from the app's device
     // repository.
-    fun removeDeviceWithoutUnlink(deviceId: Long) {
+    fun removeDeviceWithoutUnlink(deviceId: DeviceId) {
         scope.launch {
             try {
                 // Remove device from the app's devices repository.
@@ -141,7 +142,7 @@ class DevicePresenter(
         }
     }
 
-    fun togglePower(deviceId: Long, isOn: Boolean) {
+    fun togglePower(deviceId: DeviceId, isOn: Boolean) {
         try {
             scope.launch {
                 devicesStateRepository.updateDeviceState(deviceId, true, isOn)

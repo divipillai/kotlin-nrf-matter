@@ -26,6 +26,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
 import no.nordicsemi.nrf.matter.navigation.DetailsRoute
@@ -150,7 +151,7 @@ private fun EntryProviderScope<NavKey>.screens(
     homeViewModel: HomeViewModel,
     backStack: NavBackStack<NavKey>,
     onCommissioningStarted: () -> Unit,
-    onDeviceClick: (deviceId: Long) -> Unit,
+    onDeviceClick: (deviceId: DeviceId) -> Unit,
 ) {
     entry<HomeRoute> {
         HomeScreen(

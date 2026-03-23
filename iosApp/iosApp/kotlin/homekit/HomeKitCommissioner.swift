@@ -33,11 +33,11 @@ class HomeKitCommissioner : MatterCommissioner {
         guard let nodeId else { return nil }
         
         return Device(
+            deviceId: DeviceId(value: String(nodeId)),
             dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),
             vendorId: nil,
             productId: nil,
             deviceType: .lightOnOff,
-            deviceId: Int64(nodeId),
             name: accessory.name,
             productName: accessory.model,
             vendorName: accessory.manufacturer,

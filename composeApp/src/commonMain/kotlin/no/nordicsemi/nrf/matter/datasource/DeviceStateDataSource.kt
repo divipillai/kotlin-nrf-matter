@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.datasource
 
 import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DevicesState
 
 
@@ -38,5 +39,5 @@ import no.nordicsemi.nrf.matter.model.DevicesState
 interface DeviceStateDataSource {
     val devicesFlow: Flow<DevicesState>
     suspend fun update(transform: (DevicesState) -> DevicesState)
-    suspend fun removeDevice(deviceId: Long)
+    suspend fun removeDevice(deviceId: DeviceId)
 }

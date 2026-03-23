@@ -15,9 +15,9 @@ class HomeKitMatterOnOffController : MatterOnOffController {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "HomeKitMatterOnOffController")
 
-    func setDeviceOnOff(deviceId: Int64, isDeviceOnline: Bool, isOn: Bool, endpoint: Int32) async throws {
+    func setDeviceOnOff(deviceId: DeviceId, isDeviceOnline: Bool, isOn: Bool, endpoint: Int32) async throws {
         let controller = HomeKitController.shared()
-        let accessory = controller.getAccessory(nodeId: deviceId)
+        let accessory = controller.getAccessory(deviceId: deviceId)
         
         guard let accessory else { return }
         

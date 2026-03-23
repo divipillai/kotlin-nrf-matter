@@ -4,6 +4,7 @@ import android.content.Context
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.Devices
 import no.nordicsemi.nrf.matter.serializer.devicesDataStore
 import java.io.IOException
@@ -63,7 +64,7 @@ internal class AndroidDevicesDataSource(
         }
     }
 
-    override suspend fun removeDevice(deviceId: Long) {
+    override suspend fun removeDevice(deviceId: DeviceId) {
         dataStore.updateData { devices ->
             if (devices.devicesList.none { it.deviceId == deviceId }) {
                 throw IllegalStateException("Device not found: $deviceId")

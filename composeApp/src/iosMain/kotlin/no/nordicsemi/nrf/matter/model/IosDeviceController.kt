@@ -40,7 +40,7 @@ class IosDeviceController(
 ): DeviceController {
 
     override suspend fun setDeviceOnOff(
-        deviceId: Long,
+        deviceId: DeviceId,
         isDeviceOnline: Boolean,
         isOn: Boolean,
         endpoint: Int,
@@ -48,12 +48,12 @@ class IosDeviceController(
         matterOnOffController.setDeviceOnOff(deviceId, isDeviceOnline, isOn, endpoint)
     }
 
-    override suspend fun unlinkDevice(deviceId: Long) {
+    override suspend fun unlinkDevice(deviceId: DeviceId) {
         matterDecommissioner.decommission(deviceId)
     }
 
     override suspend fun lockUnlockDoor(
-        deviceId: Long,
+        deviceId: DeviceId,
         isLocked: Boolean,
         endpoint: Int
     ) {
@@ -61,7 +61,7 @@ class IosDeviceController(
     }
 
     override suspend fun handleOutlet(
-        deviceId: Long,
+        deviceId: DeviceId,
         isSwitchOn: Boolean,
         endpoint: Int
     ) {

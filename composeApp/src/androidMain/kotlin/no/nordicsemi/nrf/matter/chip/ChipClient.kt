@@ -28,6 +28,7 @@ import chip.platform.PreferencesConfigurationManager
 import chip.platform.PreferencesKeyValueStoreManager
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.suspendCancellableCoroutine
+import no.nordicsemi.nrf.matter.model.DeviceId
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -157,7 +158,7 @@ class ChipClient(
     }
 
     suspend fun awaitEstablishPaseConnection(
-        deviceId: Long,
+        deviceId: DeviceId,
         ipAddress: String,
         port: Int,
         setupPinCode: Long
@@ -218,11 +219,11 @@ class ChipClient(
             // TODO: Fix it.
 //            chipDeviceController.establishPaseConnection(
 //                deviceId, stripLinkLocalInIpAddress(ipAddress), port, setupPinCode)
-            chipDeviceController.establishPaseConnection(deviceId, ipAddress, port, setupPinCode)
+            chipDeviceController.establishPaseConnection(deviceId.longValue, ipAddress, port, setupPinCode)
         }
     }
 
-    suspend fun awaitCommissionDevice(deviceId: Long, networkCredentials: NetworkCredentials?) {
+    suspend fun awaitCommissionDevice(deviceId: DeviceId, networkCredentials: NetworkCredentials?) {
         return suspendCancellableCoroutine { continuation ->
             chipDeviceController.setCompletionListener(
                 object : BaseCompletionListener() {
@@ -244,7 +245,7 @@ class ChipClient(
                         continuation.resumeWithException(error)
                     }
                 })
-            chipDeviceController.commissionDevice(deviceId, networkCredentials)
+            chipDeviceController.commissionDevice(deviceId.longValue, networkCredentials)
         }
     }
 

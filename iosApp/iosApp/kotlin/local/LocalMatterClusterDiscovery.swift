@@ -86,11 +86,11 @@ class LocalMatterClusterDiscovery {
         logger.debug("discoverClusters - finished")
         
         return Device(
+            deviceId: DeviceId(value: nodeId.stringValue),
             dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),
             vendorId: vendorId?.stringValue ?? "unknown",
             productId: productId?.stringValue ?? "unknown",
             deviceType: .lightOnOff, // TODO
-            deviceId: nodeId.int64Value,
             name: name,
             productName: productName,
             vendorName: vendorName,

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.Devices
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
@@ -123,7 +124,7 @@ class HomeViewModel(
         }
     }
 
-    fun changeDeviceState(deviceId: Long, isOn: Boolean) {
+    fun changeDeviceState(deviceId: DeviceId, isOn: Boolean) {
         try {
             scope.launch {
                 devicesStateRepository.updateDeviceState(deviceId, true, isOn)

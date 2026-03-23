@@ -4,6 +4,7 @@ import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.suspendCancellableCoroutine
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
 import java.util.Optional
 import kotlin.coroutines.resume
@@ -46,17 +47,17 @@ class ClustersHelper(private val chipClient: ChipClient) {
     // Convenience functions
 
     /** Fetches MatterDeviceInfo for each endpoint supported by the device. */
-    suspend fun fetchDeviceMatterInfo(nodeId: Long): List<DeviceMatterInfo> {
-        Napier.d { "AAA, fetchDeviceMatterInfo(): nodeId [${nodeId}]" }
+    suspend fun fetchDeviceMatterInfo(deviceId: DeviceId): List<DeviceMatterInfo> {
+        Napier.d { "AAA, fetchDeviceMatterInfo(): deviceId [${deviceId}]" }
         val matterDeviceInfoList = arrayListOf<DeviceMatterInfo>()
         val connectedDevicePtr =
             try {
-                chipClient.getConnectedDevicePointer(nodeId)
+                chipClient.getConnectedDevicePointer(deviceId.longValue)
             } catch (e: IllegalStateException) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return emptyList()
             }
-        fetchDeviceMatterInfo(nodeId, connectedDevicePtr, 0, matterDeviceInfoList)
+        fetchDeviceMatterInfo(deviceId.longValue, connectedDevicePtr, 0, matterDeviceInfoList)
         return matterDeviceInfoList
     }
 
@@ -255,10 +256,10 @@ class ClustersHelper(private val chipClient: ChipClient) {
      * @param deviceId device identifier
      * @param nodeLabel device name/node label
      */
-    suspend fun writeBasicClusterNodeLabelAttribute(deviceId: Long, nodeLabel: String) {
+    suspend fun writeBasicClusterNodeLabelAttribute(deviceId: DeviceId, nodeLabel: String) {
         val connectedDevicePtr =
             try {
-                chipClient.getConnectedDevicePointer(deviceId)
+                chipClient.getConnectedDevicePointer(deviceId.longValue)
             } catch (e: IllegalStateException) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return
@@ -288,10 +289,10 @@ class ClustersHelper(private val chipClient: ChipClient) {
      * @param deviceId the device identifier.
      * @return the vendor name
      */
-    suspend fun readBasicClusterVendorNameAttribute(deviceId: Long): String {
+    suspend fun readBasicClusterVendorNameAttribute(deviceId: DeviceId): String {
         val connectedDevicePtr =
             try {
-                chipClient.getConnectedDevicePointer(deviceId)
+                chipClient.getConnectedDevicePointer(deviceId.longValue)
             } catch (e: IllegalStateException) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return ""
@@ -321,10 +322,10 @@ class ClustersHelper(private val chipClient: ChipClient) {
      * @param deviceId the device identifier
      * @return the product name
      */
-    suspend fun readBasicClusterProductNameAttribute(deviceId: Long): String {
+    suspend fun readBasicClusterProductNameAttribute(deviceId: DeviceId): String {
         val connectedDevicePtr =
             try {
-                chipClient.getConnectedDevicePointer(deviceId)
+                chipClient.getConnectedDevicePointer(deviceId.longValue)
             } catch (e: IllegalStateException) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return ""

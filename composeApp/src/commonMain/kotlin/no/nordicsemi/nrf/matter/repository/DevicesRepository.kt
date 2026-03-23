@@ -4,8 +4,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.Devices
+import no.nordicsemi.nrf.matter.model.toDeviceId
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -44,13 +46,13 @@ class DevicesRepository(
 
     val devicesFlow: Flow<Devices> = dataSource.devicesFlow
 
-    suspend fun incrementAndReturnLastDeviceId(): Long {
+    suspend fun incrementAndReturnLastDeviceId(): DeviceId {
         var newId = 0L
         dataSource.update { devices ->
-            newId = devices.lastDeviceId + 1
-            devices.copy(lastDeviceId = newId)
+            newId = devices.lastDeviceId.longValue + 1
+            devices.copy(lastDeviceId = newId.toDeviceId())
         }
-        return newId
+        return newId.toDeviceId()
     }
 
     suspend fun addDevice(device: Device) {
@@ -69,7 +71,7 @@ class DevicesRepository(
         }
     }
 
-    suspend fun updateDeviceType(deviceId: Long, deviceType: DeviceType) {
+    suspend fun updateDeviceType(deviceId: DeviceId, deviceType: DeviceType) {
         var updated = false
 
         dataSource.update { devices ->
@@ -87,7 +89,7 @@ class DevicesRepository(
         }
     }
 
-    suspend fun removeDevice(deviceId: Long) {
+    suspend fun removeDevice(deviceId: DeviceId) {
         var removed = false
 
         dataSource.update { devices ->
@@ -105,7 +107,7 @@ class DevicesRepository(
         }
     }
 
-    suspend fun getDeviceOrNull(deviceId: Long): Device? =
+    suspend fun getDeviceOrNull(deviceId: DeviceId): Device? =
         devicesFlow.first().devicesList.firstOrNull { it.deviceId == deviceId }
 
     suspend fun getAllDevices(): Devices =

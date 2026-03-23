@@ -12,8 +12,8 @@ import HomeKit
 
 class HomeKitDecommissioner : MatterDecommissioner {
     
-    func decommission(nodeId: Int64) async {
+    func decommission(deviceId: DeviceId) async {
         let controller = HomeKitController.shared()
-        await controller.removeAccessory(nodeId: nodeId)
+        await controller.removeAccessory(deviceId: deviceId)
     }
 }

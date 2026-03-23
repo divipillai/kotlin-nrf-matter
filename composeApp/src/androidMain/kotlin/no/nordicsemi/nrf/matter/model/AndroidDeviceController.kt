@@ -40,36 +40,36 @@ class AndroidDeviceController(
 ) : DeviceController {
 
     override suspend fun setDeviceOnOff(
-        deviceId: Long,
+        deviceId: DeviceId,
         isDeviceOnline: Boolean,
         isOn: Boolean,
         endpoint: Int,
     ) {
         clustersHelper.setOnOffDeviceStateOnOffCluster(
-            deviceId = deviceId,
+            deviceId = deviceId.longValue,
             isOn = isOn,
             endpoint = endpoint
         )
     }
 
-    override suspend fun unlinkDevice(deviceId: Long) {
-        chipClient.awaitUnpairDevice(deviceId)
+    override suspend fun unlinkDevice(deviceId: DeviceId) {
+        chipClient.awaitUnpairDevice(deviceId.longValue)
     }
 
     override suspend fun lockUnlockDoor(
-        deviceId: Long,
+        deviceId: DeviceId,
         isLocked: Boolean,
         endpoint: Int
     ) {
         clustersHelper.lockUnlockDoor(
-            deviceId = deviceId,
+            deviceId = deviceId.longValue,
             isLocked = isLocked,
             endpoint = endpoint,
         )
     }
 
     override suspend fun handleOutlet(
-        deviceId: Long,
+        deviceId: DeviceId,
         isSwitchOn: Boolean,
         endpoint: Int
     ) {

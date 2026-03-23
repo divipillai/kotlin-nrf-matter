@@ -8,6 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.ui.DeviceList
 
 /*
@@ -46,7 +47,7 @@ fun HomeScreen(
     innerPaddings: PaddingValues,
     homeViewModel: HomeViewModel,
     onCommissionClick: () -> Unit,
-    onDeviceClick: (deviceId: Long) -> Unit,
+    onDeviceClick: (deviceId: DeviceId) -> Unit,
 ) {
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
 

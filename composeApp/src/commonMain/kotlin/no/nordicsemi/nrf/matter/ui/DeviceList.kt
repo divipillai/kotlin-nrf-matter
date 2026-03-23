@@ -94,7 +94,7 @@ internal fun DeviceList(
                 SectionTitle(section.title())
             }
 
-            items(devices, key = { it.device.deviceId.longValue }) { device ->
+            items(devices, key = { it.device.deviceId.stringValue }) { device ->
 
                 when (device.device.deviceType) {
 

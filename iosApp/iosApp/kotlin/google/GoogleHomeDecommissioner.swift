@@ -11,8 +11,8 @@ import SharedCode
 import HomeKit
 
 class GoogleHomeDecommissioner : MatterDecommissioner {
-    
-    func decommission(nodeId: Int64) async {
+
+    func decommission(deviceId: DeviceId) async throws {
         
     }
 }

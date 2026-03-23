@@ -95,11 +95,11 @@ class GoogleHomeCommissioner : MatterCommissioner {
                 let softwareVersionString = basicInformationTrait.attributes.softwareVersionString
                 
                 return Device(
+                    deviceId: DeviceId(value: commissionedDeviceID),
                     dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),
                     vendorId: vendorID != nil ? String(vendorID!) : "unknown",
                     productId: productID != nil ? String(productID!) : "unknown",
                     deviceType: .lightOnOff,
-                    deviceId: Int64(commissionedDeviceID)!,
                     name: device.name,
                     productName: productName,
                     vendorName: vendorName,

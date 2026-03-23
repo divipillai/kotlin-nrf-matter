@@ -105,7 +105,7 @@ class AppCommissioningService : Service(), CommissioningService.Callback, KoinCo
 
                 commissioningServiceDelegate
                     .sendCommissioningComplete(
-                        CommissioningCompleteMetadata.builder().setToken(deviceId.toString())
+                        CommissioningCompleteMetadata.builder().setToken(deviceId.stringValue)
                             .build()
                     )
                     .addOnSuccessListener {

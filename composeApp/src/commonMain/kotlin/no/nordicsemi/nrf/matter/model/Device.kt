@@ -34,7 +34,7 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
-data class DeviceId(val value: String) {
+data class DeviceId(private val value: String) {
 
     val longValue
         get() = value.toLong()

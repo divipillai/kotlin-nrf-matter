@@ -41,7 +41,7 @@ class GoogleHomeCommissioner : MatterCommissioner {
             
             try await structure.prepareForMatterCommissioning()
             
-            let storage = SharedStorage()
+            let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
             storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.google.rawValue)
             
             try await request.perform()

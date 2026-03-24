@@ -6,12 +6,14 @@
 //
 
 import Matter
-import os.log
 
 public class SharedStorage : NSObject, MTRStorage {
     
-    private let defaults = UserDefaults(suiteName: SharedConsts.sharedGroup)!
-    private let logger = Logger(subsystem: "nrf.matter", category: "MatterStorage")
+    private let defaults: UserDefaults
+    
+    public init(suitName: String) {
+        defaults = UserDefaults(suiteName: suitName)!
+    }
     
     public func storeString(key: String, value: String) {
         defaults.set(key, forKey: key)

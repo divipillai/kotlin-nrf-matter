@@ -11,13 +11,13 @@ import Matter
 import OSLog
 import SharedCode
 
-final class GoogleRequestHandler: MatterAddDeviceExtensionRequestHandler {
+final class GoogleRequestHandler: RequestHandlerProtocol {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "GoogleRequestHandler")
 
-    override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
+    func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
         do {
-          let homeMatterCommissioner = try HomeMatterCommissioner(appGroup: SharedConsts.appGroup)
+          let homeMatterCommissioner = try HomeMatterCommissioner(appGroup: SharedConsts.googleStorage)
           let fetchedRooms = try homeMatterCommissioner.fetchRooms()
           return fetchedRooms
         } catch {
@@ -26,8 +26,8 @@ final class GoogleRequestHandler: MatterAddDeviceExtensionRequestHandler {
         }
     }
 
-    override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
-        let homeMatterCommissioner = try HomeMatterCommissioner(appGroup: SharedConsts.appGroup)
+    func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
+        let homeMatterCommissioner = try HomeMatterCommissioner(appGroup: SharedConsts.googleStorage)
         do {
             try await homeMatterCommissioner.commissionMatterDevice(onboardingPayload: onboardingPayload)
         } catch {
@@ -35,24 +35,24 @@ final class GoogleRequestHandler: MatterAddDeviceExtensionRequestHandler {
         }
     }
 
-    override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
+    func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
         do {
-          let homeMatterCommissioner = try HomeMatterCommissioner(appGroup: SharedConsts.appGroup)
+          let homeMatterCommissioner = try HomeMatterCommissioner(appGroup: SharedConsts.googleStorage)
           try await homeMatterCommissioner.configureMatterDevice(deviceName: name, roomName: room?.displayName)
         } catch {
             logger.error("\(error)")
         }
     }
 
-    override func validateDeviceCredential(_ deviceCredential: MatterAddDeviceExtensionRequestHandler.DeviceCredential) async throws {
+    func validateDeviceCredential(_ deviceCredential: MatterAddDeviceExtensionRequestHandler.DeviceCredential) async throws {
     }
 
-    override func selectWiFiNetwork(from wifiScanResults: [MatterAddDeviceExtensionRequestHandler.WiFiScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.WiFiNetworkAssociation {
+    func selectWiFiNetwork(from wifiScanResults: [MatterAddDeviceExtensionRequestHandler.WiFiScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.WiFiNetworkAssociation {
         return .defaultSystemNetwork
     }
     
-    override func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
+    func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
         let scanResult = threadScanResults[0] // .defaultSystemNetwork doesn't work. Selecting first.
-        return ThreadNetworkAssociation.network(extendedPANID: scanResult.extendedPANID)
+        return MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation.network(extendedPANID: scanResult.extendedPANID)
     }
 }

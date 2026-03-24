@@ -12,16 +12,19 @@ import SharedCode
 class SwiftCodeProviderImpl : SwiftCodeProvider {
     func getMatterCommissioner() -> any MatterCommissioner {
 //        return LocalMatterCommissioner()
+//        return HomeKitCommissioner()
         return GoogleHomeCommissioner()
     }
     
     func getMatterOnOffController() -> any MatterOnOffController {
-        return GoogleHomeOnOffController()
+//        return LocalMatterOnOffController()
 //        return HomeKitMatterOnOffController()
+        return GoogleHomeOnOffController()
     }
     
     func getDecommissioner() -> any MatterDecommissioner {
-        return LocalMatterDecommissioner()
+//        return LocalMatterDecommissioner()
 //        return HomeKitDecommissioner()
+        return GoogleHomeDecommissioner()
     }
 }

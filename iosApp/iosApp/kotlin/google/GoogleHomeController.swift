@@ -40,17 +40,12 @@ class GoogleHomeController {
         }
         
         do {
-            print("AAATESTAAA - Home.connect()")
-            
             home = try await Home.connect()
-            
-            print("AAATESTAAA - home.structures()")
             
             let allStructuresChanges = home!.structures()
             let allStructures = try await allStructuresChanges.list()
             structure = allStructures.first
         } catch {
-            print("AAATESTAAA - error")
         }
     }
     

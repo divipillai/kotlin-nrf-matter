@@ -7,7 +7,7 @@ struct iOSApp: App {
     
     init() {
         Home.configure {
-            $0.sharedAppGroup = "group.nordicsemi.nrf.matter"
+            $0.sharedAppGroup = "group.nordicsemi.nrf.matter.google"
             $0.referencedAutomationTypes = ReferencedAutomationTypes(
                 deviceTypes: [
                     OnOffLightDeviceType.self,

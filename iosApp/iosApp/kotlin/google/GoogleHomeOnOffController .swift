@@ -18,24 +18,28 @@ class GoogleHomeOnOffController : MatterOnOffController {
 
     func setDeviceOnOff(deviceId: DeviceId, isDeviceOnline: Bool, isOn: Bool, endpoint: Int32) async throws {
         let controller = GoogleHomeController.instance()
+        await controller.initialize()
+        let structure = await controller.getStructure()
         
         let device = await controller.getDevice(id: deviceId.stringValue)
         
         guard let device else { return }
         
-        guard let lightType = await device.types.get(OnOffLightDeviceType.self) else {
-            print("This device does not support standard On/Off light controls.")
+        guard let lightType = await device.parts.get(OnOffLightDeviceType.self) else {
             return
         }
         
-        if let onOffTrait = lightType.matterTraits.onOffTrait {
-            if isOn {
-                try await onOffTrait.on()
-            } else {
-                try await onOffTrait.off()
+        do {
+            if let onOffTrait = lightType.matterTraits.onOffTrait {
+                if isOn {
+                    try await onOffTrait.on()
+                } else {
+                    try await onOffTrait.off()
+                }
             }
+        } catch {
             
-            print("Successfully updated the bulb state.")
         }
+
     }
 }

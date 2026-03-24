@@ -12,6 +12,10 @@ import SharedCode
 import OSLog
 import GoogleHomeSDK
 
+enum GoogleHomeControllerError: Error {
+    case noStructureFound
+}
+
 class GoogleHomeController {
 
     nonisolated(unsafe) private static var controller: GoogleHomeController? = nil
@@ -31,6 +35,10 @@ class GoogleHomeController {
     }
     
     func initialize() async {
+        guard home == nil else {
+            return
+        }
+        
         do {
             print("AAATESTAAA - Home.connect()")
             
@@ -48,16 +56,31 @@ class GoogleHomeController {
     
     func getStructure() async -> Structure {
         try! await withCheckedThrowingContinuation { continuation in
-            home!
+            var cancellable: AnyCancellable?
+
+            cancellable = home!
                 .structures()
                 .batched()
                 .receive(on: DispatchQueue.main)
                 .map { Array($0) }
                 .filter { !$0.isEmpty }
-                .sink(receiveCompletion: { _ in }, receiveValue: { structures in
-                    continuation.resume(returning: structures.first!)
-                })
-                .store(in: &cancellables)
+                .prefix(1)
+                .sink(
+                    receiveCompletion: { completion in
+                        if case .failure(let error) = completion {
+                            continuation.resume(throwing: error)
+                        }
+                        cancellable?.cancel()
+                    },
+                    receiveValue: { structures in
+                        if let first = structures.first {
+                            continuation.resume(returning: first)
+                        } else {
+                            continuation.resume(throwing: GoogleHomeControllerError.noStructureFound)
+                        }
+                        cancellable?.cancel()
+                    }
+                )
         }
     }
     

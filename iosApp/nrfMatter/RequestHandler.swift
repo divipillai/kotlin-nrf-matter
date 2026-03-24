@@ -23,7 +23,14 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
         let value = storage.getString(key: SharedConsts.matterEnvStorageKey)
         let env = MatterEnv(rawValue: value!)
         
-        return GoogleRequestHandler()
+        return switch env {
+        case .local:
+            LocalRequestHandler()
+        case .google:
+            GoogleRequestHandler()
+        default:
+            fatalError("Invalid environment")
+        }
     }()
     
     enum HandlerError: Error {

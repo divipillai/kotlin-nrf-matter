@@ -1,3 +1,4 @@
+import SharedCode
 import SwiftUI
 import GoogleHomeSDK
 import GoogleHomeTypes
@@ -7,7 +8,7 @@ struct iOSApp: App {
     
     init() {
         Home.configure {
-            $0.sharedAppGroup = "group.nordicsemi.nrf.matter.google"
+            $0.sharedAppGroup = SharedConsts.googleStorage
             $0.referencedAutomationTypes = ReferencedAutomationTypes(
                 deviceTypes: [
                     OnOffLightDeviceType.self,

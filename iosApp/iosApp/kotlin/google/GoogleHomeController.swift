@@ -5,6 +5,7 @@
 //  Created by Sylwester Zielinski on 24/03/2026.
 //
 
+import Combine
 import ComposeApp
 import Matter
 import SharedCode
@@ -17,6 +18,7 @@ class GoogleHomeController {
     
     private var structure: Structure? = nil
     private var home: Home? = nil
+    private var cancellables: Set<AnyCancellable> = []
     
     public static func instance() -> GoogleHomeController {
         if let controller = Self.controller {
@@ -44,8 +46,19 @@ class GoogleHomeController {
         }
     }
     
-    func getStructure() -> Structure? {
-        return structure
+    func getStructure() async -> Structure {
+        try! await withCheckedThrowingContinuation { continuation in
+            home!
+                .structures()
+                .batched()
+                .receive(on: DispatchQueue.main)
+                .map { Array($0) }
+                .filter { !$0.isEmpty }
+                .sink(receiveCompletion: { _ in }, receiveValue: { structures in
+                    continuation.resume(returning: structures.first!)
+                })
+                .store(in: &cancellables)
+        }
     }
     
     func getDevice(id: String) async -> HomeDevice? {

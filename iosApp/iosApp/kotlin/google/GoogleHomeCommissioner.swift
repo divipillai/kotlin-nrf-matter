@@ -29,12 +29,7 @@ class GoogleHomeCommissioner : MatterCommissioner {
     func commission() async -> Device? {
         let controller = GoogleHomeController.instance()
         await controller.initialize() //todo
-        let structure = controller.getStructure()
-        
-        guard let structure else {
-            print("AAATESTAAA - structures are null")
-            return nil
-        }
+        let structure = await controller.getStructure()
         
         do {
             print("AAATESTAAA - structure not null")

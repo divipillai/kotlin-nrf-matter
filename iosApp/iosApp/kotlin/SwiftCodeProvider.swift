@@ -16,7 +16,7 @@ class SwiftCodeProviderImpl : SwiftCodeProvider {
     }
     
     func getMatterOnOffController() -> any MatterOnOffController {
-        return LocalMatterOnOffController()
+        return GoogleHomeOnOffController()
 //        return HomeKitMatterOnOffController()
     }
     

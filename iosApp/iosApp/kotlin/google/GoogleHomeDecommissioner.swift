@@ -13,6 +13,6 @@ import HomeKit
 class GoogleHomeDecommissioner : MatterDecommissioner {
 
     func decommission(deviceId: DeviceId) async throws {
-        
+
     }
 }

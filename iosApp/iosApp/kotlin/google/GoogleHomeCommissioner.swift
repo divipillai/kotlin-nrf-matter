@@ -27,24 +27,11 @@ class GoogleHomeCommissioner : MatterCommissioner {
     }
     
     func commission() async -> Device? {
-        var structure: Structure? = nil
-        var home: Home? = nil
+        let controller = GoogleHomeController.instance()
+        await controller.initialize() //todo
+        let structure = controller.getStructure()
         
-        do {
-            print("AAATESTAAA - Home.connect()")
-            
-            home = try await Home.connect()
-            
-            print("AAATESTAAA - home.structures()")
-            
-            let allStructuresChanges = home!.structures()
-            let allStructures = try await allStructuresChanges.list()
-            structure = allStructures.first
-        } catch {
-            print("AAATESTAAA - error")
-        }
-        
-        guard let structure, let home else {
+        guard let structure else {
             print("AAATESTAAA - structures are null")
             return nil
         }
@@ -79,7 +66,7 @@ class GoogleHomeCommissioner : MatterCommissioner {
             print("AAATESTAAA - id: \(commissionedDeviceID)")
             print("AAATESTAAA - structure.devices()")
             
-            guard let device = try await home.devices().list().first(where: { $0.id == commissionedDeviceID }) else {
+            guard let device = await controller.getDevice(id: commissionedDeviceID) else {
                 print("AAATESTAAA - device is nil")
                 return nil
             }

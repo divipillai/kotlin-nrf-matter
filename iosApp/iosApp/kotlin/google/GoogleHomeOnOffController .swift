@@ -10,11 +10,12 @@ import Matter
 import SharedCode
 import OSLog
 
+
 class GoogleHomeOnOffController : MatterOnOffController {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "GoogleHomeOnOffController")
 
     func setDeviceOnOff(deviceId: DeviceId, isDeviceOnline: Bool, isOn: Bool, endpoint: Int32) async throws {
-
+        
     }
 }

@@ -18,36 +18,19 @@ import SharedCode
 
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     
-    private let handler: RequestHandlerProtocol
-    private let commissioner = MatterCommissioner()
+    private let handler: RequestHandlerProtocol = {
+        let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
+        let value = storage.getString(key: SharedConsts.matterEnvStorageKey)
+        let env = MatterEnv(rawValue: value!)
+        
+        return GoogleRequestHandler()
+    }()
     
     enum HandlerError: Error {
         case invalidEnvironment
     }
 
     private let logger = Logger(subsystem: "nrf.matter", category: "RequestHandler")
-
-    override init() {
-        logger.info("AAATESTAAAA - init")
-        let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
-        let value = storage.getString(key: SharedConsts.matterEnvStorageKey)
-        let env = MatterEnv(rawValue: value!)
-        
-        switch env {
-        case .local:
-            handler = LocalRequestHandler()
-        case .google:
-            handler = GoogleRequestHandler()
-        default:
-            fatalError("Invalid environment")
-        }
-        
-        super.init()
-        
-        logger.info("AAATESTAAAA - env: \(env?.rawValue ?? "unknown")")
-        
-        logger.info("AAATESTAAAA -MatterAddDeviceExtensionRequestHandler initialized")
-    }
 
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
         logger.info("AAATESTAAAA -Received request to fetch rooms in home: \(String(describing: home?.displayName)).")

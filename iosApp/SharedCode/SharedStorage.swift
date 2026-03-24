@@ -16,7 +16,7 @@ public class SharedStorage : NSObject, MTRStorage {
     }
     
     public func storeString(key: String, value: String) {
-        defaults.set(key, forKey: key)
+        defaults.set(value, forKey: key)
     }
     
     public func getString(key: String) -> String? {

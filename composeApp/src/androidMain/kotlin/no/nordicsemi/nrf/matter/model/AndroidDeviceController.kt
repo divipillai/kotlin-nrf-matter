@@ -77,7 +77,7 @@ class AndroidDeviceController(
         endpoint: Int
     ) {
         clustersHelper.setOnOffDeviceStateOnOffCluster(
-            deviceId = deviceId,
+            deviceId = deviceId.longValue,
             isOn = isSwitchOn,
             endpoint = endpoint
         )

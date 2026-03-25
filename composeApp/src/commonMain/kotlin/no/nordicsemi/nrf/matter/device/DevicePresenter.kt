@@ -160,7 +160,17 @@ class DevicePresenter(
     fun initiateBinding(switchNodeId: DeviceId) {
         scope.launch {
             try {
-                deviceController.bindSwitchToLight(switchNodeId, lightNodeId)
+                // TODO: for now I am using the first light node id from the repository,
+                //  it should be taken from the dialog and passed to the function as a param.
+                val lightNodeId = devicesRepository.getAllDevices().devicesList.map {
+                    if (it.deviceType == DeviceType.LIGHT_ON_OFF || it.deviceType == DeviceType.DIMMABLE_LIGHT) {
+                        Napier.i { "AAA, Light device found: ${it.deviceId}" }
+                        it.deviceId
+                    } else {
+                        null
+                    }
+                }.first() ?: return@launch
+                Napier.i { "AAA, Light node id: $lightNodeId" }
                 // Call the function to bind the switch to the light.
                 deviceController.bindSwitchToLight(switchNodeId.longValue, lightNodeId.longValue)
             } catch (e: Exception) {

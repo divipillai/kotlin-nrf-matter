@@ -51,7 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.cloudy.cloudy
 import io.github.aakira.napier.Napier
-import no.nordicsemi.nrf.matter.binding.TargetLightSettingsDialog
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.model.Device
@@ -235,7 +234,7 @@ private fun DeviceDetails(
             LightSwitchBindingCard {
                 // TODO: Call the callback function here
                 Napier.i { "AAA, LightSwitchBindingCard() called" }
-                 devicePresenter.initiateBinding(device.device.deviceId)
+                devicePresenter.initiateBinding(device.device.deviceId)
             }
         }
 

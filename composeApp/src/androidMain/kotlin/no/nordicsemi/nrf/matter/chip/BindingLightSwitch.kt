@@ -71,39 +71,50 @@ class BindingLightSwitch(
             var cluster: Long? = null
 
             while (!reader.isEndOfContainer()) {
-                when (reader.nextElement().tag) {
-                    ContextSpecificTag(1) -> privilege = reader.getInt(ContextSpecificTag(1))
-                    ContextSpecificTag(2) -> authMode = reader.getInt(ContextSpecificTag(2))
+                // 1. Peek at the element to see what tag it ACTUALLY is
+                val element = reader.nextElement()
+                val tag = element.tag
 
-                    ContextSpecificTag(3) -> {
-                        reader.enterArray(ContextSpecificTag(3))
-                        while (!reader.isEndOfContainer()) {
-                            subjects.add(reader.getLong(AnonymousTag))
-                        }
-                        reader.exitContainer()
-                    }
-
-                    ContextSpecificTag(4) -> {
-                        reader.enterArray(ContextSpecificTag(4))
-                        if (!reader.isEndOfContainer()) {
-                            reader.enterStructure(AnonymousTag)
-                            if (reader.nextElement().tag == ContextSpecificTag(2)) {
-                                cluster = reader.getLong(ContextSpecificTag(2))
+                // 2. Only try to read the tag that the reader just found
+                if (tag is ContextSpecificTag) {
+                    when (tag.tagNumber) {
+                        1 -> privilege = reader.getInt(tag)
+                        2 -> authMode = reader.getInt(tag)
+                        3 -> {
+                            reader.enterArray(tag)
+                            while (!reader.isEndOfContainer()) {
+                                reader.nextElement() // Move to the array item
+                                subjects.add(reader.getLong(AnonymousTag))
                             }
                             reader.exitContainer()
                         }
-                        reader.exitContainer()
-                    }
 
-                    else -> reader.skipElement()
+                        4 -> {
+                            reader.enterArray(tag)
+                            while (!reader.isEndOfContainer()) {
+                                reader.enterStructure(AnonymousTag)
+                                while (!reader.isEndOfContainer()) {
+                                    val innerElement = reader.nextElement()
+                                    if (innerElement.tag == ContextSpecificTag(2)) {
+                                        cluster = reader.getLong(innerElement.tag)
+                                    } else {
+                                        reader.skipElement()
+                                    }
+                                }
+                                reader.exitContainer()
+                            }
+                            reader.exitContainer()
+                        }
+
+                        else -> reader.skipElement() // Skip Tags 5 (FabricIndex), etc.
+                    }
+                } else {
+                    reader.skipElement()
                 }
             }
-
             reader.exitContainer()
-
             result.add(AclEntry(privilege, authMode, subjects, cluster))
         }
-
         reader.exitContainer()
         return result
     }
@@ -160,7 +171,7 @@ class BindingLightSwitch(
         // 5. Write back full list
         chipClient.writeAttribute(devicePtr, attributePath, newTlv)
 
-        Napier.d { "ACL updated safely with new entry" }
+        Napier.d { "AAA, ACL updated safely with new entry" }
     }
 
     /**

@@ -2,7 +2,9 @@ package no.nordicsemi.nrf.matter.model
 
 import no.nordicsemi.nrf.matter.MatterBinder
 import no.nordicsemi.nrf.matter.MatterDecommissioner
+import no.nordicsemi.nrf.matter.MatterDoorController
 import no.nordicsemi.nrf.matter.MatterOnOffController
+import no.nordicsemi.nrf.matter.MatterOutletController
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -39,6 +41,8 @@ class IosDeviceController(
     private val matterOnOffController: MatterOnOffController,
     private val matterDecommissioner: MatterDecommissioner,
     private val matterBinder: MatterBinder,
+    private val matterDoorController: MatterDoorController,
+    private val matterOutletController: MatterOutletController,
 ): DeviceController {
 
     override suspend fun setDeviceOnOff(
@@ -59,7 +63,7 @@ class IosDeviceController(
         isLocked: Boolean,
         endpoint: Int
     ) {
-        TODO("Not yet implemented")
+        matterDoorController.lockUnlockDoor(deviceId, isLocked, endpoint)
     }
 
     override suspend fun handleOutlet(
@@ -67,7 +71,7 @@ class IosDeviceController(
         isSwitchOn: Boolean,
         endpoint: Int
     ) {
-        TODO("Not yet implemented")
+        matterOutletController.handleOutlet(deviceId, isSwitchOn, endpoint)
     }
 
     override suspend fun bind(

@@ -12,6 +12,10 @@ interface SwiftCodeProvider {
     fun getDecommissioner(): MatterDecommissioner
 
     fun getMatterBinder(): MatterBinder
+
+    fun getMatterDoorController(): MatterDoorController
+
+    fun getMatterOutletController(): MatterOutletController
 }
 
 interface MatterCommissioner {
@@ -37,4 +41,22 @@ interface MatterOnOffController {
 interface MatterBinder {
 
     suspend fun bindSwitchToLight(switchNodeId: DeviceId, lightNodeId: DeviceId)
+}
+
+interface MatterDoorController {
+
+    suspend fun lockUnlockDoor(
+        deviceId: DeviceId,
+        isLocked: Boolean,
+        endpoint: Int
+    )
+}
+
+interface MatterOutletController {
+
+    suspend fun handleOutlet(
+        deviceId: DeviceId,
+        isSwitchOn: Boolean,
+        endpoint: Int
+    )
 }

@@ -32,4 +32,12 @@ class SwiftCodeProviderImpl : SwiftCodeProvider {
     func getMatterBinder() -> any MatterBinder {
         return LocalMatterBinder()
     }
+    
+    func getMatterDoorController() -> any MatterDoorController {
+        return LocalMatterDoorController()
+    }
+    
+    func getMatterOutletController() -> any MatterOutletController {
+        return LocalMatterOutletController()
+    }
 }

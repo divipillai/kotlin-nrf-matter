@@ -172,7 +172,7 @@ class DevicePresenter(
                 }.first() ?: return@launch
                 Napier.i { "AAA, Light node id: $lightNodeId" }
                 // Call the function to bind the switch to the light.
-                deviceController.bindSwitchToLight(switchNodeId.longValue, lightNodeId.longValue)
+                deviceController.bindSwitchToLight(switchNodeId, lightNodeId)
             } catch (e: Exception) {
                 Napier.e(e) { "AAA, Error initiating binding: ${e.message}" }
             }

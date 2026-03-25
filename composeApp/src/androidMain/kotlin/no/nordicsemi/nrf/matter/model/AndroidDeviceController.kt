@@ -83,10 +83,10 @@ class AndroidDeviceController(
         )
     }
 
-    override suspend fun bindSwitchToLight(switchNodeId: Long, lightNodeId: Long) {
+    override suspend fun bindSwitchToLight(switchNodeId: DeviceId, lightNodeId: DeviceId) {
         bindingLightSwitch.bind(
-            switchNodeId = switchNodeId,
-            lightNodeId = lightNodeId
+            switchNodeId = switchNodeId.longValue,
+            lightNodeId = lightNodeId.longValue,
         )
 
     }

@@ -232,9 +232,10 @@ private fun DeviceDetails(
 
         if (device.device.deviceType == DeviceType.LIGHT_SWITCH) {
             SectionTitle("Linked Lights")
-            LightSwitchBindingCard() {
+            LightSwitchBindingCard {
                 // TODO: Call the callback function here
-                // devicePresenter.initiateBinding(deviceId, bulbNodeIde)
+                Napier.i { "AAA, LightSwitchBindingCard() called" }
+                 devicePresenter.initiateBinding(device.device.deviceId)
             }
         }
 
@@ -683,10 +684,10 @@ fun DeviceItemContainerPreview() {
 @Preview(showBackground = true)
 @Composable
 internal fun LightSwitchBindingCard(
-    onLightSelected: (lightBulbNodeId: Long) -> Unit = {},
+    onLightSelected: () -> Unit = {},
 ) {
     var isDialogOpen by remember { mutableStateOf(false) }
-    val selectedLightItem = remember { mutableStateListOf<Device>(DEVICE_LIST_TEST.first()) }
+    val selectedLightItem = remember { mutableStateListOf(DEVICE_LIST_TEST.first()) }
     Column {
         OutlinedCard(
             shape = RoundedCornerShape(16.dp),
@@ -735,13 +736,15 @@ internal fun LightSwitchBindingCard(
             BindConfiguration { }
         }
         if (isDialogOpen) {
-            TargetLightSettingsDialog(
-                onDismiss = { isDialogOpen = false },
-                onConfirmation = {
-                    Napier.d { "AAA, Confirmation" }
-                    isDialogOpen = false
-                }
-            )
+            Napier.i { "AAA, isDialogOpen is true" }
+            onLightSelected()
+//            TargetLightSettingsDialog(
+//                onDismiss = { isDialogOpen = false },
+//                onConfirmation = {
+//                    Napier.d { "AAA, Confirmation" }
+//                    isDialogOpen = false
+//                }
+//            )
         }
     }
 

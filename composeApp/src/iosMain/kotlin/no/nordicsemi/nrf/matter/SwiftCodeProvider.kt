@@ -32,7 +32,6 @@ interface MatterOnOffController {
 
     suspend fun setDeviceOnOff(
         deviceId: DeviceId,
-        isDeviceOnline: Boolean,
         isOn: Boolean,
         endpoint: Int,
     )

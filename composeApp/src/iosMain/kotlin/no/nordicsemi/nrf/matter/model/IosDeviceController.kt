@@ -51,7 +51,7 @@ class IosDeviceController(
         isOn: Boolean,
         endpoint: Int,
     ) {
-        matterOnOffController.setDeviceOnOff(deviceId, isDeviceOnline, isOn, endpoint)
+        matterOnOffController.setDeviceOnOff(deviceId, isOn, endpoint)
     }
 
     override suspend fun unlinkDevice(deviceId: DeviceId) {

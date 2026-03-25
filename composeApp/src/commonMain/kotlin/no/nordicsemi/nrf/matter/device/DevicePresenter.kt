@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
@@ -156,10 +157,12 @@ class DevicePresenter(
 
 
     // Method to call binding.
-    fun initiateBinding(switchNodeId: Long, lightNodeId: Long) {
+    fun initiateBinding(switchNodeId: DeviceId) {
         scope.launch {
             try {
                 deviceController.bindSwitchToLight(switchNodeId, lightNodeId)
+                // Call the function to bind the switch to the light.
+                deviceController.bindSwitchToLight(switchNodeId.longValue, lightNodeId.longValue)
             } catch (e: Exception) {
                 Napier.e(e) { "AAA, Error initiating binding: ${e.message}" }
             }

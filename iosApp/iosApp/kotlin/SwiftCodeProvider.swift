@@ -10,6 +10,7 @@ import ComposeApp
 import SharedCode
 
 class SwiftCodeProviderImpl : SwiftCodeProvider {
+    
     func getMatterCommissioner() -> any MatterCommissioner {
         return LocalMatterCommissioner()
 //        return HomeKitCommissioner()
@@ -26,5 +27,9 @@ class SwiftCodeProviderImpl : SwiftCodeProvider {
         return LocalMatterDecommissioner()
 //        return HomeKitDecommissioner()
 //        return GoogleHomeDecommissioner()
+    }
+    
+    func getMatterBinder() -> any MatterBinder {
+        return LocalMatterBinder()
     }
 }

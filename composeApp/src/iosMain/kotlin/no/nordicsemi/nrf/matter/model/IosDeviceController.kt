@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.model
 
+import no.nordicsemi.nrf.matter.MatterBinder
 import no.nordicsemi.nrf.matter.MatterDecommissioner
 import no.nordicsemi.nrf.matter.MatterOnOffController
 
@@ -37,6 +38,7 @@ import no.nordicsemi.nrf.matter.MatterOnOffController
 class IosDeviceController(
     private val matterOnOffController: MatterOnOffController,
     private val matterDecommissioner: MatterDecommissioner,
+    private val matterBinder: MatterBinder,
 ): DeviceController {
 
     override suspend fun setDeviceOnOff(

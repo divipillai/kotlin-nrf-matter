@@ -10,6 +10,8 @@ interface SwiftCodeProvider {
     fun getMatterOnOffController(): MatterOnOffController
 
     fun getDecommissioner(): MatterDecommissioner
+
+    fun getMatterBinder(): MatterBinder
 }
 
 interface MatterCommissioner {
@@ -30,4 +32,9 @@ interface MatterOnOffController {
         isOn: Boolean,
         endpoint: Int,
     )
+}
+
+interface MatterBinder {
+
+    suspend fun bindSwitchToLight(switchNodeId: DeviceId, lightNodeId: DeviceId)
 }

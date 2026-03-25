@@ -32,4 +32,3 @@ class HomeKitMatterOnOffController : MatterOnOffController {
         try await characteristic.writeValue(isOn)
     }
 }
-

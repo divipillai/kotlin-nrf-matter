@@ -1,17 +1,27 @@
 //
-//  MatterStorage.swift
+//  SharedStorage.swift
 //  iosApp
 //
-//  Created by Sylwester Zielinski on 05/03/2026.
+//  Created by Sylwester Zielinski on 20/03/2026.
 //
 
 import Matter
-import os.log
 
-public class MatterStorage : NSObject, MTRStorage {
+public class SharedStorage : NSObject, MTRStorage {
     
-    private let defaults = UserDefaults(suiteName: "group.nordicsemi.nrf.matter")!
-    private let logger = Logger(subsystem: "nrf.matter", category: "MatterStorage")
+    private let defaults: UserDefaults
+    
+    public init(suitName: String) {
+        defaults = UserDefaults(suiteName: suitName)!
+    }
+    
+    public func storeString(key: String, value: String) {
+        defaults.set(value, forKey: key)
+    }
+    
+    public func getString(key: String) -> String? {
+        defaults.string(forKey: key)
+    }
     
     public func storageData(forKey key: String) -> Data? {
         return defaults.data(forKey: key)
@@ -30,7 +40,6 @@ public class MatterStorage : NSObject, MTRStorage {
     public func getKey(forKey key: String) -> Data? {
         return defaults.data(forKey: key)
     }
-    
     
     public func setKey(_ value: Data, forKey key: String) -> Bool {
         defaults.setValue(value, forKey: key)

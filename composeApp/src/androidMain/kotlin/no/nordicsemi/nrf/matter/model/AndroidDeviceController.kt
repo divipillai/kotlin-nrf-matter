@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.model
 
+import io.github.aakira.napier.Napier
 import no.nordicsemi.nrf.matter.chip.BindingLightSwitch
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
@@ -84,7 +85,8 @@ class AndroidDeviceController(
     }
 
     override suspend fun bindSwitchToLight(switchNodeId: DeviceId, lightNodeId: DeviceId) {
-        bindingLightSwitch.bind(
+        Napier.d { "AAA, bindSwitchToLight called" }
+        bindingLightSwitch.bindSwitchToLightClusterApi(
             switchNodeId = switchNodeId.longValue,
             lightNodeId = lightNodeId.longValue,
         )

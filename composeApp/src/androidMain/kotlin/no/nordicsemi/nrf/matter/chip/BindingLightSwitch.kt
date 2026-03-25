@@ -1,284 +1,279 @@
 package no.nordicsemi.nrf.matter.chip
 
-import chip.devicecontroller.model.ChipAttributePath
-import chip.tlv.AnonymousTag
-import chip.tlv.ContextSpecificTag
-import chip.tlv.TlvReader
-import chip.tlv.TlvWriter
+import androidx.navigation3.ui.NavDisplay
+import chip.devicecontroller.ChipClusters
+import chip.devicecontroller.ChipStructs
 import io.github.aakira.napier.Napier
-
-data class AclEntry(
-    val privilege: Int,
-    val authMode: Int,
-    val subjects: List<Long>,
-    val cluster: Long? = null
-)
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.Optional
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 class BindingLightSwitch(
     private val chipClient: ChipClient,
 ) {
-    /**
-     * Encodes a list of ACL entries into a TLV structure.
-     */
-    private fun encodeAcl(entries: List<AclEntry>): ByteArray {
-        val writer = TlvWriter()
+    suspend fun ChipClusters.AccessControlCluster.awaitReadAcl():
+            ArrayList<ChipStructs.AccessControlClusterAccessControlEntryStruct?> {
 
-        writer.startArray(AnonymousTag)
+        return suspendCancellableCoroutine { continuation ->
 
-        for (entry in entries) {
-            writer.startStructure(AnonymousTag)
+            readAclAttribute(object : ChipClusters.AccessControlCluster.AclAttributeCallback {
 
-            writer.put(ContextSpecificTag(1), entry.privilege)
-            writer.put(ContextSpecificTag(2), entry.authMode)
+                override fun onSuccess(
+                    valueList: List<ChipStructs.AccessControlClusterAccessControlEntryStruct?>?
+                ) {
+                    Napier.d { "AAA, awaitReadAcl onSuccess called" }
+                    val result = ArrayList(
+                        valueList ?: emptyList()
+                    )
 
-            writer.startArray(ContextSpecificTag(3))
-            entry.subjects.forEach {
-                writer.put(AnonymousTag, it)
-            }
-            writer.endArray()
-
-            entry.cluster?.let {
-                writer.startArray(ContextSpecificTag(4))
-                writer.startStructure(AnonymousTag)
-                writer.put(ContextSpecificTag(2), it)
-                writer.endStructure()
-                writer.endArray()
-            }
-
-            writer.endStructure()
-        }
-
-        writer.endArray()
-
-        return writer.getEncoded()
-    }
-
-    /**
-     * Decodes a TLV structure into a list of ACL entries.
-     */
-    private fun decodeAcl(tlv: ByteArray): MutableList<AclEntry> {
-        val reader = TlvReader(tlv)
-        val result = mutableListOf<AclEntry>()
-
-        reader.enterArray(AnonymousTag)
-
-        while (!reader.isEndOfContainer()) {
-            reader.enterStructure(AnonymousTag)
-
-            var privilege = 0
-            var authMode = 0
-            val subjects = mutableListOf<Long>()
-            var cluster: Long? = null
-
-            while (!reader.isEndOfContainer()) {
-                // 1. Peek at the element to see what tag it ACTUALLY is
-                val element = reader.nextElement()
-                val tag = element.tag
-
-                // 2. Only try to read the tag that the reader just found
-                if (tag is ContextSpecificTag) {
-                    when (tag.tagNumber) {
-                        1 -> privilege = reader.getInt(tag)
-                        2 -> authMode = reader.getInt(tag)
-                        3 -> {
-                            reader.enterArray(tag)
-                            while (!reader.isEndOfContainer()) {
-                                reader.nextElement() // Move to the array item
-                                subjects.add(reader.getLong(AnonymousTag))
-                            }
-                            reader.exitContainer()
-                        }
-
-                        4 -> {
-                            reader.enterArray(tag)
-                            while (!reader.isEndOfContainer()) {
-                                reader.enterStructure(AnonymousTag)
-                                while (!reader.isEndOfContainer()) {
-                                    val innerElement = reader.nextElement()
-                                    if (innerElement.tag == ContextSpecificTag(2)) {
-                                        cluster = reader.getLong(innerElement.tag)
-                                    } else {
-                                        reader.skipElement()
-                                    }
-                                }
-                                reader.exitContainer()
-                            }
-                            reader.exitContainer()
-                        }
-
-                        else -> reader.skipElement() // Skip Tags 5 (FabricIndex), etc.
+                    if (continuation.isActive) {
+                        continuation.resume(result)
                     }
-                } else {
-                    reader.skipElement()
                 }
-            }
-            reader.exitContainer()
-            result.add(AclEntry(privilege, authMode, subjects, cluster))
+
+                override fun onError(ex: Exception) {
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(ex)
+                    }
+                }
+            })
         }
-        reader.exitContainer()
-        return result
     }
 
-    /**
-     * Grants Operate access to a device.
-     */
-    private suspend fun grantOperateAccessSafe(
+    suspend fun ChipClusters.AccessControlCluster.awaitWriteAcl(
+        acl: ArrayList<ChipStructs.AccessControlClusterAccessControlEntryStruct?>
+    ) {
+        return suspendCancellableCoroutine { continuation ->
+
+            writeAclAttribute(
+                object : ChipClusters.DefaultClusterCallback {
+                    override fun onSuccess() {
+                        Napier.d { "AAA, awaitWriteAcl onSuccess called" }
+                        if (continuation.isActive) {
+                            continuation.resume(Unit)
+                        }
+                    }
+
+                    override fun onError(ex: Exception) {
+                        Napier.d { "AAA, awaitWriteAcl onError called" }
+                        if (continuation.isActive) {
+                            continuation.resumeWithException(ex)
+                        }
+                    }
+                },
+                acl
+            )
+
+            continuation.invokeOnCancellation {
+                // No cancellation support in Matter API,
+                // but good to log for debugging
+                Napier.d { "awaitWriteAcl cancelled" }
+            }
+        }
+    }
+
+    suspend fun grantOperateAccessClusterApi(
         devicePtr: Long,
         switchNodeId: Long,
-        lightEndpoint: Long = 0
+        endpoint: Int = 0
     ) {
-        val accessControlClusterId = 0x001F.toLong()
-        val aclAttributeId = 0x0000.toLong()
-
-        val attributePath = ChipAttributePath.newInstance(
-            lightEndpoint,
-            accessControlClusterId,
-            aclAttributeId
-        )
+        val cluster = ChipClusters.AccessControlCluster(devicePtr, endpoint)
 
         // 1. Read existing ACL
-        val existingState = chipClient.readAttribute(devicePtr, attributePath)
-            ?: throw IllegalStateException("ACL read returned null")
+        val existingAcl = cluster.awaitReadAcl()
+        Napier.d { "AAA, existingAcl size: ${existingAcl.size}" }
 
-        val existingTlv = existingState.tlv ?: throw IllegalStateException("ACL TLV missing")
-
-        val aclEntries = decodeAcl(existingTlv)
-
-        // 2. Check if already exists
-        val alreadyExists = aclEntries.any {
-            it.subjects.contains(switchNodeId) &&
-                    it.cluster == 0x0006L
+        // 2. Check duplicates
+        val alreadyExists = existingAcl.any { entry ->
+            entry?.subjects?.contains(switchNodeId) == true &&
+                    entry.targets?.any {
+                        it.cluster == 0x0006L
+                    } == true
         }
+        Napier.d { "AAA, alreadyExists: $alreadyExists" }
 
         if (alreadyExists) {
-            Napier.d { "ACL entry already exists, skipping write" }
+            Napier.d { "ACL already exists, skipping" }
             return
         }
+        // Get Fabric Index
+        val fabricIndex = existingAcl
+            .firstOrNull { it?.fabricIndex != null }
+            ?.fabricIndex
 
-        // 3. Append new entry
-        val newEntry = AclEntry(
-            privilege = 3,           // Operate
-            authMode = 2,            // CASE
-            subjects = listOf(switchNodeId),
-            cluster = 0x0006L        // OnOff
+        Napier.d { "AAA, fabricIndex: $fabricIndex" }
+
+
+        // 3. Create new ACL entry
+        val newEntry = ChipStructs.AccessControlClusterAccessControlEntryStruct(
+            /* privilege */ 3, // Operate
+            /* authMode */ 2,  // CASE
+
+            /* subjects */
+            arrayListOf(switchNodeId),
+
+            /* targets */
+            arrayListOf(
+                ChipStructs.AccessControlClusterTarget(
+                    0x0006L, // cluster (OnOff)
+                    null,    // endpoint
+                    null     // deviceType
+                )
+            ),
+
+            /* fabricIndex */
+            fabricIndex // FIXME: According to my belief SDK will automatically assign the current fabric if we don't specify it.
         )
 
-        aclEntries.add(newEntry)
+        Napier.d { "AAA, newEntry: $newEntry" }
 
-        // 4. Encode full ACL
-        val newTlv = encodeAcl(aclEntries)
+        // 4. Append
+        existingAcl.add(newEntry)
 
-        // 5. Write back full list
-        chipClient.writeAttribute(devicePtr, attributePath, newTlv)
+        // 5. Write full list
+        cluster.awaitWriteAcl(existingAcl)
 
-        Napier.d { "AAA, ACL updated safely with new entry" }
+        Napier.d { "ACL updated successfully (cluster API)" }
     }
 
-    /**
-     * Binds a switch to a light.
-     */
-    suspend fun bind(
+    suspend fun bindSwitchToLightClusterApi(
         switchNodeId: Long,
         lightNodeId: Long
     ) {
-        // 1. Get device pointers
+        Napier.d { "AAA, bindSwitchToLightClusterApi called" }
         val switchPtr = chipClient.getConnectedDevicePointer(switchNodeId)
+        Napier.d { "AAA, switchPtr: $switchPtr" }
         val lightPtr = chipClient.getConnectedDevicePointer(lightNodeId)
+        Napier.d { "AAA, lightPtr: $lightPtr" }
 
-        // 2. Grant ACL on LIGHT (first!)
-        grantOperateAccessSafe(
+
+        // 1. ACL first (LIGHT)
+        grantOperateAccessClusterApi(
             devicePtr = lightPtr,
             switchNodeId = switchNodeId
         )
 
-        // 3. Bind on SWITCH
-        bindLightSwitchToLight(
+        // 2. Binding (SWITCH)
+        bindLightSwitchToLightClusterApi(
             devicePtr = switchPtr,
             switchEndpoint = 1,
-            lightNodeId = lightNodeId,
-            lightEndpoint = 1
+            lightNodeId = lightNodeId
         )
     }
 
-    /**
-     * Binds a light switch to a light.
-     */
-    private suspend fun bindLightSwitchToLight(
+    suspend fun ChipClusters.BindingCluster.awaitReadBinding():
+            ArrayList<ChipStructs.BindingClusterTargetStruct?> {
+
+        return suspendCancellableCoroutine { continuation ->
+
+            readBindingAttribute(object : ChipClusters.BindingCluster.BindingAttributeCallback {
+
+                override fun onSuccess(
+                    valueList: List<ChipStructs.BindingClusterTargetStruct?>?
+                ) {
+                    Napier.d { "AAA, awaitReadBinding onSuccess called" }
+
+                    val result = ArrayList(
+                        valueList ?: emptyList()
+                    )
+
+                    if (continuation.isActive) {
+                        continuation.resume(result)
+                    }
+                }
+
+                override fun onError(ex: Exception) {
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(ex)
+                    }
+                }
+            })
+
+            continuation.invokeOnCancellation {
+                Napier.d { "awaitReadBinding cancelled" }
+            }
+        }
+    }
+
+    suspend fun ChipClusters.BindingCluster.awaitWriteBinding(
+        bindings: ArrayList<ChipStructs.BindingClusterTargetStruct?>
+    ) {
+        return suspendCancellableCoroutine { continuation ->
+
+            writeBindingAttribute(
+                object : ChipClusters.DefaultClusterCallback {
+                    override fun onSuccess() {
+                        if (continuation.isActive) {
+                            Napier.d { "AAA, awaitWriteBinding onSuccess called" }
+                            continuation.resume(Unit)
+                        }
+                    }
+
+                    override fun onError(ex: Exception) {
+                        if (continuation.isActive) {
+                            Napier.d { "AAA, awaitWriteBinding onError called" }
+                            continuation.resumeWithException(ex)
+                        }
+                    }
+                },
+                bindings
+            )
+
+            continuation.invokeOnCancellation {
+                Napier.d { "awaitWriteBinding cancelled" }
+            }
+        }
+    }
+
+    suspend fun bindLightSwitchToLightClusterApi(
         devicePtr: Long,
-        switchEndpoint: Long,
+        switchEndpoint: Int,
         lightNodeId: Long,
         lightEndpoint: Int = 1
     ) {
-        val bindingClusterId = 0x001E.toLong()
-        val bindingAttributeId = 0x0000.toLong()
-
-        val attributePath = ChipAttributePath.newInstance(
-            switchEndpoint,
-            bindingClusterId,
-            bindingAttributeId
-        )
+        Napier.d { "AAA, bindLightSwitchToLightClusterApi called" }
+        val cluster = ChipClusters.BindingCluster(devicePtr, switchEndpoint)
 
         // 1. Read existing bindings
-        val existingState = chipClient.readAttribute(devicePtr, attributePath)
-            ?: throw IllegalStateException("Binding read failed")
+        val existingBindings = cluster.awaitReadBinding()
+        Napier.d { "AAA, existingBindings size: ${existingBindings.size}" }
 
-        val existingTlv = existingState.tlv
-            ?: throw IllegalStateException("Binding TLV missing")
-
-        val reader = TlvReader(existingTlv)
-        val entries = mutableListOf<Triple<Long, Long, Int>>() // node, cluster, endpoint
-
-        reader.enterArray(AnonymousTag)
-        while (!reader.isEndOfContainer()) {
-            reader.enterStructure(AnonymousTag)
-
-            var nodeId = 0L
-            var clusterId = 0L
-            var endpoint = 1
-
-            while (!reader.isEndOfContainer()) {
-                when (reader.nextElement().tag) {
-                    ContextSpecificTag(1) -> nodeId = reader.getLong(ContextSpecificTag(1))
-                    ContextSpecificTag(2) -> clusterId = reader.getLong(ContextSpecificTag(2))
-                    ContextSpecificTag(3) -> endpoint = reader.getInt(ContextSpecificTag(3))
-                    else -> reader.skipElement()
-                }
-            }
-
-            reader.exitContainer()
-            entries.add(Triple(nodeId, clusterId, endpoint))
+        // 2. Check duplicates
+        val alreadyExists = existingBindings.any {
+            it?.node?.orElse(null) == lightNodeId &&
+                    it.cluster?.orElse(null) == 0x0006L &&
+                    it.endpoint?.orElse(null) == lightEndpoint
         }
-        reader.exitContainer()
+        Napier.d { "AAA, alreadyExists: $alreadyExists" }
 
-        // 2. Avoid duplicates
-        val alreadyExists = entries.any {
-            it.first == lightNodeId &&
-                    it.second == 0x0006L &&
-                    it.third == lightEndpoint
+        if (alreadyExists) {
+            Napier.d { "Binding already exists, skipping" }
+            return
         }
+        // Get fabric Index
+        val fabricIndex = existingBindings
+            .firstOrNull { it?.fabricIndex != null }
+            ?.fabricIndex
+        Napier.d { "AAA, fabricIndex: $fabricIndex" }
 
-        if (!alreadyExists) {
-            entries.add(Triple(lightNodeId, 0x0006L, lightEndpoint))
-        }
+        // 3. Create new entry
+        val newEntry = ChipStructs.BindingClusterTargetStruct(
+            Optional.of(lightNodeId),
+            null,
+            Optional.of(lightEndpoint),
+            Optional.of(0x0006L),
+            2, // TODO: add the fabric index value instead of null.
+        )
 
-        // 3. Re-encode full list
-        val writer = TlvWriter()
-        writer.startArray(AnonymousTag)
+        Napier.d { "AAA, newEntry: $newEntry" }
 
-        for ((nodeId, clusterId, endpoint) in entries) {
-            writer.startStructure(AnonymousTag)
-            writer.put(ContextSpecificTag(1), nodeId)
-            writer.put(ContextSpecificTag(2), clusterId)
-            writer.put(ContextSpecificTag(3), endpoint)
-            writer.endStructure()
-        }
+        existingBindings.add(newEntry)
 
-        writer.endArray()
+        // 4. Write full list
+        cluster.awaitWriteBinding(existingBindings)
 
-        val newTlv = writer.getEncoded()
-
-        // 4. Write back full list
-        chipClient.writeAttribute(devicePtr, attributePath, newTlv)
+        Napier.d { "Binding written successfully (cluster API)" }
     }
 }
 

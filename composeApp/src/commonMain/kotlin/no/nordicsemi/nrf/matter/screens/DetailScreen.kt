@@ -174,6 +174,7 @@ fun DeviceScreen(
             LaunchedEffect(true) {
                 snackbarHostState.showSnackbar("Device removed")
             }
+            devicePresenter.updateRemoveDeviceState(RemoveDeviceState.Idle)
             onBack()
         }
 

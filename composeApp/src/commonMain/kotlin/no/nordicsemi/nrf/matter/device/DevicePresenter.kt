@@ -169,7 +169,7 @@ class DevicePresenter(
                     } else {
                         null
                     }
-                }.first() ?: return@launch
+                }.first() ?: DeviceId("4")
                 Napier.i { "AAA, Light node id: $lightNodeId" }
                 // Call the function to bind the switch to the light.
                 deviceController.bindSwitchToLight(switchNodeId, lightNodeId)

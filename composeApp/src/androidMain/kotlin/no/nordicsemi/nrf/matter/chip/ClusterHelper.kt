@@ -439,6 +439,50 @@ class ClustersHelper(private val chipClient: ChipClient) {
         }
     }
 
+    suspend fun onOffSwitch(
+        deviceId: Long,
+        isSwitchOn: Boolean,
+        endpoint: Int,
+        pinCode: String? = null
+    ) {
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId)
+            } catch (e: IllegalStateException) {
+                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
+                return
+            }
+
+        // If pin code is not provided then pull empty value.
+        val pinOptional = pinCode?.let {
+            Optional.of(it.toByteArray(Charsets.UTF_8))
+        } ?: Optional.empty()
+
+        return suspendCancellableCoroutine { continuation ->
+            val cluster = getOnOffSwitchClusterForDevice(connectedDevicePtr, endpoint)
+            val callback = object : ChipClusters.DefaultClusterCallback {
+                override fun onSuccess() {
+                    if (continuation.isActive) continuation.resume(Unit)
+                }
+
+                override fun onError(ex: Exception?) {
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(
+                            ex ?: RuntimeException("Unknown Matter Error")
+                        )
+                    }
+                }
+            }
+
+            if (isSwitchOn) {
+                // TODO: implement this to on switch cluster.
+
+            } else {
+               // TODO: implement this to off switch cluster.
+            }
+        }
+    }
+
     private fun getOnOffClusterForDevice(
         devicePtr: Long,
         endpoint: Int
@@ -452,4 +496,12 @@ class ClustersHelper(private val chipClient: ChipClient) {
     ): ChipClusters.DoorLockCluster {
         return ChipClusters.DoorLockCluster(devicePtr, endpoint)
     }
+
+    private fun getOnOffSwitchClusterForDevice(
+        devicePtr: Long,
+        endpoint: Int
+    ): ChipClusters.OnOffSwitchConfigurationCluster{
+        return ChipClusters.OnOffSwitchConfigurationCluster(devicePtr, endpoint)
+    }
+
 }

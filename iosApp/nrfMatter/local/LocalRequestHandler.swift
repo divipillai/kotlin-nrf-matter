@@ -36,7 +36,7 @@ final class LocalRequestHandler: RequestHandlerProtocol {
     }
     
     func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
-        let scanResult = threadScanResults[0] // .defaultSystemNetwork doesn't work. Selecting first.
+        let scanResult = threadScanResults[1] // .defaultSystemNetwork doesn't work. Selecting first.
         return MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation.network(extendedPANID: scanResult.extendedPANID)
     }
 }

@@ -36,28 +36,20 @@ class LocalMatterBinder : MatterBinder {
         target.endpoint = nil
         target.deviceType = nil
         
-        // Create an entry allowing the source node to 'Operate' this device
         let newEntry = MTRAccessControlClusterAccessControlEntryStruct()
         newEntry.privilege = NSNumber(value: 3) // Operate
         newEntry.authMode = NSNumber(value: 2)  // CASE (Certificate-based)
         newEntry.subjects = [sourceNodeID]
-        newEntry.targets = [target] // nil means all clusters/endpoints on this node
-        // newEntry.fabricIndex = nil // Let the device infer this based on the accessing fabric
+        newEntry.targets = [target]
         
         do {
-            // 1. Read existing ACLs to prevent locking out the Admin controller
             var currentACLs = try await aclCluster.readAttributeACL(with: nil) as? [MTRAccessControlClusterAccessControlEntryStruct] ?? []
-            
-            // Optional: Check if the entry already exists to avoid duplicates
             let entryExists = currentACLs.contains { entry in
                 (entry.subjects as? [NSNumber])?.contains(sourceNodeID) == true && entry.privilege == newEntry.privilege
             }
             
             if !entryExists {
-                // 2. Append the new entry
                 currentACLs.append(newEntry)
-                
-                // 3. Write the combined ACL back
                 try await aclCluster.writeAttributeACL(withValue: currentACLs)
                 logger.info("Access granted successfully to node \(sourceNodeID)")
             } else {
@@ -73,25 +65,17 @@ class LocalMatterBinder : MatterBinder {
         let sourceDevice = MTRBaseDevice(nodeID: sourceDeviceID, controller: controller)
         guard let bindingCluster = MTRBaseClusterBinding(device: sourceDevice, endpointID: sourceEndpoint, queue: .main) else { return }
         
-        logger.info("222")
-        
         let bindingEntry = MTRBindingClusterTargetStruct()
         bindingEntry.node = targetNodeID
         bindingEntry.endpoint = targetEndpoint
-        bindingEntry.cluster = clusterID // e.g., 6 for OnOff, 8 for LevelControl
-        bindingEntry.fabricIndex = 1 // Fix: Do not force fabric index on write
+        bindingEntry.cluster = clusterID
+        bindingEntry.fabricIndex = 1
         
         do {
-            logger.info("333")
-            // Note: Depending on your use case, you may also want to read-modify-write bindings here
-            // so you don't overwrite existing switches bound to this device.
             var bindings = try await bindingCluster.readAttributeBinding(with: nil)
-
             bindings.append(bindingEntry)
-            
-            logger.info("444")
-            
             try await bindingCluster.writeAttributeBinding(withValue: bindings)
+            
             logger.info("Binding created successfully!")
         } catch {
             logger.error("Binding failed: \(error.localizedDescription)")

@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter.chip
 
-import androidx.navigation3.ui.NavDisplay
 import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
 import io.github.aakira.napier.Napier
@@ -12,6 +11,8 @@ import kotlin.coroutines.resumeWithException
 class BindingLightSwitch(
     private val chipClient: ChipClient,
 ) {
+    private var lightSwitchFabricIndex: Int? = null
+
     suspend fun ChipClusters.AccessControlCluster.awaitReadAcl():
             ArrayList<ChipStructs.AccessControlClusterAccessControlEntryStruct?> {
 
@@ -22,7 +23,7 @@ class BindingLightSwitch(
                 override fun onSuccess(
                     valueList: List<ChipStructs.AccessControlClusterAccessControlEntryStruct?>?
                 ) {
-                    Napier.d { "AAA, awaitReadAcl onSuccess called" }
+                    Napier.d("Read ACL (LIGHT) success", tag = TAG)
                     val result = ArrayList(
                         valueList ?: emptyList()
                     )
@@ -33,11 +34,15 @@ class BindingLightSwitch(
                 }
 
                 override fun onError(ex: Exception) {
+                    Napier.e("Read ACL (LIGHT) failed with exception: $ex", tag = TAG)
                     if (continuation.isActive) {
                         continuation.resumeWithException(ex)
                     }
                 }
             })
+            continuation.invokeOnCancellation {
+                Napier.d("Read ACL (LIGHT) cancelled", tag = TAG)
+            }
         }
     }
 
@@ -49,14 +54,14 @@ class BindingLightSwitch(
             writeAclAttribute(
                 object : ChipClusters.DefaultClusterCallback {
                     override fun onSuccess() {
-                        Napier.d { "AAA, awaitWriteAcl onSuccess called" }
+                        Napier.d("Write ACL (LIGHT) success", tag = TAG)
                         if (continuation.isActive) {
                             continuation.resume(Unit)
                         }
                     }
 
                     override fun onError(ex: Exception) {
-                        Napier.d { "AAA, awaitWriteAcl onError called" }
+                        Napier.e("Write ACL (LIGHT) failed with exception: $ex", tag = TAG)
                         if (continuation.isActive) {
                             continuation.resumeWithException(ex)
                         }
@@ -66,9 +71,7 @@ class BindingLightSwitch(
             )
 
             continuation.invokeOnCancellation {
-                // No cancellation support in Matter API,
-                // but good to log for debugging
-                Napier.d { "awaitWriteAcl cancelled" }
+                Napier.d("Write ACL (LIGHT) cancelled", tag = TAG)
             }
         }
     }
@@ -80,21 +83,21 @@ class BindingLightSwitch(
     ) {
         val cluster = ChipClusters.AccessControlCluster(devicePtr, endpoint)
 
-        // 1. Read existing ACL
+        // Read existing ACL
         val existingAcl = cluster.awaitReadAcl()
-        Napier.d { "AAA, existingAcl size: ${existingAcl.size}" }
+        Napier.d("Light has already existing ACL of size: ${existingAcl.size}", tag = TAG)
+            .takeIf { existingAcl.isNotEmpty() }
 
-        // 2. Check duplicates
+        // Check duplicates
         val alreadyExists = existingAcl.any { entry ->
             entry?.subjects?.contains(switchNodeId) == true &&
                     entry.targets?.any {
                         it.cluster == 0x0006L
                     } == true
         }
-        Napier.d { "AAA, alreadyExists: $alreadyExists" }
 
         if (alreadyExists) {
-            Napier.d { "ACL already exists, skipping" }
+            Napier.d("ACL already exists, skipping", tag = TAG)
             return
         }
         // Get Fabric Index
@@ -102,10 +105,14 @@ class BindingLightSwitch(
             .firstOrNull { it?.fabricIndex != null }
             ?.fabricIndex
 
-        Napier.d { "AAA, fabricIndex: $fabricIndex" }
+        // Save non-null fabric index locally since we are using the same fabric index for both devices.
+        fabricIndex?.let {
+            Napier.d("Fabric Index: $it", tag = TAG)
+            lightSwitchFabricIndex = it
+        }
 
 
-        // 3. Create new ACL entry
+        // Create new ACL entry
         val newEntry = ChipStructs.AccessControlClusterAccessControlEntryStruct(
             /* privilege */ 3, // Operate
             /* authMode */ 2,  // CASE
@@ -123,18 +130,18 @@ class BindingLightSwitch(
             ),
 
             /* fabricIndex */
-            fabricIndex // FIXME: According to my belief SDK will automatically assign the current fabric if we don't specify it.
+            fabricIndex
         )
 
         Napier.d { "AAA, newEntry: $newEntry" }
 
-        // 4. Append
+        // Append
         existingAcl.add(newEntry)
 
-        // 5. Write full list
+        // Write full list
         cluster.awaitWriteAcl(existingAcl)
 
-        Napier.d { "ACL updated successfully (cluster API)" }
+        Napier.d("ACL updated successfully (cluster API)", tag = TAG)
     }
 
     suspend fun bindSwitchToLightClusterApi(
@@ -143,18 +150,15 @@ class BindingLightSwitch(
     ) {
         Napier.d { "AAA, bindSwitchToLightClusterApi called" }
         val switchPtr = chipClient.getConnectedDevicePointer(switchNodeId)
-        Napier.d { "AAA, switchPtr: $switchPtr" }
         val lightPtr = chipClient.getConnectedDevicePointer(lightNodeId)
-        Napier.d { "AAA, lightPtr: $lightPtr" }
 
-
-        // 1. ACL first (LIGHT)
+        // ACL first (LIGHT)
         grantOperateAccessClusterApi(
             devicePtr = lightPtr,
             switchNodeId = switchNodeId
         )
 
-        // 2. Binding (SWITCH)
+        // Binding (SWITCH)
         bindLightSwitchToLightClusterApi(
             devicePtr = switchPtr,
             switchEndpoint = 1,
@@ -172,8 +176,7 @@ class BindingLightSwitch(
                 override fun onSuccess(
                     valueList: List<ChipStructs.BindingClusterTargetStruct?>?
                 ) {
-                    Napier.d { "AAA, awaitReadBinding onSuccess called" }
-
+                    Napier.d("Read Binding success", tag = TAG)
                     val result = ArrayList(
                         valueList ?: emptyList()
                     )
@@ -184,6 +187,7 @@ class BindingLightSwitch(
                 }
 
                 override fun onError(ex: Exception) {
+                    Napier.e("Read Binding failed with exception: $ex", tag = TAG)
                     if (continuation.isActive) {
                         continuation.resumeWithException(ex)
                     }
@@ -191,7 +195,7 @@ class BindingLightSwitch(
             })
 
             continuation.invokeOnCancellation {
-                Napier.d { "awaitReadBinding cancelled" }
+                Napier.d("Read Binding cancelled", tag = TAG)
             }
         }
     }
@@ -204,15 +208,15 @@ class BindingLightSwitch(
             writeBindingAttribute(
                 object : ChipClusters.DefaultClusterCallback {
                     override fun onSuccess() {
+                        Napier.d("Write Binding success", tag = TAG)
                         if (continuation.isActive) {
-                            Napier.d { "AAA, awaitWriteBinding onSuccess called" }
                             continuation.resume(Unit)
                         }
                     }
 
                     override fun onError(ex: Exception) {
+                        Napier.e("Write Binding failed with exception: $ex", tag = TAG)
                         if (continuation.isActive) {
-                            Napier.d { "AAA, awaitWriteBinding onError called" }
                             continuation.resumeWithException(ex)
                         }
                     }
@@ -221,7 +225,7 @@ class BindingLightSwitch(
             )
 
             continuation.invokeOnCancellation {
-                Napier.d { "awaitWriteBinding cancelled" }
+                Napier.d("Write Binding cancelled", tag = TAG)
             }
         }
     }
@@ -235,45 +239,54 @@ class BindingLightSwitch(
         Napier.d { "AAA, bindLightSwitchToLightClusterApi called" }
         val cluster = ChipClusters.BindingCluster(devicePtr, switchEndpoint)
 
-        // 1. Read existing bindings
+        // Read existing bindings
         val existingBindings = cluster.awaitReadBinding()
-        Napier.d { "AAA, existingBindings size: ${existingBindings.size}" }
 
-        // 2. Check duplicates
+        // Check duplicates
         val alreadyExists = existingBindings.any {
             it?.node?.orElse(null) == lightNodeId &&
                     it.cluster?.orElse(null) == 0x0006L &&
                     it.endpoint?.orElse(null) == lightEndpoint
         }
-        Napier.d { "AAA, alreadyExists: $alreadyExists" }
 
         if (alreadyExists) {
-            Napier.d { "Binding already exists, skipping" }
+            Napier.d("Binding already exists, skipping", tag = "BindingLightSwitch")
             return
         }
         // Get fabric Index
         val fabricIndex = existingBindings
             .firstOrNull { it?.fabricIndex != null }
-            ?.fabricIndex
+            ?.fabricIndex // TODO: If its null then use the fabric index of the light.
         Napier.d { "AAA, fabricIndex: $fabricIndex" }
+        // Save non-null fabric index locally since we are using the same fabric index for both devices.
+        fabricIndex?.let {
+            lightSwitchFabricIndex = it
+            Napier.d { "AAA, lightSwitchFabricIndex: $lightSwitchFabricIndex" }
+        }
 
         // 3. Create new entry
         val newEntry = ChipStructs.BindingClusterTargetStruct(
             Optional.of(lightNodeId),
-            null,
+            null, // Taking null since for now we are using single light and switch binding.
             Optional.of(lightEndpoint),
-            Optional.of(0x0006L),
-            2, // TODO: add the fabric index value instead of null.
+            Optional.of(0x0006L), // ON/OFF cluster
+            lightSwitchFabricIndex,
         )
 
         Napier.d { "AAA, newEntry: $newEntry" }
 
         existingBindings.add(newEntry)
 
-        // 4. Write full list
+        // Write full list
         cluster.awaitWriteBinding(existingBindings)
 
         Napier.d { "Binding written successfully (cluster API)" }
+
+    }
+
+    companion object {
+        private val TAG: String
+            get() = "BindingLightSwitch"
     }
 }
 

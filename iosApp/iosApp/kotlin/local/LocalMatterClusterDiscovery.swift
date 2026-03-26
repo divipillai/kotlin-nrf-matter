@@ -103,7 +103,7 @@ class LocalMatterClusterDiscovery {
     func mapDeviceType(_ deviceType: KotlinLong?) -> DeviceType {
         switch deviceType {
         case 10: return .doorLock
-        case 21: return .lightSwitch
+        case 260: return .lightSwitch
         case 257: return .lightOnOff
         default: return .unknown
         }

@@ -71,6 +71,10 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     
     override func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
         logger.info("Selecting Thread network from \(threadScanResults.count) scan results")
+        
+        threadScanResults.forEach { item in
+            logger.info("AAATESTAAA - thread network: \(item.networkName, privacy: .public)")
+        }
 
         return try await handler.selectThreadNetwork(from: threadScanResults)
     }

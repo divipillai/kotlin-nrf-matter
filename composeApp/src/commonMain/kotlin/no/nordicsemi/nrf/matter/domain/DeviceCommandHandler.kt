@@ -156,9 +156,9 @@ class DeviceCommandHandler(
         try {
             deviceController.bind(
                 sourceNodeId = switchNodeId,
-                sourceEndpoint = 1,
+                sourceEndpoint = 1, // TODO: Add a function call that looks the endpoint of the switch where binding is configured.
                 targetNodeId = lightNodeId,
-                targetEndpoint = 1,
+                targetEndpoint = 1, // TODO: Add a function call that looks the endpoint of the light where cluster id is configured.
                 clusterId = ON_OFF_CLUSTER_ID, // TODO: Change it to provide the cluster id based on the type of binding.
             )
         } catch (e: Exception) {

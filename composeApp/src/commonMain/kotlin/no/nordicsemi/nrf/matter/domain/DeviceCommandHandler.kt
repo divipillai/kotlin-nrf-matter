@@ -170,4 +170,30 @@ class DeviceCommandHandler(
             ?.endpoint ?: 0 // TODO: change to exception and handle from UI.
     }
 
+    suspend fun bind(
+        switchNodeId: DeviceId,
+        lightNodeId: DeviceId,
+    ) {
+        try {
+            deviceController.bind(
+                sourceNodeId = switchNodeId,
+                sourceEndpoint = 1,
+                targetNodeId = lightNodeId,
+                targetEndpoint = 1,
+                clusterId = ON_OFF_CLUSTER_ID, // TODO: Change it to provide the cluster id based on the type of binding.
+            )
+        } catch (e: Exception) {
+            Napier.e("Error binding switch to light: ${e.message}", tag = TAG)
+        }
+
+    }
+
+    companion object {
+        private val TAG: String
+            get() = "DeviceCommandHandler"
+        private const val ON_OFF_CLUSTER_ID: Long = 0x0006L
+        private const val LOCK_UNLOCK_CLUSTER_ID: Long = 0x0101.toLong()
+    }
+
+
 }

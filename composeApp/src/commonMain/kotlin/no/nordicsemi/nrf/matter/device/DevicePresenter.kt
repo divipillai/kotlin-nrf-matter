@@ -160,16 +160,15 @@ class DevicePresenter(
     fun initiateBinding(switchNodeId: DeviceId) {
         scope.launch {
             try {
-                // TODO: for now I am using the first light node id from the repository,
+                // TODO: For now I am using the first light node id from the repository,
                 //  it should be taken from the dialog and passed to the function as a param.
                 val lightNodeId = devicesRepository.getAllDevices().devicesList.find {
                     it.deviceType == DeviceType.LIGHT_ON_OFF || it.deviceType == DeviceType.DIMMABLE_LIGHT
                 }
-                Napier.i { "AAA, Light node id: ${lightNodeId?.deviceId}" }
                 // Call the function to bind the switch to the light.
-                deviceController.bindSwitchToLight(
+                deviceCommandHandler.bind(
                     switchNodeId,
-                    lightNodeId?.deviceId ?: DeviceId("3")
+                    lightNodeId?.deviceId ?: DeviceId("1"), // TODO: if no light node is found, then show some error message to the user.
                 )
             } catch (e: Exception) {
                 Napier.e(e) { "AAA, Error initiating binding: ${e.message}" }

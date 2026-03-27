@@ -54,8 +54,11 @@ interface DeviceController {
     )
 
     // Bind switch to light
-    suspend fun bindSwitchToLight(
-        switchNodeId: DeviceId,
-        lightNodeId: DeviceId
+    suspend fun bind(
+        sourceNodeId: DeviceId,
+        sourceEndpoint: Int,
+        targetNodeId: DeviceId,
+        targetEndpoint: Int,
+        clusterId: Long,
     )
 }

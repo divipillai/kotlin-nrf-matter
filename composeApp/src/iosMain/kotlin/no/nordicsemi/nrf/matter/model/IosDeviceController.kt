@@ -68,7 +68,13 @@ class IosDeviceController(
         TODO("Not yet implemented")
     }
 
-    override suspend fun bindSwitchToLight(switchNodeId: Long, lightNodeId: Long) {
+    override suspend fun bind(
+        sourceNodeId: DeviceId,
+        sourceEndpoint: Int,
+        targetNodeId: DeviceId,
+        targetEndpoint: Int,
+        clusterId: Long
+    ) {
         TODO("Not yet implemented")
     }
 }

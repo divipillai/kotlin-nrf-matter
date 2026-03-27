@@ -10,6 +10,12 @@ interface SwiftCodeProvider {
     fun getMatterOnOffController(): MatterOnOffController
 
     fun getDecommissioner(): MatterDecommissioner
+
+    fun getMatterBinder(): MatterBinder
+
+    fun getMatterDoorController(): MatterDoorController
+
+    fun getMatterOutletController(): MatterOutletController
 }
 
 interface MatterCommissioner {
@@ -26,8 +32,36 @@ interface MatterOnOffController {
 
     suspend fun setDeviceOnOff(
         deviceId: DeviceId,
-        isDeviceOnline: Boolean,
         isOn: Boolean,
         endpoint: Int,
+    )
+}
+
+interface MatterBinder {
+
+    suspend fun bind(
+        sourceNodeId: DeviceId,
+        sourceEndpoint: Int,
+        targetNodeId: DeviceId,
+        targetEndpoint: Int,
+        clusterId: Long
+    )
+}
+
+interface MatterDoorController {
+
+    suspend fun lockUnlockDoor(
+        deviceId: DeviceId,
+        isLocked: Boolean,
+        endpoint: Int
+    )
+}
+
+interface MatterOutletController {
+
+    suspend fun handleOutlet(
+        deviceId: DeviceId,
+        isSwitchOn: Boolean,
+        endpoint: Int
     )
 }

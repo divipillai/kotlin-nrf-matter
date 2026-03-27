@@ -82,6 +82,8 @@ class LocalMatterClusterDiscovery {
             )
             deviceMatterInfo.append(newInfo)
         }
+        
+        let deviceType = mapDeviceType(deviceMatterInfo.flatMap { $0.types }.first)
 
         logger.debug("discoverClusters - finished")
         
@@ -90,12 +92,21 @@ class LocalMatterClusterDiscovery {
             dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),
             vendorId: vendorId?.stringValue ?? "unknown",
             productId: productId?.stringValue ?? "unknown",
-            deviceType: .lightOnOff, // TODO
+            deviceType: deviceType,
             name: name,
             productName: productName,
             vendorName: vendorName,
             deviceMatterInfo: deviceMatterInfo,
         )
+    }
+    
+    func mapDeviceType(_ deviceType: KotlinLong?) -> DeviceType {
+        switch deviceType {
+        case 10: return .doorLock
+        case 260: return .lightSwitch
+        case 257: return .lightOnOff
+        default: return .unknown
+        }
     }
     
     func getDeviceType(endpoint: NSNumber) async -> [MTRDescriptorClusterDeviceTypeStruct] {

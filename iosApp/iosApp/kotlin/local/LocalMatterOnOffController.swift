@@ -14,29 +14,16 @@ class LocalMatterOnOffController : MatterOnOffController {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterOnOffController")
 
-    func setDeviceOnOff(deviceId: DeviceId, isDeviceOnline: Bool, isOn: Bool, endpoint: Int32) async throws {
+    func setDeviceOnOff(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()!
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
 
         let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
         logger.debug("Cluster created: \(cluster)")
         if (isOn) {
-            cluster?.on { [weak self] error in
-                if let error {
-                    self?.logger.debug("Error during on")
-                } else {
-                    self?.logger.debug("Success during on")
-                }
-            }
+            try await cluster?.on()
         } else {
-            cluster?.off { [weak self] error in
-                if let error {
-                    self?.logger.debug("Error during off")
-                } else {
-                    self?.logger.debug("Success during off")
-                }
-            }
+            try await cluster?.off()
         }
-        
     }
 }

@@ -79,6 +79,9 @@ val iosModule = module {
     single<DeviceController> { IosDeviceController(
         get<SwiftCodeProvider>().getMatterOnOffController(),
         get<SwiftCodeProvider>().getDecommissioner(),
+        get<SwiftCodeProvider>().getMatterBinder(),
+        get<SwiftCodeProvider>().getMatterDoorController(),
+        get<SwiftCodeProvider>().getMatterOutletController(),
     ) }
 
     // View models.

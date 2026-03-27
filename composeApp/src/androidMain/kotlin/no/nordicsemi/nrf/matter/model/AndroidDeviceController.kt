@@ -75,11 +75,7 @@ class AndroidDeviceController(
         isSwitchOn: Boolean,
         endpoint: Int
     ) {
-        clustersHelper.setOnOffDeviceStateOnOffCluster(
-            deviceId = deviceId.longValue,
-            isOn = isSwitchOn,
-            endpoint = endpoint
-        )
+        // TODO: Not yet implemented
     }
 
     override suspend fun bind(

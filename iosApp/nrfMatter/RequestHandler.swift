@@ -73,7 +73,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
         logger.info("Selecting Thread network from \(threadScanResults.count) scan results")
         
         threadScanResults.forEach { item in
-            logger.info("AAATESTAAA - thread network: \(item.networkName, privacy: .public)")
+            logger.debug("Detected thread network: \(item.networkName, privacy: .public)")
         }
 
         return try await handler.selectThreadNetwork(from: threadScanResults)

@@ -16,6 +16,6 @@ class LocalMatterOutletController : MatterOutletController {
     
     func handleOutlet(deviceId: DeviceId, isSwitchOn: Bool, endpoint: Int32) async throws {
         let controller = LocalMatterOnOffController()
-        try await controller.setDeviceOnOff(deviceId: deviceId, isOn: isSwitchOn, endpoint: endpoint)
+        // TODO: not implemented yet
     }
 }

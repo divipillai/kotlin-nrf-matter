@@ -14,25 +14,30 @@ class LocalMatterBinder : MatterBinder {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterBinder")
 
-    func bindSwitchToLight(switchNodeId: DeviceId, lightNodeId: DeviceId) async throws {
-        logger.info("bindSwitchToLight")
-        logger.info("switchNodeId: \(switchNodeId.nsNumber())")
-        logger.info("lightNodeId: \(lightNodeId.nsNumber())")
-        let switchId = 33 as NSNumber // todo
-        let lightId = 34 as NSNumber // todo
+    func bind(sourceNodeId: DeviceId, sourceEndpoint: Int32, targetNodeId: DeviceId, targetEndpoint: Int32, clusterId: Int64) async throws {
+        logger.debug("bindSwitchToLight")
+        logger.info("Source node id: \(sourceNodeId)")
+        logger.info("Target node it: \(targetNodeId)")
+        
+        let source = sourceNodeId.nsNumber()
+        let target = targetNodeId.nsNumber()
+        let sourceEnd = sourceEndpoint as NSNumber
+        let targetEnd = targetEndpoint as NSNumber
+        let cluster = clusterId as NSNumber
+        
         let controller = try LocalControllerProvider(logTag: "LocalMatterBinder").getController()!
-        logger.info("acl")
-        await grantAccessToSource(targetDeviceID: lightId, sourceNodeID: switchId, controller: controller)
-        logger.info("bind")
-        await bindSwitchToBulb(sourceDeviceID: switchId, sourceEndpoint: 1, targetNodeID: lightId, targetEndpoint: 1, clusterID: 6, controller: controller)
+        logger.info("Granting access to source.")
+        await grantAccessToSource(targetDeviceID: target, sourceNodeID: source, clusterID: cluster, controller: controller)
+        logger.info("Preparing binding.")
+        await bindSwitchToBulb(sourceDeviceID: source, sourceEndpoint: sourceEnd, targetNodeID: target, targetEndpoint: targetEnd, clusterID: cluster, controller: controller)
     }
 
-    func grantAccessToSource(targetDeviceID: NSNumber, sourceNodeID: NSNumber, controller: MTRDeviceController) async {
+    func grantAccessToSource(targetDeviceID: NSNumber, sourceNodeID: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async {
         let targetDevice = MTRBaseDevice(nodeID: targetDeviceID, controller: controller)
         guard let aclCluster = MTRBaseClusterAccessControl(device: targetDevice, endpointID: 0, queue: .main) else { return }
         
         let target = MTRAccessControlClusterAccessControlTargetStruct()
-        target.cluster = NSNumber(value: 6) // On/Off cluster
+        target.cluster = clusterID // On/Off cluster
         target.endpoint = nil
         target.deviceType = nil
         
@@ -69,7 +74,6 @@ class LocalMatterBinder : MatterBinder {
         bindingEntry.node = targetNodeID
         bindingEntry.endpoint = targetEndpoint
         bindingEntry.cluster = clusterID
-        bindingEntry.fabricIndex = 1
         
         do {
             var bindings = try await bindingCluster.readAttributeBinding(with: nil)

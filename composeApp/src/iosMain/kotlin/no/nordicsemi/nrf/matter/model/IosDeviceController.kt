@@ -81,6 +81,6 @@ class IosDeviceController(
         targetEndpoint: Int,
         clusterId: Long
     ) {
-        TODO("Not yet implemented")
+        matterBinder.bind(sourceNodeId, sourceEndpoint, targetNodeId, targetEndpoint, clusterId)
     }
 }

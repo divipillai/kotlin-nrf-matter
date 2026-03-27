@@ -48,40 +48,40 @@ class BindingManager(
 
     suspend fun ChipClusters.AccessControlCluster.awaitWriteAcl(
         acl: ArrayList<ChipStructs.AccessControlClusterAccessControlEntryStruct?>
+    suspend fun createBinding(
+        switchNodeId: Long,
+        switchEndpoint: Int,
+        lightNodeId: Long,
+        lightEndpoint: Int,
+        clusterId: Long,
     ) {
-        return suspendCancellableCoroutine { continuation ->
+        val switchPtr = chipClient.getConnectedDevicePointer(switchNodeId)
+        val lightPtr = chipClient.getConnectedDevicePointer(lightNodeId)
 
-            writeAclAttribute(
-                object : ChipClusters.DefaultClusterCallback {
-                    override fun onSuccess() {
-                        Napier.d("Write ACL (LIGHT) success", tag = TAG)
-                        if (continuation.isActive) {
-                            continuation.resume(Unit)
-                        }
-                    }
+        // ACL (LIGHT)
+        grantOperateAccess(
+            devicePtr = lightPtr,
+            switchNodeId = switchNodeId,
+            clusterId = clusterId
+        )
 
-                    override fun onError(ex: Exception) {
-                        Napier.e("Write ACL (LIGHT) failed with exception: $ex", tag = TAG)
-                        if (continuation.isActive) {
-                            continuation.resumeWithException(ex)
-                        }
-                    }
-                },
-                acl
-            )
-
-            continuation.invokeOnCancellation {
-                Napier.d("Write ACL (LIGHT) cancelled", tag = TAG)
-            }
-        }
+        // Binding (SWITCH)
+        createSwitchToLightBinding(
+            devicePtr = switchPtr,
+            switchEndpoint = switchEndpoint,
+            lightNodeId = lightNodeId,
+            lightEndpoint = lightEndpoint,
+            clusterId = clusterId
+        )
     }
 
     suspend fun grantOperateAccessClusterApi(
+    private suspend fun grantOperateAccess(
         devicePtr: Long,
         switchNodeId: Long,
-        endpoint: Int = 0
+        clusterId: Long,
     ) {
-        val cluster = ChipClusters.AccessControlCluster(devicePtr, endpoint)
+        val cluster = ChipClusters.AccessControlCluster(devicePtr, ROOT_ENDPOINT)
 
         // Read existing ACL
         val existingAcl = cluster.awaitReadAcl()
@@ -92,7 +92,7 @@ class BindingManager(
         val alreadyExists = existingAcl.any { entry ->
             entry?.subjects?.contains(switchNodeId) == true &&
                     entry.targets?.any {
-                        it.cluster == 0x0006L
+                        it.cluster == clusterId
                     } == true
         }
 
@@ -111,29 +111,23 @@ class BindingManager(
             lightSwitchFabricIndex = it
         }
 
-
         // Create new ACL entry
         val newEntry = ChipStructs.AccessControlClusterAccessControlEntryStruct(
             /* privilege */ 3, // Operate
             /* authMode */ 2,  // CASE
-
             /* subjects */
             arrayListOf(switchNodeId),
-
             /* targets */
             arrayListOf(
                 ChipStructs.AccessControlClusterTarget(
-                    0x0006L, // cluster (OnOff)
+                    clusterId, // cluster (OnOff)
                     null,    // endpoint
                     null     // deviceType
                 )
             ),
-
             /* fabricIndex */
             fabricIndex
         )
-
-        Napier.d { "AAA, newEntry: $newEntry" }
 
         // Append
         existingAcl.add(newEntry)
@@ -147,26 +141,74 @@ class BindingManager(
     suspend fun bindSwitchToLightClusterApi(
         switchNodeId: Long,
         lightNodeId: Long
+    private suspend fun ChipClusters.AccessControlCluster.awaitReadAcl():
+            ArrayList<ChipStructs.AccessControlClusterAccessControlEntryStruct?> {
+
+        return suspendCancellableCoroutine { continuation ->
+
+            readAclAttribute(object : ChipClusters.AccessControlCluster.AclAttributeCallback {
+
+                override fun onSuccess(
+                    valueList: List<ChipStructs.AccessControlClusterAccessControlEntryStruct?>?
+                ) {
+                    Napier.d("Read ACL (Access Control List) success", tag = TAG)
+                    val result = ArrayList(
+                        valueList ?: emptyList()
+                    )
+
+                    if (continuation.isActive) {
+                        continuation.resume(result)
+                    }
+                }
+
+                override fun onError(ex: Exception) {
+                    Napier.e("Read ACL (Access Control List) failed with exception: $ex", tag = TAG)
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(ex)
+                    }
+                }
+            })
+            continuation.invokeOnCancellation {
+                Napier.d("Read ACL (Access Control List) cancelled", tag = TAG)
+            }
+        }
+    }
+
+    private suspend fun ChipClusters.AccessControlCluster.awaitWriteAcl(
+        acl: ArrayList<ChipStructs.AccessControlClusterAccessControlEntryStruct?>
     ) {
-        Napier.d { "AAA, bindSwitchToLightClusterApi called" }
-        val switchPtr = chipClient.getConnectedDevicePointer(switchNodeId)
-        val lightPtr = chipClient.getConnectedDevicePointer(lightNodeId)
+        return suspendCancellableCoroutine { continuation ->
 
-        // ACL first (LIGHT)
-        grantOperateAccessClusterApi(
-            devicePtr = lightPtr,
-            switchNodeId = switchNodeId
-        )
+            writeAclAttribute(
+                object : ChipClusters.DefaultClusterCallback {
+                    override fun onSuccess() {
+                        Napier.d("Write ACL (Access Control List) success", tag = TAG)
+                        if (continuation.isActive) {
+                            continuation.resume(Unit)
+                        }
+                    }
 
-        // Binding (SWITCH)
-        bindLightSwitchToLightClusterApi(
-            devicePtr = switchPtr,
-            switchEndpoint = 1,
-            lightNodeId = lightNodeId
-        )
+                    override fun onError(ex: Exception) {
+                        Napier.e(
+                            "Write ACL (Access Control List) failed with exception: $ex",
+                            tag = TAG
+                        )
+                        if (continuation.isActive) {
+                            continuation.resumeWithException(ex)
+                        }
+                    }
+                },
+                acl
+            )
+
+            continuation.invokeOnCancellation {
+                Napier.d("Write ACL (Access Control List) cancelled", tag = TAG)
+            }
+        }
     }
 
     suspend fun ChipClusters.BindingCluster.awaitReadBinding():
+    private suspend fun ChipClusters.BindingCluster.awaitReadBinding():
             ArrayList<ChipStructs.BindingClusterTargetStruct?> {
 
         return suspendCancellableCoroutine { continuation ->
@@ -201,6 +243,7 @@ class BindingManager(
     }
 
     suspend fun ChipClusters.BindingCluster.awaitWriteBinding(
+    private suspend fun ChipClusters.BindingCluster.awaitWriteBinding(
         bindings: ArrayList<ChipStructs.BindingClusterTargetStruct?>
     ) {
         return suspendCancellableCoroutine { continuation ->
@@ -231,12 +274,13 @@ class BindingManager(
     }
 
     suspend fun bindLightSwitchToLightClusterApi(
+    private suspend fun createSwitchToLightBinding(
         devicePtr: Long,
         switchEndpoint: Int,
         lightNodeId: Long,
-        lightEndpoint: Int = 1
+        lightEndpoint: Int,
+        clusterId: Long,
     ) {
-        Napier.d { "AAA, bindLightSwitchToLightClusterApi called" }
         val cluster = ChipClusters.BindingCluster(devicePtr, switchEndpoint)
 
         // Read existing bindings
@@ -245,7 +289,7 @@ class BindingManager(
         // Check duplicates
         val alreadyExists = existingBindings.any {
             it?.node?.orElse(null) == lightNodeId &&
-                    it.cluster?.orElse(null) == 0x0006L &&
+                    it.cluster?.orElse(null) == clusterId &&
                     it.endpoint?.orElse(null) == lightEndpoint
         }
 
@@ -256,37 +300,35 @@ class BindingManager(
         // Get fabric Index
         val fabricIndex = existingBindings
             .firstOrNull { it?.fabricIndex != null }
-            ?.fabricIndex // TODO: If its null then use the fabric index of the light.
-        Napier.d { "AAA, fabricIndex: $fabricIndex" }
+            ?.fabricIndex
         // Save non-null fabric index locally since we are using the same fabric index for both devices.
         fabricIndex?.let {
             lightSwitchFabricIndex = it
-            Napier.d { "AAA, lightSwitchFabricIndex: $lightSwitchFabricIndex" }
         }
 
-        // 3. Create new entry
+        // Create new entry (Binding Table)
         val newEntry = ChipStructs.BindingClusterTargetStruct(
             Optional.of(lightNodeId),
             null, // Taking null since for now we are using single light and switch binding.
             Optional.of(lightEndpoint),
-            Optional.of(0x0006L), // ON/OFF cluster
+            Optional.of(clusterId), // ON/OFF cluster
             lightSwitchFabricIndex,
         )
-
-        Napier.d { "AAA, newEntry: $newEntry" }
 
         existingBindings.add(newEntry)
 
         // Write full list
         cluster.awaitWriteBinding(existingBindings)
 
-        Napier.d { "Binding written successfully (cluster API)" }
+        Napier.d("Binding written successfully", tag = TAG)
 
     }
 
     companion object {
         private val TAG: String
             get() = "BindingLightSwitch"
+
+        private const val ROOT_ENDPOINT: Int = 0
     }
 }
 

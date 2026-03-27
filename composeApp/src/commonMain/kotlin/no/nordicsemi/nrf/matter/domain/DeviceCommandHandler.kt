@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.domain
 
+import io.github.aakira.napier.Napier
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -139,32 +140,7 @@ class DeviceCommandHandler(
         deviceId: DeviceId,
         isSwitchOn: Boolean,
     ) {
-        val endpoint =
-            resolveEndpoint(device, clusterId = 6L) // Looks like it is the same as light on/off
-
-        try {
-            devicesStateRepository.updateDeviceState(
-                deviceId = deviceId,
-                isOnline = true,
-                isOn = isSwitchOn
-            )
-
-            deviceController.handleOutlet(
-                deviceId = deviceId,
-                isSwitchOn = isSwitchOn,
-                endpoint = endpoint,
-            )
-
-        } catch (e: Exception) {
-
-            devicesStateRepository.updateDeviceState(
-                deviceId = deviceId,
-                isOnline = false,
-                isOn = !isSwitchOn
-            )
-
-            throw e
-        }
+        // TODO: Not implemented yet.
     }
 
     private fun resolveEndpoint(device: Device, clusterId: Long): Int {

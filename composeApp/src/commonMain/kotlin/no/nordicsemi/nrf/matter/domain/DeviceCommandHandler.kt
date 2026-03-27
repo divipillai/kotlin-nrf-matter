@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.domain
 
+import io.github.aakira.napier.Napier
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -70,7 +71,7 @@ class DeviceCommandHandler(
         deviceId: DeviceId,
         isOn: Boolean
     ) {
-        val endpoint = resolveEndpoint(device, clusterId = 6L)
+        val endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
 
         try {
             devicesStateRepository.updateDeviceState(
@@ -104,7 +105,10 @@ class DeviceCommandHandler(
         isLocked: Boolean
     ) {
         val endpoint =
-            resolveEndpoint(device, clusterId = 0x0101.toLong()) // todo: use the proper cluster id
+            resolveEndpoint(
+                device,
+                clusterId = LOCK_UNLOCK_CLUSTER_ID
+            ) // todo: use the proper cluster id
 
         try {
             devicesStateRepository.updateDeviceState(
@@ -136,32 +140,7 @@ class DeviceCommandHandler(
         deviceId: DeviceId,
         isSwitchOn: Boolean,
     ) {
-        val endpoint =
-            resolveEndpoint(device, clusterId = 6L) // Looks like it is the same as light on/off
-
-        try {
-            devicesStateRepository.updateDeviceState(
-                deviceId = deviceId,
-                isOnline = true,
-                isOn = isSwitchOn
-            )
-
-            deviceController.handleOutlet(
-                deviceId = deviceId,
-                isSwitchOn = isSwitchOn,
-                endpoint = endpoint,
-            )
-
-        } catch (e: Exception) {
-
-            devicesStateRepository.updateDeviceState(
-                deviceId = deviceId,
-                isOnline = false,
-                isOn = !isSwitchOn
-            )
-
-            throw e
-        }
+        // TODO: Not implemented yet.
     }
 
     private fun resolveEndpoint(device: Device, clusterId: Long): Int {
@@ -169,5 +148,31 @@ class DeviceCommandHandler(
             .firstOrNull { it.serverClusters.contains(clusterId) }
             ?.endpoint ?: 0 // TODO: change to exception and handle from UI.
     }
+
+    suspend fun bind(
+        switchNodeId: DeviceId,
+        lightNodeId: DeviceId,
+    ) {
+        try {
+            deviceController.bind(
+                sourceNodeId = switchNodeId,
+                sourceEndpoint = 1, // TODO: Add a function call that looks the endpoint of the switch where binding is configured.
+                targetNodeId = lightNodeId,
+                targetEndpoint = 1, // TODO: Add a function call that looks the endpoint of the light where cluster id is configured.
+                clusterId = ON_OFF_CLUSTER_ID, // TODO: Change it to provide the cluster id based on the type of binding.
+            )
+        } catch (e: Exception) {
+            Napier.e("Error binding switch to light: ${e.message}", tag = TAG)
+        }
+
+    }
+
+    companion object {
+        private val TAG: String
+            get() = "DeviceCommandHandler"
+        private const val ON_OFF_CLUSTER_ID: Long = 0x0006L
+        private const val LOCK_UNLOCK_CLUSTER_ID: Long = 0x0101.toLong()
+    }
+
 
 }

@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
@@ -155,4 +156,23 @@ class DevicePresenter(
     }
 
 
+    // Method to call binding.
+    fun initiateBinding(switchNodeId: DeviceId) {
+        scope.launch {
+            try {
+                // TODO: For now I am using the first light node id from the repository,
+                //  it should be taken from the dialog and passed to the function as a param.
+                val lightNodeId = devicesRepository.getAllDevices().devicesList.find {
+                    it.deviceType == DeviceType.LIGHT_ON_OFF || it.deviceType == DeviceType.DIMMABLE_LIGHT
+                }
+                // Call the function to bind the switch to the light.
+                deviceCommandHandler.bind(
+                    switchNodeId,
+                    lightNodeId?.deviceId ?: DeviceId("1"), // TODO: if no light node is found, then show some error message to the user.
+                )
+            } catch (e: Exception) {
+                Napier.e(e) { "AAA, Error initiating binding: ${e.message}" }
+            }
+        }
+    }
 }

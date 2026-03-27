@@ -133,6 +133,8 @@ class HomeViewModelAndroid(
             256L -> DeviceType.LIGHT_ON_OFF // 0x0100 On/Off Light
             257L -> DeviceType.DIMMABLE_LIGHT // 0x0101 Dimmable Light
             259L -> DeviceType.LIGHT_SWITCH// 0x0103 On/Off Light Switch
+            260L -> DeviceType.LIGHT_SWITCH // 0x0104 On/Off Outlet
+
             266L -> DeviceType.OUTLET // 0x010A (On/Off Plug-in Unit)
             268L -> DeviceType.COLOR_TEMPERATURE_LIGHT // 0x010C Color Temperature Light
             269L -> DeviceType.EXTENDED_COLOR_LIGHT // 0x010D Extended Color Light

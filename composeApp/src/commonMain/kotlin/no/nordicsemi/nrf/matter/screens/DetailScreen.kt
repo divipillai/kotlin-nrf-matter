@@ -20,7 +20,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -28,15 +30,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.cloudy.cloudy
+import io.github.aakira.napier.Napier
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.model.Device
@@ -57,6 +59,7 @@ import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
+import no.nordicsemi.nrf.matter.ui.DEVICE_LIST_TEST
 import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.LockItem
@@ -171,6 +174,7 @@ fun DeviceScreen(
             LaunchedEffect(true) {
                 snackbarHostState.showSnackbar("Device removed")
             }
+            devicePresenter.updateRemoveDeviceState(RemoveDeviceState.Idle)
             onBack()
         }
 
@@ -226,6 +230,15 @@ private fun DeviceDetails(
 
         DeviceControlSection(device, devicePresenter)
 
+        if (device.device.deviceType == DeviceType.LIGHT_SWITCH) {
+            SectionTitle("Linked Lights")
+            LightSwitchBindingCard {
+                // TODO: Call the callback function here
+                Napier.i { "AAA, LightSwitchBindingCard() called" }
+                devicePresenter.initiateBinding(device.device.deviceId)
+            }
+        }
+
         SectionTitle("Sharing")
         ShareCard {}
 
@@ -279,6 +292,8 @@ private fun DeviceControlSection(
                 },
                 onClick = {}
             )
+
+            // TODO: Add an option to
         }
 
         DeviceType.DOOR_LOCK -> {
@@ -338,31 +353,6 @@ fun DeviceHeader(
     }
 }
 
-@Preview
-@Composable
-private fun LightSwitchCard(
-    enabled: Boolean = true,
-    onToggle: (Boolean) -> Unit = {}
-) {
-    var isChecked by rememberSaveable { mutableStateOf(enabled) }
-    DeviceItemContainer(
-        icon = painterResource(resource = Res.drawable.smart_outlet),
-        title = "Power",
-        subtitle = "Turn device ON or OFF",
-        isOnline = isChecked,
-        onDeviceClick = { },
-    ) {
-        Switch(
-            checked = isChecked,
-            onCheckedChange = {
-                isChecked = it
-                onToggle(isChecked)
-            },
-        )
-    }
-
-}
-
 @Composable
 fun ShareCard(onShare: () -> Unit) {
     OutlinedCard(
@@ -417,6 +407,68 @@ fun ShareCard(onShare: () -> Unit) {
 
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = Color.Gray
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+internal fun BindConfiguration(onMoreClick: () -> Unit = {}) {
+    OutlinedCard(
+        shape = RoundedCornerShape(16.dp),
+        border = CardDefaults.outlinedCardBorder(enabled = false),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { onMoreClick() }
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
+                        RoundedCornerShape(12.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.light_bulb),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    "Target Light Bulbs",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    "1 light bulb is selected to control with this device",
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(0.5f)
+                )
+            }
+
+            Icon(
+                Icons.Default.ExpandMore,
                 contentDescription = null,
                 tint = Color.Gray
             )
@@ -625,6 +677,75 @@ fun DeviceItemContainerPreview() {
         {}
     ) {
         Text("50%", fontWeight = FontWeight.Bold)
+    }
+
+}
+
+@Preview(showBackground = true)
+@Composable
+internal fun LightSwitchBindingCard(
+    onLightSelected: () -> Unit = {},
+) {
+    var isDialogOpen by remember { mutableStateOf(false) }
+    val selectedLightItem = remember { mutableStateListOf(DEVICE_LIST_TEST.first()) }
+    Column {
+        OutlinedCard(
+            shape = RoundedCornerShape(16.dp),
+            border = CardDefaults.outlinedCardBorder(enabled = false),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .clickable {
+                    // TODO: Show a dialog to add lights for binding
+                    isDialogOpen = true
+                }
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = null,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Add Lights", fontWeight = FontWeight.Bold,
+                    )
+                }
+
+                Text(
+                    "Select one or more lights to bind to this device",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.alpha(0.5f)
+                )
+            }
+        }
+        if (selectedLightItem.isNotEmpty()) {
+            SectionTitle("Binding Configuration")
+            BindConfiguration { }
+        }
+        if (isDialogOpen) {
+            Napier.i { "AAA, isDialogOpen is true" }
+            onLightSelected()
+//            TargetLightSettingsDialog(
+//                onDismiss = { isDialogOpen = false },
+//                onConfirmation = {
+//                    Napier.d { "AAA, Confirmation" }
+//                    isDialogOpen = false
+//                }
+//            )
+        }
     }
 
 }

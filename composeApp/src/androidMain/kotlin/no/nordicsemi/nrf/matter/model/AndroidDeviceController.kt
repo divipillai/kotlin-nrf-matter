@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.model
 
+import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 
@@ -37,6 +38,7 @@ import no.nordicsemi.nrf.matter.chip.ClustersHelper
 class AndroidDeviceController(
     private val clustersHelper: ClustersHelper,
     private val chipClient: ChipClient,
+    private val bindingManager: BindingManager,
 ) : DeviceController {
 
     override suspend fun setDeviceOnOff(
@@ -73,6 +75,23 @@ class AndroidDeviceController(
         isSwitchOn: Boolean,
         endpoint: Int
     ) {
-        TODO("Not yet implemented")
+        // TODO: Not yet implemented
+    }
+
+    override suspend fun bind(
+        sourceNodeId: DeviceId,
+        sourceEndpoint: Int,
+        targetNodeId: DeviceId,
+        targetEndpoint: Int,
+        clusterId: Long
+    ) {
+        bindingManager.createBinding(
+            switchNodeId = sourceNodeId.longValue,
+            switchEndpoint = sourceEndpoint,
+            lightNodeId = targetNodeId.longValue,
+            lightEndpoint = targetEndpoint,
+            clusterId = clusterId
+        )
+
     }
 }

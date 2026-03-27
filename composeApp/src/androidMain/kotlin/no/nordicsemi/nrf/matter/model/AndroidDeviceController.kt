@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter.model
 
-import io.github.aakira.napier.Napier
-import no.nordicsemi.nrf.matter.chip.BindingLightSwitch
+import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 
@@ -39,8 +38,7 @@ import no.nordicsemi.nrf.matter.chip.ClustersHelper
 class AndroidDeviceController(
     private val clustersHelper: ClustersHelper,
     private val chipClient: ChipClient,
-    private val bindingLightSwitch: BindingLightSwitch,
-
+    private val bindingManager: BindingManager,
 ) : DeviceController {
 
     override suspend fun setDeviceOnOff(
@@ -84,11 +82,19 @@ class AndroidDeviceController(
         )
     }
 
-    override suspend fun bindSwitchToLight(switchNodeId: DeviceId, lightNodeId: DeviceId) {
-        Napier.d { "AAA, bindSwitchToLight called" }
-        bindingLightSwitch.bindSwitchToLightClusterApi(
-            switchNodeId = switchNodeId.longValue,
-            lightNodeId = lightNodeId.longValue,
+    override suspend fun bind(
+        sourceNodeId: DeviceId,
+        sourceEndpoint: Int,
+        targetNodeId: DeviceId,
+        targetEndpoint: Int,
+        clusterId: Long
+    ) {
+        bindingManager.createBinding(
+            switchNodeId = sourceNodeId.longValue,
+            switchEndpoint = sourceEndpoint,
+            lightNodeId = targetNodeId.longValue,
+            lightEndpoint = targetEndpoint,
+            clusterId = clusterId
         )
 
     }

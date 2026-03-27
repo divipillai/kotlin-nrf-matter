@@ -8,7 +8,7 @@ import java.util.Optional
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class BindingLightSwitch(
+class BindingManager(
     private val chipClient: ChipClient,
 ) {
     private var lightSwitchFabricIndex: Int? = null

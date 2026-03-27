@@ -70,7 +70,7 @@ class DeviceCommandHandler(
         deviceId: DeviceId,
         isOn: Boolean
     ) {
-        val endpoint = resolveEndpoint(device, clusterId = 6L)
+        val endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
 
         try {
             devicesStateRepository.updateDeviceState(
@@ -104,7 +104,10 @@ class DeviceCommandHandler(
         isLocked: Boolean
     ) {
         val endpoint =
-            resolveEndpoint(device, clusterId = 0x0101.toLong()) // todo: use the proper cluster id
+            resolveEndpoint(
+                device,
+                clusterId = LOCK_UNLOCK_CLUSTER_ID
+            ) // todo: use the proper cluster id
 
         try {
             devicesStateRepository.updateDeviceState(

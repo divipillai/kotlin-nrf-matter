@@ -13,41 +13,21 @@ class BindingManager(
 ) {
     private var lightSwitchFabricIndex: Int? = null
 
-    suspend fun ChipClusters.AccessControlCluster.awaitReadAcl():
-            ArrayList<ChipStructs.AccessControlClusterAccessControlEntryStruct?> {
-
-        return suspendCancellableCoroutine { continuation ->
-
-            readAclAttribute(object : ChipClusters.AccessControlCluster.AclAttributeCallback {
-
-                override fun onSuccess(
-                    valueList: List<ChipStructs.AccessControlClusterAccessControlEntryStruct?>?
-                ) {
-                    Napier.d("Read ACL (LIGHT) success", tag = TAG)
-                    val result = ArrayList(
-                        valueList ?: emptyList()
-                    )
-
-                    if (continuation.isActive) {
-                        continuation.resume(result)
-                    }
-                }
-
-                override fun onError(ex: Exception) {
-                    Napier.e("Read ACL (LIGHT) failed with exception: $ex", tag = TAG)
-                    if (continuation.isActive) {
-                        continuation.resumeWithException(ex)
-                    }
-                }
-            })
-            continuation.invokeOnCancellation {
-                Napier.d("Read ACL (LIGHT) cancelled", tag = TAG)
-            }
-        }
-    }
-
-    suspend fun ChipClusters.AccessControlCluster.awaitWriteAcl(
-        acl: ArrayList<ChipStructs.AccessControlClusterAccessControlEntryStruct?>
+    /**
+     * Creates a binding between a switch and a light cluster, ensuring the switch can control the light.
+     *
+     * This function performs two key steps:
+     * 1. Grants the switch "operate" access to the target cluster on the light (ACL).
+     * 2. Creates a binding entry from the switch to the light in the binding table.
+     *
+     * The operation is idempotent: if the ACL or binding already exists, it will not create duplicates.
+     *
+     * @param switchNodeId Node ID of the switch device.
+     * @param switchEndpoint Endpoint on the switch where the binding is configured.
+     * @param lightNodeId Node ID of the target light device.
+     * @param lightEndpoint Endpoint on the light device.
+     * @param clusterId ID of the cluster to bind (e.g., On/Off).
+     */
     suspend fun createBinding(
         switchNodeId: Long,
         switchEndpoint: Int,
@@ -75,7 +55,22 @@ class BindingManager(
         )
     }
 
-    suspend fun grantOperateAccessClusterApi(
+    /**
+     * Grants "operate" access for a specific cluster to a switch device by modifying the ACL.
+     *
+     * This function:
+     * - Reads the current ACL from the device
+     * - Checks if an entry already exists for the given [switchNodeId] and [clusterId]
+     * - Reuses the existing fabric index (if available)
+     * - Creates and appends a new ACL entry if no duplicate is found
+     * - Writes the updated ACL back to the cluster
+     *
+     * If a matching ACL entry already exists, no changes are made.
+     *
+     * @param devicePtr Pointer to the target device.
+     * @param switchNodeId Node ID of the switch to grant access to.
+     * @param clusterId ID of the cluster for which "operate" access is granted.
+     */
     private suspend fun grantOperateAccess(
         devicePtr: Long,
         switchNodeId: Long,
@@ -138,9 +133,13 @@ class BindingManager(
         Napier.d("ACL updated successfully (cluster API)", tag = TAG)
     }
 
-    suspend fun bindSwitchToLightClusterApi(
-        switchNodeId: Long,
-        lightNodeId: Long
+    /**
+     * Suspends until the ACL (Access Control List) attribute is read from the cluster.
+     *
+     * @return An [ArrayList] of [ChipStructs.AccessControlClusterAccessControlEntryStruct] entries,
+     * or an empty list if no values are returned.
+     * @throws Exception if the read operation fails.
+     */
     private suspend fun ChipClusters.AccessControlCluster.awaitReadAcl():
             ArrayList<ChipStructs.AccessControlClusterAccessControlEntryStruct?> {
 
@@ -174,6 +173,12 @@ class BindingManager(
         }
     }
 
+    /**
+     * Suspends until the ACL (Access Control List) attribute is written to the cluster.
+     *
+     * @param acl An [ArrayList] of [ChipStructs.AccessControlClusterAccessControlEntryStruct] entries.
+     * @throws Exception if the write operation fails.
+     */
     private suspend fun ChipClusters.AccessControlCluster.awaitWriteAcl(
         acl: ArrayList<ChipStructs.AccessControlClusterAccessControlEntryStruct?>
     ) {
@@ -207,7 +212,13 @@ class BindingManager(
         }
     }
 
-    suspend fun ChipClusters.BindingCluster.awaitReadBinding():
+    /**
+     * Suspends until the Binding attribute is read from the cluster.
+     *
+     * @return An [ArrayList] of [ChipStructs.BindingClusterTargetStruct] entries,
+     * or an empty list if no values are returned.
+     * @throws Exception if the read operation fails.
+     */
     private suspend fun ChipClusters.BindingCluster.awaitReadBinding():
             ArrayList<ChipStructs.BindingClusterTargetStruct?> {
 
@@ -242,7 +253,12 @@ class BindingManager(
         }
     }
 
-    suspend fun ChipClusters.BindingCluster.awaitWriteBinding(
+    /**
+     * Suspends until the Binding attribute is written to the cluster.
+     *
+     * @param bindings An [ArrayList] of [ChipStructs.BindingClusterTargetStruct] entries.
+     * @throws Exception if the write operation fails
+     */
     private suspend fun ChipClusters.BindingCluster.awaitWriteBinding(
         bindings: ArrayList<ChipStructs.BindingClusterTargetStruct?>
     ) {
@@ -273,7 +289,24 @@ class BindingManager(
         }
     }
 
-    suspend fun bindLightSwitchToLightClusterApi(
+    /**
+     * Binds a light switch to a light for a specific cluster by updating the binding table.
+     *
+     * This function:
+     * - Reads the current binding table from the switch
+     * - Checks if a binding already exists for the given light node, endpoint, and cluster
+     * - Reuses the existing fabric index (if available)
+     * - Creates and appends a new binding entry if no duplicate is found
+     * - Writes the updated binding table back to the cluster
+     *
+     * If a matching binding already exists, no changes are made.
+     *
+     * @param devicePtr Pointer to the switch device.
+     * @param switchEndpoint Endpoint on the switch where the binding is configured.
+     * @param lightNodeId Node ID of the target light device.
+     * @param lightEndpoint Endpoint on the light device (default is 1).
+     * @param clusterId ID of the cluster to bind (e.g., On/Off).
+     */
     private suspend fun createSwitchToLightBinding(
         devicePtr: Long,
         switchEndpoint: Int,

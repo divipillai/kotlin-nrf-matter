@@ -1,5 +1,5 @@
 //
-//  MatterClusterDiscovery.swift
+//  LocalMatterClusterDiscovery.swift
 //  iosApp
 //
 //  Created by Sylwester Zielinski on 10/03/2026.
@@ -74,6 +74,10 @@ class LocalMatterClusterDiscovery {
             let clientClusters = await readClientClusters(endpoint: endpoint)
             let serverClusters = await readServerClusters(endpoint: endpoint)
             
+            for i in serverClusters {
+                await readAttributes(endpoint: endpoint, cluster: i)
+            }
+            
             let newInfo = DeviceMatterInfo(
                 endpoint: endpoint.int32Value,
                 types: deviceTypes.map { KotlinLong(value: $0.deviceType.int64Value) },
@@ -139,5 +143,21 @@ class LocalMatterClusterDiscovery {
         let result = (try? await descriptor?.readAttributeClientList())?.map { $0 as! NSNumber} ?? []
         logger.debug("Supported client clusters: \(result)")
         return result
+    }
+    
+    func readAttributes(endpoint: NSNumber, cluster: NSNumber) async {
+        logger.debug("readAttributes")
+        let result = try? await baseDevice.readAttributes(withEndpointID: endpoint, clusterID: cluster, attributeID: nil, params: nil, queue: DispatchQueue.global())
+        logger.debug("Attirbutes for endpoint: \(endpoint), cluster: \(cluster)")
+        printAttributes(result!)
+    }
+    
+    private func printAttributes(_ array: [[String: Any]]) {
+        for (index, dict) in array.enumerated() {
+            logger.debug("Item nr \(index):")
+            for (key, value) in dict {
+                logger.debug("\(key): \(value as! NSObject)")
+            }
+        }
     }
 }

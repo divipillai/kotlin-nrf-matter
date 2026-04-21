@@ -51,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.cloudy.cloudy
 import io.github.aakira.napier.Napier
+import no.nordicsemi.nrf.matter.binding.BindingUiStates
+import no.nordicsemi.nrf.matter.binding.TargetLightSettingsDialog
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.model.Device
@@ -202,7 +204,6 @@ fun DeviceScreen(
             isRemoving = false
         }
     }
-
     Box(
         modifier = Modifier
             .padding(padding)
@@ -232,11 +233,29 @@ private fun DeviceDetails(
 
         if (device.device.deviceType == DeviceType.LIGHT_SWITCH) {
             SectionTitle("Linked Lights")
-            LightSwitchBindingCard {
-                // TODO: Call the callback function here
-                Napier.i { "AAA, LightSwitchBindingCard() called" }
-                devicePresenter.initiateBinding(device.device.deviceId)
+            val bindingState by devicePresenter.bindingState.collectAsState()
+            when (bindingState) {
+                is BindingUiStates.Error -> {
+//                    TODO: Show error message and clear the binding state to idle.
+                }
+
+                BindingUiStates.Idle -> {
+                    LightSwitchBindingCard {
+                        // TODO: Call the callback function here
+                        Napier.i { "AAA, LightSwitchBindingCard() called" }
+                        devicePresenter.initiateBinding(device.device.deviceId)
+                    }
+                }
+
+                BindingUiStates.InProgress -> {
+                    // TODO: Show in progress view like in the remove state
+                }
+
+                is BindingUiStates.Success -> {
+                    // TODO: Show success message and show bonded lights in the UI.
+                }
             }
+
         }
 
         SectionTitle("Sharing")
@@ -737,14 +756,14 @@ internal fun LightSwitchBindingCard(
         }
         if (isDialogOpen) {
             Napier.i { "AAA, isDialogOpen is true" }
-            onLightSelected()
-//            TargetLightSettingsDialog(
-//                onDismiss = { isDialogOpen = false },
-//                onConfirmation = {
-//                    Napier.d { "AAA, Confirmation" }
-//                    isDialogOpen = false
-//                }
-//            )
+//            onLightSelected()
+            TargetLightSettingsDialog(
+                onDismiss = { isDialogOpen = false },
+                onConfirmation = {
+                    Napier.d { "AAA, Confirmation" }
+                    isDialogOpen = false
+                }
+            )
         }
     }
 

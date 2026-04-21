@@ -16,6 +16,8 @@ interface SwiftCodeProvider {
     fun getMatterDoorController(): MatterDoorController
 
     fun getMatterOutletController(): MatterOutletController
+
+    fun getMatterManufacturerCustomDataController(): MatterManufacturerCustomDataController
 }
 
 interface MatterCommissioner {
@@ -63,5 +65,14 @@ interface MatterOutletController {
         deviceId: DeviceId,
         isSwitchOn: Boolean,
         endpoint: Int
+    )
+}
+
+interface MatterManufacturerCustomDataController {
+
+    suspend fun setLed(
+        deviceId: DeviceId,
+        isOn: Boolean,
+        endpoint: Int,
     )
 }

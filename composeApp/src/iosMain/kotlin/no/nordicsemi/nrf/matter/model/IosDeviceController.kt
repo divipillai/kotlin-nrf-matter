@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter.model
 import no.nordicsemi.nrf.matter.MatterBinder
 import no.nordicsemi.nrf.matter.MatterDecommissioner
 import no.nordicsemi.nrf.matter.MatterDoorController
+import no.nordicsemi.nrf.matter.MatterManufacturerCustomDataController
 import no.nordicsemi.nrf.matter.MatterOnOffController
 import no.nordicsemi.nrf.matter.MatterOutletController
 
@@ -43,6 +44,7 @@ class IosDeviceController(
     private val matterBinder: MatterBinder,
     private val matterDoorController: MatterDoorController,
     private val matterOutletController: MatterOutletController,
+    private val matterManufacturerCustomDataController: MatterManufacturerCustomDataController,
 ): DeviceController {
 
     override suspend fun setDeviceOnOff(
@@ -52,6 +54,14 @@ class IosDeviceController(
         endpoint: Int,
     ) {
         matterOnOffController.setDeviceOnOff(deviceId, isOn, endpoint)
+    }
+
+    override suspend fun setLed(
+        deviceId: DeviceId,
+        isOn: Boolean,
+        endpoint: Int
+    ) {
+        matterManufacturerCustomDataController.setLed(deviceId, isOn, endpoint)
     }
 
     override suspend fun unlinkDevice(deviceId: DeviceId) {

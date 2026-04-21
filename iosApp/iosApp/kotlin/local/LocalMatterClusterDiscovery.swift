@@ -76,11 +76,7 @@ class LocalMatterClusterDiscovery {
             let deviceTypes = await getDeviceType(endpoint: endpoint)
             let clientClusters = await readClientClusters(endpoint: endpoint)
             let serverClusters = await readServerClusters(endpoint: endpoint)
-            
-            for i in serverClusters {
-                await readAttributes(endpoint: endpoint, cluster: i)
-            }
-            
+
             let newInfo = DeviceMatterInfo(
                 endpoint: endpoint.int32Value,
                 types: deviceTypes.map { KotlinLong(value: $0.deviceType.int64Value) },
@@ -90,12 +86,12 @@ class LocalMatterClusterDiscovery {
             deviceMatterInfo.append(newInfo)
         }
         
-        logger.debug("Read hardcoded attributes")
-        await readAttributes(endpoint: 1, cluster: 0xFFF1FC01)
-        
         let deviceType = mapDeviceType(deviceMatterInfo.flatMap { $0.types }.first)
 
         logger.debug("discoverClusters - finished")
+        
+        let con = LocalMatterCustomClusterController()
+        try? await con.readAttributes(deviceId: DeviceId(value: nodeId.stringValue))
         
         return Device(
             deviceId: DeviceId(value: nodeId.stringValue),
@@ -150,21 +146,5 @@ class LocalMatterClusterDiscovery {
         let result = (try? await descriptor?.readAttributeClientList())?.map { $0 as! NSNumber} ?? []
         logger.debug("Supported client clusters: \(result)")
         return result
-    }
-    
-    func readAttributes(endpoint: NSNumber, cluster: NSNumber) async {
-        logger.debug("readAttributes")
-        let result = try? await baseDevice.readAttributes(withEndpointID: endpoint, clusterID: cluster, attributeID: nil, params: nil, queue: DispatchQueue.global())
-        logger.debug("Attirbutes for endpoint: \(endpoint), cluster: \(cluster)")
-        printAttributes(result!)
-    }
-    
-    private func printAttributes(_ array: [[String: Any]]) {
-        for (index, dict) in array.enumerated() {
-            logger.debug("Item nr \(index):")
-            for (key, value) in dict {
-                logger.debug("\(key): \(value as! NSObject)")
-            }
-        }
     }
 }

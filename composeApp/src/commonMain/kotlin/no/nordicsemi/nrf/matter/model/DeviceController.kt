@@ -38,6 +38,12 @@ interface DeviceController {
         endpoint: Int,
     )
 
+    suspend fun setLed(
+        deviceId: DeviceId,
+        isOn: Boolean,
+        endpoint: Int,
+    )
+
     suspend fun unlinkDevice(deviceId: DeviceId)
 
     suspend fun lockUnlockDoor(

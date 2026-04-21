@@ -54,6 +54,14 @@ class AndroidDeviceController(
         )
     }
 
+    override suspend fun setLed(
+        deviceId: DeviceId,
+        isOn: Boolean,
+        endpoint: Int
+    ) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun unlinkDevice(deviceId: DeviceId) {
         chipClient.awaitUnpairDevice(deviceId.longValue)
     }

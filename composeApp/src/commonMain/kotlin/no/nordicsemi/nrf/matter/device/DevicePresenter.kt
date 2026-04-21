@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.binding.BindingUiStates
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -62,6 +63,9 @@ class DevicePresenter(
 
     private val _uiState = MutableStateFlow(DeviceUiState())
     val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
+
+    private val _bindingState = MutableStateFlow<BindingUiStates>(BindingUiStates.Idle)
+    val bindingState: StateFlow<BindingUiStates> = _bindingState.asStateFlow()
 
     fun observeDevice(deviceId: DeviceId) {
         scope.launch {
@@ -159,19 +163,32 @@ class DevicePresenter(
     // Method to call binding.
     fun initiateBinding(switchNodeId: DeviceId) {
         scope.launch {
+            _bindingState.value = BindingUiStates.InProgress
+
             try {
-                // TODO: For now I am using the first light node id from the repository,
-                //  it should be taken from the dialog and passed to the function as a param.
                 val lightNodeId = devicesRepository.getAllDevices().devicesList.find {
-                    it.deviceType == DeviceType.LIGHT_ON_OFF || it.deviceType == DeviceType.DIMMABLE_LIGHT
+                    it.deviceType == DeviceType.LIGHT_ON_OFF ||
+                            it.deviceType == DeviceType.DIMMABLE_LIGHT
+                }?.deviceId
+
+                if (lightNodeId == null) {
+                    _bindingState.value = BindingUiStates.Error("No light found")
+                    return@launch
                 }
-                // Call the function to bind the switch to the light.
-                deviceCommandHandler.bind(
-                    switchNodeId,
-                    lightNodeId?.deviceId ?: DeviceId("1"), // TODO: if no light node is found, then show some error message to the user.
+
+                val binding = deviceCommandHandler.bind(
+                    switchNodeId = switchNodeId,
+                    lightNodeId = lightNodeId
                 )
+
+                _bindingState.value = BindingUiStates.Success(binding)
+
+                // Todo: Persist binding to the repository
+                // bindingRepository.save(binding)
+
             } catch (e: Exception) {
-                Napier.e(e) { "AAA, Error initiating binding: ${e.message}" }
+                Napier.e(e) { "Binding failed: ${e.message}" }
+                _bindingState.value = BindingUiStates.Error(e.message ?: "Unknown error")
             }
         }
     }

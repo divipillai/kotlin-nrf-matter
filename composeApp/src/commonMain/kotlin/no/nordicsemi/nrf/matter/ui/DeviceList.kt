@@ -98,6 +98,7 @@ internal fun DeviceList(
 
                 when (device.device.deviceType) {
 
+                    DeviceType.MANUFACTURER_SPECIFIC_DEVICE, // todo: move when dedicated component is ready.
                     DeviceType.LIGHT_ON_OFF,
                     DeviceType.DIMMABLE_LIGHT,
                     DeviceType.COLOR_TEMPERATURE_LIGHT,
@@ -139,7 +140,9 @@ internal fun DeviceList(
                         )
                     }
 
-                    else -> {}
+                    DeviceType.UNKNOWN -> {
+                        Text("Unsupported device")
+                    }
                 }
             }
         }

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -61,6 +62,7 @@ import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
+import no.nordicsemi.nrf.matter.ui.BindingLoaderDialog
 import no.nordicsemi.nrf.matter.ui.DEVICE_LIST_TEST
 import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.Loader
@@ -248,7 +250,26 @@ private fun DeviceDetails(
                 }
 
                 BindingUiStates.InProgress -> {
-                    // TODO: Show in progress view like in the remove state
+                    BindingLoaderDialog {
+                        // Text Content
+                        Text(
+                            text = "Binding...",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.WarningAmber,
+                                contentDescription = null,
+                                tint = NordicSun
+                            )
+                            Text(text = "Binding in progress, it might take few seconds. Please don't close the app")
+                        }
+                    }
                 }
 
                 is BindingUiStates.Success -> {

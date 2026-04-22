@@ -20,15 +20,19 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
         logger.debug("invoke setLed")
         let controller = try LocalControllerProvider(logTag: "LocalMatterCustomClusterController").getController()!
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
-        let fields: [[String: Any]] = [
-            [
-                MTRContextTagKey: 0, // The numeric Field ID for "Action" (usually 0 for the first field)
-                MTRDataKey: [
-                    MTRTypeKey: MTRUnsignedIntegerValueType, // Define the data type
-                    MTRValueKey: NSNumber(value: isOn ? 1 : 0)
+        let fields: NSDictionary = [
+            MTRTypeKey: MTRStructureValueType,
+            MTRValueKey: [
+                [
+                    MTRContextTagKey: 0,
+                    MTRDataKey: [
+                        MTRTypeKey: MTRUnsignedIntegerValueType,
+                        MTRValueKey: 2
+                    ]
                 ]
             ]
         ]
+        
         try await baseDevice.invokeCommand(withEndpointID: 1, clusterID: 0xFFF1FC01, commandID: 0xFFF10000, commandFields: fields, timedInvokeTimeout: nil, queue: DispatchQueue.global())
     }
     

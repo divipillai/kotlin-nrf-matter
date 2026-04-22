@@ -90,9 +90,6 @@ class LocalMatterClusterDiscovery {
 
         logger.debug("discoverClusters - finished")
         
-        let con = LocalMatterCustomClusterController()
-        try? await con.readAttributes(deviceId: DeviceId(value: nodeId.stringValue))
-        
         return Device(
             deviceId: DeviceId(value: nodeId.stringValue),
             dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),

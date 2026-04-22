@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter
 
+import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 
@@ -75,4 +76,7 @@ interface MatterManufacturerCustomDataController {
         isOn: Boolean,
         endpoint: Int,
     )
+
+    suspend fun getData(deviceId: DeviceId, endpoint: Int): ManufacturerSpecificData
+
 }

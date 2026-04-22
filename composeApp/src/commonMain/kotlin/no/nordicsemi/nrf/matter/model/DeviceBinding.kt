@@ -1,5 +1,7 @@
 package no.nordicsemi.nrf.matter.model
 
+import kotlinx.serialization.Serializable
+
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -30,6 +32,7 @@ package no.nordicsemi.nrf.matter.model
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+@Serializable
 data class DeviceBinding(
     val id: String, // uuid
     val sourceNodeId: DeviceId,

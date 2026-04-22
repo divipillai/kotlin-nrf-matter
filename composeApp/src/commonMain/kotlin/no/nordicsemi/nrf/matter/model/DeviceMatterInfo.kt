@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.model
 
 import kotlinx.serialization.Serializable
+import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -42,4 +43,5 @@ data class DeviceMatterInfo(
     val types: List<Long>,
     val serverClusters: List<Long>,
     val clientClusters: List<Long>,
+    val manufacturerSpecificData: ManufacturerSpecificData? = null, // TODO: probably it's not the best place
 )

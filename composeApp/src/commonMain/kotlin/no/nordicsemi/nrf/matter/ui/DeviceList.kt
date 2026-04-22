@@ -98,7 +98,14 @@ internal fun DeviceList(
 
                 when (device.device.deviceType) {
 
-                    DeviceType.MANUFACTURER_SPECIFIC_DEVICE, // todo: move when dedicated component is ready.
+                    DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> {
+                        ManufacturerSpecItem(
+                            device = device,
+                            enabled = device.isOn,
+                            updateDeviceState = updateDeviceState,
+                            onClick = { onDeviceClick(device) }
+                        )
+                    }
                     DeviceType.LIGHT_ON_OFF,
                     DeviceType.DIMMABLE_LIGHT,
                     DeviceType.COLOR_TEMPERATURE_LIGHT,

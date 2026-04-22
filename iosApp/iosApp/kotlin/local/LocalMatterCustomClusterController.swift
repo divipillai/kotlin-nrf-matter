@@ -12,14 +12,15 @@ import OSLog
 
 class LocalMatterCustomClusterController: MatterManufacturerCustomDataController {
     
-    private let endpoint: NSNumber = 1 //todo: hardcoded
-    private let cluster: NSNumber = 0xFFF1FC01 //todo: hardcoded
+    private let endpointId: NSNumber = 1 //todo: hardcoded
+    private let clusterId: NSNumber = 0xFFF1FC01 //todo: hardcoded
+    private let commandId: NSNumber = 0xFFF10000 //todo: hardcoded
     private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterCustomClusterController")
     
     func getData(deviceId: DeviceId, endpoint: Int32) async throws -> ManufacturerSpecificData {
         logger.debug("Getting custom manufacturer data...")
         
-        if let attributes = try await readAttributes(deviceId: deviceId, endpoint: self.endpoint, cluster: cluster) {
+        if let attributes = try await readAttributes(deviceId: deviceId, endpoint: endpointId, cluster: clusterId) {
             let name = try readDeviceName(from: attributes)
             let led = try readFirstFlag(from: attributes)
             let button = try readSecondFlag(from: attributes)
@@ -55,14 +56,20 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
             ]
         ]
         
-        try await baseDevice.invokeCommand(withEndpointID: 1, clusterID: 0xFFF1FC01, commandID: 0xFFF10000, commandFields: fields, timedInvokeTimeout: nil, queue: DispatchQueue.global())
+        try await baseDevice.invokeCommand(withEndpointID: endpointId, clusterID: clusterId, commandID: commandId, commandFields: fields, timedInvokeTimeout: nil, queue: DispatchQueue.global())
     }
 
     private func readAttributes(deviceId: DeviceId, endpoint: NSNumber, cluster: NSNumber) async throws -> [[String : Any]]? {
         logger.debug("readAttributes")
         let controller = try LocalControllerProvider(logTag: "LocalMatterCustomClusterController").getController()!
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
-        let result = try? await baseDevice.readAttributes(withEndpointID: endpoint, clusterID: cluster, attributeID: nil, params: nil, queue: DispatchQueue.global())
+        let result = try? await baseDevice.readAttributes(
+            withEndpointID: endpoint,
+            clusterID: cluster,
+            attributeID: nil,
+            params: nil,
+            queue: DispatchQueue.global()
+        )
         logger.debug("Attirbutes for endpoint: \(endpoint), cluster: \(cluster)")
 //        printAttributes(result!)
         return result
@@ -77,7 +84,7 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
         }
     }
     
-    func readDeviceName(from items: [[String: Any]]) throws -> String {
+    private func readDeviceName(from items: [[String: Any]]) throws -> String {
         guard let item = items.first,
               let data = item["data"] as? [String: Any],
               let value = data["value"] as? String
@@ -88,17 +95,17 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
         return value
     }
     
-    func readFirstFlag(from items: [[String: Any]]) throws -> Bool {
+    private func readFirstFlag(from items: [[String: Any]]) throws -> Bool {
         guard items.count > 1 else { throw OperationError.missingAttribute }
         return try readBool(items[1])
     }
 
-    func readSecondFlag(from items: [[String: Any]]) throws -> Bool {
+    private func readSecondFlag(from items: [[String: Any]]) throws -> Bool {
         guard items.count > 2 else { throw OperationError.missingAttribute }
         return try readBool(items[2])
     }
     
-    func readBool(_ item: [String: Any]) throws -> Bool {
+    private func readBool(_ item: [String: Any]) throws -> Bool {
         guard let data = item["data"] as? [String: Any],
               let value = data["value"] else {
             throw OperationError.missingAttribute

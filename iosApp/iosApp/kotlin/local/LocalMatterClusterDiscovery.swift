@@ -61,6 +61,7 @@ class LocalMatterClusterDiscovery {
     }
     
     func discoverClusters() async -> Device {
+        let deviceId = DeviceId(value: nodeId.stringValue)
         let name = "Matter device: \(nodeId)"
         let vendorId = await getVendorId()
         let vendorName = await getVendorName()
@@ -76,12 +77,15 @@ class LocalMatterClusterDiscovery {
             let deviceTypes = await getDeviceType(endpoint: endpoint)
             let clientClusters = await readClientClusters(endpoint: endpoint)
             let serverClusters = await readServerClusters(endpoint: endpoint)
+            let controller = LocalMatterCustomClusterController()
+            let manufacturerSpecificData = try? await controller.getData(deviceId: deviceId, endpoint: Int32(truncating: endpoint))
 
             let newInfo = DeviceMatterInfo(
                 endpoint: endpoint.int32Value,
                 types: deviceTypes.map { KotlinLong(value: $0.deviceType.int64Value) },
                 serverClusters: serverClusters.map { KotlinLong(value: $0.int64Value) },
                 clientClusters: clientClusters.map { KotlinLong(value: $0.int64Value) },
+                manufacturerSpecificData: manufacturerSpecificData,
             )
             deviceMatterInfo.append(newInfo)
         }
@@ -91,7 +95,7 @@ class LocalMatterClusterDiscovery {
         logger.debug("discoverClusters - finished")
         
         return Device(
-            deviceId: DeviceId(value: nodeId.stringValue),
+            deviceId: deviceId,
             dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),
             vendorId: vendorId?.stringValue ?? "unknown",
             productId: productId?.stringValue ?? "unknown",

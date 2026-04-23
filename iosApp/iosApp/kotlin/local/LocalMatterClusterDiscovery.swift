@@ -20,7 +20,7 @@ class LocalMatterClusterDiscovery {
     
     init(nodeId: NSNumber) {
         self.nodeId = nodeId
-        let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()!
+        let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         device = MTRDevice(nodeID: nodeId, controller: controller)
         baseDevice = MTRBaseDevice(nodeID: nodeId, controller: controller)
     }

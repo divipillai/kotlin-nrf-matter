@@ -15,7 +15,7 @@ class LocalMatterDoorController : MatterDoorController {
     private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterDoorController")
 
     func lockUnlockDoor(deviceId: DeviceId, isLocked: Bool, endpoint: Int32) async throws {
-        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()!
+        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
 
         let cluster = MTRBaseClusterDoorLock(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())

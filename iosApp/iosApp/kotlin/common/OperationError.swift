@@ -7,4 +7,5 @@
 
 enum OperationError: Error {
     case missingAttribute
+    case wrongType
 }

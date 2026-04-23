@@ -8,6 +8,10 @@
 import Matter
 import os.log
 
+enum ControllerError : Error {
+    case initializationError
+}
+
 public class LocalControllerProvider {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "MatterControllerProviderCore")
@@ -24,9 +28,9 @@ public class LocalControllerProvider {
         factory.stop()
     }
     
-    public func getController() throws -> MTRDeviceController? {
-        if (Self.controller != nil && Self.controller?.isRunning == true) {
-            return Self.controller
+    public func getController() throws -> MTRDeviceController {
+        if let controller = Self.controller, controller.isRunning {
+            return controller
         }
 
         let storage = SharedStorage(suitName: SharedConsts.localStorage)
@@ -37,7 +41,7 @@ public class LocalControllerProvider {
         }
         
         guard let ipk = loadOrCreateIPK(storage: storage) else {
-            return nil
+            throw ControllerError.initializationError
         }
         
         let params = MTRDeviceControllerStartupParams(
@@ -47,19 +51,16 @@ public class LocalControllerProvider {
         )
         params.vendorID = 0xFFF1
         
-        var controller: MTRDeviceController? = nil
+        let controller: MTRDeviceController
+
         do {
             logger.debug("\(self.logTag) - Controller from existing fabric")
             controller = try factory.createController(onExistingFabric: params)
         } catch {
-            do {
-                logger.debug("\(self.logTag) - Controller from new fabric")
-                controller = try factory.createController(onNewFabric: params)
-            } catch {
-                return nil
-            }
+            logger.debug("\(self.logTag) - Controller from new fabric")
+            controller = try factory.createController(onNewFabric: params)
         }
-        
+
         Self.controller = controller
         return controller
     }

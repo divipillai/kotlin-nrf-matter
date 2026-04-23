@@ -20,103 +20,31 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
     func getData(deviceId: DeviceId, endpoint: Int32) async throws -> ManufacturerSpecificData {
         logger.debug("Getting custom manufacturer data...")
         
-        if let attributes = try await readAttributes(deviceId: deviceId, endpoint: endpointId, cluster: clusterId) {
-            let name = try readDeviceName(from: attributes)
-            let led = try readFirstFlag(from: attributes)
-            let button = try readSecondFlag(from: attributes)
-            
-            let data = ManufacturerSpecificData(
-                name: name,
-                led: led,
-                button: button
-            )
-            
-            logger.debug("Custom manufacturer data: \(data)")
-            
-            return data
-        }
+        let attributeReader = try AttributeReader(deviceId: deviceId.nsNumber())
+       
+        let name: String = try await attributeReader.readAttribute(endpoint: endpointId, cluster: clusterId, attribute: 0xfff10000)
+        let led: Bool = try await attributeReader.readAttribute(endpoint: endpointId, cluster: clusterId, attribute: 0xfff10001)
+        let button: Bool = try await attributeReader.readAttribute(endpoint: endpointId, cluster: clusterId, attribute: 0xfff10002)
         
-        throw OperationError.missingAttribute
+        let data = ManufacturerSpecificData(
+            name: name,
+            led: led,
+            button: button
+        )
+        
+        return data
     }
 
     func setLed(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         logger.debug("invoke setLed")
-        let controller = try LocalControllerProvider(logTag: "LocalMatterCustomClusterController").getController()!
-        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
-        let fields: NSDictionary = [
-            MTRTypeKey: MTRStructureValueType,
-            MTRValueKey: [
-                [
-                    MTRContextTagKey: 0,
-                    MTRDataKey: [
-                        MTRTypeKey: MTRUnsignedIntegerValueType,
-                        MTRValueKey: 2 // toggle
-                    ]
-                ]
-            ]
-        ]
+        let attributeWriter = try AttributeWriter(deviceId: deviceId.nsNumber())
         
-        try await baseDevice.invokeCommand(withEndpointID: endpointId, clusterID: clusterId, commandID: commandId, commandFields: fields, timedInvokeTimeout: nil, queue: DispatchQueue.global())
-    }
-
-    private func readAttributes(deviceId: DeviceId, endpoint: NSNumber, cluster: NSNumber) async throws -> [[String : Any]]? {
-        logger.debug("readAttributes")
-        let controller = try LocalControllerProvider(logTag: "LocalMatterCustomClusterController").getController()!
-        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
-        let result = try? await baseDevice.readAttributes(
-            withEndpointID: endpoint,
-            clusterID: cluster,
-            attributeID: nil,
-            params: nil,
-            queue: DispatchQueue.global()
+        try await attributeWriter.executeCommand(
+            endpoint: endpointId,
+            cluster: clusterId,
+            command: commandId,
+            type: MTRUnsignedIntegerValueType,
+            value: 2
         )
-        logger.debug("Attirbutes for endpoint: \(endpoint), cluster: \(cluster)")
-//        printAttributes(result!)
-        return result
-    }
-    
-    private func printAttributes(_ array: [[String: Any]]) {
-        for (index, dict) in array.enumerated() {
-            logger.debug("Item nr \(index):")
-            for (key, value) in dict {
-                logger.debug("\(key): \(value as! NSObject)")
-            }
-        }
-    }
-    
-    private func readDeviceName(from items: [[String: Any]]) throws -> String {
-        guard let item = items.first,
-              let data = item["data"] as? [String: Any],
-              let value = data["value"] as? String
-        else {
-            throw OperationError.missingAttribute
-        }
-
-        return value
-    }
-    
-    private func readFirstFlag(from items: [[String: Any]]) throws -> Bool {
-        guard items.count > 1 else { throw OperationError.missingAttribute }
-        return try readBool(items[1])
-    }
-
-    private func readSecondFlag(from items: [[String: Any]]) throws -> Bool {
-        guard items.count > 2 else { throw OperationError.missingAttribute }
-        return try readBool(items[2])
-    }
-    
-    private func readBool(_ item: [String: Any]) throws -> Bool {
-        guard let data = item["data"] as? [String: Any],
-              let value = data["value"] else {
-            throw OperationError.missingAttribute
-        }
-
-        if let bool = value as? Bool {
-            return bool
-        }
-        if let int = value as? Int {
-            return int != 0
-        }
-        throw OperationError.missingAttribute
     }
 }

@@ -13,10 +13,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.binding.BindingUiStates
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
+import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 
@@ -55,7 +57,8 @@ class DevicePresenter(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
-    private val deviceCommandHandler: DeviceCommandHandler
+    private val deviceCommandHandler: DeviceCommandHandler,
+    private val bindingRepository: BindingRepository,
 ) {
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
@@ -82,7 +85,8 @@ class DevicePresenter(
                             deviceUiModel = DeviceUiModel(
                                 device = device,
                                 isOnline = true, // or from state
-                                isOn = isOn
+                                isOn = isOn,
+                                boundLights = bindingRepository.getBindingsForDevice(deviceId)
                             )
                         )
                     }
@@ -176,12 +180,11 @@ class DevicePresenter(
                     return@launch
                 }
 
-                val binding = deviceCommandHandler.bind(
+                val bindingResult = deviceCommandHandler.bind(
                     switchNodeId = switchNodeId,
                     lightNodeId = lightNodeId
                 )
-
-                _bindingState.value = BindingUiStates.Success(binding)
+                _bindingState.value = bindingResult
 
                 // Todo: Persist binding to the repository
                 // bindingRepository.save(binding)
@@ -195,6 +198,24 @@ class DevicePresenter(
 
     fun updateBindingState(state: BindingUiStates) {
         _bindingState.value = state
+    }
+
+    fun getTargetDevices(): List<Device> {
+        val targetDevices = mutableListOf<Device>()
+
+        scope.launch {
+            // get all devices from the repository whose type is light or dimmable light.
+            val devices = devicesRepository.getAllDevices().devicesList.filter {
+                it.deviceType == DeviceType.LIGHT_ON_OFF || it.deviceType == DeviceType.DIMMABLE_LIGHT
+            }
+
+            val bindings = uiState.value.deviceUiModel?.boundLights ?: emptyList()
+            val sourceIds = bindings.map { it.sourceNodeId }.toSet()
+            // Check target devices are already bound to the switch by comparing with boundLights
+            val result = devices.filter { it.deviceId in sourceIds }
+            targetDevices.addAll(result)
+        }
+        return targetDevices
     }
 
 }

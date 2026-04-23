@@ -223,6 +223,7 @@ private fun DeviceDetails(
     device: DeviceUiModel,
     devicePresenter: DevicePresenter
 ) {
+    val targetDevices = devicePresenter.getTargetDevices()
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -239,11 +240,26 @@ private fun DeviceDetails(
             val bindingState by devicePresenter.bindingState.collectAsState()
             when (bindingState) {
                 is BindingUiStates.Error -> {
-//                    TODO: Show error message and clear the binding state to idle.
+                    AlertDialogView(
+                        onDismiss = {
+                            // Change state to idle.
+                            devicePresenter.updateBindingState(BindingUiStates.Idle)
+                        },
+                        onConfirm = {
+                            // Retry binding.
+                            devicePresenter.initiateBinding(device.device.deviceId)
+                        },
+                        title = "Binding Failed.",
+                        message = "Unable to bind the device, please try again.",
+                        confirmText = "Retry"
+                    )
                 }
 
                 BindingUiStates.Idle -> {
-                    LightSwitchBindingCard {
+                    LightSwitchBindingCard(
+                        boundDevices = device.boundLights,
+                        targetDevices = targetDevices
+                    ) {
                         // TODO: Call the callback function here
                         Napier.i { "AAA, LightSwitchBindingCard() called" }
                         devicePresenter.initiateBinding(device.device.deviceId)

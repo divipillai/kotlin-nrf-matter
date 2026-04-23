@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter.di
 import no.nordicsemi.nrf.matter.CommissioningViewModel
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.SwiftCodeProvider
+import no.nordicsemi.nrf.matter.datasource.BindingDataSource
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
@@ -11,8 +12,10 @@ import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.IosDeviceController
+import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
+import no.nordicsemi.nrf.matter.repository.IosBindingDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
 import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
@@ -64,6 +67,9 @@ val iosModule = module {
     single<UserPreferencesDataSource> {
         IosUserPreferencesDataSource()
     }
+    single<BindingDataSource> {
+        IosBindingDataSource()
+    }
 
     // Repositories.
     single<DevicesRepository> {
@@ -75,6 +81,10 @@ val iosModule = module {
     single<UserPreferencesRepository> {
         UserPreferencesRepository(dataSource = get())
     }
+    single<BindingRepository> {
+        BindingRepository(get())
+    }
+
 
     // Device Controller
     single<DeviceController> { IosDeviceController(
@@ -101,7 +111,9 @@ val iosModule = module {
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
             get<DeviceController>(),
-            get<DeviceCommandHandler>()
+            get<DeviceCommandHandler>(),
+            get<BindingRepository>()
+
         )
     }
 

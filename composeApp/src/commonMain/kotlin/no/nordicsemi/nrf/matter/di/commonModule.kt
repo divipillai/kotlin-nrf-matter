@@ -4,6 +4,7 @@ import no.nordicsemi.nrf.matter.BeaconRepository
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
+import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
@@ -49,6 +50,7 @@ val commonModule = module {
     singleOf(::DevicesRepository)
     singleOf(::DevicesStateRepository)
     singleOf(::UserPreferencesRepository)
+    singleOf(::BindingRepository)
 
     // Device viewmodel.
     single {
@@ -56,7 +58,8 @@ val commonModule = module {
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
             get<DeviceController>(),
-            get<DeviceCommandHandler>()
+            get<DeviceCommandHandler>(),
+            get<BindingRepository>()
         )
     }
 
@@ -65,7 +68,8 @@ val commonModule = module {
         DeviceCommandHandler(
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
-            get<DeviceController>()
+            get<DeviceController>(),
+            get<BindingRepository>()
         )
     }
 

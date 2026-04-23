@@ -11,6 +11,7 @@ import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
+import no.nordicsemi.nrf.matter.datasource.BindingDataSource
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
@@ -21,9 +22,11 @@ import no.nordicsemi.nrf.matter.logger.NativePlatformLogger
 import no.nordicsemi.nrf.matter.logger.PlatformLogger
 import no.nordicsemi.nrf.matter.model.AndroidDeviceController
 import no.nordicsemi.nrf.matter.model.DeviceController
+import no.nordicsemi.nrf.matter.repository.AndroidBindingDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidUserPreferencesDataSource
+import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
@@ -86,6 +89,9 @@ val androidModule = module {
     single<UserPreferencesDataSource> {
         AndroidUserPreferencesDataSource(androidContext())
     }
+    single<BindingDataSource> {
+        AndroidBindingDataSource(androidContext())
+    }
 
     single<ChipClient> { ChipClient(context = androidContext()) }
     single<ClustersHelper> { ClustersHelper(chipClient = get()) }
@@ -99,6 +105,7 @@ val androidModule = module {
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<UserPreferencesRepository> { UserPreferencesRepository(get()) }
+    single<BindingRepository> { BindingRepository(get()) }
 
     // Inject DeviceController
     single<DeviceController> { AndroidDeviceController(get(), get(), get ()) }

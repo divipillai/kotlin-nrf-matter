@@ -11,11 +11,11 @@ import OSLog
 
 class AttributeWriter {
     
-    private let logger = Logger(subsystem: "nrf.matter", category: "AttributeReader")
+    private let logger = Logger(subsystem: "nrf.matter", category: "AttributeWriter")
     private let baseDevice: MTRBaseDevice
     
     init(deviceId: NSNumber) throws {
-        let controller = try LocalControllerProvider(logTag: "LocalMatterCustomClusterController").getController()
+        let controller = try LocalControllerProvider(logTag: "AttributeWriter").getController()
         baseDevice = MTRBaseDevice(nodeID: deviceId, controller: controller)
     }
     

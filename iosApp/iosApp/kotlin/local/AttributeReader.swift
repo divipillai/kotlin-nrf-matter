@@ -41,7 +41,7 @@ class AttributeReader {
         
         logger.debug("Attirbutes for endpoint: \(endpoint), cluster: \(cluster)")
 //        printAttributes(result!)
-        return try readAny(result[0])
+        return try result[0].readAny()
     }
     
     private func printAttributes(_ array: [[String: Any]]) {
@@ -51,13 +51,5 @@ class AttributeReader {
                 logger.debug("\(key): \(value as! NSObject)")
             }
         }
-    }
-    
-    private func readAny(_ item: [String: Any]) throws -> Any {
-        guard let data = item["data"] as? [String: Any],
-              let value = data["value"] else {
-            throw OperationError.missingAttribute
-        }
-        return value
     }
 }

@@ -24,32 +24,25 @@ class AttributeSubscriber {
         baseDevice = MTRBaseDevice(nodeID: deviceId, controller: controller)
     }
     
-    func subscribe<T: AttributeParser>(endpoint: NSNumber, cluster: NSNumber, attribute: NSNumber) -> AsyncStream<AttributeUpdate<T>> {
-        AsyncStream { continuation in
-            
-            baseDevice.subscribeToAttributes(
-                withEndpointID: endpoint,
-                clusterID: cluster,
-                attributeID: attribute,
-                params: nil,
-                queue: DispatchQueue.global(),
-                reportHandler: { result, error in
-                    
-                    if let error = error {
-                        continuation.yield(AttributeUpdate(value: nil, error: error))
-                        return
-                    }
-                    
-                    if let result = result {
-                        let value = try? T.parse(value: result[0].readAny())
-                        continuation.yield(AttributeUpdate(value: value, error: nil))
-                    }
+    func subscribe<T: AttributeParser>(endpoint: NSNumber, cluster: NSNumber, attribute: NSNumber, onUpdate: @escaping (T) -> Void) {
+        baseDevice.subscribeToAttributes(
+            withEndpointID: endpoint,
+            clusterID: cluster,
+            attributeID: attribute,
+            params: nil,
+            queue: DispatchQueue.global(),
+            reportHandler: { result, error in
+                
+                if let error = error {
+//                    continuation.yield(AttributeUpdate(value: nil, error: error))
+                    return
                 }
-            )
-            
-            continuation.onTermination = { _ in
-                //todo
+                
+                if let result = result, let value = try? T.parse(value: result[0].readAny()) {
+                    onUpdate(value)
+//                    continuation.yield(AttributeUpdate(value: value, error: nil))
+                }
             }
-        }
+        )
     }
 }

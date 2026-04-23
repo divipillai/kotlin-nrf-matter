@@ -1,5 +1,8 @@
 package no.nordicsemi.nrf.matter.model
 
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import no.nordicsemi.nrf.matter.MatterBinder
 import no.nordicsemi.nrf.matter.MatterDecommissioner
 import no.nordicsemi.nrf.matter.MatterDoorController
@@ -92,5 +95,18 @@ class IosDeviceController(
         clusterId: Long
     ) {
         matterBinder.bind(sourceNodeId, sourceEndpoint, targetNodeId, targetEndpoint, clusterId)
+    }
+
+    override fun subscribeToButtonChanges(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Flow<Boolean> = callbackFlow {
+        matterManufacturerCustomDataController.subscribeToButtonChanges(deviceId, endpoint) {
+            trySend(it)
+        }
+
+        awaitClose {
+            
+        }
     }
 }

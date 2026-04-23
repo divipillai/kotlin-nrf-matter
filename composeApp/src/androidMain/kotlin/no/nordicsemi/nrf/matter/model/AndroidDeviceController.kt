@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.model
 
+import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
@@ -101,5 +102,12 @@ class AndroidDeviceController(
             clusterId = clusterId
         )
 
+    }
+
+    override fun subscribeToButtonChanges(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Flow<Boolean> {
+        TODO("Not yet implemented")
     }
 }

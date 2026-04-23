@@ -18,7 +18,7 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
     private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterCustomClusterController")
     
     func getData(deviceId: DeviceId, endpoint: Int32) async throws -> ManufacturerSpecificData {
-        logger.debug("Getting custom manufacturer data...")
+        logger.debug("Getting c austom manufacturer data...")
         
         let attributeReader = try AttributeReader(deviceId: deviceId.nsNumber())
        
@@ -46,5 +46,13 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
             type: MTRUnsignedIntegerValueType,
             value: 2
         )
+    }
+    
+    func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
+        let attributeSubscriber = try AttributeSubscriber(deviceId: deviceId.nsNumber())
+        
+        attributeSubscriber.subscribe(endpoint: endpointId, cluster: clusterId, attribute: 0xfff10002, onUpdate: { result in
+            onUpdate(KotlinBoolean(bool: result))
+        })
     }
 }

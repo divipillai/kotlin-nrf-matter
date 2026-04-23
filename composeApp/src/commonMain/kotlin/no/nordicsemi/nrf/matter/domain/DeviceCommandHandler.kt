@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.domain
 
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -198,6 +199,10 @@ class DeviceCommandHandler(
             Napier.e("Error binding switch to light: ${e.message}", tag = TAG)
         }
 
+    }
+
+    fun subscribeToButtonChanges(deviceId: DeviceId): Flow<Boolean> {
+        return deviceController.subscribeToButtonChanges(deviceId, 1)
     }
 
     companion object {

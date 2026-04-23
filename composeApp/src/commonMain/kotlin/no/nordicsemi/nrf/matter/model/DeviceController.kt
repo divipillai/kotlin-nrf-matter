@@ -1,5 +1,7 @@
 package no.nordicsemi.nrf.matter.model
 
+import kotlinx.coroutines.flow.Flow
+
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -67,4 +69,9 @@ interface DeviceController {
         targetEndpoint: Int,
         clusterId: Long,
     )
+
+    fun subscribeToButtonChanges(
+        deviceId: DeviceId,
+        endpoint: Int,
+    ) : Flow<Boolean>
 }

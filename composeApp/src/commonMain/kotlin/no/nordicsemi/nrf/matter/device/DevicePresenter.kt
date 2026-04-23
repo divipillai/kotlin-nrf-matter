@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter.device
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -66,6 +67,8 @@ class DevicePresenter(
 
     private val _uiState = MutableStateFlow(DeviceUiState())
     val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
+
+    private var bindingJob: Job? = null
 
     private val _bindingState = MutableStateFlow<BindingUiStates>(BindingUiStates.Idle)
     val bindingState: StateFlow<BindingUiStates> = _bindingState.asStateFlow()
@@ -163,25 +166,18 @@ class DevicePresenter(
         }
     }
 
-
-    // Method to call binding.
     fun initiateBinding(
         sourceNodeId: DeviceId,
         targetDevices: List<Device>
     ) {
-        scope.launch {
-            _bindingState.value = BindingUiStates.InProgress
+        bindingJob?.cancel()
 
-            try {
-                val bindingResult = deviceCommandHandler.bind(
-                    switchNodeId = sourceNodeId,
-                    lightNodeId = targetDevices.first().deviceId // TODO: support multiple devices binding
-                )
-                _bindingState.value = bindingResult
-
-            } catch (e: Exception) {
-                Napier.e(e) { "Binding failed: ${e.message}" }
-                _bindingState.value = BindingUiStates.Error(e.message ?: "Unknown error")
+        bindingJob = scope.launch {
+            deviceCommandHandler.bind(
+                switchNodeId = sourceNodeId,
+                lightNodeId = targetDevices.first().deviceId // TODO: support multiple devices binding
+            ).collect { state ->
+                _bindingState.value = state
             }
         }
     }

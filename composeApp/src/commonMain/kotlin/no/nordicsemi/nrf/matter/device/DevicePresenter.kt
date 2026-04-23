@@ -192,4 +192,9 @@ class DevicePresenter(
             }
         }
     }
+
+    fun updateBindingState(state: BindingUiStates) {
+        _bindingState.value = state
+    }
+
 }

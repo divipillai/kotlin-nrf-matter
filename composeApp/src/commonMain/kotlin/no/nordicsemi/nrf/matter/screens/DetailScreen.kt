@@ -22,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.CardDefaults
@@ -36,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,18 +50,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.cloudy.cloudy
 import io.github.aakira.napier.Napier
+import multiplatform.network.cmptoast.ToastDuration
+import multiplatform.network.cmptoast.showToast
 import no.nordicsemi.nrf.matter.binding.BindingUiStates
 import no.nordicsemi.nrf.matter.binding.TargetLightSettingsDialog
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.BindingLoaderDialog
-import no.nordicsemi.nrf.matter.ui.DEVICE_LIST_TEST
 import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.LockItem
@@ -274,9 +275,15 @@ private fun DeviceDetails(
 
                 is BindingUiStates.Success -> {
                     // TODO: Show success message and show bonded lights in the UI.
+                    // Show a Toast of success binding.
+                    Napier.i { "AAA, Success" }
+                    showToast(
+                        message = "Binding success!\nYou can see the bound device in the UI.",
+                        duration = ToastDuration.Long
+                    )
+                    devicePresenter.updateBindingState(BindingUiStates.Idle)
                 }
             }
-
         }
 
         SectionTitle("Sharing")
@@ -456,64 +463,62 @@ fun ShareCard(onShare: () -> Unit) {
 
 @Preview
 @Composable
-internal fun BindConfiguration(onMoreClick: () -> Unit = {}) {
+internal fun BindConfiguration(
+    boundDevices: List<DeviceBinding> = listOf(DeviceBindingTest) // TODO: get the device list from the presenter and dynamic list instead.
+) {
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
         border = CardDefaults.outlinedCardBorder(enabled = false),
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { onMoreClick() }
     ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Box(
+        boundDevices.forEach { device ->
+            Row(
                 modifier = Modifier
-                    .size(48.dp)
-                    .background(
-                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
-                        RoundedCornerShape(12.dp)
-                    ),
-                contentAlignment = Alignment.Center
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Icon(
-                    painter = painterResource(Res.drawable.light_bulb),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    "Target Light Bulbs",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    "1 light bulb is selected to control with this device",
-                    style = MaterialTheme.typography.labelMedium,
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .alpha(0.5f)
-                )
-            }
+                        .size(48.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
+                            RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.light_bulb),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
 
-            Icon(
-                Icons.Default.ExpandMore,
-                contentDescription = null,
-                tint = Color.Gray
-            )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        "Target Light Bulbs",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        "Living room light",
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .alpha(0.5f)
+                    )
+                }
+            }
         }
     }
+
 }
 
 @Preview(showBackground = true)
@@ -724,10 +729,11 @@ fun DeviceItemContainerPreview() {
 @Preview(showBackground = true)
 @Composable
 internal fun LightSwitchBindingCard(
+    boundDevices: List<DeviceBinding> = emptyList(),
+    targetDevices: List<Device> = emptyList(),
     onLightSelected: () -> Unit = {},
 ) {
     var isDialogOpen by remember { mutableStateOf(false) }
-    val selectedLightItem = remember { mutableStateListOf(DEVICE_LIST_TEST.first()) }
     Column {
         OutlinedCard(
             shape = RoundedCornerShape(16.dp),
@@ -771,17 +777,18 @@ internal fun LightSwitchBindingCard(
                 )
             }
         }
-        if (selectedLightItem.isNotEmpty()) {
+        if (boundDevices.isNotEmpty()) {
             SectionTitle("Binding Configuration")
-            BindConfiguration { }
+            BindConfiguration(boundDevices)
         }
         if (isDialogOpen) {
             Napier.i { "AAA, isDialogOpen is true" }
-//            onLightSelected()
             TargetLightSettingsDialog(
+                targetDevices = targetDevices,
                 onDismiss = { isDialogOpen = false },
                 onConfirmation = {
                     Napier.d { "AAA, Confirmation" }
+                    onLightSelected()
                     isDialogOpen = false
                 }
             )
@@ -804,4 +811,14 @@ private val DeviceTest =
         vendorName = "Nordic Semiconductor ASA Nordic Semiconductor ASA",
         deviceMatterInfo = emptyList()
 
+    )
+
+private val DeviceBindingTest =
+    DeviceBinding(
+        sourceNodeId = DeviceId.Zero,
+        sourceEndpoint = 1,
+        targetNodeId = 2L.toDeviceId(),
+        targetEndpoint = 2,
+        clusterId = 6L,
+        id = "123",
     )

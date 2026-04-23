@@ -43,6 +43,8 @@ data class DeviceUiModel(
     val isOnline: Boolean,
     // Whether the device is on or off.
     val isOn: Boolean,
+    // Current bound lights.
+    val boundLights: List<DeviceBinding> = emptyList(),
 )
 
 /**

@@ -247,7 +247,7 @@ private fun DeviceDetails(
                         },
                         onConfirm = {
                             // Retry binding.
-                            devicePresenter.initiateBinding(device.device.deviceId)
+//                            devicePresenter.initiateBinding(device.device.deviceId)
                         },
                         title = "Binding Failed.",
                         message = "Unable to bind the device, please try again.",
@@ -262,7 +262,10 @@ private fun DeviceDetails(
                     ) {
                         // TODO: Call the callback function here
                         Napier.i { "AAA, LightSwitchBindingCard() called" }
-                        devicePresenter.initiateBinding(device.device.deviceId)
+                        devicePresenter.initiateBinding(
+                            sourceNodeId = device.device.deviceId,
+                            targetDevices = it
+                        )
                     }
                 }
 
@@ -747,7 +750,7 @@ fun DeviceItemContainerPreview() {
 internal fun LightSwitchBindingCard(
     boundDevices: List<DeviceBinding> = emptyList(),
     targetDevices: List<Device> = emptyList(),
-    onLightSelected: () -> Unit = {},
+    onLightSelected: (devices: List<Device>) -> Unit = {},
 ) {
     var isDialogOpen by remember { mutableStateOf(false) }
     Column {
@@ -804,7 +807,7 @@ internal fun LightSwitchBindingCard(
                 onDismiss = { isDialogOpen = false },
                 onConfirmation = {
                     Napier.d { "AAA, Confirmation" }
-                    onLightSelected()
+                    onLightSelected(it)
                     isDialogOpen = false
                 }
             )

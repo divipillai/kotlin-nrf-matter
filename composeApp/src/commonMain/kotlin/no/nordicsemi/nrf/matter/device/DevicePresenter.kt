@@ -165,29 +165,19 @@ class DevicePresenter(
 
 
     // Method to call binding.
-    fun initiateBinding(switchNodeId: DeviceId) {
+    fun initiateBinding(
+        sourceNodeId: DeviceId,
+        targetDevices: List<Device>
+    ) {
         scope.launch {
             _bindingState.value = BindingUiStates.InProgress
 
             try {
-                val lightNodeId = devicesRepository.getAllDevices().devicesList.find {
-                    it.deviceType == DeviceType.LIGHT_ON_OFF ||
-                            it.deviceType == DeviceType.DIMMABLE_LIGHT
-                }?.deviceId
-
-                if (lightNodeId == null) {
-                    _bindingState.value = BindingUiStates.Error("No light found")
-                    return@launch
-                }
-
                 val bindingResult = deviceCommandHandler.bind(
-                    switchNodeId = switchNodeId,
-                    lightNodeId = lightNodeId
+                    switchNodeId = sourceNodeId,
+                    lightNodeId = targetDevices.first().deviceId // TODO: support multiple devices binding
                 )
                 _bindingState.value = bindingResult
-
-                // Todo: Persist binding to the repository
-                // bindingRepository.save(binding)
 
             } catch (e: Exception) {
                 Napier.e(e) { "Binding failed: ${e.message}" }

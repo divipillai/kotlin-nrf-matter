@@ -1,5 +1,7 @@
 package no.nordicsemi.nrf.matter
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 
@@ -16,6 +18,8 @@ interface SwiftCodeProvider {
     fun getMatterDoorController(): MatterDoorController
 
     fun getMatterOutletController(): MatterOutletController
+
+    fun getMatterManufacturerCustomDataController(): MatterManufacturerCustomDataController
 }
 
 interface MatterCommissioner {
@@ -63,5 +67,22 @@ interface MatterOutletController {
         deviceId: DeviceId,
         isSwitchOn: Boolean,
         endpoint: Int
+    )
+}
+
+interface MatterManufacturerCustomDataController {
+
+    suspend fun setLed(
+        deviceId: DeviceId,
+        isOn: Boolean,
+        endpoint: Int,
+    )
+
+    suspend fun getData(deviceId: DeviceId, endpoint: Int): ManufacturerSpecificData
+
+    suspend fun subscribeToButtonChanges(
+        deviceId: DeviceId,
+        endpoint: Int,
+        onUpdate: (Boolean) -> Unit
     )
 }

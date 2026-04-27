@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
@@ -74,6 +75,7 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 internal fun DeviceList(
+    homeViewModel: HomeViewModel,
     devicesList: List<DeviceUiModel>,
     onDeviceClick: (DeviceUiModel) -> Unit,
     updateDeviceState: (deviceId: DeviceId, value: Boolean) -> Unit
@@ -98,6 +100,15 @@ internal fun DeviceList(
 
                 when (device.device.deviceType) {
 
+                    DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> {
+                        ManufacturerSpecItem(
+                            homeViewModel = homeViewModel,
+                            device = device,
+                            enabled = device.isOn,
+                            updateDeviceState = updateDeviceState,
+                            onClick = { onDeviceClick(device) }
+                        )
+                    }
                     DeviceType.LIGHT_ON_OFF,
                     DeviceType.DIMMABLE_LIGHT,
                     DeviceType.COLOR_TEMPERATURE_LIGHT,
@@ -139,24 +150,27 @@ internal fun DeviceList(
                         )
                     }
 
-                    else -> {}
+                    DeviceType.UNKNOWN -> {
+                        Text("Unsupported device")
+                    }
                 }
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun DeviceListPreview() {
-    NordicTheme {
-        DeviceList(
-            devicesList = DeviceUiModel_Test,
-            onDeviceClick = {},
-            updateDeviceState = { _, _ -> }
-        )
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//private fun DeviceListPreview() {
+//    NordicTheme {
+//        DeviceList(
+//            devicesList = DeviceUiModel_Test,
+//            isButtonOn = false,
+//            onDeviceClick = {},
+//            updateDeviceState = { _, _ -> }
+//        )
+//    }
+//}
 
 @Preview(showBackground = true)
 @Composable

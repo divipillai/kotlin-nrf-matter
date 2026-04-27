@@ -25,7 +25,7 @@ class LocalMatterBinder : MatterBinder {
         let targetEnd = targetEndpoint as NSNumber
         let cluster = clusterId as NSNumber
         
-        let controller = try LocalControllerProvider(logTag: "LocalMatterBinder").getController()!
+        let controller = try LocalControllerProvider(logTag: "LocalMatterBinder").getController()
         logger.info("Granting access to source.")
         await grantAccessToSource(targetDeviceID: target, sourceNodeID: source, clusterID: cluster, controller: controller)
         logger.info("Preparing binding.")

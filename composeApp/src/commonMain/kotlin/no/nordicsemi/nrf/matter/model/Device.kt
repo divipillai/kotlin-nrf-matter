@@ -78,7 +78,9 @@ enum class DeviceType {
     OUTLET,
     DOOR_LOCK,
     COLOR_TEMPERATURE_LIGHT,
-    EXTENDED_COLOR_LIGHT, ;
+    EXTENDED_COLOR_LIGHT,
+    MANUFACTURER_SPECIFIC_DEVICE,
+    ;
 
     override fun toString(): String {
         return when (this) {
@@ -90,6 +92,7 @@ enum class DeviceType {
             COLOR_TEMPERATURE_LIGHT -> "Color Temperature Light"
             EXTENDED_COLOR_LIGHT -> "Extended Color Light"
             DOOR_LOCK -> "Door Lock"
+            MANUFACTURER_SPECIFIC_DEVICE -> "Manufacturer Specific Device"
         }
     }
 }

@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.domain
 
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -55,6 +56,7 @@ class DeviceCommandHandler(
                 // TODO: Handle unknown devices.
             }
 
+            DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> handleLed(device, command)
             DeviceType.LIGHT_ON_OFF,
             DeviceType.DIMMABLE_LIGHT,
             DeviceType.LIGHT_SWITCH,
@@ -63,6 +65,38 @@ class DeviceCommandHandler(
 
             DeviceType.LIGHT_SWITCH, DeviceType.OUTLET -> handleOutlet(device, deviceId, command)
             DeviceType.DOOR_LOCK -> handleLock(device, deviceId, command)
+        }
+    }
+
+    private suspend fun handleLed(
+        device: Device,
+        isOn: Boolean
+    ) {
+        val deviceId = device.deviceId
+        val endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
+
+        try {
+            devicesStateRepository.updateDeviceState(
+                deviceId = deviceId,
+                isOnline = true,
+                isOn = isOn
+            )
+
+            deviceController.setLed(
+                deviceId = deviceId,
+                isOn = isOn,
+                endpoint = endpoint
+            )
+
+        } catch (e: Exception) {
+
+            devicesStateRepository.updateDeviceState(
+                deviceId = deviceId,
+                isOnline = false,
+                isOn = !isOn
+            )
+
+            throw e
         }
     }
 
@@ -167,11 +201,16 @@ class DeviceCommandHandler(
 
     }
 
+    fun subscribeToButtonChanges(deviceId: DeviceId): Flow<Boolean> {
+        return deviceController.subscribeToButtonChanges(deviceId, 1)
+    }
+
     companion object {
         private val TAG: String
             get() = "DeviceCommandHandler"
         private const val ON_OFF_CLUSTER_ID: Long = 0x0006L
         private const val LOCK_UNLOCK_CLUSTER_ID: Long = 0x0101.toLong()
+        private const val MANUFACTURER_SPECIFIC_CLUSTER_ID: Long = 0xFFF1FC01
     }
 
 

@@ -1,5 +1,5 @@
 //
-//  MatterClusterDiscovery.swift
+//  LocalMatterClusterDiscovery.swift
 //  iosApp
 //
 //  Created by Sylwester Zielinski on 10/03/2026.
@@ -20,7 +20,7 @@ class LocalMatterClusterDiscovery {
     
     init(nodeId: NSNumber) {
         self.nodeId = nodeId
-        let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()!
+        let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         device = MTRDevice(nodeID: nodeId, controller: controller)
         baseDevice = MTRBaseDevice(nodeID: nodeId, controller: controller)
     }
@@ -61,11 +61,15 @@ class LocalMatterClusterDiscovery {
     }
     
     func discoverClusters() async -> Device {
+        let deviceId = DeviceId(value: nodeId.stringValue)
         let name = "Matter device: \(nodeId)"
         let vendorId = await getVendorId()
         let vendorName = await getVendorName()
         let productId = await getProductId()
         let productName = await getProductName()
+        
+        let deviceTypes = await getDeviceType(endpoint: 0)
+        logger.debug("deviceTypes AAA: \(deviceTypes)")
         
         var deviceMatterInfo: [DeviceMatterInfo] = []
         let endpoints = await readEndpoints()
@@ -73,12 +77,15 @@ class LocalMatterClusterDiscovery {
             let deviceTypes = await getDeviceType(endpoint: endpoint)
             let clientClusters = await readClientClusters(endpoint: endpoint)
             let serverClusters = await readServerClusters(endpoint: endpoint)
-            
+            let controller = LocalMatterCustomClusterController()
+            let manufacturerSpecificData = try? await controller.getData(deviceId: deviceId, endpoint: Int32(truncating: endpoint))
+
             let newInfo = DeviceMatterInfo(
                 endpoint: endpoint.int32Value,
                 types: deviceTypes.map { KotlinLong(value: $0.deviceType.int64Value) },
                 serverClusters: serverClusters.map { KotlinLong(value: $0.int64Value) },
                 clientClusters: clientClusters.map { KotlinLong(value: $0.int64Value) },
+                manufacturerSpecificData: manufacturerSpecificData,
             )
             deviceMatterInfo.append(newInfo)
         }
@@ -88,7 +95,7 @@ class LocalMatterClusterDiscovery {
         logger.debug("discoverClusters - finished")
         
         return Device(
-            deviceId: DeviceId(value: nodeId.stringValue),
+            deviceId: deviceId,
             dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),
             vendorId: vendorId?.stringValue ?? "unknown",
             productId: productId?.stringValue ?? "unknown",
@@ -99,13 +106,14 @@ class LocalMatterClusterDiscovery {
             deviceMatterInfo: deviceMatterInfo,
         )
     }
-    
+
     func mapDeviceType(_ deviceType: KotlinLong?) -> DeviceType {
+        logger.debug("mapDeviceType: \(deviceType)")
         switch deviceType {
         case 10: return .doorLock
         case 260: return .lightSwitch
         case 257: return .lightOnOff
-        default: return .unknown
+        default: return .manufacturerSpecificDevice
         }
     }
     

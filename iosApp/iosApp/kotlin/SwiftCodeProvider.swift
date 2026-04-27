@@ -40,4 +40,8 @@ class SwiftCodeProviderImpl : SwiftCodeProvider {
     func getMatterOutletController() -> any MatterOutletController {
         return LocalMatterOutletController()
     }
+    
+    func getMatterManufacturerCustomDataController() -> any MatterManufacturerCustomDataController {
+        return LocalMatterCustomClusterController()
+    }
 }

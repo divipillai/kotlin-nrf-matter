@@ -58,6 +58,7 @@ fun HomeScreen(
             )
         } else {
             DeviceList(
+                homeViewModel = homeViewModel,
                 onDeviceClick = { onDeviceClick(it.device.deviceId) },
                 updateDeviceState = { deviceId, value ->
                     homeViewModel.changeDeviceState(deviceId, value)
@@ -67,4 +68,3 @@ fun HomeScreen(
         }
     }
 }
-

@@ -11,7 +11,7 @@ import SharedCode
 class LocalMatterDecommissioner : MatterDecommissioner {
     
     func decommission(deviceId: DeviceId) async {
-        let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()!
+        let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()
 
         controller.forgetDevice(withNodeID: deviceId.nsNumber())
     }

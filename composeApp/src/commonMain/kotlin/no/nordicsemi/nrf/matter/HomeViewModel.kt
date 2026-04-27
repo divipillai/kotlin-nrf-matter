@@ -135,5 +135,9 @@ class HomeViewModel(
             Napier.e { "Error toggling power: ${e.message}" }
         }
     }
+
+    fun subscribeToButtonChanges(deviceId: DeviceId): Flow<Boolean> {
+        return deviceCommandHandler.subscribeToButtonChanges(deviceId)
+    }
 }
 

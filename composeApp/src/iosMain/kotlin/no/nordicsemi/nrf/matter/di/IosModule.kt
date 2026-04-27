@@ -82,6 +82,7 @@ val iosModule = module {
         get<SwiftCodeProvider>().getMatterBinder(),
         get<SwiftCodeProvider>().getMatterDoorController(),
         get<SwiftCodeProvider>().getMatterOutletController(),
+        get<SwiftCodeProvider>().getMatterManufacturerCustomDataController(),
     ) }
 
     // View models.

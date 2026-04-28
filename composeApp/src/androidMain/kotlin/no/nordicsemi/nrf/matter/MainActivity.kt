@@ -32,6 +32,8 @@ class MainActivity : NordicActivity() {
         super.onCreate(savedInstanceState)
 
         Napier.base(DebugAntilog())
+        // Initialize CMP Toast.
+        multiplatform.network.cmptoast.AppContext.apply { set(applicationContext) }
         setContent {
             AndroidAppRoot()
         }

@@ -198,7 +198,7 @@ class DevicePresenter(
             val bindings = uiState.value.deviceUiModel?.boundLights ?: emptyList()
             val sourceIds = bindings.map { it.sourceNodeId }.toSet()
             // Check target devices are already bound to the switch by comparing with boundLights
-            val result = devices.filter { it.deviceId in sourceIds }
+            val result = devices.filterNot { it.deviceId in sourceIds }
             targetDevices.addAll(result)
         }
         return targetDevices

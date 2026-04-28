@@ -20,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.WarningAmber
@@ -51,17 +50,16 @@ import androidx.compose.ui.unit.sp
 import com.skydoves.cloudy.cloudy
 import io.github.aakira.napier.Napier
 import multiplatform.network.cmptoast.ToastDuration
+import multiplatform.network.cmptoast.ToastGravity
 import multiplatform.network.cmptoast.showToast
 import no.nordicsemi.nrf.matter.binding.BindingUiStates
-import no.nordicsemi.nrf.matter.binding.TargetLightSettingsDialog
+import no.nordicsemi.nrf.matter.binding.LightSwitchBindingCard
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
-import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.BindingLoaderDialog
@@ -149,6 +147,7 @@ fun DeviceScreen(
         Text("Loading device…")
         return
     }
+    val bindingState by devicePresenter.bindingState.collectAsState()
 
     when (uiState.removeDeviceState) {
 
@@ -212,6 +211,7 @@ fun DeviceScreen(
             .padding(padding)
             .fillMaxWidth()
             .then(if (isRemoving) Modifier.cloudy() else Modifier)
+            .then(if (bindingState is BindingUiStates.InProgress) Modifier.cloudy() else Modifier)
     ) {
         DeviceDetails(device, devicePresenter)
     }
@@ -224,6 +224,8 @@ private fun DeviceDetails(
     devicePresenter: DevicePresenter
 ) {
     val targetDevices = devicePresenter.getTargetDevices()
+    val selectedDevices = remember { mutableListOf<Device>() }
+    Napier.i("target Devices: $targetDevices", tag = "AAA")
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -236,7 +238,7 @@ private fun DeviceDetails(
         DeviceControlSection(device, devicePresenter)
 
         if (device.device.deviceType == DeviceType.LIGHT_SWITCH) {
-            SectionTitle("Linked Lights")
+            SectionTitle("Binding Configurations")
             val bindingState by devicePresenter.bindingState.collectAsState()
             when (bindingState) {
                 is BindingUiStates.Error -> {
@@ -247,7 +249,10 @@ private fun DeviceDetails(
                         },
                         onConfirm = {
                             // Retry binding.
-//                            devicePresenter.initiateBinding(device.device.deviceId)
+                            devicePresenter.initiateBinding(
+                                device.device.deviceId,
+                                selectedDevices.toList()
+                            )
                         },
                         title = "Binding Failed.",
                         message = "Unable to bind the device, please try again.",
@@ -262,6 +267,7 @@ private fun DeviceDetails(
                     ) {
                         // TODO: Call the callback function here
                         Napier.i { "AAA, LightSwitchBindingCard() called" }
+                        selectedDevices.addAll(it)
                         devicePresenter.initiateBinding(
                             sourceNodeId = device.device.deviceId,
                             targetDevices = it
@@ -296,11 +302,12 @@ private fun DeviceDetails(
                     // TODO: Show success message and show bonded lights in the UI.
                     // Show a Toast of success binding.
                     Napier.i { "AAA, Success" }
-                    showToast(
-                        message = "Binding success!\nYou can see the bound device in the UI.",
-                        duration = ToastDuration.Long
-                    )
                     devicePresenter.updateBindingState(BindingUiStates.Idle)
+                    showToast(
+                        message = "Binding completed successfully!",
+                        duration = ToastDuration.Long,
+                        gravity = ToastGravity.Center
+                    )
                 }
             }
         }
@@ -480,65 +487,6 @@ fun ShareCard(onShare: () -> Unit) {
     }
 }
 
-@Preview
-@Composable
-internal fun BindConfiguration(
-    boundDevices: List<DeviceBinding> = listOf(DeviceBindingTest) // TODO: get the device list from the presenter and dynamic list instead.
-) {
-    OutlinedCard(
-        shape = RoundedCornerShape(16.dp),
-        border = CardDefaults.outlinedCardBorder(enabled = false),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        boundDevices.forEach { device ->
-            Row(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(
-                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
-                            RoundedCornerShape(12.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.light_bulb),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        "Target Light Bulbs",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Text(
-                        "Living room light",
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .alpha(0.5f)
-                    )
-                }
-            }
-        }
-    }
-
-}
 
 @Preview(showBackground = true)
 @Composable

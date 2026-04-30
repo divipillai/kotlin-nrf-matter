@@ -25,7 +25,7 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
     }
 
     func generateRandomNumber(deviceId: DeviceId) async throws -> KotlinInt {
-        logger.debug("AAATESTAAA - Generating random number...")
+        logger.debug("Generating random number...")
         let commandExecutor = try CommandExecutor(deviceId: deviceId.nsNumber())
         
         try await commandExecutor.executeCommand(
@@ -36,18 +36,18 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
             value: true
         )
         
-        logger.debug("AAATESTAAA - Generating random number command succeeded.")
+        logger.debug("Generating random number command succeeded.")
         
         return try await getRandomNumber(deviceId: deviceId)
     }
     
     func subscribeToRandomNumber(deviceId: DeviceId, onUpdate: @escaping (KotlinInt) -> Void) async throws {
-        self.logger.debug("AAATESTAAA - subscribe to random number.")
+        self.logger.debug("Subscribe to random number.")
         let attributeSubscriber = try AttributeSubscriber(deviceId: deviceId.nsNumber())
         
         attributeSubscriber.subscribe(endpoint: endpointId, cluster: clusterId, attribute: attributeId, onUpdate: { result in
             onUpdate(KotlinInt(int: result))
-            self.logger.debug("AAATESTAAA - On new value: \(result)")
+            self.logger.debug("On new value: \(result)")
         })
     }
 }

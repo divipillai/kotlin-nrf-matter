@@ -113,9 +113,9 @@ class LocalMatterClusterDiscovery {
         let deviceTypes = await getDeviceType(endpoint: 0)
         let clientClusters = await readClientClusters(endpoint: 0)
         let serverClusters = await readServerClusters(endpoint: 0)
-        logger.debug("AAATESTAAA - devicetypes: \(deviceTypes)")
-        logger.debug("AAATESTAAA - clientClusters: \(clientClusters)")
-        logger.debug("AAATESTAAA - serverClusters: \(serverClusters)")
+        logger.debug("Endpoint 0 - devicetypes: \(deviceTypes)")
+        logger.debug("Endpoint 0 - clientClusters: \(clientClusters)")
+        logger.debug("Endpoint 0 - serverClusters: \(serverClusters)")
     }
 
     func mapDeviceType(_ deviceType: KotlinLong?) -> DeviceType {

@@ -205,6 +205,14 @@ class DeviceCommandHandler(
         return deviceController.subscribeToButtonChanges(deviceId, 1)
     }
 
+    suspend fun generateRandomNumber(deviceId: DeviceId): Int {
+        return deviceController.generateRandomNumber(deviceId)
+    }
+
+    fun subscribeToRandomNumber(deviceId: DeviceId): Flow<Int> {
+        return deviceController.subscribeToRandomNumber(deviceId, 0)
+    }
+
     companion object {
         private val TAG: String
             get() = "DeviceCommandHandler"
@@ -212,6 +220,4 @@ class DeviceCommandHandler(
         private const val LOCK_UNLOCK_CLUSTER_ID: Long = 0x0101.toLong()
         private const val MANUFACTURER_SPECIFIC_CLUSTER_ID: Long = 0xFFF1FC01
     }
-
-
 }

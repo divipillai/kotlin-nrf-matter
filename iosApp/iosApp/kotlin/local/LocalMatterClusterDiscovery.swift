@@ -70,7 +70,9 @@ class LocalMatterClusterDiscovery {
         
         let deviceTypes = await getDeviceType(endpoint: 0)
         logger.debug("deviceTypes AAA: \(deviceTypes)")
-        
+
+        await readEndpoint0()
+
         var deviceMatterInfo: [DeviceMatterInfo] = []
         let endpoints = await readEndpoints()
         for endpoint in endpoints {
@@ -106,6 +108,15 @@ class LocalMatterClusterDiscovery {
             deviceMatterInfo: deviceMatterInfo,
         )
     }
+    
+    func readEndpoint0() async {
+        let deviceTypes = await getDeviceType(endpoint: 0)
+        let clientClusters = await readClientClusters(endpoint: 0)
+        let serverClusters = await readServerClusters(endpoint: 0)
+        logger.debug("Endpoint 0 - devicetypes: \(deviceTypes)")
+        logger.debug("Endpoint 0 - clientClusters: \(clientClusters)")
+        logger.debug("Endpoint 0 - serverClusters: \(serverClusters)")
+    }
 
     func mapDeviceType(_ deviceType: KotlinLong?) -> DeviceType {
         logger.debug("mapDeviceType: \(deviceType)")
@@ -114,7 +125,7 @@ class LocalMatterClusterDiscovery {
         case 260: return .lightSwitch
         case 257: return .lightOnOff
         case 0xFFF10001: return .manufacturerSpecificDevice
-        default: return .unknown
+        default: return .manufacturerSpecificDevice
         }
     }
     

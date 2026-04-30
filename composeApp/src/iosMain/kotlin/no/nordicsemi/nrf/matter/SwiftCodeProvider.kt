@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter
 
-import kotlinx.coroutines.flow.MutableStateFlow
 import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -20,6 +19,8 @@ interface SwiftCodeProvider {
     fun getMatterOutletController(): MatterOutletController
 
     fun getMatterManufacturerCustomDataController(): MatterManufacturerCustomDataController
+
+    fun getMatterClusterExtensionController(): MatterClusterExtensionController
 }
 
 interface MatterCommissioner {
@@ -84,5 +85,17 @@ interface MatterManufacturerCustomDataController {
         deviceId: DeviceId,
         endpoint: Int,
         onUpdate: (Boolean) -> Unit
+    )
+}
+
+interface MatterClusterExtensionController {
+
+    suspend fun getRandomNumber(deviceId: DeviceId): Int
+
+    suspend fun generateRandomNumber(deviceId: DeviceId): Int
+
+    suspend fun subscribeToRandomNumber(
+        deviceId: DeviceId,
+        onUpdate: (Int) -> Unit
     )
 }

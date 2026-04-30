@@ -74,4 +74,11 @@ interface DeviceController {
         deviceId: DeviceId,
         endpoint: Int,
     ) : Flow<Boolean>
+
+    suspend fun generateRandomNumber(deviceId: DeviceId): Int
+
+    fun subscribeToRandomNumber(
+        deviceId: DeviceId,
+        endpoint: Int,
+    ) : Flow<Int>
 }

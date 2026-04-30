@@ -18,7 +18,7 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
     private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterCustomClusterController")
     
     func getData(deviceId: DeviceId, endpoint: Int32) async throws -> ManufacturerSpecificData {
-        logger.debug("Getting c austom manufacturer data...")
+        logger.debug("Getting custom manufacturer data...")
         
         let attributeReader = try AttributeReader(deviceId: deviceId.nsNumber())
        
@@ -37,9 +37,9 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
 
     func setLed(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         logger.debug("invoke setLed")
-        let attributeWriter = try AttributeWriter(deviceId: deviceId.nsNumber())
+        let commandExecutor = try CommandExecutor(deviceId: deviceId.nsNumber())
         
-        try await attributeWriter.executeCommand(
+        try await commandExecutor.executeCommand(
             endpoint: endpointId,
             cluster: clusterId,
             command: commandId,

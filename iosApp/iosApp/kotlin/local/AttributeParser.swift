@@ -35,3 +35,25 @@ extension Bool: AttributeParser {
         throw OperationError.wrongType
     }
 }
+
+extension Int: AttributeParser {
+    
+    public static func parse(value: Any) throws -> Int {
+        if let int = value as? Int {
+            return int
+        }
+        
+        throw OperationError.wrongType
+    }
+}
+
+extension Int32: AttributeParser {
+    
+    public static func parse(value: Any) throws -> Int32 {
+        if let int = value as? Int32 {
+            return int
+        }
+        
+        throw OperationError.wrongType
+    }
+}

@@ -4,6 +4,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import no.nordicsemi.nrf.matter.MatterBinder
+import no.nordicsemi.nrf.matter.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.MatterDecommissioner
 import no.nordicsemi.nrf.matter.MatterDoorController
 import no.nordicsemi.nrf.matter.MatterManufacturerCustomDataController
@@ -48,6 +49,7 @@ class IosDeviceController(
     private val matterDoorController: MatterDoorController,
     private val matterOutletController: MatterOutletController,
     private val matterManufacturerCustomDataController: MatterManufacturerCustomDataController,
+    private val matterClusterExtensionController: MatterClusterExtensionController,
 ): DeviceController {
 
     override suspend fun setDeviceOnOff(
@@ -107,6 +109,23 @@ class IosDeviceController(
 
         awaitClose {
             
+        }
+    }
+
+    override suspend fun generateRandomNumber(deviceId: DeviceId): Int {
+        return matterClusterExtensionController.generateRandomNumber(deviceId)
+    }
+
+    override fun subscribeToRandomNumber(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Flow<Int> = callbackFlow {
+        matterClusterExtensionController.subscribeToRandomNumber(deviceId) {
+            trySend(it)
+        }
+
+        awaitClose {
+
         }
     }
 }

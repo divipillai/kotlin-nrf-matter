@@ -1,5 +1,5 @@
 //
-//  AttributeWriter.swift
+//  CommandExecutor.swift
 //  iosApp
 //
 //  Created by Sylwester Zielinski on 23/04/2026.
@@ -9,7 +9,7 @@ import Matter
 import SharedCode
 import OSLog
 
-class AttributeWriter {
+class CommandExecutor {
     
     private let logger = Logger(subsystem: "nrf.matter", category: "AttributeWriter")
     private let baseDevice: MTRBaseDevice
@@ -29,7 +29,7 @@ class AttributeWriter {
                     MTRContextTagKey: 0,
                     MTRDataKey: [
                         MTRTypeKey: type,
-                        MTRValueKey: value // toggle
+                        MTRValueKey: value
                     ]
                 ]
             ]

@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -60,6 +61,8 @@ class HomeViewModel(
     userPreferencesRepository: UserPreferencesRepository,
     private val deviceCommandHandler: DeviceCommandHandler,
 ) : ViewModel() {
+    val randomNumber = MutableStateFlow<Int?>(null)
+
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
     )
@@ -138,6 +141,16 @@ class HomeViewModel(
 
     fun subscribeToButtonChanges(deviceId: DeviceId): Flow<Boolean> {
         return deviceCommandHandler.subscribeToButtonChanges(deviceId)
+    }
+
+    fun generateRandomNumber(deviceId: DeviceId) {
+        scope.launch {
+            randomNumber.value = deviceCommandHandler.generateRandomNumber(deviceId)
+        }
+    }
+
+    fun subscribeToRandomNumber(deviceId: DeviceId): Flow<Int> {
+        return deviceCommandHandler.subscribeToRandomNumber(deviceId)
     }
 }
 

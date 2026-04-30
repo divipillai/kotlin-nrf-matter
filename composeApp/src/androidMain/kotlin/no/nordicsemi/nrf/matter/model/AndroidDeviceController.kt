@@ -110,4 +110,15 @@ class AndroidDeviceController(
     ): Flow<Boolean> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun generateRandomNumber(deviceId: DeviceId): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun subscribeToRandomNumber(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Flow<Int> {
+        TODO("Not yet implemented")
+    }
 }

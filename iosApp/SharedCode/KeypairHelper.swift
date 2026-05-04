@@ -6,14 +6,12 @@
 //
 
 import Security
-import OSLog
 import Foundation
 
 class KeypairHelper {
     
     private let logTag: String
     private let tag: Data
-    private let logger = Logger(subsystem: "nrf.matter", category: "KeypairHelper")
     
     init(logTag: String) {
         self.logTag = logTag
@@ -22,7 +20,7 @@ class KeypairHelper {
     }
     
     func generatePrivateKey() throws -> SecKey {
-        logger.debug("\(self.logTag) - Generating new key.")
+        SharedLogger.debug("\(self.logTag) - Generating new key.")
         
         let attributes: [String: Any] = [
             kSecAttrKeyType as String           : kSecAttrKeyTypeECSECPrimeRandom,
@@ -38,22 +36,22 @@ class KeypairHelper {
         let secKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error)
 
         if error != nil {
-            logger.debug("\(self.logTag) - Error during generation of a new key.")
+            SharedLogger.debug("\(self.logTag) - Error during generation of a new key.")
             throw KeypairError.generatePrivateKeyFailed
         }
 
         guard let secKey = secKey else {
-            logger.debug("\(self.logTag) - Error during generation of a new key.")
+            SharedLogger.debug("\(self.logTag) - Error during generation of a new key.")
             throw KeypairError.generatePrivateKeyReturnedNil
         }
         
-        logger.debug("\(self.logTag) - Returning newly generated key.")
+        SharedLogger.debug("\(self.logTag) - Returning newly generated key.")
 
         return secKey
     }
     
     func getPrivateKey() -> SecKey? {
-        logger.debug("\(self.logTag) - Getting private key.")
+        SharedLogger.debug("\(self.logTag) - Getting private key.")
 
         let query: [String: Any] = [
             kSecClass as String                 : kSecClassKey,
@@ -66,12 +64,12 @@ class KeypairHelper {
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         guard status == errSecSuccess else {
-            logger.debug("\(self.logTag) - Private key not found.")
+            SharedLogger.debug("\(self.logTag) - Private key not found.")
             return nil
         }
-        logger.debug("\(self.logTag) - Private key found.")
+        SharedLogger.debug("\(self.logTag) - Private key found.")
         guard item != nil else {
-            logger.debug("\(self.logTag) - Private key is nil. Deleting.")
+            SharedLogger.debug("\(self.logTag) - Private key is nil. Deleting.")
             deletePrivateKey()
             return nil
         }
@@ -79,7 +77,7 @@ class KeypairHelper {
     }
     
     public func deletePrivateKey() {
-        logger.debug("\(self.logTag) - Deleting private key.")
+        SharedLogger.debug("\(self.logTag) - Deleting private key.")
         
         let deleteQuery: [String: Any] = [
             kSecClass as String: kSecClassKey,

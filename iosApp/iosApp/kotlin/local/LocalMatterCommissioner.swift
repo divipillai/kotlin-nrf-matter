@@ -8,13 +8,10 @@
 import ComposeApp
 import Matter
 import MatterSupport
-import os.log
 import nrfMatter
 import SharedCode
 
 class LocalMatterCommissioner : MatterCommissioner {
-    
-    private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterCommissioner")
     
     func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {
         return await commission()
@@ -37,7 +34,7 @@ class LocalMatterCommissioner : MatterCommissioner {
             let device = await LocalMatterClusterDiscovery(nodeId: nodeID).discoverClusters()
             return device
         } catch {
-            logger.info("Failed to set up device with error: \(error.localizedDescription).")
+            SharedLogger.info("Failed to set up device with error: \(error.localizedDescription).")
         }
         return nil
     }

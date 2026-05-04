@@ -16,7 +16,6 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
     private let clusterId: NSNumber = 0x28 //todo: hardcoded
     private let attributeId: NSNumber = 0x17 //todo: hardcoded
     private let commandId: NSNumber = 0x00 //todo: hardcoded
-    private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterClusterExtController")
     
     func getRandomNumber(deviceId: DeviceId) async throws -> KotlinInt {
         let attributeReader = try AttributeReader(deviceId: deviceId.nsNumber())
@@ -25,7 +24,7 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
     }
 
     func generateRandomNumber(deviceId: DeviceId) async throws -> KotlinInt {
-        logger.debug("Generating random number...")
+        SharedLogger.debug("Generating random number...")
         let commandExecutor = try CommandExecutor(deviceId: deviceId.nsNumber())
         
         try await commandExecutor.executeCommand(
@@ -36,18 +35,18 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
             value: true
         )
         
-        logger.debug("Generating random number command succeeded.")
+        SharedLogger.debug("Generating random number command succeeded.")
         
         return try await getRandomNumber(deviceId: deviceId)
     }
     
     func subscribeToRandomNumber(deviceId: DeviceId, onUpdate: @escaping (KotlinInt) -> Void) async throws {
-        self.logger.debug("Subscribe to random number.")
+        SharedLogger.debug("Subscribe to random number.")
         let attributeSubscriber = try AttributeSubscriber(deviceId: deviceId.nsNumber())
         
         attributeSubscriber.subscribe(endpoint: endpointId, cluster: clusterId, attribute: attributeId, onUpdate: { result in
             onUpdate(KotlinInt(int: result))
-            self.logger.debug("On new value: \(result)")
+            SharedLogger.debug("On new value: \(result)")
         })
     }
 }

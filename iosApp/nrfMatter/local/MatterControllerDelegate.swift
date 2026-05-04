@@ -6,11 +6,9 @@
 //
 
 import Matter
-import OSLog
+import SharedCode
 
 class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
-    
-    private let logger = Logger(subsystem: "nrf.matter", category: "MatterControllerDelegate")
     
     let nodeID: NSNumber
     let continuation: CheckedContinuation<Void, Never>
@@ -21,11 +19,11 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
     }
     
     func controller(_ controller: MTRDeviceController, statusUpdate status: MTRCommissioningStatus) {
-        logger.debug("Status update: \(status.rawValue).")
+        SharedLogger.debug("Status update: \(status.rawValue).")
     }
 
     func controller(_ controller: MTRDeviceController, commissioningSessionEstablishmentDone error: Error?) {
-        logger.debug("Commissioning session establishement done.")
+        SharedLogger.debug("Commissioning session establishement done.")
         do {
             let commissioningParams = MTRCommissioningParameters()
             commissioningParams.deviceAttestationDelegate = MatterAttestationDelegate()
@@ -38,14 +36,14 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
                 withID: nodeID,
                 commissioningParams: commissioningParams,
             )
-            logger.debug("Succcessfully commissioned device.")
+            SharedLogger.debug("Succcessfully commissioned device.")
         } catch {
-            logger.debug("Commissioning node failed.")
+            SharedLogger.debug("Commissioning node failed.")
         }
     }
 
     func controller(_ controller: MTRDeviceController, commissioningComplete error: Error?, nodeID: NSNumber?) {
-        logger.debug("Commissioning complete.")
+        SharedLogger.debug("Commissioning complete.")
         continuation.resume()
         controller.shutdown()
     }

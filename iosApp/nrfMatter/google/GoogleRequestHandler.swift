@@ -12,8 +12,6 @@ import OSLog
 import SharedCode
 
 final class GoogleRequestHandler: RequestHandlerProtocol {
-    
-    private let logger = Logger(subsystem: "nrf.matter", category: "GoogleRequestHandler")
 
     func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
         do {
@@ -31,7 +29,7 @@ final class GoogleRequestHandler: RequestHandlerProtocol {
         do {
             try await homeMatterCommissioner.commissionMatterDevice(onboardingPayload: onboardingPayload)
         } catch {
-            logger.error("\(error)")
+            SharedLogger.error("\(error)")
         }
     }
 
@@ -40,7 +38,7 @@ final class GoogleRequestHandler: RequestHandlerProtocol {
           let homeMatterCommissioner = try HomeMatterCommissioner(appGroup: SharedConsts.googleStorage)
           try await homeMatterCommissioner.configureMatterDevice(deviceName: name, roomName: room?.displayName)
         } catch {
-            logger.error("\(error)")
+            SharedLogger.error("\(error)")
         }
     }
 

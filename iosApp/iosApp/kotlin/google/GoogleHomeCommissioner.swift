@@ -8,7 +8,6 @@
 import ComposeApp
 import Matter
 import MatterSupport
-import os.log
 import nrfMatter
 import SharedCode
 import GoogleHomeSDK
@@ -19,8 +18,6 @@ enum PairingError: Error {
 }
 
 class GoogleHomeCommissioner : MatterCommissioner {
-    
-    private let logger = Logger(subsystem: "nrf.matter", category: "GoogleHomeCommissioner")
     
     func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {
         return await commission()
@@ -76,7 +73,7 @@ class GoogleHomeCommissioner : MatterCommissioner {
             }
         } catch {
             let result = structure.markMatterCommissioningFailed(error: error)
-            Logger().error("Failed to complete MatterAddDeviceRequest: \(result.detailedError).")
+            SharedLogger.error("Failed to complete MatterAddDeviceRequest: \(result.detailedError).")
         }
         return nil
     }

@@ -13,8 +13,7 @@ enum ControllerError : Error {
 }
 
 public class LocalControllerProvider {
-    
-    private let logger = Logger(subsystem: "nrf.matter", category: "MatterControllerProviderCore")
+
     private let logTag: String
     private let factory = MTRDeviceControllerFactory.sharedInstance()
     
@@ -54,10 +53,10 @@ public class LocalControllerProvider {
         let controller: MTRDeviceController
 
         do {
-            logger.debug("\(self.logTag) - Controller from existing fabric")
+            SharedLogger.debug("\(self.logTag) - Controller from existing fabric")
             controller = try factory.createController(onExistingFabric: params)
         } catch {
-            logger.debug("\(self.logTag) - Controller from new fabric")
+            SharedLogger.debug("\(self.logTag) - Controller from new fabric")
             controller = try factory.createController(onNewFabric: params)
         }
 
@@ -71,13 +70,13 @@ public class LocalControllerProvider {
         }
 
         guard let ipkMutable = NSMutableData(length: 16) else {
-            logger.debug("\(self.logTag) Coulnd't create NSMutableData dla IPK")
+            SharedLogger.debug("\(self.logTag) Coulnd't create NSMutableData dla IPK")
             return nil
         }
 
         let status = SecRandomCopyBytes(kSecRandomDefault, ipkMutable.length, ipkMutable.mutableBytes)
         guard status == errSecSuccess else {
-            logger.debug("\(self.logTag) Error during generating IPK: \(status)")
+            SharedLogger.debug("\(self.logTag) Error during generating IPK: \(status)")
             return nil
         }
 

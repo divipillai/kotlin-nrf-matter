@@ -13,7 +13,6 @@
 
 import MatterSupport
 import Matter
-import OSLog
 import SharedCode
 
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
@@ -36,8 +35,6 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     enum HandlerError: Error {
         case invalidEnvironment
     }
-
-    private let logger = Logger(subsystem: "nrf.matter", category: "RequestHandler")
 
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
         SharedLogger.info("Received request to fetch rooms in home: \(String(describing: home?.displayName)).")

@@ -7,7 +7,6 @@
 
 import Matter
 import SharedCode
-import OSLog
 
 struct AttributeUpdate<T : Sendable> : Sendable {
     let value: T?
@@ -15,8 +14,7 @@ struct AttributeUpdate<T : Sendable> : Sendable {
 }
 
 class AttributeSubscriber {
-    
-    private let logger = Logger(subsystem: "nrf.matter", category: "AttributeSubscriber")
+
     private let baseDevice: MTRBaseDevice
     
     init(deviceId: NSNumber) throws {

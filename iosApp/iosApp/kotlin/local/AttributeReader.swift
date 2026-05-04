@@ -7,11 +7,9 @@
 
 import Matter
 import SharedCode
-import OSLog
 
 class AttributeReader {
-    
-    private let logger = Logger(subsystem: "nrf.matter", category: "AttributeReader")
+
     private let baseDevice: MTRBaseDevice
     
     init(deviceId: NSNumber) throws {
@@ -25,7 +23,7 @@ class AttributeReader {
     }
     
     private func readAttribute(endpoint: NSNumber, cluster: NSNumber, attribute: NSNumber) async throws -> Any {
-        logger.debug("readAttributes")
+        SharedLogger.debug("readAttributes")
 
         let result = try? await baseDevice.readAttributes(
             withEndpointID: endpoint,
@@ -39,16 +37,16 @@ class AttributeReader {
             throw OperationError.missingAttribute
         }
         
-        logger.debug("Attirbutes for endpoint: \(endpoint), cluster: \(cluster)")
-//        printAttributes(result!)
+        SharedLogger.debug("Attirbutes for endpoint: \(endpoint), cluster: \(cluster)")
+
         return try result[0].readAny()
     }
     
     private func printAttributes(_ array: [[String: Any]]) {
         for (index, dict) in array.enumerated() {
-            logger.debug("Item nr \(index):")
+            SharedLogger.debug("Item nr \(index):")
             for (key, value) in dict {
-                logger.debug("\(key): \(value as! NSObject)")
+                SharedLogger.debug("\(key): \(value as! NSObject)")
             }
         }
     }

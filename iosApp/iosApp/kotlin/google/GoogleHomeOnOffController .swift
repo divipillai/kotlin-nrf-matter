@@ -8,13 +8,10 @@
 import ComposeApp
 import Matter
 import SharedCode
-import OSLog
 import GoogleHomeSDK
 import GoogleHomeTypes
 
 class GoogleHomeOnOffController : MatterOnOffController {
-    
-    private let logger = Logger(subsystem: "nrf.matter", category: "GoogleHomeOnOffController")
 
     func setDeviceOnOff(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         let controller = GoogleHomeController.instance()

@@ -116,7 +116,7 @@ class LocalMatterClusterDiscovery {
     }
 
     func mapDeviceType(_ deviceType: KotlinLong?) -> DeviceType {
-        logger.debug("mapDeviceType: \(deviceType)")
+        SharedLogger.debug("mapDeviceType: \(deviceType)")
         switch deviceType {
         case 10: return .doorLock
         case 260: return .lightSwitch

@@ -47,6 +47,10 @@ data object HomeRoute : NavKey
 @SerialName("Details")
 data class DetailsRoute(val id: DeviceId) : NavKey
 
+@Serializable
+@SerialName("Logger")
+data object LoggerRoute : NavKey
+
 val config = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {

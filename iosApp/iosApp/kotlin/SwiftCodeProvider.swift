@@ -48,4 +48,8 @@ class SwiftCodeProviderImpl : SwiftCodeProvider {
     func getMatterClusterExtensionController() -> any MatterClusterExtensionController {
         return LocalMatterClusterExtController()
     }
+    
+    func getLogger() -> PlatformLogger {
+        return PlatformLogger(logger: NativePlatformLoggerImpl())
+    }
 }

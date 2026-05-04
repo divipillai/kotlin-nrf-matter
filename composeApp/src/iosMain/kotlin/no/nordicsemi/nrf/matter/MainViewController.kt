@@ -50,7 +50,7 @@ fun MainViewController(swiftCodeProvider: SwiftCodeProvider) =
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            IosAppRoot(swiftCodeProvider)
+            IosAppRoot()
         }
 
     }
@@ -65,8 +65,8 @@ sealed interface ScreenState {
 private var isStarted = false
 
 @Composable
-fun IosAppRoot(swiftCodeProvider: SwiftCodeProvider) {
-    val commissioningViewModel: CommissioningViewModel = koinViewModel { parametersOf(swiftCodeProvider) }
+fun IosAppRoot() {
+    val commissioningViewModel: CommissioningViewModel = koinViewModel()
     val homeViewModel: HomeViewModel = koinViewModel()
     val state = remember { mutableStateOf<ScreenState>(ScreenState.Initial) }
 

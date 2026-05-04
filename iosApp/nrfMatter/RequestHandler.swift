@@ -40,40 +40,40 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     private let logger = Logger(subsystem: "nrf.matter", category: "RequestHandler")
 
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
-        logger.info("Received request to fetch rooms in home: \(String(describing: home?.displayName)).")
+        SharedLogger.info("Received request to fetch rooms in home: \(String(describing: home?.displayName)).")
 
         return await handler.rooms(in: home)
     }
 
     override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
-        logger.info("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
+        SharedLogger.info("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
 
         try await handler.commissionDevice(in: home, onboardingPayload: onboardingPayload, commissioningID: commissioningID)
     }
 
     override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
-        logger.info("Configuring device '\(name)' in room: \(String(describing: room?.displayName))")
+        SharedLogger.info("Configuring device '\(name)' in room: \(String(describing: room?.displayName))")
         
         await handler.configureDevice(named: name, in: room)
     }
 
     override func validateDeviceCredential(_ deviceCredential: MatterAddDeviceExtensionRequestHandler.DeviceCredential) async throws {
-        logger.info("Validating device credential")
+        SharedLogger.info("Validating device credential")
         
         try await handler.validateDeviceCredential(deviceCredential)
     }
 
     override func selectWiFiNetwork(from wifiScanResults: [MatterAddDeviceExtensionRequestHandler.WiFiScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.WiFiNetworkAssociation {
-        logger.info("Selecting WiFi network from \(wifiScanResults.count) scan results")
+        SharedLogger.info("Selecting WiFi network from \(wifiScanResults.count) scan results")
 
         return try await handler.selectWiFiNetwork(from: wifiScanResults)
     }
     
     override func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
-        logger.info("Selecting Thread network from \(threadScanResults.count) scan results")
+        SharedLogger.info("Selecting Thread network from \(threadScanResults.count) scan results")
         
         threadScanResults.forEach { item in
-            logger.debug("Detected thread network: \(item.networkName, privacy: .public)")
+            SharedLogger.debug("Detected thread network: \(item.networkName)")
         }
 
         return try await handler.selectThreadNetwork(from: threadScanResults)

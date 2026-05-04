@@ -13,5 +13,6 @@ class LoggerViewModel(private val logger: PlatformLogger) : ViewModel() {
         SupervisorJob() + Dispatchers.Main
     )
 
-    fun getLogs() = logger.getLogs().stateIn(scope, SharingStarted.Lazily, emptyList())
+    val logs = logger.getLogs()
+        .stateIn(scope, SharingStarted.Lazily, emptyList())
 }

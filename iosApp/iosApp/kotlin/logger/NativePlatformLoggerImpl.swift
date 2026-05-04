@@ -11,15 +11,15 @@ import SharedCode
 class NativePlatformLoggerImpl : NativePlatformLogger {
     
     func info(tag: String, message: String) {
-        SharedLogger.debug(tag: tag, message: message)
+        SharedLogger.info(tag: tag, message)
     }
     
     func debug(tag: String, message: String) {
-        SharedLogger.debug(tag: tag, message: message)
+        SharedLogger.debug(tag: tag, message)
     }
     
     func error(tag: String, message: String) {
-        SharedLogger.error(tag: tag, message: message)
+        SharedLogger.error(tag: tag, message)
     }
     
     func getLogs(onReady: @escaping ([LogEntity]) -> Void) {

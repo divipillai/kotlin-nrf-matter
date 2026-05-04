@@ -180,7 +180,7 @@ private fun EntryProviderScope<NavKey>.screens(
         )
     }
     entry<LoggerRoute> { key ->
-        LoggerScreen()
+        LoggerScreen(padding = padding)
     }
 }
 

@@ -43,7 +43,7 @@ public class SharedLogger {
         }
     }
     
-    public static func debug(tag: String, message: String) {
+    public static func debug(tag: String = "nRF Matter", _ message: String) {
         LoggerStore.shared.storeMessage(
             label: tag,
             level: .debug,
@@ -51,7 +51,7 @@ public class SharedLogger {
         )
     }
     
-    public static func info(tag: String, message: String) {
+    public static func info(tag: String = "nRF Matter", _ message: String) {
         LoggerStore.shared.storeMessage(
             label: tag,
             level: .info,
@@ -59,7 +59,7 @@ public class SharedLogger {
         )
     }
     
-    public static func error(tag: String, message: String) {
+    public static func error(tag: String = "nRF Matter", _ message: String) {
         LoggerStore.shared.storeMessage(
             label: tag,
             level: .error,

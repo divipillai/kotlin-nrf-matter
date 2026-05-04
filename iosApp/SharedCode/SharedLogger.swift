@@ -22,9 +22,17 @@ public struct LogItem {
 }
 
 public class SharedLogger {
+    
+    private static let store: LoggerStore = {
+        let containerURL = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: SharedConsts.sharedStorage
+        )!
+        let url = containerURL.appendingPathComponent("pulse.sqlite")
+        return try! LoggerStore(storeURL: url)
+    }()
 
     public static func logs() throws -> [LogItem] {
-        let result = try LoggerStore.shared.messages()
+        let result = try store.messages()
         
         return result.map { item in
             let level: Level = switch item.level {
@@ -44,7 +52,7 @@ public class SharedLogger {
     }
     
     public static func debug(tag: String = "nRF Matter", _ message: String) {
-        LoggerStore.shared.storeMessage(
+        store.storeMessage(
             label: tag,
             level: .debug,
             message: message,
@@ -52,7 +60,7 @@ public class SharedLogger {
     }
     
     public static func info(tag: String = "nRF Matter", _ message: String) {
-        LoggerStore.shared.storeMessage(
+        store.storeMessage(
             label: tag,
             level: .info,
             message: message,
@@ -60,7 +68,7 @@ public class SharedLogger {
     }
     
     public static func error(tag: String = "nRF Matter", _ message: String) {
-        LoggerStore.shared.storeMessage(
+        store.storeMessage(
             label: tag,
             level: .error,
             message: message,

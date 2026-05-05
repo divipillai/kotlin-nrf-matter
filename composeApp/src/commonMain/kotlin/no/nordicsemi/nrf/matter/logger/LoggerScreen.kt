@@ -9,10 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -42,8 +43,7 @@ fun LoggerScreen(padding: PaddingValues) {
         val expanded = rememberSaveable { mutableStateOf(false) }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 top = 16.dp,
                 bottom = 16.dp
@@ -67,12 +67,16 @@ fun LoggerScreen(padding: PaddingValues) {
                             placeholder = { Text("Search") }
                         )
                     },
-                    modifier = Modifier.fillMaxWidth()
-                    )
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                )
             }
 
-            items(logs.size) {
-                LogItem(logs[it])
+            itemsIndexed(logs) { index, item ->
+                LogItem(item)
+
+                if (index < logs.lastIndex) {
+                    HorizontalDivider()
+                }
             }
         }
     }
@@ -80,22 +84,20 @@ fun LoggerScreen(padding: PaddingValues) {
 
 @Composable
 private fun LogItem(item: LogEntity) {
-    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(item.formattedDate.value, style = MaterialTheme.typography.labelSmall)
+    Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(item.formattedDate.value, style = MaterialTheme.typography.labelSmall)
 
-                Text(item.tag, style = MaterialTheme.typography.labelSmall)
+            Text(item.tag, style = MaterialTheme.typography.labelSmall)
 
-                LevelItem(item.level)
-            }
-
-            Text(item.message, color = item.level.toColor())
+            LevelItem(item.level)
         }
+
+        Text(item.message, color = item.level.toColor())
     }
 }
 

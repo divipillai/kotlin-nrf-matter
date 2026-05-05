@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlin.math.log
 
 class LoggerViewModel(private val logger: PlatformLogger) : ViewModel() {
 
@@ -19,6 +20,7 @@ class LoggerViewModel(private val logger: PlatformLogger) : ViewModel() {
         .stateIn(scope, SharingStarted.Lazily, emptyList())
 
     val filter = MutableStateFlow("")
+    val logLevel = MutableStateFlow(LogLevel.DEBUG)
 
     val filteredLogs = logs.combine(filter) { logs, filter ->
         logs.filter { it.message.lowercase().contains(filter.lowercase()) }
@@ -26,5 +28,9 @@ class LoggerViewModel(private val logger: PlatformLogger) : ViewModel() {
 
     fun setSearch(value: String) {
         filter.value = value
+    }
+
+    fun setLogLevel(value: LogLevel) {
+        logLevel.value = value
     }
 }

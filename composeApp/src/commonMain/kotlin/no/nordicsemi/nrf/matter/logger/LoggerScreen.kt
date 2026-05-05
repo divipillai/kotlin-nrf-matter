@@ -1,29 +1,41 @@
 package no.nordicsemi.nrf.matter.logger
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSearchBarState
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
@@ -34,6 +46,7 @@ fun LoggerScreen(padding: PaddingValues) {
     val viewModel: LoggerViewModel = koinViewModel()
     val logs = viewModel.filteredLogs.collectAsStateWithLifecycle().value
     val searchText = viewModel.filter.collectAsStateWithLifecycle().value
+    val logLevel = viewModel.logLevel.collectAsStateWithLifecycle().value
 
     Column(
         modifier = Modifier
@@ -50,25 +63,23 @@ fun LoggerScreen(padding: PaddingValues) {
             )
         ) {
             stickyHeader {
-                SearchBar(
-                    state = rememberSearchBarState(),
-                    inputField = {
-                        SearchBarDefaults.InputField(
-                            query = searchText,
-                            onQueryChange = {
-                                viewModel.setSearch(it)
-                            },
-                            onSearch = {
-                                viewModel.setSearch(it)
-                                expanded.value = false
-                            },
-                            expanded = expanded.value,
-                            onExpandedChange = { expanded.value = it },
-                            placeholder = { Text("Search") }
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-                )
+                val brush = remember {
+                    Brush.linearGradient(
+                        colors = listOf(Color.Red, Color.Yellow, Color.Green, Color.Blue, Color.Magenta)
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextField(
+                        state = rememberTextFieldState(), textStyle = TextStyle(brush = brush)
+                    )
+                    LogLevelPicker(logLevel) {
+                        viewModel.setLogLevel(it)
+                    }
+                }
             }
 
             itemsIndexed(logs) { index, item ->
@@ -103,14 +114,8 @@ private fun LogItem(item: LogEntity) {
 
 @Composable
 private fun LevelItem(level: LogLevel) {
-    val text = when (level) {
-        LogLevel.INFO -> "info"
-        LogLevel.DEBUG -> "debug"
-        LogLevel.ERROR -> "error"
-    }
-
     Text(
-        text = text,
+        text = level.toName(),
         modifier = Modifier
             .background(
                 color = level.toColor(),
@@ -121,8 +126,57 @@ private fun LevelItem(level: LogLevel) {
     )
 }
 
+private fun LogLevel.toName() = when (this) {
+    LogLevel.INFO -> "info"
+    LogLevel.DEBUG -> "debug"
+    LogLevel.ERROR -> "error"
+}
+
 private fun LogLevel.toColor() = when (this) {
     LogLevel.INFO -> Color(0xFF008d45)
     LogLevel.DEBUG -> Color(0xFF00A9CE)
     LogLevel.ERROR -> Color(0xFFBA1B1B)
+}
+
+@Composable
+fun LogLevelPicker(logLevel: LogLevel, onChange: (LogLevel) -> Unit) {
+    val expanded = remember { mutableStateOf(false) }
+
+    Box {
+        Row(
+            modifier = Modifier
+                .width(80.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(
+                    color = logLevel.toColor(),
+                )
+                .clickable { expanded.value = true }
+                .padding(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = logLevel.toName(),
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                textAlign = TextAlign.Center,
+            )
+
+            Icon(Icons.Default.ArrowDropDown, "Choose log level.")
+        }
+
+        DropdownMenu(
+            expanded = expanded.value,
+            onDismissRequest = { expanded.value = false }
+        ) {
+            LogLevel.entries.forEach { item ->
+                DropdownMenuItem(
+                    text = { Text(item.toName()) },
+                    onClick = {
+                        onChange(item)
+                        expanded.value = false
+                    }
+                )
+            }
+        }
+    }
 }

@@ -22,8 +22,9 @@ class LoggerViewModel(private val logger: PlatformLogger) : ViewModel() {
     val filter = MutableStateFlow("")
     val logLevel = MutableStateFlow(LogLevel.DEBUG)
 
-    val filteredLogs = logs.combine(filter) { logs, filter ->
+    val filteredLogs = combine(logs, filter, logLevel) { logs, filter, logLevel ->
         logs.filter { it.message.lowercase().contains(filter.lowercase()) }
+            .filter { it.level <= logLevel }
     }.stateIn(scope, SharingStarted.Lazily, emptyList())
 
     fun setSearch(value: String) {

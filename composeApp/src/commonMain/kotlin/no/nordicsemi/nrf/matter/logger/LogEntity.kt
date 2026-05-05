@@ -18,6 +18,8 @@ class LogEntity (
 ) {
     val formattedDate = lazy {
         Instant.fromEpochMilliseconds(date)
-            .toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .toString()
+            .replace("T", " ")
     }
 }

@@ -156,12 +156,14 @@ private fun LevelItem(level: LogLevel) {
     Text(
         text = level.toName(),
         modifier = Modifier
+            .width(50.dp)
             .background(
                 color = level.toColor(),
                 shape = RoundedCornerShape(16.dp),
             )
             .padding(4.dp),
         style = MaterialTheme.typography.labelSmall,
+        textAlign = TextAlign.Center,
     )
 }
 

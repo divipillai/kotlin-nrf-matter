@@ -32,7 +32,7 @@ public class SharedLogger {
     }()
 
     public static func logs() throws -> [LogItem] {
-        let result = try store.messages()
+        let result = try store.messages(sortDescriptors: [SortDescriptor(\.createdAt, order: .reverse)])
         
         return result.map { item in
             let level: Level = switch item.level {

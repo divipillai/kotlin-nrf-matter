@@ -16,7 +16,7 @@ class LogEntity (
     val tag: String,
     val message: String,
 ) {
-    val formattedDate = lazy { //FIXME - date is wrong (1970)
+    val formattedDate = lazy {
         Instant.fromEpochMilliseconds(date)
             .toLocalDateTime(TimeZone.currentSystemDefault())
             .toString()

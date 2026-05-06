@@ -34,7 +34,7 @@ class NativePlatformLoggerImpl : NativePlatformLogger {
             }
             
             return LogEntity(
-                date: Int64(item.createdAt.timeIntervalSince1970),
+                date: Int64(item.createdAt.timeIntervalSince1970 * 1000),
                 level: level,
                 tag: item.tag,
                 message: item.message,

@@ -43,6 +43,5 @@ class GoogleHomeOnOffController : MatterOnOffController {
         } catch {
             
         }
-
     }
 }

@@ -7,6 +7,12 @@
 
 import Matter
 
+/**
+ * A Matter storage class required by FW for storing fabric (for local fabric) and
+ * all related data.
+ * It uses ``UserDefaults`` under the hood and app groups for sharing
+ * data between the main app and the extension.
+ */
 public class SharedStorage : NSObject, MTRStorage {
     
     private let defaults: UserDefaults

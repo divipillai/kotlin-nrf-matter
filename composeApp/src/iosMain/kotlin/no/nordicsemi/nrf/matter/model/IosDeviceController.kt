@@ -115,17 +115,4 @@ class IosDeviceController(
     override suspend fun generateRandomNumber(deviceId: DeviceId): Int {
         return matterClusterExtensionController.generateRandomNumber(deviceId)
     }
-
-    override fun subscribeToRandomNumber(
-        deviceId: DeviceId,
-        endpoint: Int
-    ): Flow<Int> = callbackFlow {
-        matterClusterExtensionController.subscribeToRandomNumber(deviceId) {
-            trySend(it)
-        }
-
-        awaitClose {
-
-        }
-    }
 }

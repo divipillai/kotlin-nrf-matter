@@ -20,7 +20,7 @@ final class LocalRequestHandler: RequestHandlerProtocol {
     }
 
     func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
-        try await commissioner.commision(payload: onboardingPayload, nodeID: NodeIdProvider.id)  // todo
+        try await commissioner.commission(payload: onboardingPayload, nodeID: NodeIdProvider.id)  // todo
     }
 
     func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {

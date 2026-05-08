@@ -10,8 +10,14 @@ import HomeKit
 import Matter
 import SharedCode
 
+/**
+ * A helper class from controlling a light type Matter device using Home Kit app
+ */
 class HomeKitMatterOnOffController : MatterOnOffController {
 
+    /**
+     * Set the light on/off on a remote Matter device.
+     */
     func setDeviceOnOff(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         let controller = HomeKitController.shared()
         let accessory = controller.getAccessory(deviceId: deviceId)

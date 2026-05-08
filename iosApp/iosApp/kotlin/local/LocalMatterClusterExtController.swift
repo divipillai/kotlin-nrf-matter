@@ -10,6 +10,11 @@ import ComposeApp
 import SharedCode
 import OSLog
 
+/**
+ * A helper class for communication with the cluster extension.
+ * The extension defines additional field and command for generating a ranom number to Basic Information Cluster defined by standard.
+ * The flow requires first to send a "generate number" command and latter for reading the new value from the attribute.
+ */
 class LocalMatterClusterExtController : MatterClusterExtensionController {
 
     private let endpointId: NSNumber = 0 //todo: hardcoded
@@ -17,12 +22,18 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
     private let attributeId: NSNumber = 0x17 //todo: hardcoded
     private let commandId: NSNumber = 0x00 //todo: hardcoded
     
+    /**
+     * Reads value from a "random number" attibute.
+     */
     func getRandomNumber(deviceId: DeviceId) async throws -> KotlinInt {
         let attributeReader = try AttributeReader(deviceId: deviceId.nsNumber())
         let result: Int32 = try await attributeReader.readAttribute(endpoint: endpointId, cluster: clusterId, attribute: attributeId)
         return KotlinInt(int: result)
     }
 
+    /**
+     * Sends a "generate random number" command which is defined as an extension to Basic Information Cluster defined by standard.
+     */
     func generateRandomNumber(deviceId: DeviceId) async throws -> KotlinInt {
         SharedLogger.debug("Generating random number...")
         let commandExecutor = try CommandExecutor(deviceId: deviceId.nsNumber())
@@ -38,15 +49,5 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
         SharedLogger.debug("Generating random number command succeeded.")
         
         return try await getRandomNumber(deviceId: deviceId)
-    }
-    
-    func subscribeToRandomNumber(deviceId: DeviceId, onUpdate: @escaping (KotlinInt) -> Void) async throws {
-        SharedLogger.debug("Subscribe to random number.")
-        let attributeSubscriber = try AttributeSubscriber(deviceId: deviceId.nsNumber())
-        
-        attributeSubscriber.subscribe(endpoint: endpointId, cluster: clusterId, attribute: attributeId, onUpdate: { result in
-            onUpdate(KotlinInt(int: result))
-            SharedLogger.debug("On new value: \(result)")
-        })
     }
 }

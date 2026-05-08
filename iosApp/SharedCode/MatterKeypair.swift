@@ -8,6 +8,11 @@
 import Matter
 import os.log
 
+/**
+ * Class used for noc signing.
+ * It contains privete and public key which needs to be the same for a specific fabric.
+ * Generated keys are stored sefely int the secure storage on the phone.
+ */
 public class MatterKeypair: NSObject, MTRKeypair {
 
     private let privateKey: SecKey

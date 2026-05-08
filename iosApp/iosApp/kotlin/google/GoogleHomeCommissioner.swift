@@ -17,6 +17,15 @@ enum PairingError: Error {
     case test
 }
 
+/**
+ * Starts commissioning of a new device to Google Home.
+ * It requires account in Google Home and Google Home Hub to be available in the network.
+ * All communication will go through the hub so when the hub is offline then there is no possibility
+ * to control the device from the phone.
+ * On the other hand, because fabric is managed by the hub, it is easy to share access to already
+ * created network using Google Home app.
+ * All devices added using this class should be also visible in Google Home app.
+ */
 class GoogleHomeCommissioner : MatterCommissioner {
     
     func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {

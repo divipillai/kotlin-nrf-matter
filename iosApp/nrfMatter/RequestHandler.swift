@@ -4,17 +4,24 @@
 //
 //  Created by Sylwester Zielinski on 24/02/2026.
 //
-//
-//  RequestHandler.swift
-//  nrfMatter
-//
-//  Created by Sylwester Zielinski on 24/02/2026.
-//
 
 import MatterSupport
 import Matter
 import SharedCode
 
+/**
+ * Entry point class for controlling the code in the app extension.
+ *
+ * The system extension job is to scan commissioning QR code
+ * The class has 2 basic implementation:
+ *  1. ``LocalRequestHandler`` - for adding a device to a local fabric that exists on the phone.
+ *  2. ``GoogleRequestHandler`` - for adding a device to a Google Hub.
+ *
+ *  The system extension communicates with the app using a callback based apprach.
+ *  The job of the app is to consume payload that is read from QR code,
+ *  provide list of rooms and homes that a user may add his device to,
+ *  select WiFi or Thread network in which device can operate. 
+ */
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     
     private let handler: RequestHandlerProtocol = {

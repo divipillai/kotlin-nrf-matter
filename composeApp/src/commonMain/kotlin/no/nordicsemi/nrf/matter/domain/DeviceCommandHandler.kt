@@ -209,10 +209,6 @@ class DeviceCommandHandler(
         return deviceController.generateRandomNumber(deviceId)
     }
 
-    fun subscribeToRandomNumber(deviceId: DeviceId): Flow<Int> {
-        return deviceController.subscribeToRandomNumber(deviceId, 0)
-    }
-
     companion object {
         private val TAG: String
             get() = "DeviceCommandHandler"

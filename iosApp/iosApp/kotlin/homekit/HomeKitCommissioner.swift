@@ -10,6 +10,12 @@ import Matter
 import SharedCode
 import HomeKit
 
+/**
+ * Starts commissioning of a new device to Home Kit app.
+ * Newly added deviecs should be also visible in Home Kit app.
+ * This approach seems to be able to utilise build-in Thread network available
+ * in newer iPhone's.
+ */
 class HomeKitCommissioner : MatterCommissioner {
 
     func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {

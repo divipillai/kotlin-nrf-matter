@@ -11,8 +11,14 @@ import SharedCode
 import GoogleHomeSDK
 import GoogleHomeTypes
 
+/**
+ * A helper class from controlling a light type Matter device using Googel Home hub.
+ */
 class GoogleHomeOnOffController : MatterOnOffController {
 
+    /**
+     * Set the light on/off on a remote Matter device.
+     */
     func setDeviceOnOff(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         let controller = GoogleHomeController.instance()
         await controller.initialize()

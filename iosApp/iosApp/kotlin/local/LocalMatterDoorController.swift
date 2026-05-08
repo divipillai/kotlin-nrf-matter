@@ -10,8 +10,14 @@ import Matter
 import SharedCode
 import OSLog
 
+/**
+ * A helper class from controlling a door type Matter device.
+ */
 class LocalMatterDoorController : MatterDoorController {
 
+    /**
+     * Lock/unlock the door.
+     */
     func lockUnlockDoor(deviceId: DeviceId, isLocked: Bool, endpoint: Int32) async throws {
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)

@@ -15,6 +15,9 @@ enum GoogleHomeControllerError: Error {
     case noStructureFound
 }
 
+/**
+ * A helper class for communication with Google cloud.
+ */
 class GoogleHomeController {
 
     nonisolated(unsafe) private static var controller: GoogleHomeController? = nil

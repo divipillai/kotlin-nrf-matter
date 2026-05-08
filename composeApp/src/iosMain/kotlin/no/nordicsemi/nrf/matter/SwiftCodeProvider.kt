@@ -96,9 +96,4 @@ interface MatterClusterExtensionController {
     suspend fun getRandomNumber(deviceId: DeviceId): Int
 
     suspend fun generateRandomNumber(deviceId: DeviceId): Int
-
-    suspend fun subscribeToRandomNumber(
-        deviceId: DeviceId,
-        onUpdate: (Int) -> Unit
-    )
 }

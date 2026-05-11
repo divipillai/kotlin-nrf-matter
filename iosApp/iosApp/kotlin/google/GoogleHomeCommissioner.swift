@@ -50,13 +50,21 @@ class GoogleHomeCommissioner : MatterCommissioner {
             let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
             storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.google.rawValue)
             
+            SharedLogger.debug("Moving controll to the app extension.")
+            
             try await request.perform()
             
+            SharedLogger.debug("Controll is back in the main app.")
+            
             guard let commissionedDeviceID = (try await structure.completeMatterCommissioning()).first else {
+                SharedLogger.debug("Comisioned device id is nil.")
                 return nil
             }
             
+            SharedLogger.debug("Obtaining device details.")
+            
             guard let device = await controller.getDevice(id: commissionedDeviceID) else {
+                SharedLogger.debug("Device not found.")
                 return nil
             }
             
@@ -68,12 +76,14 @@ class GoogleHomeCommissioner : MatterCommissioner {
                 let vendorID = basicInformationTrait.attributes.vendorID
                 let softwareVersionString = basicInformationTrait.attributes.softwareVersionString
                 
+                SharedLogger.debug("Returning device data")
+                
                 return Device(
                     deviceId: DeviceId(value: commissionedDeviceID),
                     dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),
                     vendorId: vendorID != nil ? String(vendorID!) : "unknown",
                     productId: productID != nil ? String(productID!) : "unknown",
-                    deviceType: .lightOnOff,
+                    deviceType: .lightOnOff, //todo
                     name: device.name,
                     productName: productName,
                     vendorName: vendorName,
@@ -81,9 +91,11 @@ class GoogleHomeCommissioner : MatterCommissioner {
                 )
             }
         } catch {
+            SharedLogger.debug("Caught error")
             let result = structure.markMatterCommissioningFailed(error: error)
             SharedLogger.error("Failed to complete MatterAddDeviceRequest: \(result.detailedError).")
         }
+        SharedLogger.debug("Returning nil.")
         return nil
     }
 }

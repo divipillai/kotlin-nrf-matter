@@ -6,6 +6,7 @@
 //
 
 internal import Pulse
+import OSLog
 import Foundation
 
 public enum Level {
@@ -22,6 +23,8 @@ public struct LogItem {
 }
 
 public class SharedLogger {
+    
+    private static let logger = Logger(subsystem: "nrf.matter", category: "SharedLogger")
     
     private static let store: LoggerStore = {
         let containerURL = FileManager.default.containerURL(
@@ -57,6 +60,7 @@ public class SharedLogger {
             level: .debug,
             message: message,
         )
+        logger.debug("\(message)")
     }
     
     public static func info(tag: String = "nRF Matter", _ message: String) {
@@ -65,6 +69,7 @@ public class SharedLogger {
             level: .info,
             message: message,
         )
+        logger.info("\(message)")
     }
     
     public static func error(tag: String = "nRF Matter", _ message: String) {
@@ -73,5 +78,6 @@ public class SharedLogger {
             level: .error,
             message: message,
         )
+        logger.error("\(message)")
     }
 }

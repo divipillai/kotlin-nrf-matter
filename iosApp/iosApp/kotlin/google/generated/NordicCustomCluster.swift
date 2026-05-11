@@ -1,8 +1,8 @@
 // This file contains machine-generated code.
 
-public import Foundation
+import Foundation
 import GoogleHomeSDK
-private import SwiftProtobuf
+import SwiftProtobuf
 
 /*
  * This file was machine generated via the code generator
@@ -86,35 +86,33 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
   /// Attributes for the `NordicCustomClusterTrait`.
   public struct Attributes: Sendable {
     // Attributes required at runtime.
-    /** A list of the attribute IDs of the attributes supported by the cluster instance. */
-    /// Nullable: false.
-    @TraitAttribute public var attributeList: [UInt32]?
+
 
     /// Nullable: false.
-    @TraitAttribute public var developmentKitName: string?
+    @TraitAttribute public var developmentKitName: String?
     /// Nullable: false.
     @TraitAttribute public var userLed: Bool?
     /// Nullable: false.
     @TraitAttribute public var userButton: Bool?
 
     internal init(
-      developmentKitName: string? = nil,
+      developmentKitName: String? = nil,
       userLed: Bool? = nil,
       userButton: Bool? = nil
     ) {
       self._developmentKitName = .init(
         wrappedValue: developmentKitName,
-        isSupported: attributeList?.contains(0x0FFF10000) ?? false,
+        isSupported: true,
         isNullable: false
       )
       self._userLed = .init(
         wrappedValue: userLed,
-        isSupported: attributeList?.contains(0x0FFF10001) ?? false,
+        isSupported: true,
         isNullable: false
       )
       self._userButton = .init(
         wrappedValue: userButton,
-        isSupported: attributeList?.contains(0x0FFF10002) ?? false,
+        isSupported: true,
         isNullable: false
       )
     }
@@ -124,7 +122,7 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
       var generatedAttributeList = [UInt32]()
       generatedAttributeList.append(0x0FFFB)
 
-      let developmentKitNameValue: string? = try decoder.decodeOptional(tag: 0x0FFF10000)
+      let developmentKitNameValue: String? = try decoder.decodeOptional(tag: 0x0FFF10000)
       let developmentKitNameIsSupported = developmentKitNameValue != nil
       if developmentKitNameIsSupported {
         generatedAttributeList.append(0x0FFF10000)
@@ -154,12 +152,6 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
       self._userButton = .init(
         wrappedValue: userButtonIsSupported ? userButtonValue : nil,
         isSupported: userButtonIsSupported,
-        isNullable: false
-      )
-
-      self._attributeList = .init(
-        wrappedValue: generatedAttributeList,
-        isSupported: true,
         isNullable: false
       )
     }
@@ -263,7 +255,8 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
 
   /// Whether the device supports the `setLed` command for this trait.
   public var supportsSetLedCommand: Bool {
-    return self.attributes.acceptedCommandList?.contains(0) ?? false
+//    return self.attributes.acceptedCommandList?.contains(0) ?? false
+      return true
   }
 
   public func setLed(
@@ -337,7 +330,7 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
     public var type: GoogleHomeSDK.FieldType {
       switch self {
         case .developmentKitName:
-          return .struct(String.self)
+          return .string
         case .userLed:
           return .bool
         case .userButton:
@@ -354,7 +347,7 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
 // MARK: - Attribute fieldSelect definitions
 
 extension TypedReference where T == NordicSemiconductor.NordicCustomClusterTrait {
-  public var developmentKitName: TypedExpression<NordicSemiconductor.NordicCustomClusterTrait.string> {
+  public var developmentKitName: TypedExpression<String> {
     fieldSelect(from: self, selectedField: T.Attribute.developmentKitName)
   }
   public var userLed: TypedExpression<Bool> {
@@ -362,6 +355,18 @@ extension TypedReference where T == NordicSemiconductor.NordicCustomClusterTrait
   }
   public var userButton: TypedExpression<Bool> {
     fieldSelect(from: self, selectedField: T.Attribute.userButton)
+  }
+}
+
+extension TypedExpression where V == TypedTrait<NordicSemiconductor.NordicCustomClusterTrait> {
+  public var developmentKitName: TypedExpression<String> {
+    fieldSelect(from: self, selectedField: NordicSemiconductor.NordicCustomClusterTrait.Attribute.developmentKitName)
+  }
+  public var userLed: TypedExpression<Bool> {
+    fieldSelect(from: self, selectedField: NordicSemiconductor.NordicCustomClusterTrait.Attribute.userLed)
+  }
+  public var userButton: TypedExpression<Bool> {
+    fieldSelect(from: self, selectedField: NordicSemiconductor.NordicCustomClusterTrait.Attribute.userButton)
   }
 }
 

@@ -43,6 +43,7 @@ class SwiftCodeProviderImpl : SwiftCodeProvider {
     
     func getMatterManufacturerCustomDataController() -> any MatterManufacturerCustomDataController {
         return LocalMatterCustomClusterController()
+//        return GoogleHomeCustomClusterController()
     }
     
     func getMatterClusterExtensionController() -> any MatterClusterExtensionController {

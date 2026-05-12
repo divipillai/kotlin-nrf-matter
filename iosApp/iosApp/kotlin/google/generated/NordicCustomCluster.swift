@@ -86,7 +86,9 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
   /// Attributes for the `NordicCustomClusterTrait`.
   public struct Attributes: Sendable {
     // Attributes required at runtime.
-
+    /** A list of the attribute IDs of the attributes supported by the cluster instance. */
+    /// Nullable: false.
+    @TraitAttribute public var attributeList: [UInt32]?
 
     /// Nullable: false.
     @TraitAttribute public var developmentKitName: String?
@@ -102,17 +104,17 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
     ) {
       self._developmentKitName = .init(
         wrappedValue: developmentKitName,
-        isSupported: true,
+        isSupported: attributeList?.contains(0x0FFF10000) ?? false,
         isNullable: false
       )
       self._userLed = .init(
         wrappedValue: userLed,
-        isSupported: true,
+        isSupported: attributeList?.contains(0x0FFF10001) ?? false,
         isNullable: false
       )
       self._userButton = .init(
         wrappedValue: userButton,
-        isSupported: true,
+        isSupported: attributeList?.contains(0x0FFF10002) ?? false,
         isNullable: false
       )
     }
@@ -152,6 +154,12 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
       self._userButton = .init(
         wrappedValue: userButtonIsSupported ? userButtonValue : nil,
         isSupported: userButtonIsSupported,
+        isNullable: false
+      )
+
+      self._attributeList = .init(
+        wrappedValue: generatedAttributeList,
+        isSupported: true,
         isNullable: false
       )
     }
@@ -255,8 +263,7 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
 
   /// Whether the device supports the `setLed` command for this trait.
   public var supportsSetLedCommand: Bool {
-//    return self.attributes.acceptedCommandList?.contains(0) ?? false
-      return true
+    return self.attributes.acceptedCommandList?.contains(0) ?? false
   }
 
   public func setLed(

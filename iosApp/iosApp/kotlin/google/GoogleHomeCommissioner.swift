@@ -26,7 +26,8 @@ enum PairingError: Error {
  * created network using Google Home app.
  * All devices added using this class should be also visible in Google Home app.
  */
-class GoogleHomeCommissioner : MatterCommissioner {
+@MainActor
+class GoogleHomeCommissioner : @MainActor MatterCommissioner {
     
     func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {
         return await commission()
@@ -75,19 +76,24 @@ class GoogleHomeCommissioner : MatterCommissioner {
                 let productID = basicInformationTrait.attributes.productID
                 let vendorID = basicInformationTrait.attributes.vendorID
                 let softwareVersionString = basicInformationTrait.attributes.softwareVersionString
+                let deviceId = DeviceId(value: commissionedDeviceID)
                 
                 SharedLogger.debug("Returning device data")
                 
+                let msdController = GoogleHomeCustomClusterController()
+                let data = try await msdController.getData(deviceId: deviceId, endpoint: 1)
+                let deviceMatterInfo = DeviceMatterInfo(endpoint: 1, types: [], serverClusters: [0xfff1fc01], clientClusters: [], manufacturerSpecificData: data)
+                
                 return Device(
-                    deviceId: DeviceId(value: commissionedDeviceID),
+                    deviceId: deviceId,
                     dateCommissioned: KotlinLong(value: Int64(Date().timeIntervalSince1970 * 1000)),
                     vendorId: vendorID != nil ? String(vendorID!) : "unknown",
                     productId: productID != nil ? String(productID!) : "unknown",
-                    deviceType: .lightOnOff, //todo
+                    deviceType: .manufacturerSpecificDevice, //todo
                     name: device.name,
                     productName: productName,
                     vendorName: vendorName,
-                    deviceMatterInfo: [] //todo
+                    deviceMatterInfo: [deviceMatterInfo] //todo
                 )
             }
         } catch {

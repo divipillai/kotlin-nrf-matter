@@ -10,12 +10,14 @@ import Matter
 import SharedCode
 import GoogleHomeSDK
 import GoogleHomeTypes
+import Combine
 
 enum GoogleHomeCustomClusterError : Error {
     case missingTraits
 }
 
-class GoogleHomeCustomClusterController : MatterManufacturerCustomDataController {
+@MainActor
+final class GoogleHomeCustomClusterController : @MainActor MatterManufacturerCustomDataController {
     
     private func getTrait(deviceId: DeviceId) async throws -> NordicSemiconductor.NordicCustomClusterTrait {
         let controller = GoogleHomeController.instance()
@@ -37,10 +39,13 @@ class GoogleHomeCustomClusterController : MatterManufacturerCustomDataController
     }
     
     func getData(deviceId: DeviceId, endpoint: Int32) async throws -> ManufacturerSpecificData {
+        SharedLogger.info("Obtaining manufacturer specific data.")
         let trait = try await getTrait(deviceId: deviceId)
         let name = trait.attributes.developmentKitName ?? ""
         let led = trait.attributes.userLed ?? false
         let button = trait.attributes.userButton ?? false
+        
+        SharedLogger.info("Manufacturer specific data: name - \(name), led - \(led), button - \(button).")
         
         return ManufacturerSpecificData(name: name, led: led, button: button)
     }
@@ -48,10 +53,25 @@ class GoogleHomeCustomClusterController : MatterManufacturerCustomDataController
     
     func setLed(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         let trait = try await getTrait(deviceId: deviceId)
-        try await trait.setLed(state: isOn ? 0 : 1)
+        do {
+            try await trait.setLed(state: isOn ? 0 : 1)
+        } catch {
+            
+        }
     }
     
-    func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
-        //todo
+    func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) {
+        Task {
+            while !Task.isCancelled {
+                let data = try? await self.getData(
+                    deviceId: deviceId,
+                    endpoint: endpoint
+                )
+                
+                onUpdate(KotlinBoolean(bool: data?.button ?? false))
+
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+            }
+        }
     }
 }

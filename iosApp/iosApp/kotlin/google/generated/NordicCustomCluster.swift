@@ -88,7 +88,7 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
     // Attributes required at runtime.
     /** A list of the attribute IDs of the attributes supported by the cluster instance. */
     /// Nullable: false.
-    @TraitAttribute public var attributeList: [UInt32]?
+//    @TraitAttribute public var attributeList: [UInt32]?
 
     /// Nullable: false.
     @TraitAttribute public var developmentKitName: String?
@@ -104,17 +104,17 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
     ) {
       self._developmentKitName = .init(
         wrappedValue: developmentKitName,
-        isSupported: attributeList?.contains(0x0FFF10000) ?? false,
+        isSupported: true,
         isNullable: false
       )
       self._userLed = .init(
         wrappedValue: userLed,
-        isSupported: attributeList?.contains(0x0FFF10001) ?? false,
+        isSupported: true,
         isNullable: false
       )
       self._userButton = .init(
         wrappedValue: userButton,
-        isSupported: attributeList?.contains(0x0FFF10002) ?? false,
+        isSupported: true,
         isNullable: false
       )
     }
@@ -157,11 +157,11 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
         isNullable: false
       )
 
-      self._attributeList = .init(
-        wrappedValue: generatedAttributeList,
-        isSupported: true,
-        isNullable: false
-      )
+//      self._attributeList = .init(
+//        wrappedValue: generatedAttributeList,
+//        isSupported: true,
+//        isNullable: false
+//      )
     }
 
     fileprivate func apply(_ update: NordicSemiconductor.NordicCustomClusterTrait.MutableAttributes) -> Self {
@@ -263,7 +263,8 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
 
   /// Whether the device supports the `setLed` command for this trait.
   public var supportsSetLedCommand: Bool {
-    return self.attributes.acceptedCommandList?.contains(0) ?? false
+//    return self.attributes.acceptedCommandList?.contains(0) ?? false
+      return true
   }
 
   public func setLed(
@@ -309,7 +310,7 @@ extension NordicSemiconductor.NordicCustomClusterTrait {
 
   public struct SetLedCommand: Command {
     public static let identifier =
-      ScopedCommandID(clusterID: NordicSemiconductor.NordicCustomClusterTrait.identifier, command: 0)
+      ScopedCommandID(clusterID: NordicSemiconductor.NordicCustomClusterTrait.identifier, command: 0xfff10000)
 
     internal struct Request: CommandRequest {
       internal let state: UInt8

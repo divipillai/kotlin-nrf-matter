@@ -63,7 +63,7 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
     /**
      * Subscribe to button state changes.
      */
-    func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) {
+    func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
         let attributeSubscriber = try? AttributeSubscriber(deviceId: deviceId.nsNumber())
         
         attributeSubscriber?.subscribe(endpoint: endpointId, cluster: clusterId, attribute: 0xfff10002, onUpdate: { result in

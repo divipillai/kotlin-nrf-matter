@@ -50,28 +50,30 @@ final class GoogleHomeCustomClusterController : @MainActor MatterManufacturerCus
         return ManufacturerSpecificData(name: name, led: led, button: button)
     }
     
-    
     func setLed(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         let trait = try await getTrait(deviceId: deviceId)
-        do {
-            try await trait.setLed(action: isOn ? .on : .off)
-        } catch {
-            
-        }
+        try await trait.setLed(action: isOn ? .on : .off)
     }
     
-    func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) {
-        Task {
-            while !Task.isCancelled {
-                let data = try? await self.getData(
-                    deviceId: deviceId,
-                    endpoint: endpoint
-                )
+    private var cancellables = Set<AnyCancellable>()
+    
+    func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
+        let controller = GoogleHomeController.instance()
+        await controller.initialize()
+        
+        let device = await controller.getDevice(id: deviceId.stringValue)
+        
+        guard let device else { throw GoogleHomeCustomClusterError.missingTraits }
+        
+        device.parts.subscribe(OnOffLightDeviceType.self)
+            .map { $0.traits[NordicSemiconductor.NordicDevKitTrait.self] }
+            .removeDuplicates()
+            .sink(receiveCompletion: { completion in
                 
-                onUpdate(KotlinBoolean(bool: data?.button ?? false))
-
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
-            }
-        }
+            }, receiveValue: { value in
+                let bool = value?.attributes.userButton ?? false
+                onUpdate(KotlinBoolean(bool: bool))
+            })
+            .store(in: &cancellables)
     }
 }

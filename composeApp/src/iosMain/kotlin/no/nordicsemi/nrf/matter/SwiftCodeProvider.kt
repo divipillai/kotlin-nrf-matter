@@ -84,7 +84,7 @@ interface MatterManufacturerCustomDataController {
 
     suspend fun getData(deviceId: DeviceId, endpoint: Int): ManufacturerSpecificData
 
-    fun subscribeToButtonChanges(
+    suspend fun subscribeToButtonChanges(
         deviceId: DeviceId,
         endpoint: Int,
         onUpdate: (Boolean) -> Unit

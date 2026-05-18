@@ -1,8 +1,8 @@
 // This file contains machine-generated code.
 
-import Foundation
+public import Foundation
 import GoogleHomeSDK
-import SwiftProtobuf
+private import SwiftProtobuf
 
 /*
  * This file was machine generated via the code generator

@@ -19,7 +19,7 @@ enum GoogleHomeCustomClusterError : Error {
 @MainActor
 final class GoogleHomeCustomClusterController : @MainActor MatterManufacturerCustomDataController {
     
-    private func getTrait(deviceId: DeviceId) async throws -> NordicSemiconductor.NordicCustomClusterTrait {
+    private func getTrait(deviceId: DeviceId) async throws -> NordicSemiconductor.NordicDevKitTrait {
         let controller = GoogleHomeController.instance()
         await controller.initialize()
         
@@ -31,7 +31,7 @@ final class GoogleHomeCustomClusterController : @MainActor MatterManufacturerCus
             throw GoogleHomeCustomClusterError.missingTraits
         }
         
-        guard let trait = lightType.traits[NordicSemiconductor.NordicCustomClusterTrait.self] else {
+        guard let trait = lightType.traits[NordicSemiconductor.NordicDevKitTrait.self] else {
             throw GoogleHomeCustomClusterError.missingTraits
         }
 
@@ -41,7 +41,7 @@ final class GoogleHomeCustomClusterController : @MainActor MatterManufacturerCus
     func getData(deviceId: DeviceId, endpoint: Int32) async throws -> ManufacturerSpecificData {
         SharedLogger.info("Obtaining manufacturer specific data.")
         let trait = try await getTrait(deviceId: deviceId)
-        let name = trait.attributes.developmentKitName ?? ""
+        let name = trait.attributes.devKitName ?? ""
         let led = trait.attributes.userLed ?? false
         let button = trait.attributes.userButton ?? false
         
@@ -54,7 +54,7 @@ final class GoogleHomeCustomClusterController : @MainActor MatterManufacturerCus
     func setLed(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         let trait = try await getTrait(deviceId: deviceId)
         do {
-            try await trait.setLed(state: isOn ? 0 : 1)
+            try await trait.setLed(action: isOn ? .on : .off)
         } catch {
             
         }

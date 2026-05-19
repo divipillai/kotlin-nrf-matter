@@ -32,9 +32,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,22 +47,26 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import no.nordicsemi.nrf.matter.theme.NordicBlue
+import no.nordicsemi.nrf.matter.theme.NordicGreen
+import no.nordicsemi.nrf.matter.theme.NordicRed
+import no.nordicsemi.nrf.matter.theme.NordicSun
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoggerScreen(padding: PaddingValues) {
     val viewModel: LoggerViewModel = koinViewModel()
-    val logs = viewModel.filteredLogs.collectAsStateWithLifecycle().value
-    val searchText = viewModel.filter.collectAsStateWithLifecycle().value
-    val logLevel = viewModel.logLevel.collectAsStateWithLifecycle().value
+    val logs by viewModel.filteredLogs.collectAsStateWithLifecycle()
+    val searchText by viewModel.filter.collectAsStateWithLifecycle()
+    val logLevel by viewModel.logLevel.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
             .padding(padding)
             .fillMaxSize()
     ) {
-        val expanded = rememberSaveable { mutableStateOf(false) }
+        val expanded by rememberSaveable { mutableStateOf(false) }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -72,7 +78,7 @@ fun LoggerScreen(padding: PaddingValues) {
             stickyHeader {
                 val brush = remember {
                     Brush.linearGradient(
-                        colors = listOf(Color.Red, Color.Yellow, Color.Green, Color.Blue, Color.Magenta)
+                        colors = listOf(NordicRed, NordicSun, NordicGreen, NordicBlue)
                     )
                 }
                 Row(
@@ -174,14 +180,14 @@ private fun LogLevel.toName() = when (this) {
 }
 
 private fun LogLevel.toColor() = when (this) {
-    LogLevel.INFO -> Color(0xFF008d45)
-    LogLevel.DEBUG -> Color(0xFF00A9CE)
-    LogLevel.ERROR -> Color(0xFFBA1B1B)
+    LogLevel.INFO -> NordicGreen
+    LogLevel.DEBUG -> NordicBlue
+    LogLevel.ERROR -> NordicRed
 }
 
 @Composable
 fun LogLevelPicker(logLevel: LogLevel, onChange: (LogLevel) -> Unit) {
-    val expanded = remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
 
     Box {
         Row(
@@ -191,7 +197,7 @@ fun LogLevelPicker(logLevel: LogLevel, onChange: (LogLevel) -> Unit) {
                 .background(
                     color = logLevel.toColor(),
                 )
-                .clickable { expanded.value = true }
+                .clickable { expanded = true }
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -206,15 +212,15 @@ fun LogLevelPicker(logLevel: LogLevel, onChange: (LogLevel) -> Unit) {
         }
 
         DropdownMenu(
-            expanded = expanded.value,
-            onDismissRequest = { expanded.value = false }
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
         ) {
             LogLevel.entries.forEach { item ->
                 DropdownMenuItem(
                     text = { Text(item.toName()) },
                     onClick = {
                         onChange(item)
-                        expanded.value = false
+                        expanded = false
                     }
                 )
             }

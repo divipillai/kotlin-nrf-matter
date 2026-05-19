@@ -14,8 +14,6 @@ public class MatterKeypair: NSObject, MTRKeypair {
     private let _publicKey: SecKey
     private let logTag: String
     
-    private static let logger = Logger(subsystem: "nrf.matter", category: "MatterKeypair")
-    
     public override init() {
         self.logTag = ""
         let helper = KeypairHelper(logTag: self.logTag)

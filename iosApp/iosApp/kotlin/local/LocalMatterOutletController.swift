@@ -12,8 +12,6 @@ import OSLog
 
 class LocalMatterOutletController : MatterOutletController {
     
-    private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterOutletController")
-    
     func handleOutlet(deviceId: DeviceId, isSwitchOn: Bool, endpoint: Int32) async throws {
         let controller = LocalMatterOnOffController()
         // TODO: not implemented yet

@@ -15,6 +15,10 @@ import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
+import no.nordicsemi.nrf.matter.logger.AndroidPlatformLogger
+import no.nordicsemi.nrf.matter.logger.LoggerViewModel
+import no.nordicsemi.nrf.matter.logger.NativePlatformLogger
+import no.nordicsemi.nrf.matter.logger.PlatformLogger
 import no.nordicsemi.nrf.matter.model.AndroidDeviceController
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
@@ -24,6 +28,7 @@ import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -98,8 +103,12 @@ val androidModule = module {
     // Inject DeviceController
     single<DeviceController> { AndroidDeviceController(get(), get(), get ()) }
 
+    factory<NativePlatformLogger> { AndroidPlatformLogger() }
+    factory<PlatformLogger> { PlatformLogger(get()) }
+
     // Binding Viewmodel
     viewModelOf(::BeaconViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::HomeViewModelAndroid)
+    viewModel { LoggerViewModel(get()) }
 }

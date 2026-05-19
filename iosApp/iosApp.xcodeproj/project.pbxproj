@@ -14,6 +14,7 @@
 		A75B95522F58846C00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
 		A7679E6F2F685317001A6842 /* GoogleHomeSDK in Frameworks */ = {isa = PBXBuildFile; productRef = A7679E6E2F685317001A6842 /* GoogleHomeSDK */; };
 		A7B6EDB42F696CD400E65235 /* GoogleHomeTypes in Frameworks */ = {isa = PBXBuildFile; productRef = A7B6EDB32F696CD400E65235 /* GoogleHomeTypes */; };
+		A7DEDDC12FA8A80D00196D69 /* Pulse in Frameworks */ = {isa = PBXBuildFile; productRef = A7DEDDC02FA8A80D00196D69 /* Pulse */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -141,6 +142,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A7DEDDC12FA8A80D00196D69 /* Pulse in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -261,6 +263,7 @@
 			);
 			name = SharedCode;
 			packageProductDependencies = (
+				A7DEDDC02FA8A80D00196D69 /* Pulse */,
 			);
 			productName = SharedCode;
 			productReference = A75B95472F58845E00902BE8 /* SharedCode.framework */;
@@ -299,6 +302,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A74A47212F62F64000A31286 /* XCLocalSwiftPackageReference "ThirdParty/GoogleHomeSDK" */,
+				A7DEDDBF2FA8A80D00196D69 /* XCRemoteSwiftPackageReference "Pulse" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5A2551E95002C7375D5F5A16 /* Products */;
@@ -827,6 +831,17 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		A7DEDDBF2FA8A80D00196D69 /* XCRemoteSwiftPackageReference "Pulse" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/Pulse";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.2.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		A74A47242F63F26400A31286 /* GoogleHomeSDK */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -842,6 +857,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A74A47212F62F64000A31286 /* XCLocalSwiftPackageReference "ThirdParty/GoogleHomeSDK" */;
 			productName = GoogleHomeTypes;
+		};
+		A7DEDDC02FA8A80D00196D69 /* Pulse */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A7DEDDBF2FA8A80D00196D69 /* XCRemoteSwiftPackageReference "Pulse" */;
+			productName = Pulse;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

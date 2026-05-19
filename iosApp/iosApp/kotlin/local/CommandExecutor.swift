@@ -7,11 +7,9 @@
 
 import Matter
 import SharedCode
-import OSLog
 
 class CommandExecutor {
-    
-    private let logger = Logger(subsystem: "nrf.matter", category: "AttributeWriter")
+
     private let baseDevice: MTRBaseDevice
     
     init(deviceId: NSNumber) throws {
@@ -20,7 +18,7 @@ class CommandExecutor {
     }
     
     func executeCommand(endpoint: NSNumber, cluster: NSNumber, command: NSNumber, type: String, value: Any) async throws {
-        logger.debug("Executing command: \(command)")
+        SharedLogger.debug("Executing command: \(command)")
 
         let fields: NSDictionary = [
             MTRTypeKey: MTRStructureValueType,
@@ -37,6 +35,6 @@ class CommandExecutor {
         
         try await baseDevice.invokeCommand(withEndpointID: endpoint, clusterID: cluster, commandID: command, commandFields: fields, timedInvokeTimeout: nil, queue: DispatchQueue.global())
         
-        logger.debug("Command executed successfully.")
+        SharedLogger.debug("Command executed successfully.")
     }
 }

@@ -7,17 +7,14 @@
 
 import ComposeApp
 import Matter
-import OSLog
 import SharedCode
 
 class LocalMatterBinder : MatterBinder {
-    
-    private let logger = Logger(subsystem: "nrf.matter", category: "LocalMatterBinder")
 
     func bind(sourceNodeId: DeviceId, sourceEndpoint: Int32, targetNodeId: DeviceId, targetEndpoint: Int32, clusterId: Int64) async throws {
-        logger.debug("bindSwitchToLight")
-        logger.info("Source node id: \(sourceNodeId)")
-        logger.info("Target node it: \(targetNodeId)")
+        SharedLogger.debug("bindSwitchToLight")
+        SharedLogger.info("Source node id: \(sourceNodeId)")
+        SharedLogger.info("Target node it: \(targetNodeId)")
         
         let source = sourceNodeId.nsNumber()
         let target = targetNodeId.nsNumber()
@@ -26,9 +23,9 @@ class LocalMatterBinder : MatterBinder {
         let cluster = clusterId as NSNumber
         
         let controller = try LocalControllerProvider(logTag: "LocalMatterBinder").getController()
-        logger.info("Granting access to source.")
+        SharedLogger.info("Granting access to source.")
         await grantAccessToSource(targetDeviceID: target, sourceNodeID: source, clusterID: cluster, controller: controller)
-        logger.info("Preparing binding.")
+        SharedLogger.info("Preparing binding.")
         await bindSwitchToBulb(sourceDeviceID: source, sourceEndpoint: sourceEnd, targetNodeID: target, targetEndpoint: targetEnd, clusterID: cluster, controller: controller)
     }
 
@@ -56,13 +53,13 @@ class LocalMatterBinder : MatterBinder {
             if !entryExists {
                 currentACLs.append(newEntry)
                 try await aclCluster.writeAttributeACL(withValue: currentACLs)
-                logger.info("Access granted successfully to node \(sourceNodeID)")
+                SharedLogger.info("Access granted successfully to node \(sourceNodeID)")
             } else {
-                logger.info("ACL entry already exists for node \(sourceNodeID). Skipping write.")
+                SharedLogger.info("ACL entry already exists for node \(sourceNodeID). Skipping write.")
             }
             
         } catch {
-            logger.error("ACL read/write failed: \(error.localizedDescription)")
+            SharedLogger.error("ACL read/write failed: \(error.localizedDescription)")
         }
     }
     
@@ -80,9 +77,9 @@ class LocalMatterBinder : MatterBinder {
             bindings.append(bindingEntry)
             try await bindingCluster.writeAttributeBinding(withValue: bindings)
             
-            logger.info("Binding created successfully!")
+            SharedLogger.info("Binding created successfully!")
         } catch {
-            logger.error("Binding failed: \(error.localizedDescription)")
+            SharedLogger.error("Binding failed: \(error.localizedDescription)")
         }
     }
 }

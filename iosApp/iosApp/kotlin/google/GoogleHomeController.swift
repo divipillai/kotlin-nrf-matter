@@ -9,7 +9,6 @@ import Combine
 import ComposeApp
 import Matter
 import SharedCode
-import OSLog
 import GoogleHomeSDK
 
 enum GoogleHomeControllerError: Error {

@@ -9,11 +9,8 @@ import ComposeApp
 import HomeKit
 import Matter
 import SharedCode
-import OSLog
 
 class HomeKitMatterOnOffController : MatterOnOffController {
-    
-    private let logger = Logger(subsystem: "nrf.matter", category: "HomeKitMatterOnOffController")
 
     func setDeviceOnOff(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         let controller = HomeKitController.shared()

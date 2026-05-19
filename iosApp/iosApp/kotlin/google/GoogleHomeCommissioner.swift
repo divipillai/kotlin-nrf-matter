@@ -93,6 +93,9 @@ class GoogleHomeCommissioner : @MainActor MatterCommissioner {
                     name: device.name,
                     productName: productName,
                     vendorName: vendorName,
+                    uniqueId: "", //todo
+                    softwareVersion: "", //todo
+                    specificationVersion: KotlinLong(value: 0), //todo
                     deviceMatterInfo: [deviceMatterInfo] //todo
                 )
             }

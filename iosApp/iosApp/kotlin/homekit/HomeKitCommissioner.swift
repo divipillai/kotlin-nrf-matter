@@ -47,6 +47,9 @@ class HomeKitCommissioner : MatterCommissioner {
             name: accessory.name,
             productName: accessory.model,
             vendorName: accessory.manufacturer,
+            uniqueId: "", //todo
+            softwareVersion: "", //todo
+            specificationVersion: KotlinLong(value: 0), //todo
             deviceMatterInfo: [] //todo
         )
     }

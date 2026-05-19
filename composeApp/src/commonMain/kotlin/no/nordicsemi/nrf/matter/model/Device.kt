@@ -66,6 +66,9 @@ data class Device(
 //    val room: String? = null, todo: Removed since it is deprecated in the Matter API.
     val productName: String? = null,
     val vendorName: String? = null,
+    val uniqueId: String? = null,
+    val softwareVersion: String? = null,
+    val specificationVersion: Long ? = null,
     val deviceMatterInfo: List<DeviceMatterInfo>,
 )
 

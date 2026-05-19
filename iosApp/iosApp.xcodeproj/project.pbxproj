@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A71CBED12FB1E5980090BF65 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = A71CBED02FB1E5980090BF65 /* SwiftProtobuf */; };
+		A71CBED32FB1E6CF0090BF65 /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = A71CBED22FB1E6CF0090BF65 /* SwiftProtobufPluginLibrary */; };
 		A725F1C12F4DAACB005BC977 /* nrfMatter.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A74A47252F63F26400A31286 /* GoogleHomeSDK in Frameworks */ = {isa = PBXBuildFile; productRef = A74A47242F63F26400A31286 /* GoogleHomeSDK */; };
 		A75B954D2F58845E00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
@@ -125,7 +127,9 @@
 			files = (
 				A7B6EDB42F696CD400E65235 /* GoogleHomeTypes in Frameworks */,
 				A75B954D2F58845E00902BE8 /* SharedCode.framework in Frameworks */,
+				A71CBED32FB1E6CF0090BF65 /* SwiftProtobufPluginLibrary in Frameworks */,
 				A74A47252F63F26400A31286 /* GoogleHomeSDK in Frameworks */,
+				A71CBED12FB1E5980090BF65 /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,6 +220,8 @@
 			packageProductDependencies = (
 				A74A47242F63F26400A31286 /* GoogleHomeSDK */,
 				A7B6EDB32F696CD400E65235 /* GoogleHomeTypes */,
+				A71CBED02FB1E5980090BF65 /* SwiftProtobuf */,
+				A71CBED22FB1E6CF0090BF65 /* SwiftProtobufPluginLibrary */,
 			);
 			productName = iosApp;
 			productReference = 503AE3C9DDF68C5089274E2D /* NRFMatterforMobile.app */;
@@ -303,6 +309,7 @@
 			packageReferences = (
 				A74A47212F62F64000A31286 /* XCLocalSwiftPackageReference "ThirdParty/GoogleHomeSDK" */,
 				A7DEDDBF2FA8A80D00196D69 /* XCRemoteSwiftPackageReference "Pulse" */,
+				A719CD052FAE216200827986 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5A2551E95002C7375D5F5A16 /* Products */;
@@ -832,6 +839,14 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		A719CD052FAE216200827986 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.37.0;
+			};
+		};
 		A7DEDDBF2FA8A80D00196D69 /* XCRemoteSwiftPackageReference "Pulse" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kean/Pulse";
@@ -843,6 +858,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A71CBED02FB1E5980090BF65 /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A719CD052FAE216200827986 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
+		};
+		A71CBED22FB1E6CF0090BF65 /* SwiftProtobufPluginLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A719CD052FAE216200827986 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobufPluginLibrary;
+		};
 		A74A47242F63F26400A31286 /* GoogleHomeSDK */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A74A47212F62F64000A31286 /* XCLocalSwiftPackageReference "ThirdParty/GoogleHomeSDK" */;

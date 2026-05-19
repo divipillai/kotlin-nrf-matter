@@ -72,7 +72,6 @@ import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.light_bulb
 import nrfmatterformobile.composeapp.generated.resources.light_fixture
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
-import nrfmatterformobile.composeapp.generated.resources.smart_outlet
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.getKoin
 
@@ -353,20 +352,7 @@ private fun DeviceControlSection(
 
         DeviceType.LIGHT_SWITCH,
         DeviceType.OUTLET -> {
-
-            DeviceControlItem(
-                deviceId = device.device.deviceId,
-                title = "Power Outlet",
-                subtitle = "Turn device ON or OFF",
-                icon = painterResource(Res.drawable.smart_outlet),
-                enabled = device.isOn,
-                updateDeviceState = { id, value ->
-                    presenter.togglePower(id, value)
-                },
-                onClick = {}
-            )
-
-            // TODO: Add an option to
+            // Do nothing. Since we bind the device to the switch, and it will not send any control commands.
         }
 
         DeviceType.DOOR_LOCK -> {

@@ -8,6 +8,11 @@
 import Security
 import Foundation
 
+/**
+ * A helper class for managing signing keys.
+ * A signing keys needs to be unique and persistent for a specific fabric so those are
+ * stored on the phone and retrieved when needed.
+ */
 class KeypairHelper {
     
     private let logTag: String

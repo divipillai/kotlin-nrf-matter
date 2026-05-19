@@ -148,9 +148,5 @@ class HomeViewModel(
             randomNumber.value = deviceCommandHandler.generateRandomNumber(deviceId)
         }
     }
-
-    fun subscribeToRandomNumber(deviceId: DeviceId): Flow<Int> {
-        return deviceCommandHandler.subscribeToRandomNumber(deviceId)
-    }
 }
 

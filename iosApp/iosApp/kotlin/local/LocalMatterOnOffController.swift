@@ -10,8 +10,14 @@ import Matter
 import SharedCode
 import OSLog
 
+/**
+ * A helper class from controlling a light type Matter device in a local fabric.
+ */
 class LocalMatterOnOffController : MatterOnOffController {
 
+    /**
+     * Set the light on/off on a remote Matter device.
+     */
     func setDeviceOnOff(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)

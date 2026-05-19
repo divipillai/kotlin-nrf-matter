@@ -10,12 +10,22 @@ import ComposeApp
 import SharedCode
 import OSLog
 
+/**
+ * A helper class for communication with a manufacturer specific cluster defined in this example
+ * A new cluster provides 2 functionalities:
+ *  1. Turning on/off LED light.
+ *  2. Observe button state changes.
+ */
 class LocalMatterCustomClusterController: MatterManufacturerCustomDataController {
     
     private let endpointId: NSNumber = 1 //todo: hardcoded
     private let clusterId: NSNumber = 0xFFF1FC01 //todo: hardcoded
     private let commandId: NSNumber = 0xFFF10000 //todo: hardcoded
     
+    /**
+     * Reads the custom attributes from the Matter device.
+     * The new fields are: custom device name, state of LED light, state of button press.
+     */
     func getData(deviceId: DeviceId, endpoint: Int32) async throws -> ManufacturerSpecificData {
         SharedLogger.debug("Getting custom manufacturer data...")
         
@@ -34,6 +44,9 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
         return data
     }
 
+    /**
+     * Sends a command for turning on/off LED light.
+     */
     func setLed(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         SharedLogger.debug("invoke setLed")
         let commandExecutor = try CommandExecutor(deviceId: deviceId.nsNumber())
@@ -43,10 +56,13 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
             cluster: clusterId,
             command: commandId,
             type: MTRUnsignedIntegerValueType,
-            value: 2
+            value: 2 //change current value
         )
     }
     
+    /**
+     * Subscribe to button state changes.
+     */
     func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
         let attributeSubscriber = try AttributeSubscriber(deviceId: deviceId.nsNumber())
         

@@ -7,6 +7,11 @@
 
 import Foundation
 
+/**
+ * A helper class for providing new node id for newly commissioned device.
+ * This id needs to be unique so commssioning a new device with already existing
+ * node id should fail.
+ */
 public class NodeIdProvider {
-    public static let id: NSNumber = 88
+    public static let id: NSNumber = 88 //TODO
 }

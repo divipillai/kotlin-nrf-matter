@@ -191,14 +191,13 @@ class DevicePresenter(
 
         scope.launch {
             // get all devices from the repository whose type is light or dimmable light.
-            val devices = devicesRepository.getAllDevices().devicesList.filter {
+            val lightDevicesInRepository = devicesRepository.getAllDevices().devicesList.filter {
                 it.deviceType == DeviceType.LIGHT_ON_OFF || it.deviceType == DeviceType.DIMMABLE_LIGHT
             }
-
             val bindings = uiState.value.deviceUiModel?.boundLights ?: emptyList()
-            val sourceIds = bindings.map { it.sourceNodeId }.toSet()
-            // Check target devices are already bound to the switch by comparing with boundLights
-            val result = devices.filterNot { it.deviceId in sourceIds }
+            val targetIds = bindings.map { it.targetNodeId }.toSet()
+            // Check if target devices are already bound to the switch.
+            val result = lightDevicesInRepository.filterNot { it.deviceId in targetIds }
             targetDevices.addAll(result)
         }
         return targetDevices

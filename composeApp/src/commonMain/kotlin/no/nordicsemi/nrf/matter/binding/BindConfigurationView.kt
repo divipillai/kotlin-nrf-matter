@@ -72,7 +72,7 @@ internal fun BindConfiguration(
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        boundDevices.forEach { device ->
+        boundDevices.forEach { _ ->
             Row(
                 modifier = Modifier
                     .padding(16.dp)
@@ -97,7 +97,7 @@ internal fun BindConfiguration(
                             // Increases thickness of the icon by creating bolding effect.
                             .drawWithContent {
                                 drawContent()
-                                drawIntoCanvas { canvas ->
+                                drawIntoCanvas {
                                     withTransform({
                                         translate(left = 0.5f, top = 0.5f)
                                     }) {

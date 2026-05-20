@@ -1,6 +1,6 @@
 package no.nordicsemi.nrf.matter.repository
 
-import no.nordicsemi.nrf.matter.datasource.BindingDataSource
+import no.nordicsemi.nrf.matter.binding.BindingDataSource
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 

@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.datasource
+package no.nordicsemi.nrf.matter.binding
 
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId

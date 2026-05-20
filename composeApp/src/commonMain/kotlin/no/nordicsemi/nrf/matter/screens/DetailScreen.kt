@@ -52,6 +52,7 @@ import io.github.aakira.napier.Napier
 import multiplatform.network.cmptoast.ToastDuration
 import multiplatform.network.cmptoast.ToastGravity
 import multiplatform.network.cmptoast.showToast
+import no.nordicsemi.nrf.matter.binding.BindingLoaderDialog
 import no.nordicsemi.nrf.matter.binding.BindingUiStates
 import no.nordicsemi.nrf.matter.binding.LightSwitchBindingCard
 import no.nordicsemi.nrf.matter.device.DevicePresenter
@@ -62,7 +63,6 @@ import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
-import no.nordicsemi.nrf.matter.binding.BindingLoaderDialog
 import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.LockItem
@@ -275,7 +275,7 @@ private fun DeviceDetails(
                 }
 
                 BindingUiStates.InProgress -> {
-                    BindingLoaderDialog {
+                    BindingLoaderDialog(dummyLogsForBinding) {
                         // Text Content
                         Text(
                             text = "Binding...",
@@ -694,3 +694,27 @@ private val DeviceTest =
         deviceMatterInfo = emptyList()
 
     )
+
+private val dummyLogsForBinding = listOf(
+    "Initializing secure handshake.",
+    "Fetching remote server configuration.",
+    "Resolving DNS for api.connection.service.",
+    "Establishing TCP connection on port 443.",
+    "TLS 1.3 encryption handshake successful.",
+    "Authenticating user credentials.",
+    "Session token generated successfully.",
+    "Fetching  client configuration.",
+    "Establishing the connection with local thread.",
+    "TLS 1.3 encryption handshake successful.",
+    "Authenticating user credentials.",
+    "Session token generated successfully.",
+    "Syncing fabric index of both source and target devices.",
+    "Sending ACL to target device",
+    "Waiting for ACL signal back from target device.",
+    "Creating Binding table...",
+    "Writing binding table to target device...",
+    "Writing binding table to source device...",
+    "Verifying the binding on both devices...",
+    "Verifying data integrity checks...",
+    "Connection fully established. Wrapping up..."
+)

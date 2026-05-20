@@ -18,13 +18,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.toDeviceId
 import nrfmatterformobile.composeapp.generated.resources.Res
-import nrfmatterformobile.composeapp.generated.resources.light_bulb
+import nrfmatterformobile.composeapp.generated.resources.binding_links_only
 import org.jetbrains.compose.resources.painterResource
 
 /*
@@ -87,9 +90,26 @@ internal fun BindConfiguration(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.light_bulb),
+                        painter = painterResource(Res.drawable.binding_links_only),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            // Increases thickness of the icon by creating bolding effect.
+                            .drawWithContent {
+                                drawContent()
+                                drawIntoCanvas { canvas ->
+                                    withTransform({
+                                        translate(left = 0.5f, top = 0.5f)
+                                    }) {
+                                        this@drawWithContent.drawContent()
+                                    }
+                                    withTransform({
+                                        translate(left = -0.5f, top = -0.5f)
+                                    }) {
+                                        this@drawWithContent.drawContent()
+                                    }
+                                }
+                            },
                     )
                 }
 

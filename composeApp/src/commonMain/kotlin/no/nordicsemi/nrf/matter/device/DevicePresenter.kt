@@ -186,6 +186,10 @@ class DevicePresenter(
         _bindingState.value = state
     }
 
+    fun loadBindingTable(deviceId: DeviceId) {
+        observeDevice(deviceId)
+    }
+
     fun getTargetDevices(): List<Device> {
         val targetDevices = mutableListOf<Device>()
 

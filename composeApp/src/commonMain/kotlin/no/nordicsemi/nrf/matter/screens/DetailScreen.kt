@@ -300,6 +300,8 @@ private fun DeviceDetails(
                     // TODO: Show success message and show bonded lights in the UI.
                     // Show a Toast of success binding.
                     Napier.i { "AAA, Success" }
+                    // Load the binding table one more time.
+                    devicePresenter.loadBindingTable(device.device.deviceId)
                     devicePresenter.updateBindingState(BindingUiStates.Idle)
                     showToast(
                         message = "Binding completed successfully!",

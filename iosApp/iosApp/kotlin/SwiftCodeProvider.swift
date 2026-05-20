@@ -13,21 +13,21 @@ import SharedCode
 class SwiftCodeProviderImpl : @MainActor SwiftCodeProvider {
     
     func getMatterCommissioner() -> any MatterCommissioner {
-//        return LocalMatterCommissioner()
+        return LocalMatterCommissioner()
 //        return HomeKitCommissioner()
-        return GoogleHomeCommissioner()
+//        return GoogleHomeCommissioner()
     }
     
     func getMatterOnOffController() -> any MatterOnOffController {
-//        return LocalMatterOnOffController()
+        return LocalMatterOnOffController()
 //        return HomeKitMatterOnOffController()
-        return GoogleHomeOnOffController()
+//        return GoogleHomeOnOffController()
     }
     
     func getDecommissioner() -> any MatterDecommissioner {
-//        return LocalMatterDecommissioner()
+        return LocalMatterDecommissioner()
 //        return HomeKitDecommissioner()
-        return GoogleHomeDecommissioner()
+//        return GoogleHomeDecommissioner()
     }
     
     func getMatterBinder() -> any MatterBinder {
@@ -43,8 +43,8 @@ class SwiftCodeProviderImpl : @MainActor SwiftCodeProvider {
     }
     
     func getMatterManufacturerCustomDataController() -> any MatterManufacturerCustomDataController {
-//        return LocalMatterCustomClusterController()
-        return GoogleHomeCustomClusterController()
+        return LocalMatterCustomClusterController()
+//        return GoogleHomeCustomClusterController()
     }
     
     func getMatterClusterExtensionController() -> any MatterClusterExtensionController {

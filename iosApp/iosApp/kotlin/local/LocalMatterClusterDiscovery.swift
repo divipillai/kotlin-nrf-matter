@@ -25,7 +25,7 @@ class LocalMatterClusterDiscovery {
     }
     
     /**
-     * Read device name from a root endpoint 0.
+     * Read device name from Basic Information Cluster.
      */
     func getName() async -> String {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
@@ -35,7 +35,7 @@ class LocalMatterClusterDiscovery {
     }
     
     /**
-     * Read product name from a root endpoint 0.
+     * Read product name from Basic Information Cluster.
      */
     func getProductName() async -> String {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
@@ -45,7 +45,7 @@ class LocalMatterClusterDiscovery {
     }
     
     /**
-     * Read product id from a root endpoint 0.
+     * Read product id from Basic Information Cluster.
      */
     func getProductId() async -> NSNumber? {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
@@ -55,7 +55,7 @@ class LocalMatterClusterDiscovery {
     }
     
     /**
-     * Read vendor name from a root endpoint 0.
+     * Read vendor name from Basic Information Cluster.
      */
     func getVendorName() async -> String {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
@@ -65,13 +65,43 @@ class LocalMatterClusterDiscovery {
     }
     
     /**
-     * Read vendor id from a root endpoint 0.
+     * Read vendor id from Basic Information Cluster.
      */
     func getVendorId() async -> NSNumber? {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
         let vendorId = try? await information?.readAttributeVendorID() ?? nil
         SharedLogger.debug("VendorId: \(vendorId)")
         return vendorId
+    }
+    
+    /**
+     * Read unique id from Basic Information Cluster.
+     */
+    func getUniqueId() async -> String? {
+        let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
+        let uniqueId = try? await information?.readAttributeUniqueID() ?? nil
+        SharedLogger.debug("UniqueId: \(uniqueId)")
+        return uniqueId
+    }
+    
+    /**
+     * Read software version from Basic Information Cluster.
+     */
+    func getSoftwareVersion() async -> String? {
+        let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
+        let swVersion = try? await information?.readAttributeSoftwareVersionString() ?? nil
+        SharedLogger.debug("Software version: \(swVersion)")
+        return swVersion
+    }
+    
+    /**
+     * Read specification version from Basic Information Cluster.
+     */
+    func getSpecificationVersion() async -> NSNumber? {
+        let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
+        let specVersion = try? await information?.readAttributeSpecificationVersion() ?? nil
+        SharedLogger.debug("Specification version: \(specVersion)")
+        return specVersion
     }
     
     /**
@@ -88,6 +118,9 @@ class LocalMatterClusterDiscovery {
         let vendorName = await getVendorName()
         let productId = await getProductId()
         let productName = await getProductName()
+        let uniqueId = await getUniqueId()
+        let swVersion = await getSoftwareVersion()
+        let specVersion = await getSpecificationVersion()
         
         let deviceTypes = await getDeviceType(endpoint: 0)
         SharedLogger.debug("deviceTypes AAA: \(deviceTypes)")
@@ -126,6 +159,9 @@ class LocalMatterClusterDiscovery {
             name: name,
             productName: productName,
             vendorName: vendorName,
+            uniqueId: uniqueId,
+            softwareVersion: swVersion,
+            specificationVersion: specVersion.map { KotlinLong(value: $0.int64Value) },
             deviceMatterInfo: deviceMatterInfo,
         )
     }

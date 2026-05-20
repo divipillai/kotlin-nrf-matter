@@ -28,7 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.aakira.napier.Napier
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.ui.SectionTitle
@@ -71,66 +70,68 @@ internal fun LightSwitchBindingCard(
     onLightSelected: (devices: List<Device>) -> Unit,
 ) {
     var isDialogOpen by remember { mutableStateOf(false) }
-    Column {
-        OutlinedCard(
-            shape = RoundedCornerShape(16.dp),
-            border = CardDefaults.outlinedCardBorder(enabled = false),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-                .clickable {
-                    isDialogOpen = true
-                }
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = null,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        "Add Lights", fontWeight = FontWeight.Bold,
-                    )
-                }
+    if (targetDevices.isNotEmpty()) {
 
-                Text(
-                    "Select one or more lights to bind to this device",
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.alpha(0.5f)
+        SectionTitle("Binding Configurations")
+
+        Column {
+            OutlinedCard(
+                shape = RoundedCornerShape(16.dp),
+                border = CardDefaults.outlinedCardBorder(enabled = false),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .clickable {
+                        isDialogOpen = true
+                    }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = null,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "Add Lights", fontWeight = FontWeight.Bold,
+                        )
+                    }
+
+                    Text(
+                        "Select one or more lights to bind to this device",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.alpha(0.5f)
+                    )
+                }
+            }
+            if (isDialogOpen) {
+                TargetLightSettingsDialog(
+                    targetDevices = targetDevices,
+                    onDismiss = { isDialogOpen = false },
+                    onConfirmation = {
+                        onLightSelected(it)
+                        isDialogOpen = false
+                    }
                 )
             }
         }
-        if (boundDevices.isNotEmpty()) {
-            SectionTitle("Bound Devices")
-            BindConfiguration(boundDevices)
-        }
-        if (isDialogOpen) {
-            Napier.i { "AAA, isDialogOpen is true" }
-            TargetLightSettingsDialog(
-                targetDevices = targetDevices,
-                onDismiss = { isDialogOpen = false },
-                onConfirmation = {
-                    Napier.d { "AAA, Confirmation" }
-                    onLightSelected(it)
-                    isDialogOpen = false
-                }
-            )
-        }
     }
-
+    if (boundDevices.isNotEmpty()) {
+        SectionTitle("Bound Devices")
+        BindConfiguration(boundDevices)
+    }
 }
 
 @Preview(showBackground = true)

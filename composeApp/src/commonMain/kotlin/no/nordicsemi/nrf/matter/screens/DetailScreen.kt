@@ -237,7 +237,6 @@ private fun DeviceDetails(
         DeviceControlSection(device, devicePresenter)
 
         if (device.device.deviceType == DeviceType.LIGHT_SWITCH) {
-            SectionTitle("Binding Configurations")
             val bindingState by devicePresenter.bindingState.collectAsState()
             when (bindingState) {
                 is BindingUiStates.Error -> {

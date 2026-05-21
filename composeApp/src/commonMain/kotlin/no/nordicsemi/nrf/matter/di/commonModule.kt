@@ -1,6 +1,8 @@
 package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.BeaconRepository
+import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
+import no.nordicsemi.nrf.matter.binding.BindingDataSource
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
@@ -71,6 +73,9 @@ val commonModule = module {
             get<DeviceController>(),
             get<BindingRepository>()
         )
+    }
+    single<BindingDataSource> {
+        BaseBindingDataSource(get())
     }
 
 }

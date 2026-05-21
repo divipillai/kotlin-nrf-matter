@@ -1,7 +1,11 @@
 package no.nordicsemi.nrf.matter.binding
 
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -36,24 +40,36 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-abstract class BaseBindingDataSource : BindingDataSource {
 
-    protected abstract suspend fun readRaw(): String?
-    protected abstract suspend fun writeRaw(json: String)
-    private val mutex = Mutex()
+class BaseBindingDataSource(
+    private val dataStore: DataStore<Preferences>,
+) : BindingDataSource {
 
-    override suspend fun save(binding: DeviceBinding) = mutex.withLock {
-        val current = readRaw()?.let { decode(it) } ?: emptyList()
-        val updated = current.filterNot { it.id == binding.id } + binding
-        writeRaw(encode(updated))
+    private val BINDINGS_KEY = stringPreferencesKey("bindings_json")
+
+    override suspend fun save(binding: DeviceBinding) {
+        dataStore.edit { prefs ->
+            val current = prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
+            val updated = current.filterNot { it.id == binding.id } + binding
+            Napier.d("updated binding table: $updated", tag = "AAA")
+            prefs[BINDINGS_KEY] = encode(updated)
+        }
     }
 
     override suspend fun getBindingsForDevice(deviceId: DeviceId): List<DeviceBinding> {
-        val bindings = readRaw()?.let { decode(it) } ?: emptyList()
+        val prefs = dataStore.data.first()
+        val bindings = prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
+
         return bindings.filter {
             it.sourceNodeId == deviceId || it.targetNodeId == deviceId
         }
     }
+
+    override suspend fun getAll(): List<DeviceBinding> =
+        dataStore.data.first()[BINDINGS_KEY]?.let {
+            decode(it)
+        } ?: emptyList()
+
 
     private fun encode(list: List<DeviceBinding>): String = Json.encodeToString(list)
     private fun decode(json: String): List<DeviceBinding> = Json.decodeFromString(json)

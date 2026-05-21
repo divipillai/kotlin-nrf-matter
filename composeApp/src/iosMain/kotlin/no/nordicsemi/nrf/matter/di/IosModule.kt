@@ -3,7 +3,7 @@ package no.nordicsemi.nrf.matter.di
 import no.nordicsemi.nrf.matter.CommissioningViewModel
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.SwiftCodeProvider
-import no.nordicsemi.nrf.matter.binding.BindingDataSource
+import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
@@ -15,7 +15,6 @@ import no.nordicsemi.nrf.matter.model.IosDeviceController
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.IosBindingDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
 import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
@@ -67,8 +66,8 @@ val iosModule = module {
     single<UserPreferencesDataSource> {
         IosUserPreferencesDataSource()
     }
-    single<BindingDataSource> {
-        IosBindingDataSource()
+    single {
+        DataStoreProvider().createDataStore()
     }
 
     // Repositories.
@@ -87,15 +86,17 @@ val iosModule = module {
 
 
     // Device Controller
-    single<DeviceController> { IosDeviceController(
-        get<SwiftCodeProvider>().getMatterOnOffController(),
-        get<SwiftCodeProvider>().getDecommissioner(),
-        get<SwiftCodeProvider>().getMatterBinder(),
-        get<SwiftCodeProvider>().getMatterDoorController(),
-        get<SwiftCodeProvider>().getMatterOutletController(),
-        get<SwiftCodeProvider>().getMatterManufacturerCustomDataController(),
-        get<SwiftCodeProvider>().getMatterClusterExtensionController(),
-    ) }
+    single<DeviceController> {
+        IosDeviceController(
+            get<SwiftCodeProvider>().getMatterOnOffController(),
+            get<SwiftCodeProvider>().getDecommissioner(),
+            get<SwiftCodeProvider>().getMatterBinder(),
+            get<SwiftCodeProvider>().getMatterDoorController(),
+            get<SwiftCodeProvider>().getMatterOutletController(),
+            get<SwiftCodeProvider>().getMatterManufacturerCustomDataController(),
+            get<SwiftCodeProvider>().getMatterClusterExtensionController(),
+        )
+    }
 
     // View models.
     viewModelOf(::HomeViewModel)

@@ -46,4 +46,8 @@ class BindingRepository(
     suspend fun getBindingsForDevice(deviceId: DeviceId): List<DeviceBinding> {
         return localDataSource.getBindingsForDevice(deviceId)
     }
+
+    suspend fun getAllBinding(): List<DeviceBinding>{
+        return localDataSource.getAll()
+    }
 }

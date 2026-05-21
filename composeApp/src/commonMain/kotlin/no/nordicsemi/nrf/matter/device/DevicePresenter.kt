@@ -202,7 +202,7 @@ class DevicePresenter(
                 it.deviceType == DeviceType.LIGHT_ON_OFF ||
                         it.deviceType == DeviceType.DIMMABLE_LIGHT
             }
-            val bindings = uiState.value.deviceUiModel?.boundLights ?: emptyList()
+            val bindings = bindingRepository.getAllBinding()
             val targetIds = bindings.map { it.targetNodeId }.toSet()
             val result = lightDevicesInRepository.filterNot { it.deviceId in targetIds }
 

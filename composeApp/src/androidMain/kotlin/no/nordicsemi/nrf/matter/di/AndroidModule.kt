@@ -8,10 +8,10 @@ import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
 import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
+import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
-import no.nordicsemi.nrf.matter.binding.BindingDataSource
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
@@ -22,7 +22,6 @@ import no.nordicsemi.nrf.matter.logger.NativePlatformLogger
 import no.nordicsemi.nrf.matter.logger.PlatformLogger
 import no.nordicsemi.nrf.matter.model.AndroidDeviceController
 import no.nordicsemi.nrf.matter.model.DeviceController
-import no.nordicsemi.nrf.matter.repository.AndroidBindingDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidUserPreferencesDataSource
@@ -89,8 +88,8 @@ val androidModule = module {
     single<UserPreferencesDataSource> {
         AndroidUserPreferencesDataSource(androidContext())
     }
-    single<BindingDataSource> {
-        AndroidBindingDataSource(androidContext())
+    single {
+        DataStoreProvider(androidContext()).createDataStore()
     }
 
     single<ChipClient> { ChipClient(context = androidContext()) }
@@ -108,7 +107,7 @@ val androidModule = module {
     single<BindingRepository> { BindingRepository(get()) }
 
     // Inject DeviceController
-    single<DeviceController> { AndroidDeviceController(get(), get(), get ()) }
+    single<DeviceController> { AndroidDeviceController(get(), get(), get()) }
 
     factory<NativePlatformLogger> { AndroidPlatformLogger() }
     factory<PlatformLogger> { PlatformLogger(get()) }

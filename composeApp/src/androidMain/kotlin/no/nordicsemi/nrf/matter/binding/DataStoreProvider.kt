@@ -1,11 +1,10 @@
-package no.nordicsemi.nrf.matter.repository
+package no.nordicsemi.nrf.matter.binding
 
 import android.content.Context
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.first
-import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -38,19 +37,11 @@ import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class AndroidBindingDataSource(
-    private val context: Context
-) : BaseBindingDataSource() {
+actual class DataStoreProvider(private val context: Context) {
 
-    private val Context.dataStore by preferencesDataStore(name = "bindings")
-    private val BINDINGS_KEY = stringPreferencesKey("bindings_json")
-
-    override suspend fun readRaw(): String? =
-        context.dataStore.data.first()[BINDINGS_KEY]
-
-    override suspend fun writeRaw(json: String) {
-        context.dataStore.edit { prefs ->
-            prefs[BINDINGS_KEY] = json
-        }
+    actual fun createDataStore(): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            produceFile = { context.preferencesDataStoreFile("bindings") }
+        )
     }
 }

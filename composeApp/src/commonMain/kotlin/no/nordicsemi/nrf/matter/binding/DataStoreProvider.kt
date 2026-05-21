@@ -1,7 +1,7 @@
-package no.nordicsemi.nrf.matter.repository
+package no.nordicsemi.nrf.matter.binding
 
-import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
-import platform.Foundation.NSUserDefaults
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -34,15 +34,8 @@ import platform.Foundation.NSUserDefaults
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class IosBindingDataSource : BaseBindingDataSource() {
+const val bindingDataStoreFileName = "BindingStore"
 
-    private val userDefaults = NSUserDefaults.standardUserDefaults
-    private val key = "bindings_json"
-
-    override suspend fun readRaw(): String? =
-        userDefaults.stringForKey(key)
-
-    override suspend fun writeRaw(json: String) {
-        userDefaults.setObject(json, forKey = key)
-    }
+expect class DataStoreProvider {
+    fun createDataStore(): DataStore<Preferences>
 }

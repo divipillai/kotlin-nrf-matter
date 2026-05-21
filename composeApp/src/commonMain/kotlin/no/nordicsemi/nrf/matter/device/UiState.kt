@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.binding
+package no.nordicsemi.nrf.matter.device
 
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 
@@ -32,9 +32,17 @@ import no.nordicsemi.nrf.matter.model.DeviceBinding
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-sealed interface BindingUiStates {
-    data object Idle : BindingUiStates
-    data object InProgress : BindingUiStates
-    data class Success(val binding: DeviceBinding) : BindingUiStates
-    data class Error(val message: String, val cause: Throwable? = null) : BindingUiStates
+sealed interface UiState<out T> {
+
+    data object Idle : UiState<Nothing>
+    data object Loading : UiState<Nothing>
+
+    data class Success<T>(val data: T) : UiState<T>
+
+    data class Error(
+        val message: String,
+        val cause: Throwable? = null
+    ) : UiState<Nothing>
 }
+
+typealias BindingUiState = UiState<DeviceBinding>

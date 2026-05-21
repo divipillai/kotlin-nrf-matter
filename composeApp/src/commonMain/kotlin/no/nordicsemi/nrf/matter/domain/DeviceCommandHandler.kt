@@ -6,7 +6,8 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import no.nordicsemi.nrf.matter.binding.BindingUiStates
+import no.nordicsemi.nrf.matter.device.BindingUiState
+import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceController
@@ -194,8 +195,8 @@ class DeviceCommandHandler(
     fun bind(
         switchNodeId: DeviceId,
         lightNodeId: DeviceId,
-    ): Flow<BindingUiStates> = flow {
-        emit(BindingUiStates.InProgress)
+    ): Flow<BindingUiState> = flow {
+        emit(UiState.Loading)
 
         try {
             deviceController.bind(
@@ -217,11 +218,11 @@ class DeviceCommandHandler(
 
             bindingRepository.save(bindingDevice)
 
-            emit(BindingUiStates.Success(bindingDevice))
+            emit(UiState.Success(bindingDevice))
 
         } catch (e: Exception) {
             Napier.e(e) { "Binding failed: ${e.message}" }
-            emit(BindingUiStates.Error(e.message ?: "Unknown error"))
+            emit(UiState.Error(e.message ?: "Unknown error"))
         }
     }.flowOn(Dispatchers.IO)
 

@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.binding.BindingUiStates
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
@@ -70,8 +69,8 @@ class DevicePresenter(
 
     private var bindingJob: Job? = null
 
-    private val _bindingState = MutableStateFlow<BindingUiStates>(BindingUiStates.Idle)
-    val bindingState: StateFlow<BindingUiStates> = _bindingState.asStateFlow()
+    private val _bindingState = MutableStateFlow<BindingUiState>(UiState.Idle)
+    val bindingState: StateFlow<BindingUiState> = _bindingState.asStateFlow()
 
     private val _bindingTargetDevices = MutableStateFlow<List<Device>>(emptyList())
     val bindingTargetDevices = _bindingTargetDevices.asStateFlow()
@@ -189,7 +188,7 @@ class DevicePresenter(
         }
     }
 
-    fun updateBindingState(state: BindingUiStates) {
+    fun updateBindingState(state: BindingUiState) {
         _bindingState.value = state
     }
 

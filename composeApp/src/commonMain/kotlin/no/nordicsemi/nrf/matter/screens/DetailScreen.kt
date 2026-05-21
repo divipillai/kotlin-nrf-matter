@@ -53,10 +53,10 @@ import multiplatform.network.cmptoast.ToastDuration
 import multiplatform.network.cmptoast.ToastGravity
 import multiplatform.network.cmptoast.showToast
 import no.nordicsemi.nrf.matter.binding.BindingLoaderDialog
-import no.nordicsemi.nrf.matter.binding.BindingUiStates
 import no.nordicsemi.nrf.matter.binding.LightSwitchBindingCard
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
+import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
@@ -210,7 +210,7 @@ fun DeviceScreen(
             .padding(padding)
             .fillMaxWidth()
             .then(if (isRemoving) Modifier.cloudy() else Modifier)
-            .then(if (bindingState is BindingUiStates.InProgress) Modifier.cloudy() else Modifier)
+            .then(if (bindingState is UiState.Loading) Modifier.cloudy() else Modifier)
     ) {
         DeviceDetails(device, devicePresenter)
     }
@@ -238,11 +238,11 @@ private fun DeviceDetails(
         if (device.device.deviceType == DeviceType.LIGHT_SWITCH) {
             val bindingState by devicePresenter.bindingState.collectAsState()
             when (bindingState) {
-                is BindingUiStates.Error -> {
+                is UiState.Error -> {
                     AlertDialogView(
                         onDismiss = {
                             // Change state to idle.
-                            devicePresenter.updateBindingState(BindingUiStates.Idle)
+                            devicePresenter.updateBindingState(UiState.Idle)
                         },
                         onConfirm = {
                             // Retry binding.
@@ -257,7 +257,7 @@ private fun DeviceDetails(
                     )
                 }
 
-                BindingUiStates.Idle -> {
+                UiState.Idle -> {
                     LightSwitchBindingCard(
                         boundDevices = device.boundLights,
                         targetDevices = targetDevices
@@ -270,7 +270,7 @@ private fun DeviceDetails(
                     }
                 }
 
-                BindingUiStates.InProgress -> {
+                UiState.Loading -> {
                     BindingLoaderDialog(dummyLogsForBinding) {
                         // Text Content
                         Text(
@@ -293,13 +293,13 @@ private fun DeviceDetails(
                     }
                 }
 
-                is BindingUiStates.Success -> {
+                is UiState.Success -> {
                     // TODO: Show success message and show bonded lights in the UI.
                     // Show a Toast of success binding.
                     Napier.i { "AAA, Success" }
                     // Load the binding table one more time.
                     devicePresenter.loadBindingTable(device.device.deviceId)
-                    devicePresenter.updateBindingState(BindingUiStates.Idle)
+                    devicePresenter.updateBindingState(UiState.Idle)
                     showToast(
                         message = "Binding completed successfully!",
                         duration = ToastDuration.Long,

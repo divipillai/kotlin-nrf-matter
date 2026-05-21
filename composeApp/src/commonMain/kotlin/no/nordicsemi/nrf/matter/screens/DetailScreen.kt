@@ -222,9 +222,8 @@ private fun DeviceDetails(
     device: DeviceUiModel,
     devicePresenter: DevicePresenter
 ) {
-    val targetDevices = devicePresenter.getTargetDevices()
+    val targetDevices by devicePresenter.bindingTargetDevices.collectAsState()
     val selectedDevices = remember { mutableListOf<Device>() }
-    Napier.i("target Devices: $targetDevices", tag = "AAA")
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -263,8 +262,6 @@ private fun DeviceDetails(
                         boundDevices = device.boundLights,
                         targetDevices = targetDevices
                     ) {
-                        // TODO: Call the callback function here
-                        Napier.i { "AAA, LightSwitchBindingCard() called" }
                         selectedDevices.addAll(it)
                         devicePresenter.initiateBinding(
                             sourceNodeId = device.device.deviceId,

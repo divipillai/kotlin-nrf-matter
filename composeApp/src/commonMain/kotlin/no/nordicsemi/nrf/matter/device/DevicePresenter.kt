@@ -73,6 +73,13 @@ class DevicePresenter(
     private val _bindingState = MutableStateFlow<BindingUiStates>(BindingUiStates.Idle)
     val bindingState: StateFlow<BindingUiStates> = _bindingState.asStateFlow()
 
+    private val _bindingTargetDevices = MutableStateFlow<List<Device>>(emptyList())
+    val bindingTargetDevices = _bindingTargetDevices.asStateFlow()
+
+    init {
+        loadTargetDevices()
+    }
+
     fun observeDevice(deviceId: DeviceId) {
         scope.launch {
             devicesStateRepository.devicesStateFlow
@@ -190,21 +197,17 @@ class DevicePresenter(
         observeDevice(deviceId)
     }
 
-    fun getTargetDevices(): List<Device> {
-        val targetDevices = mutableListOf<Device>()
-
+    private fun loadTargetDevices() {
         scope.launch {
-            // get all devices from the repository whose type is light or dimmable light.
             val lightDevicesInRepository = devicesRepository.getAllDevices().devicesList.filter {
-                it.deviceType == DeviceType.LIGHT_ON_OFF || it.deviceType == DeviceType.DIMMABLE_LIGHT
+                it.deviceType == DeviceType.LIGHT_ON_OFF ||
+                        it.deviceType == DeviceType.DIMMABLE_LIGHT
             }
             val bindings = uiState.value.deviceUiModel?.boundLights ?: emptyList()
             val targetIds = bindings.map { it.targetNodeId }.toSet()
-            // Check if target devices are already bound to the switch.
             val result = lightDevicesInRepository.filterNot { it.deviceId in targetIds }
-            targetDevices.addAll(result)
-        }
-        return targetDevices
-    }
 
+            _bindingTargetDevices.value = result
+        }
+    }
 }

@@ -72,7 +72,10 @@ class DeviceCommandHandler(
             DeviceType.COLOR_TEMPERATURE_LIGHT,
             DeviceType.EXTENDED_COLOR_LIGHT -> handlePower(device, deviceId, command)
 
-            DeviceType.LIGHT_SWITCH, DeviceType.OUTLET -> handleOutlet(device, deviceId, command)
+            DeviceType.LIGHT_SWITCH, DeviceType.OUTLET -> {
+                // Do nothing, since the role of switch is different from other device types.
+            }
+
             DeviceType.DOOR_LOCK -> handleLock(device, deviceId, command)
         }
     }
@@ -176,14 +179,6 @@ class DeviceCommandHandler(
 
             throw e
         }
-    }
-
-    private suspend fun handleOutlet(
-        device: Device,
-        deviceId: DeviceId,
-        isSwitchOn: Boolean,
-    ) {
-        // TODO: Not implemented yet.
     }
 
     private fun resolveEndpoint(device: Device, clusterId: Long): Int {

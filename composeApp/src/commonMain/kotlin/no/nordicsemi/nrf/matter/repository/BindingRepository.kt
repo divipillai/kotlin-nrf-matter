@@ -1,4 +1,8 @@
-package no.nordicsemi.nrf.matter.model
+package no.nordicsemi.nrf.matter.repository
+
+import no.nordicsemi.nrf.matter.binding.BindingDataSource
+import no.nordicsemi.nrf.matter.model.DeviceBinding
+import no.nordicsemi.nrf.matter.model.DeviceId
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -31,29 +35,19 @@ package no.nordicsemi.nrf.matter.model
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Encapsulates all of the information on a specific device. Note that the app currently only
- * supports Matter devices with server attribute "ON/OFF".
- */
-data class DeviceUiModel(
-    // Device information that is persisted in a DataStore.
-    val device: Device,
+class BindingRepository(
+    private val localDataSource: BindingDataSource
+) {
 
-    // Device state information that is retrieved dynamically.
-    val isOnline: Boolean,
-    // Whether the device is on or off.
-    val isOn: Boolean,
-    // Current bound lights.
-    val boundLights: List<DeviceBinding> = emptyList(),
-)
+    suspend fun save(binding: DeviceBinding) {
+        localDataSource.save(binding)
+    }
 
-/**
- * UI model that encapsulates the information about the devices to be displayed on the Home screen.
- */
-data class DevicesListUiModel(
-    // The list of devices.
-    val devices: List<DeviceUiModel>,
+    suspend fun getBindingsForDevice(deviceId: DeviceId): List<DeviceBinding> {
+        return localDataSource.getBindingsForDevice(deviceId)
+    }
 
-    // Whether offline devices should be shown.
-    val showOfflineDevices: Boolean,
-)
+    suspend fun getAllBinding(): List<DeviceBinding>{
+        return localDataSource.getAll()
+    }
+}

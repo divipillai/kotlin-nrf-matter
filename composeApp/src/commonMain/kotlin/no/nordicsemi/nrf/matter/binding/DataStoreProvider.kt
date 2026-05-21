@@ -1,4 +1,7 @@
-package no.nordicsemi.nrf.matter.model
+package no.nordicsemi.nrf.matter.binding
+
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -31,29 +34,8 @@ package no.nordicsemi.nrf.matter.model
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Encapsulates all of the information on a specific device. Note that the app currently only
- * supports Matter devices with server attribute "ON/OFF".
- */
-data class DeviceUiModel(
-    // Device information that is persisted in a DataStore.
-    val device: Device,
+const val bindingDataStoreFileName = "BindingStore"
 
-    // Device state information that is retrieved dynamically.
-    val isOnline: Boolean,
-    // Whether the device is on or off.
-    val isOn: Boolean,
-    // Current bound lights.
-    val boundLights: List<DeviceBinding> = emptyList(),
-)
-
-/**
- * UI model that encapsulates the information about the devices to be displayed on the Home screen.
- */
-data class DevicesListUiModel(
-    // The list of devices.
-    val devices: List<DeviceUiModel>,
-
-    // Whether offline devices should be shown.
-    val showOfflineDevices: Boolean,
-)
+expect class DataStoreProvider {
+    fun createDataStore(): DataStore<Preferences>
+}

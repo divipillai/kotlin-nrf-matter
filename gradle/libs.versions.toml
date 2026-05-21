@@ -7,6 +7,7 @@ android-targetSdk = "36"
 androidx-activity = "1.12.4"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.17.0"
+cmptoast = "1.0.71"
 core-splashscreen = "1.2.0"
 androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.9.6"
@@ -41,6 +42,7 @@ uiToolingPreviewVersion = "1.10.2"
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+cmptoast = { module = "network.chaintech:cmptoast", version.ref = "cmptoast" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinCore" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinCore" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinCore" }

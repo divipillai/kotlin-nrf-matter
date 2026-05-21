@@ -1,4 +1,17 @@
-package no.nordicsemi.nrf.matter.model
+package no.nordicsemi.nrf.matter.binding
+
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.core.okio.OkioStorage
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.PreferencesSerializer
+import kotlinx.cinterop.ExperimentalForeignApi
+import okio.FileSystem
+import okio.Path.Companion.toPath
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -31,29 +44,27 @@ package no.nordicsemi.nrf.matter.model
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Encapsulates all of the information on a specific device. Note that the app currently only
- * supports Matter devices with server attribute "ON/OFF".
- */
-data class DeviceUiModel(
-    // Device information that is persisted in a DataStore.
-    val device: Device,
+actual class DataStoreProvider {
 
-    // Device state information that is retrieved dynamically.
-    val isOnline: Boolean,
-    // Whether the device is on or off.
-    val isOn: Boolean,
-    // Current bound lights.
-    val boundLights: List<DeviceBinding> = emptyList(),
-)
+    actual fun createDataStore(): DataStore<Preferences> {
+        return DataStoreFactory.create(storage = createStorage())
+    }
 
-/**
- * UI model that encapsulates the information about the devices to be displayed on the Home screen.
- */
-data class DevicesListUiModel(
-    // The list of devices.
-    val devices: List<DeviceUiModel>,
-
-    // Whether offline devices should be shown.
-    val showOfflineDevices: Boolean,
-)
+    @OptIn(ExperimentalForeignApi::class)
+    private fun createStorage(): OkioStorage<Preferences> {
+        return OkioStorage(
+            fileSystem = FileSystem.SYSTEM,
+            serializer = PreferencesSerializer,
+            producePath = {
+                val documentDirectory: NSURL? = NSFileManager.defaultManager.URLForDirectory(
+                    directory = NSDocumentDirectory,
+                    inDomain = NSUserDomainMask,
+                    appropriateForURL = null,
+                    create = false,
+                    error = null,
+                )
+                (requireNotNull(documentDirectory).path + "/$bindingDataStoreFileName").toPath()
+            }
+        )
+    }
+}

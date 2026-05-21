@@ -1,4 +1,12 @@
-package no.nordicsemi.nrf.matter.model
+package no.nordicsemi.nrf.matter.ui
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
+import nrfmatterformobile.composeapp.generated.resources.Res
+import nrfmatterformobile.composeapp.generated.resources.smart_outlet
+import org.jetbrains.compose.resources.painterResource
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -31,29 +39,30 @@ package no.nordicsemi.nrf.matter.model
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Encapsulates all of the information on a specific device. Note that the app currently only
- * supports Matter devices with server attribute "ON/OFF".
- */
-data class DeviceUiModel(
-    // Device information that is persisted in a DataStore.
-    val device: Device,
+@Composable
+internal fun SwitchItem(
+    deviceId: DeviceId,
+    title: String,
+    subtitle: String,
+    onDeviceClick: () -> Unit,
+) {
 
-    // Device state information that is retrieved dynamically.
-    val isOnline: Boolean,
-    // Whether the device is on or off.
-    val isOn: Boolean,
-    // Current bound lights.
-    val boundLights: List<DeviceBinding> = emptyList(),
-)
+    DeviceItemContainer(
+        icon = painterResource(Res.drawable.smart_outlet),
+        title = title,
+        subtitle = subtitle,
+        isOnline = false,
+        onDeviceClick = onDeviceClick
+    ) {}
+}
 
-/**
- * UI model that encapsulates the information about the devices to be displayed on the Home screen.
- */
-data class DevicesListUiModel(
-    // The list of devices.
-    val devices: List<DeviceUiModel>,
-
-    // Whether offline devices should be shown.
-    val showOfflineDevices: Boolean,
-)
+@Preview
+@Composable
+private fun SwitchItem_Preview() {
+    SwitchItem(
+        deviceId = DeviceId.Zero,
+        title = "Light switch",
+        subtitle = "Bind the device with other devices ",
+        onDeviceClick = {}
+    )
+}

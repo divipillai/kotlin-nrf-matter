@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter.di
 import no.nordicsemi.nrf.matter.CommissioningViewModel
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.SwiftCodeProvider
+import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
@@ -11,6 +12,7 @@ import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.IosDeviceController
+import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
@@ -64,6 +66,9 @@ val iosModule = module {
     single<UserPreferencesDataSource> {
         IosUserPreferencesDataSource()
     }
+    single {
+        DataStoreProvider().createDataStore()
+    }
 
     // Repositories.
     single<DevicesRepository> {
@@ -75,17 +80,23 @@ val iosModule = module {
     single<UserPreferencesRepository> {
         UserPreferencesRepository(dataSource = get())
     }
+    single<BindingRepository> {
+        BindingRepository(get())
+    }
+
 
     // Device Controller
-    single<DeviceController> { IosDeviceController(
-        get<SwiftCodeProvider>().getMatterOnOffController(),
-        get<SwiftCodeProvider>().getDecommissioner(),
-        get<SwiftCodeProvider>().getMatterBinder(),
-        get<SwiftCodeProvider>().getMatterDoorController(),
-        get<SwiftCodeProvider>().getMatterOutletController(),
-        get<SwiftCodeProvider>().getMatterManufacturerCustomDataController(),
-        get<SwiftCodeProvider>().getMatterClusterExtensionController(),
-    ) }
+    single<DeviceController> {
+        IosDeviceController(
+            get<SwiftCodeProvider>().getMatterOnOffController(),
+            get<SwiftCodeProvider>().getDecommissioner(),
+            get<SwiftCodeProvider>().getMatterBinder(),
+            get<SwiftCodeProvider>().getMatterDoorController(),
+            get<SwiftCodeProvider>().getMatterOutletController(),
+            get<SwiftCodeProvider>().getMatterManufacturerCustomDataController(),
+            get<SwiftCodeProvider>().getMatterClusterExtensionController(),
+        )
+    }
 
     // View models.
     viewModelOf(::HomeViewModel)
@@ -101,7 +112,9 @@ val iosModule = module {
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
             get<DeviceController>(),
-            get<DeviceCommandHandler>()
+            get<DeviceCommandHandler>(),
+            get<BindingRepository>()
+
         )
     }
 

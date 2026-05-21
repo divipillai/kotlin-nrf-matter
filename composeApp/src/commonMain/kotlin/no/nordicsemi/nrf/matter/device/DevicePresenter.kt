@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter.device
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,10 +13,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
+import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 
@@ -54,7 +57,8 @@ class DevicePresenter(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
-    private val deviceCommandHandler: DeviceCommandHandler
+    private val deviceCommandHandler: DeviceCommandHandler,
+    private val bindingRepository: BindingRepository,
 ) {
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
@@ -62,6 +66,18 @@ class DevicePresenter(
 
     private val _uiState = MutableStateFlow(DeviceUiState())
     val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
+
+    private var bindingJob: Job? = null
+
+    private val _bindingState = MutableStateFlow<BindingUiState>(UiState.Idle)
+    val bindingState: StateFlow<BindingUiState> = _bindingState.asStateFlow()
+
+    private val _bindingTargetDevices = MutableStateFlow<List<Device>>(emptyList())
+    val bindingTargetDevices = _bindingTargetDevices.asStateFlow()
+
+    init {
+        loadTargetDevices()
+    }
 
     fun observeDevice(deviceId: DeviceId) {
         scope.launch {
@@ -78,7 +94,8 @@ class DevicePresenter(
                             deviceUiModel = DeviceUiModel(
                                 device = device,
                                 isOnline = true, // or from state
-                                isOn = isOn
+                                isOn = isOn,
+                                boundLights = bindingRepository.getBindingsForDevice(deviceId)
                             )
                         )
                     }
@@ -155,24 +172,41 @@ class DevicePresenter(
         }
     }
 
+    fun initiateBinding(
+        sourceNodeId: DeviceId,
+        targetDevices: List<Device>
+    ) {
+        bindingJob?.cancel()
 
-    // Method to call binding.
-    fun initiateBinding(switchNodeId: DeviceId) {
-        scope.launch {
-            try {
-                // TODO: For now I am using the first light node id from the repository,
-                //  it should be taken from the dialog and passed to the function as a param.
-                val lightNodeId = devicesRepository.getAllDevices().devicesList.find {
-                    it.deviceType == DeviceType.LIGHT_ON_OFF || it.deviceType == DeviceType.DIMMABLE_LIGHT
-                }
-                // Call the function to bind the switch to the light.
-                deviceCommandHandler.bind(
-                    switchNodeId,
-                    lightNodeId?.deviceId ?: DeviceId("1"), // TODO: if no light node is found, then show some error message to the user.
-                )
-            } catch (e: Exception) {
-                Napier.e(e) { "AAA, Error initiating binding: ${e.message}" }
+        bindingJob = scope.launch {
+            deviceCommandHandler.bind(
+                switchNodeId = sourceNodeId,
+                lightNodeId = targetDevices.first().deviceId // TODO: support multiple devices binding
+            ).collect { state ->
+                _bindingState.value = state
             }
+        }
+    }
+
+    fun updateBindingState(state: BindingUiState) {
+        _bindingState.value = state
+    }
+
+    fun loadBindingTable(deviceId: DeviceId) {
+        observeDevice(deviceId)
+    }
+
+    private fun loadTargetDevices() {
+        scope.launch {
+            val lightDevicesInRepository = devicesRepository.getAllDevices().devicesList.filter {
+                it.deviceType == DeviceType.LIGHT_ON_OFF ||
+                        it.deviceType == DeviceType.DIMMABLE_LIGHT
+            }
+            val bindings = bindingRepository.getAllBinding()
+            val targetIds = bindings.map { it.targetNodeId }.toSet()
+            val result = lightDevicesInRepository.filterNot { it.deviceId in targetIds }
+
+            _bindingTargetDevices.value = result
         }
     }
 }

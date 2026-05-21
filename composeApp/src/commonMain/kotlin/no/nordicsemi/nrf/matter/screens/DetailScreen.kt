@@ -20,10 +20,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -35,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,15 +49,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.cloudy.cloudy
 import io.github.aakira.napier.Napier
+import multiplatform.network.cmptoast.ToastDuration
+import multiplatform.network.cmptoast.ToastGravity
+import multiplatform.network.cmptoast.showToast
+import no.nordicsemi.nrf.matter.binding.BindingLoaderDialog
+import no.nordicsemi.nrf.matter.binding.LightSwitchBindingCard
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
+import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
-import no.nordicsemi.nrf.matter.ui.DEVICE_LIST_TEST
 import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.LockItem
@@ -69,7 +72,6 @@ import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.light_bulb
 import nrfmatterformobile.composeapp.generated.resources.light_fixture
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
-import nrfmatterformobile.composeapp.generated.resources.smart_outlet
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.getKoin
 
@@ -144,6 +146,7 @@ fun DeviceScreen(
         Text("Loading device…")
         return
     }
+    val bindingState by devicePresenter.bindingState.collectAsState()
 
     when (uiState.removeDeviceState) {
 
@@ -202,12 +205,12 @@ fun DeviceScreen(
             isRemoving = false
         }
     }
-
     Box(
         modifier = Modifier
             .padding(padding)
             .fillMaxWidth()
             .then(if (isRemoving) Modifier.cloudy() else Modifier)
+            .then(if (bindingState is UiState.Loading) Modifier.cloudy() else Modifier)
     ) {
         DeviceDetails(device, devicePresenter)
     }
@@ -219,6 +222,8 @@ private fun DeviceDetails(
     device: DeviceUiModel,
     devicePresenter: DevicePresenter
 ) {
+    val targetDevices by devicePresenter.bindingTargetDevices.collectAsState()
+    val selectedDevices = remember { mutableListOf<Device>() }
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -231,11 +236,76 @@ private fun DeviceDetails(
         DeviceControlSection(device, devicePresenter)
 
         if (device.device.deviceType == DeviceType.LIGHT_SWITCH) {
-            SectionTitle("Linked Lights")
-            LightSwitchBindingCard {
-                // TODO: Call the callback function here
-                Napier.i { "AAA, LightSwitchBindingCard() called" }
-                devicePresenter.initiateBinding(device.device.deviceId)
+            val bindingState by devicePresenter.bindingState.collectAsState()
+            when (bindingState) {
+                is UiState.Error -> {
+                    AlertDialogView(
+                        onDismiss = {
+                            // Change state to idle.
+                            devicePresenter.updateBindingState(UiState.Idle)
+                        },
+                        onConfirm = {
+                            // Retry binding.
+                            devicePresenter.initiateBinding(
+                                device.device.deviceId,
+                                selectedDevices.toList()
+                            )
+                        },
+                        title = "Binding Failed.",
+                        message = "Unable to bind the device, please try again.",
+                        confirmText = "Retry"
+                    )
+                }
+
+                UiState.Idle -> {
+                    LightSwitchBindingCard(
+                        boundDevices = device.boundLights,
+                        targetDevices = targetDevices
+                    ) {
+                        selectedDevices.addAll(it)
+                        devicePresenter.initiateBinding(
+                            sourceNodeId = device.device.deviceId,
+                            targetDevices = it
+                        )
+                    }
+                }
+
+                UiState.Loading -> {
+                    BindingLoaderDialog(dummyLogsForBinding) {
+                        // Text Content
+                        Text(
+                            text = "Binding...",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.WarningAmber,
+                                contentDescription = null,
+                                tint = NordicSun
+                            )
+                            Text(text = "Binding in progress, it might take few seconds. Please don't close the app")
+                        }
+                    }
+                }
+
+                is UiState.Success -> {
+                    // TODO: Show success message and show bonded lights in the UI.
+                    // Show a Toast of success binding.
+                    Napier.i { "AAA, Success" }
+                    // Load the binding table one more time.
+                    devicePresenter.loadBindingTable(device.device.deviceId)
+                    devicePresenter.updateBindingState(UiState.Idle)
+                    showToast(
+                        message = "Binding completed successfully!",
+                        duration = ToastDuration.Long,
+                        gravity = ToastGravity.Center
+                    )
+                }
             }
         }
 
@@ -280,20 +350,7 @@ private fun DeviceControlSection(
 
         DeviceType.LIGHT_SWITCH,
         DeviceType.OUTLET -> {
-
-            DeviceControlItem(
-                deviceId = device.device.deviceId,
-                title = "Power Outlet",
-                subtitle = "Turn device ON or OFF",
-                icon = painterResource(Res.drawable.smart_outlet),
-                enabled = device.isOn,
-                updateDeviceState = { id, value ->
-                    presenter.togglePower(id, value)
-                },
-                onClick = {}
-            )
-
-            // TODO: Add an option to
+            // Do nothing. Since we bind the device to the switch, and it will not send any control commands.
         }
 
         DeviceType.DOOR_LOCK -> {
@@ -414,67 +471,6 @@ fun ShareCard(onShare: () -> Unit) {
     }
 }
 
-@Preview
-@Composable
-internal fun BindConfiguration(onMoreClick: () -> Unit = {}) {
-    OutlinedCard(
-        shape = RoundedCornerShape(16.dp),
-        border = CardDefaults.outlinedCardBorder(enabled = false),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clickable { onMoreClick() }
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(
-                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
-                        RoundedCornerShape(12.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(Res.drawable.light_bulb),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    "Target Light Bulbs",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    "1 light bulb is selected to control with this device",
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .alpha(0.5f)
-                )
-            }
-
-            Icon(
-                Icons.Default.ExpandMore,
-                contentDescription = null,
-                tint = Color.Gray
-            )
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
@@ -681,75 +677,6 @@ fun DeviceItemContainerPreview() {
 
 }
 
-@Preview(showBackground = true)
-@Composable
-internal fun LightSwitchBindingCard(
-    onLightSelected: () -> Unit = {},
-) {
-    var isDialogOpen by remember { mutableStateOf(false) }
-    val selectedLightItem = remember { mutableStateListOf(DEVICE_LIST_TEST.first()) }
-    Column {
-        OutlinedCard(
-            shape = RoundedCornerShape(16.dp),
-            border = CardDefaults.outlinedCardBorder(enabled = false),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-                .clickable {
-                    // TODO: Show a dialog to add lights for binding
-                    isDialogOpen = true
-                }
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = null,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        "Add Lights", fontWeight = FontWeight.Bold,
-                    )
-                }
-
-                Text(
-                    "Select one or more lights to bind to this device",
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.alpha(0.5f)
-                )
-            }
-        }
-        if (selectedLightItem.isNotEmpty()) {
-            SectionTitle("Binding Configuration")
-            BindConfiguration { }
-        }
-        if (isDialogOpen) {
-            Napier.i { "AAA, isDialogOpen is true" }
-            onLightSelected()
-//            TargetLightSettingsDialog(
-//                onDismiss = { isDialogOpen = false },
-//                onConfirmation = {
-//                    Napier.d { "AAA, Confirmation" }
-//                    isDialogOpen = false
-//                }
-//            )
-        }
-    }
-
-}
-
 // -----------------------------------------------------------------------------------------------
 // Constant objects used in Compose Preview
 private val DeviceTest =
@@ -765,3 +692,27 @@ private val DeviceTest =
         deviceMatterInfo = emptyList()
 
     )
+
+private val dummyLogsForBinding = listOf(
+    "Initializing secure handshake.",
+    "Fetching remote server configuration.",
+    "Resolving DNS for api.connection.service.",
+    "Establishing TCP connection on port 443.",
+    "TLS 1.3 encryption handshake successful.",
+    "Authenticating user credentials.",
+    "Session token generated successfully.",
+    "Fetching  client configuration.",
+    "Establishing the connection with local thread.",
+    "TLS 1.3 encryption handshake successful.",
+    "Authenticating user credentials.",
+    "Session token generated successfully.",
+    "Syncing fabric index of both source and target devices.",
+    "Sending ACL to target device",
+    "Waiting for ACL signal back from target device.",
+    "Creating Binding table...",
+    "Writing binding table to target device...",
+    "Writing binding table to source device...",
+    "Verifying the binding on both devices...",
+    "Verifying data integrity checks...",
+    "Connection fully established. Wrapping up..."
+)

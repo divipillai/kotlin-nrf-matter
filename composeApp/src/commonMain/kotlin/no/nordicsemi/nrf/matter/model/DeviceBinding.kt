@@ -1,5 +1,7 @@
 package no.nordicsemi.nrf.matter.model
 
+import kotlinx.serialization.Serializable
+
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -30,30 +32,13 @@ package no.nordicsemi.nrf.matter.model
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/**
- * Encapsulates all of the information on a specific device. Note that the app currently only
- * supports Matter devices with server attribute "ON/OFF".
- */
-data class DeviceUiModel(
-    // Device information that is persisted in a DataStore.
-    val device: Device,
-
-    // Device state information that is retrieved dynamically.
-    val isOnline: Boolean,
-    // Whether the device is on or off.
-    val isOn: Boolean,
-    // Current bound lights.
-    val boundLights: List<DeviceBinding> = emptyList(),
-)
-
-/**
- * UI model that encapsulates the information about the devices to be displayed on the Home screen.
- */
-data class DevicesListUiModel(
-    // The list of devices.
-    val devices: List<DeviceUiModel>,
-
-    // Whether offline devices should be shown.
-    val showOfflineDevices: Boolean,
+@Serializable
+data class DeviceBinding(
+    val id: String, // uuid
+    val sourceNodeId: DeviceId,
+    val sourceEndpoint: Int,
+    val targetNodeId: DeviceId,
+    val targetEndpoint: Int,
+    val clusterId: Long,
+    val fabricIndex: Int? = null,
 )

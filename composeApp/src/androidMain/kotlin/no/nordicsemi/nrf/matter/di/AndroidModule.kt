@@ -8,6 +8,7 @@ import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
 import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
+import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
@@ -24,6 +25,7 @@ import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidUserPreferencesDataSource
+import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
@@ -86,6 +88,9 @@ val androidModule = module {
     single<UserPreferencesDataSource> {
         AndroidUserPreferencesDataSource(androidContext())
     }
+    single {
+        DataStoreProvider(androidContext()).createDataStore()
+    }
 
     single<ChipClient> { ChipClient(context = androidContext()) }
     single<ClustersHelper> { ClustersHelper(chipClient = get()) }
@@ -99,9 +104,10 @@ val androidModule = module {
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<UserPreferencesRepository> { UserPreferencesRepository(get()) }
+    single<BindingRepository> { BindingRepository(get()) }
 
     // Inject DeviceController
-    single<DeviceController> { AndroidDeviceController(get(), get(), get ()) }
+    single<DeviceController> { AndroidDeviceController(get(), get(), get()) }
 
     factory<NativePlatformLogger> { AndroidPlatformLogger() }
     factory<PlatformLogger> { PlatformLogger(get()) }

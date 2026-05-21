@@ -30,7 +30,6 @@ import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
-import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.utils.title
 import no.nordicsemi.nrf.matter.utils.toSection
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -109,6 +108,7 @@ internal fun DeviceList(
                             onClick = { onDeviceClick(device) }
                         )
                     }
+
                     DeviceType.LIGHT_ON_OFF,
                     DeviceType.DIMMABLE_LIGHT,
                     DeviceType.COLOR_TEMPERATURE_LIGHT,
@@ -127,15 +127,11 @@ internal fun DeviceList(
 
                     DeviceType.LIGHT_SWITCH,
                     DeviceType.OUTLET -> {
-
-                        DeviceControlItem(
+                        SwitchItem(
                             deviceId = device.device.deviceId,
-                            title = "Power Outlet",
-                            subtitle = "Turn device ON or OFF",
-                            icon = painterResource(Res.drawable.smart_outlet),
-                            enabled = device.isOn,
-                            updateDeviceState = updateDeviceState,
-                            onClick = { onDeviceClick(device) }
+                            title = "Light Switch",
+                            subtitle = "Bind the switch with other devices",
+                            onDeviceClick = { onDeviceClick(device) }
                         )
                     }
 

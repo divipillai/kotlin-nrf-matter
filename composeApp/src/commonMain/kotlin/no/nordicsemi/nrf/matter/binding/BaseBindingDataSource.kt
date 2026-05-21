@@ -1,11 +1,10 @@
-package no.nordicsemi.nrf.matter.repository
+package no.nordicsemi.nrf.matter.binding
 
-import android.content.Context
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.first
-import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.Json
+import no.nordicsemi.nrf.matter.model.DeviceBinding
+import no.nordicsemi.nrf.matter.model.DeviceId
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -37,20 +36,25 @@ import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+abstract class BaseBindingDataSource : BindingDataSource {
 
-class AndroidBindingDataSource(
-    private val context: Context
-) : BaseBindingDataSource() {
+    protected abstract suspend fun readRaw(): String?
+    protected abstract suspend fun writeRaw(json: String)
+    private val mutex = Mutex()
 
-    private val Context.dataStore by preferencesDataStore(name = "bindings")
-    private val BINDINGS_KEY = stringPreferencesKey("bindings_json")
+    override suspend fun save(binding: DeviceBinding) = mutex.withLock {
+        val current = readRaw()?.let { decode(it) } ?: emptyList()
+        val updated = current.filterNot { it.id == binding.id } + binding
+        writeRaw(encode(updated))
+    }
 
-    override suspend fun readRaw(): String? =
-        context.dataStore.data.first()[BINDINGS_KEY]
-
-    override suspend fun writeRaw(json: String) {
-        context.dataStore.edit { prefs ->
-            prefs[BINDINGS_KEY] = json
+    override suspend fun getBindingsForDevice(deviceId: DeviceId): List<DeviceBinding> {
+        val bindings = readRaw()?.let { decode(it) } ?: emptyList()
+        return bindings.filter {
+            it.sourceNodeId == deviceId || it.targetNodeId == deviceId
         }
     }
+
+    private fun encode(list: List<DeviceBinding>): String = Json.encodeToString(list)
+    private fun decode(json: String): List<DeviceBinding> = Json.decodeFromString(json)
 }

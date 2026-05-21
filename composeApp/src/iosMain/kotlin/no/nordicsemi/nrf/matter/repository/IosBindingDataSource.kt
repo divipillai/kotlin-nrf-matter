@@ -1,8 +1,7 @@
 package no.nordicsemi.nrf.matter.repository
 
-import no.nordicsemi.nrf.matter.binding.BindingDataSource
-import no.nordicsemi.nrf.matter.model.DeviceBinding
-import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
+import platform.Foundation.NSUserDefaults
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -35,12 +34,15 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class IosBindingDataSource: BindingDataSource {
-    override suspend fun save(binding: DeviceBinding) {
-        TODO("Not yet implemented")
-    }
+class IosBindingDataSource : BaseBindingDataSource() {
 
-    override suspend fun getBindingsForDevice(deviceId: DeviceId): List<DeviceBinding> {
-        TODO("Not yet implemented")
+    private val userDefaults = NSUserDefaults.standardUserDefaults
+    private val key = "bindings_json"
+
+    override suspend fun readRaw(): String? =
+        userDefaults.stringForKey(key)
+
+    override suspend fun writeRaw(json: String) {
+        userDefaults.setObject(json, forKey = key)
     }
 }

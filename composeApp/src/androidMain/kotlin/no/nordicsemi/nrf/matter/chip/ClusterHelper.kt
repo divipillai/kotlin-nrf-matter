@@ -2,6 +2,7 @@ package no.nordicsemi.nrf.matter.chip
 
 import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
+import chip.devicecontroller.model.AttributeState
 import chip.devicecontroller.model.ChipAttributePath
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -45,9 +46,6 @@ import kotlin.coroutines.resumeWithException
 
 class ClustersHelper(private val chipClient: ChipClient) {
 
-    // -----------------------------------------------------------------------------------------------
-    // Convenience functions
-
     /** Fetches MatterDeviceInfo for each endpoint supported by the device. */
     suspend fun fetchDeviceMatterInfo(deviceId: DeviceId): List<DeviceMatterInfo> {
         Napier.d { "AAA, fetchDevicet()MatterInfo(): deviceId [${deviceId}]" }
@@ -70,11 +68,12 @@ class ClustersHelper(private val chipClient: ChipClient) {
         endpointInt: Int,
         matterDeviceInfoList: ArrayList<DeviceMatterInfo>
     ) {
-        Napier.d { "AAA, fetchDeviceMatterInfo(): nodeId [${nodeId}] endpoint [$endpointInt]" }
+
+        Napier.d { "AAA, fetchDeviceMatterInfo(): nodeId [$nodeId] endpoint [$endpointInt]" }
 
         val partsListAttribute =
             readDescriptorClusterPartsListAttribute(connectedDevicePtr, endpointInt)
-        Napier.d { "AAA, partsListAttribute [${partsListAttribute}]" }
+        Napier.d { "AAA, partsListAttribute [$partsListAttribute]" }
 
         // DeviceListAttribute
         val deviceListAttribute =
@@ -95,13 +94,16 @@ class ClustersHelper(private val chipClient: ChipClient) {
         val clientClusters = arrayListOf<Long>()
         clientListAttribute.forEach { clientClusters.add(it) }
 
-
+        // manufacturer specific
+        Napier.i { "AAATESTAAA, serverClusters: $serverClusters" }
         val manufacturerSpecificData = if (serverListAttribute.contains(0xFFF1FC01)) {
+            Napier.i { "AAATESTAAA, get manufacturer data" }
             getManufacturerSpecificData(endpointInt.toLong(), connectedDevicePtr)
         } else {
+            Napier.i { "AAATESTAAA, no manufcaturer specific cluster" }
             null
         }
-        // manufacturer specific
+
         val deviceMatterInfo = DeviceMatterInfo(
             endpointInt,
             types,
@@ -115,13 +117,24 @@ class ClustersHelper(private val chipClient: ChipClient) {
         // For each part (endpoint)
         partsListAttribute?.forEach { part ->
             Napier.d { "AAA, part [$part] is [${part.javaClass}]" }
-            val endpointInt =
-                when (part) {
-                    is Int -> part
-                    else -> return@forEach
-                }
+            val childEndpoint = part as? Int ?: return@forEach
             Napier.d { "AAA, Processing part [$part]" }
-            fetchDeviceMatterInfo(nodeId, connectedDevicePtr, endpointInt, matterDeviceInfoList)
+
+            val childServerList = try {
+                readDescriptorClusterServerListAttribute(connectedDevicePtr, childEndpoint)
+            } catch (t: Throwable) {
+                Napier.w("AAA, Endpoint $childEndpoint has no Descriptor cluster, skipping")
+                return@forEach
+            }
+
+            if (childServerList.isNotEmpty()) {
+                fetchDeviceMatterInfo(
+                    nodeId,
+                    connectedDevicePtr,
+                    childEndpoint,
+                    matterDeviceInfoList
+                )
+            }
         }
     }
 
@@ -130,12 +143,6 @@ class ClustersHelper(private val chipClient: ChipClient) {
 
     /**
      * PartsListAttribute. These are the endpoints supported.
-     *
-     * ```
-     * For example, on endpoint 0:
-     *     sendReadPartsListAttribute part: [1]
-     *     sendReadPartsListAttribute part: [2]
-     * ```
      */
     suspend fun readDescriptorClusterPartsListAttribute(
         devicePtr: Long,
@@ -156,31 +163,46 @@ class ClustersHelper(private val chipClient: ChipClient) {
         }
     }
 
-    suspend fun getManufacturerSpecificData(endpoint: Long, connectedDevicePtr: Long): ManufacturerSpecificData? {
-//        return ManufacturerSpecificData("aaa", false, false)
-        try {
-            val namePath = ChipAttributePath.newInstance(endpoint.toInt(), 0xFFF1FC01, 0xfff10000)
-            val nameAttr = chipClient.readAttribute(connectedDevicePtr, namePath)
-            val name = nameAttr?.value as? String ?: return null
+    suspend fun getManufacturerSpecificData(
+        endpoint: Long,
+        connectedDevicePtr: Long
+    ): ManufacturerSpecificData? {
+        Napier.d("getManufacturerSpecificData called.")
+        return try {
+            val ep = endpoint.toInt()
 
-            Napier.d("Manufacturer specific name: $name", tag = "AAA")
+            Napier.d("endpoint: $ep", tag = "AAA")
+            val namePath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10000)
+            val ledPath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10001)
+            val buttonPath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10002)
+            Napier.d("namePath: $namePath, ledPath: $ledPath, buttonPath: $buttonPath", tag = "AAA")
+            val results = chipClient.readAttributes(
+                connectedDevicePtr,
+                listOf(namePath, ledPath, buttonPath)
+            )
 
-            val ledPath = ChipAttributePath.newInstance(1, 0xFFF1FC01, 0xfff10001)
-            val ledAttr = chipClient.readAttribute(connectedDevicePtr, ledPath)
-            val led = ledAttr?.value as? Boolean ?: false
+            // Look up by matching IDs instead of by path object reference
+            fun Map<ChipAttributePath, AttributeState>.findValue(
+                endpointId: Int,
+                clusterId: Long,
+                attributeId: Long
+            ): AttributeState? = entries.firstOrNull { (path, _) ->
+                path.endpointId.id.toInt() == endpointId &&
+                        path.clusterId.id == clusterId &&
+                        path.attributeId.id == attributeId
+            }?.value
 
-            Napier.d("Manufacturer specific led: $led", tag = "AAA")
+            val name =
+                results.findValue(ep, 0xFFF1FC01L, 0xFFF10000L)?.value as? String ?: return null
+            val led = results.findValue(ep, 0xFFF1FC01L, 0xFFF10001L)?.value as? Boolean ?: false
+            val button = results.findValue(ep, 0xFFF1FC01L, 0xFFF10002L)?.value as? Boolean ?: false
 
-            val buttonPath = ChipAttributePath.newInstance(1, 0xFFF1FC01, 0xfff10002)
-            val buttonAttr = chipClient.readAttribute(connectedDevicePtr, buttonPath)
-            val button = buttonAttr?.value as? Boolean ?: false
+            Napier.d("AAA, name=$name led=$led button=$button", tag = "AAA")
 
-            Napier.d("Manufacturer specific button: $button", tag = "AAA")
-
-            return ManufacturerSpecificData(name, led, button)
+            ManufacturerSpecificData(name, led, button)
         } catch (t: Throwable) {
-            t.printStackTrace()
-            return null
+            Napier.e("AAA, getManufacturerSpecificData failed: ${t.message}", tag = "AAA")
+            null
         }
     }
 
@@ -237,34 +259,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
     }
 
     /**
-     * ServerListAttribute See
-     * https://github.com/project-chip/connectedhomeip/blob/master/zzz_generated/app-common/app-common/zap-generated/ids/Clusters.h
-     *
-     * ```
-     * For example: on endpoint 0
-     *     sendReadServerListAttribute: [3]
-     *     sendReadServerListAttribute: [4]
-     *     sendReadServerListAttribute: [29]
-     *     ... and more ...
-     * on endpoint 1:
-     *     sendReadServerListAttribute: [3]
-     *     sendReadServerListAttribute: [4]
-     *     sendReadServerListAttribute: [5]
-     *     sendReadServerListAttribute: [6]
-     *     sendReadServerListAttribute: [7]
-     *     ... and more ...
-     * on endpoint 2:
-     *     sendReadServerListAttribute: [4]
-     *     sendReadServerListAttribute: [6]
-     *     sendReadServerListAttribute: [29]
-     *     sendReadServerListAttribute: [1030]
-     *
-     * Some mappings:
-     *     namespace Groups = 0x00000004 (4)
-     *     namespace OnOff = 0x00000006 (6)
-     *     namespace Descriptor = 0x0000001D (29)
-     *     namespace OccupancySensing = 0x00000406 (1030)
-     * ```
+     * ServerListAttribute
      */
     suspend fun readDescriptorClusterServerListAttribute(
         devicePtr: Long,
@@ -383,12 +378,13 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val connectedDevicePtr = chipClient.getConnectedDevicePointer(deviceId.longValue)
             val namePath = ChipAttributePath.newInstance(0, 0x0028, 0x000A)
             val nameAttr = chipClient.readAttribute(connectedDevicePtr, namePath)
-             nameAttr?.value as? String
+            nameAttr?.value as? String
         } catch (t: Throwable) {
             t.printStackTrace()
             null
         }
     }
+
     /**
      * Reads node's product name attribute. See spec section "11.1.6.3. Attributes" of the "Basic
      * Information Cluster".

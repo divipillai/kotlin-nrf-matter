@@ -432,11 +432,6 @@ class ChipClient(
                                 ?.getAttributeState(path.attributeId.id)?.let {
                                     states[path] = it
                                 }
-//                            states[path] =
-//                                nodeState?.
-//                                    .getEndpointState(endpoint)?.
-//                                    .getClusterState(path.clusterId.id)?.
-//                                    .getAttributeState(path.attributeId.id)
                         }
                         continuation.resume(states)
                     }
@@ -444,6 +439,12 @@ class ChipClient(
                 }
 
             chipDeviceController.readAttributePath(callback, devicePtr, attributePaths, 30_000)
+
+            continuation.invokeOnCancellation {
+                // Optional: abort the interaction if the coroutine is canceled
+                // chipDeviceController.shutdownSubscriptions() or similar, if available
+                Napier.d { "AAA, read attribute coroutine cancelled"}
+                }
         }
     }
 

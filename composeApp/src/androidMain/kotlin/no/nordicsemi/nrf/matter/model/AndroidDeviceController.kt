@@ -62,7 +62,7 @@ class AndroidDeviceController(
         isOn: Boolean,
         endpoint: Int
     ) {
-        TODO("Not yet implemented")
+        chipClient.setLet(deviceId)
     }
 
     override suspend fun unlinkDevice(deviceId: DeviceId) {

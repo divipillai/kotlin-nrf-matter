@@ -168,7 +168,9 @@ private fun DeviceItemContainer(
                     .padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(onClick = { homeViewModel.generateRandomNumber(device.device.deviceId) }) {
+                Button(onClick = {
+                    homeViewModel.generateRandomNumber(device.device.deviceId)
+                }) {
                     Text("Generate number")
                 }
 

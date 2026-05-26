@@ -2,6 +2,7 @@ package no.nordicsemi.nrf.matter.chip
 
 import android.content.Context
 import chip.devicecontroller.ChipDeviceController
+import chip.devicecontroller.ClusterIDMapping.AdministratorCommissioning
 import chip.devicecontroller.ControllerParams
 import chip.devicecontroller.DiscoveredDevice
 import chip.devicecontroller.GetConnectedDeviceCallbackJni
@@ -448,11 +449,58 @@ class ChipClient(
         }
     }
 
-    suspend fun invokeCommand(
-        deviceId: DeviceId,
+    suspend fun setLet(
+        deviceId: DeviceId
+    ) {
+        val ptr = getConnectedDevicePointer(deviceId.longValue)
+        return suspendCancellableCoroutine { continuation ->
+
+            val tlvWriter = TlvWriter()
+            tlvWriter.startStructure(AnonymousTag)
+            tlvWriter.put(ContextSpecificTag(0), 2.toUByte())
+            tlvWriter.endStructure()
+            val invokeElement =
+                InvokeElement.newInstance(
+                    1,
+                    0xFFF1FC01,
+                    0xFFF10000,
+                    tlvWriter.getEncoded(),
+                    null
+                )
+
+            val customInvokeCallback = object : InvokeCallback {
+
+                override fun onError(e: Exception) {
+                    Napier.i("Error on invoke Callback!, ${e.printStackTrace()}")
+                    continuation.resume(Unit)
+                }
+
+                override fun onResponse(
+                    invokeElement: InvokeElement?,
+                    successCode: Long
+                ) {
+                    Napier.i("Command successs: ${invokeElement}")
+                    Napier.i("Command successs tlv: ${invokeElement?.tlvByteArray}")
+                    Napier.i("Command successs json: ${invokeElement?.jsonString}")
+                    continuation.resume(Unit)
+                }
+
+            }
+
+            chipDeviceController.invoke(
+                customInvokeCallback,
+                ptr,
+                invokeElement,
+                15_000,
+                30_000,
+            )
+        }
+    }
+
+    suspend fun generateRandomNumber(
+        devicePtr: Long,
         path: ChipAttributePath
     ) {
-        val devicePointer = getConnectedDevicePointer(deviceId.longValue)
         return suspendCancellableCoroutine { continuation ->
             val fields = TlvWriter().apply {
                 startStructure(AnonymousTag)
@@ -490,10 +538,10 @@ class ChipClient(
 
             chipDeviceController.invoke(
                 customInvokeCallback,
-                devicePointer,
+                devicePtr,
                 invokeElement,
-                10,
-                10
+                15_000,
+                30_000,
             )
         }
     }

@@ -114,13 +114,14 @@ class BindingManager(
             arrayListOf(switchNodeId),
             /* targets */
             arrayListOf(
-                ChipStructs.AccessControlClusterTarget(
+                ChipStructs.AccessControlClusterAccessControlTargetStruct(
                     clusterId, // cluster (OnOff)
                     null,    // endpoint
                     null     // deviceType
                 )
             ),
             /* fabricIndex */
+            Optional.empty(),
             fabricIndex
         )
 

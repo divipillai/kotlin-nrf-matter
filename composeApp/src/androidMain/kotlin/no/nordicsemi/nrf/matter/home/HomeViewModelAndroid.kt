@@ -49,11 +49,11 @@ import kotlin.time.Clock
 
 class HomeViewModelAndroid(
     private val baseViewModel: HomeViewModel,
+    private val chipClient: ChipClient,
     context: Context,
 ) : ViewModel() {
     private var gpsCommissioningResult: CommissioningResult? = null
-    val chipsClient: ChipClient = ChipClient(context)
-    val clustersHelper: ClustersHelper = ClustersHelper(chipsClient)
+    val clustersHelper: ClustersHelper = ClustersHelper(chipClient)
 
     fun gpsCommissioningDeviceSucceeded(activityResult: ActivityResult) {
         gpsCommissioningResult =
@@ -87,7 +87,10 @@ class HomeViewModelAndroid(
                     Napier.e(ex) { "AAA, Failed to read ProductName attribute with exception: $ex" }
                     ""
                 }
+            val softwareVersion = clustersHelper.readSoftwareVersionAttribute(deviceId)
+            Napier.d("Software version: $softwareVersion", tag = "AAA")
             val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
+            Napier.d("device matter info list: $deviceMatterInfoList", tag = "AAA")
             val deviceType = mutableStateListOf<DeviceType>()
             try {
                 deviceMatterInfoList.forEach {
@@ -107,7 +110,7 @@ class HomeViewModelAndroid(
                         .toEpochMilliseconds(), // Date when the device was commissioned.
                     vendorId = gpsCommissioningResult?.commissionedDeviceDescriptor?.vendorId.toString(),
                     productId = gpsCommissioningResult?.commissionedDeviceDescriptor?.productId.toString(),
-                    deviceType = deviceType.first(), // TODO: Change it to take list of device types.
+                    deviceType = DeviceType.MANUFACTURER_SPECIFIC_DEVICE, // TODO: Change it to take list of device types.
                     deviceId = deviceId,
                     name = gpsCommissioningResult?.deviceName,
                     deviceMatterInfo = deviceMatterInfoList,
@@ -140,6 +143,7 @@ class HomeViewModelAndroid(
             269L -> DeviceType.EXTENDED_COLOR_LIGHT // 0x010D Extended Color Light
             10L -> DeviceType.DOOR_LOCK // 0x000A door lock // todo need to review the hex value
 //            11L ->   Door Lock Controller // (0x000B)
+            0xFFF10001 -> DeviceType.MANUFACTURER_SPECIFIC_DEVICE
             else -> DeviceType.UNKNOWN
         }
     }

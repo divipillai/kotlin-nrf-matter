@@ -18,14 +18,19 @@ import chip.devicecontroller.model.ChipAttributePath
 import chip.devicecontroller.model.ChipEventPath
 import chip.devicecontroller.model.InvokeElement
 import chip.devicecontroller.model.NodeState
+import chip.devicecontroller.model.Status
 import chip.platform.AndroidBleManager
 import chip.platform.AndroidChipPlatform
+import chip.platform.AndroidNfcCommissioningManager
 import chip.platform.ChipMdnsCallbackImpl
 import chip.platform.DiagnosticDataProviderImpl
 import chip.platform.NsdManagerServiceBrowser
 import chip.platform.NsdManagerServiceResolver
 import chip.platform.PreferencesConfigurationManager
 import chip.platform.PreferencesKeyValueStoreManager
+import matter.tlv.AnonymousTag
+import matter.tlv.ContextSpecificTag
+import matter.tlv.TlvWriter
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -73,9 +78,11 @@ class ChipClient(
 ) {
     // Lazily instantiate [ChipDeviceController] and hold a reference to it.
     val chipDeviceController: ChipDeviceController by lazy {
+        Napier.i { "AAATESTAAA, Initializing ChipDeviceController" }
         ChipDeviceController.loadJni()
         AndroidChipPlatform(
             AndroidBleManager(),
+            AndroidNfcCommissioningManager(),
             PreferencesKeyValueStoreManager(context),
             PreferencesConfigurationManager(context),
             NsdManagerServiceResolver(context),
@@ -173,11 +180,11 @@ class ChipClient(
 
                     // Note that an error in processing is not necessarily communicated via onError().
                     // onCommissioningComplete with a "code != 0" also denotes an error in processing.
-                    override fun onPairingComplete(code: Int) {
-                        super.onPairingComplete(code)
-                        if (code != 0) {
+                    override fun onPairingComplete(errorCode: Long) {
+                        super.onPairingComplete(errorCode)
+                        if (errorCode != 0L) {
                             continuation.resumeWithException(
-                                IllegalStateException("Pairing failed with error code [${code}]")
+                                IllegalStateException("Pairing failed with error code [${errorCode}]")
                             )
                         } else {
                             continuation.resume(Unit)
@@ -207,7 +214,7 @@ class ChipClient(
                     override fun onCommissioningStatusUpdate(
                         nodeId: Long,
                         stage: String?,
-                        errorCode: Int
+                        errorCode: Long
                     ) {
                         super.onCommissioningStatusUpdate(nodeId, stage, errorCode)
                         continuation.resume(Unit)
@@ -219,7 +226,12 @@ class ChipClient(
             // TODO: Fix it.
 //            chipDeviceController.establishPaseConnection(
 //                deviceId, stripLinkLocalInIpAddress(ipAddress), port, setupPinCode)
-            chipDeviceController.establishPaseConnection(deviceId.longValue, ipAddress, port, setupPinCode)
+            chipDeviceController.establishPaseConnection(
+                deviceId.longValue,
+                ipAddress,
+                port,
+                setupPinCode
+            )
         }
     }
 
@@ -229,9 +241,9 @@ class ChipClient(
                 object : BaseCompletionListener() {
                     // Note that an error in processing is not necessarily communicated via onError().
                     // onCommissioningComplete with an "errorCode != 0" also denotes an error in processing.
-                    override fun onCommissioningComplete(nodeId: Long, errorCode: Int) {
+                    override fun onCommissioningComplete(nodeId: Long, errorCode: Long) {
                         super.onCommissioningComplete(nodeId, errorCode)
-                        if (errorCode != 0) {
+                        if (errorCode != 0L) {
                             continuation.resumeWithException(
                                 IllegalStateException("Commissioning failed with error code [${errorCode}]")
                             )
@@ -362,7 +374,7 @@ class ChipClient(
                         )
                     }
 
-                    override fun onResponse(attributePath: ChipAttributePath?) {
+                    override fun onResponse(attributePath: ChipAttributePath?, status: Status?) {
                         if (attributePath!! ==
                             ChipAttributePath.newInstance(
                                 requests.last().endpointId,
@@ -400,8 +412,9 @@ class ChipClient(
                     override fun onError(
                         attributePath: ChipAttributePath?,
                         eventPath: ChipEventPath?,
-                        e: Exception?
+                        e: Exception
                     ) {
+                        Napier.i("Oh no!")
                         continuation.resumeWithException(
                             IllegalStateException(
                                 "readAttributes failed",
@@ -414,17 +427,73 @@ class ChipClient(
                         val states: HashMap<ChipAttributePath, AttributeState> = HashMap()
                         for (path in attributePaths) {
                             var endpoint: Int = path.endpointId.id.toInt()
-                            states[path] =
-                                nodeState!!
-                                    .getEndpointState(endpoint)!!
-                                    .getClusterState(path.clusterId.id)!!
-                                    .getAttributeState(path.attributeId.id)!!
+                            nodeState?.getEndpointState(endpoint)
+                                ?.getClusterState(path.clusterId.id)
+                                ?.getAttributeState(path.attributeId.id)?.let {
+                                    states[path] = it
+                                }
+//                            states[path] =
+//                                nodeState?.
+//                                    .getEndpointState(endpoint)?.
+//                                    .getClusterState(path.clusterId.id)?.
+//                                    .getAttributeState(path.attributeId.id)
                         }
                         continuation.resume(states)
                     }
 
                 }
-            chipDeviceController.readAttributePath(callback, devicePtr, attributePaths)
+
+            chipDeviceController.readAttributePath(callback, devicePtr, attributePaths, 30_000)
+        }
+    }
+
+    suspend fun invokeCommand(
+        deviceId: DeviceId,
+        path: ChipAttributePath
+    ) {
+        val devicePointer = getConnectedDevicePointer(deviceId.longValue)
+        return suspendCancellableCoroutine { continuation ->
+            val fields = TlvWriter().apply {
+                startStructure(AnonymousTag)
+                put(ContextSpecificTag(0), true) // replace with appropriate put() overload for your type
+                endStructure()
+            }.getEncoded()
+
+
+            val customInvokeCallback = object : InvokeCallback {
+
+                override fun onError(e: Exception) {
+                    Napier.i("Error on invoke Callback!, ${e.printStackTrace()}")
+                    continuation.resume(Unit)
+                }
+
+                override fun onResponse(
+                    invokeElement: InvokeElement?,
+                    successCode: Long
+                ) {
+                    Napier.i("Command successs: ${invokeElement}")
+                    Napier.i("Command successs tlv: ${invokeElement?.tlvByteArray}")
+                    Napier.i("Command successs json: ${invokeElement?.jsonString}")
+                    continuation.resume(Unit)
+                }
+
+            }
+
+            val invokeElement = InvokeElement.newInstance(
+                path.endpointId,
+                path.clusterId,
+                path.attributeId,
+                fields,
+                null
+            )
+
+            chipDeviceController.invoke(
+                customInvokeCallback,
+                devicePointer,
+                invokeElement,
+                10,
+                10
+            )
         }
     }
 
@@ -443,7 +512,8 @@ class ChipClient(
                 devicePtr,
                 listOf(attributePath),
                 minInterval,
-                maxInterval
+                maxInterval,
+                30_000
             )
         }
     }

@@ -1,6 +1,8 @@
 package no.nordicsemi.nrf.matter.model
 
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
@@ -108,10 +110,12 @@ class AndroidDeviceController(
         deviceId: DeviceId,
         endpoint: Int
     ): Flow<Boolean> {
-        TODO("Not yet implemented")
+        return flow {  }
     }
 
     override suspend fun generateRandomNumber(deviceId: DeviceId): Int {
-        TODO("Not yet implemented")
+       return clustersHelper.generateRandomNumber(
+            deviceId
+        ) ?: -1
     }
 }

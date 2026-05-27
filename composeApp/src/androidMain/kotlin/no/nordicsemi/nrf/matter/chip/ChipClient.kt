@@ -11,6 +11,7 @@ import chip.devicecontroller.NetworkCredentials
 import chip.devicecontroller.OpenCommissioningCallback
 import chip.devicecontroller.PaseVerifierParams
 import chip.devicecontroller.ReportCallback
+import chip.devicecontroller.SubscriptionEstablishedCallback
 import chip.devicecontroller.UnpairDeviceCallback
 import chip.devicecontroller.WriteAttributesCallback
 import chip.devicecontroller.model.AttributeState
@@ -29,6 +30,11 @@ import chip.platform.NsdManagerServiceBrowser
 import chip.platform.NsdManagerServiceResolver
 import chip.platform.PreferencesConfigurationManager
 import chip.platform.PreferencesKeyValueStoreManager
+import io.github.aakira.napier.Napier
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.suspendCancellableCoroutine
 import matter.tlv.AnonymousTag
 import matter.tlv.ContextSpecificTag
 import matter.tlv.TlvWriter
@@ -547,23 +553,86 @@ class ChipClient(
     }
 
     /** Wrapper around [ChipDeviceController.subscribeToAttributePath] */
-    suspend fun subscribeToAttribute(
-        devicePtr: Long,
-        attributePath: ChipAttributePath,
-        minInterval: Int,
-        maxInterval: Int,
-        callback: ReportCallback
-    ) {
-        return suspendCancellableCoroutine { continuation ->
-            chipDeviceController.subscribeToAttributePath(
-                { continuation.resume(Unit) },
-                callback,
-                devicePtr,
-                listOf(attributePath),
-                minInterval,
-                maxInterval,
-                30_000
-            )
+    fun subscribeToAttribute(
+        deviceId: DeviceId,
+        endpoint: Int,
+        clusterId: Long,
+        attributeId: Long,
+    ): Flow<Boolean> = callbackFlow {
+        val devicePtr = getConnectedDevicePointer(deviceId.longValue)
+        val attributePath = ChipAttributePath.newInstance(
+            endpoint,
+            clusterId,
+            attributeId
+        )
+
+        chipDeviceController.subscribeToAttributePath(
+            object : SubscriptionEstablishedCallback {
+                override fun onSubscriptionEstablished(subscriptionId: Long) {
+                    Napier.d(
+                        "Subscription established: $subscriptionId",
+                        tag = "SubscribeToAttribute"
+                    )
+                }
+            },
+
+            object : ReportCallback {
+
+                override fun onError(
+                    onError: ChipAttributePath?,
+                    eventPath: ChipEventPath?,
+                    e: Exception
+                ) {
+                    Napier.e(
+                        "Subscription error", e,
+                        tag = "SubscribeToAttribute"
+                    )
+
+                    close(e)
+                }
+
+                override fun onReport(nodeState: NodeState?) {
+
+                    try {
+                        val endpointState =
+                            nodeState
+                                ?.endpointStates
+                                ?.get(endpoint)
+
+                        val clusterState =
+                            endpointState
+                                ?.getClusterState(clusterId)
+
+
+                        val attributeState =
+                            clusterState
+                                ?.getAttributeState(attributeId)
+
+
+                        val value = attributeState?.value as? Boolean
+
+                        Napier.d("Button pressed: $value", tag = "SubscribeToAttribute")
+
+                        if (value != null) {
+                            trySend(value)
+                        }
+
+                    } catch (e: Exception) {
+                        close(e)
+                    }
+                }
+            },
+
+            devicePtr,
+            listOf(attributePath),
+            0,
+            30,
+            30_000
+        )
+
+        awaitClose {
+            Napier.d("Subscription closed", tag = "SubscribeToAttribute")
+            chipDeviceController.shutdownSubscriptions()
         }
     }
 

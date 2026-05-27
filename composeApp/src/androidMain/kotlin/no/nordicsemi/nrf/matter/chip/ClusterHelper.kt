@@ -5,6 +5,7 @@ import chip.devicecontroller.ChipStructs
 import chip.devicecontroller.model.AttributeState
 import chip.devicecontroller.model.ChipAttributePath
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -230,6 +231,19 @@ class ClustersHelper(private val chipClient: ChipClient) {
             null
         }
     }
+
+    // Subscribe to button changes.
+    fun subscribeToButtonChanges(
+        deviceId: DeviceId,
+        endpoint: Int,
+        clusterId: Long,
+        attributeId: Long,
+    ): Flow<Boolean> = chipClient.subscribeToAttribute(
+        deviceId,
+        endpoint,
+        clusterId,
+        attributeId
+    )
 
     /**
      * DeviceListAttribute

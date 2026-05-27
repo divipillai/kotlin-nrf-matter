@@ -2,25 +2,18 @@ package no.nordicsemi.nrf.matter.chip
 
 import android.content.Context
 import chip.devicecontroller.ChipDeviceController
-import chip.devicecontroller.ClusterIDMapping.AdministratorCommissioning
 import chip.devicecontroller.ControllerParams
-import chip.devicecontroller.DiscoveredDevice
 import chip.devicecontroller.GetConnectedDeviceCallbackJni
 import chip.devicecontroller.InvokeCallback
 import chip.devicecontroller.NetworkCredentials
-import chip.devicecontroller.OpenCommissioningCallback
-import chip.devicecontroller.PaseVerifierParams
 import chip.devicecontroller.ReportCallback
 import chip.devicecontroller.SubscriptionEstablishedCallback
 import chip.devicecontroller.UnpairDeviceCallback
-import chip.devicecontroller.WriteAttributesCallback
 import chip.devicecontroller.model.AttributeState
-import chip.devicecontroller.model.AttributeWriteRequest
 import chip.devicecontroller.model.ChipAttributePath
 import chip.devicecontroller.model.ChipEventPath
 import chip.devicecontroller.model.InvokeElement
 import chip.devicecontroller.model.NodeState
-import chip.devicecontroller.model.Status
 import chip.platform.AndroidBleManager
 import chip.platform.AndroidChipPlatform
 import chip.platform.AndroidNfcCommissioningManager
@@ -38,8 +31,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import matter.tlv.AnonymousTag
 import matter.tlv.ContextSpecificTag
 import matter.tlv.TlvWriter
-import io.github.aakira.napier.Napier
-import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.model.DeviceId
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -85,7 +76,6 @@ class ChipClient(
 ) {
     // Lazily instantiate [ChipDeviceController] and hold a reference to it.
     val chipDeviceController: ChipDeviceController by lazy {
-        Napier.i { "AAATESTAAA, Initializing ChipDeviceController" }
         ChipDeviceController.loadJni()
         AndroidChipPlatform(
             AndroidBleManager(),
@@ -112,7 +102,7 @@ class ChipClient(
                 nodeId,
                 object : GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback {
                     override fun onDeviceConnected(devicePointer: Long) {
-                        Napier.d { "AAA, Got connected device pointer" }
+                        Napier.i { "Got connected device pointer" }
                         continuation.resume(devicePointer)
                     }
 
@@ -132,7 +122,6 @@ class ChipClient(
      */
     suspend fun awaitUnpairDevice(nodeId: Long) {
         return suspendCancellableCoroutine { continuation ->
-            Napier.d { "AAA, Calling chipDeviceController.unpair" }
             val callback: UnpairDeviceCallback =
                 object : UnpairDeviceCallback {
                     override fun onError(status: Int, nodeId: Long) {
@@ -147,28 +136,16 @@ class ChipClient(
 
                     override fun onSuccess(nodeId: Long) {
                         if (continuation.isActive) {
-                            Napier.d { "AAA, awaitUnpairDevice.onSuccess: deviceId [$nodeId]" }
+                            Napier.i { "awaitUnpairDevice.onSuccess: deviceId [$nodeId]" }
                             continuation.resume(Unit)
                         }
                     }
                 }
             chipDeviceController.unpairDeviceCallback(nodeId, callback)
             continuation.invokeOnCancellation {
-                Napier.d { "AAA, Unpair coroutine cancelled" }
+                Napier.i { "Unpair coroutine cancelled" }
             }
         }
-    }
-
-    fun computePaseVerifier(
-        devicePtr: Long,
-        pinCode: Long,
-        iterations: Long,
-        salt: ByteArray
-    ): PaseVerifierParams {
-        Napier.d {
-            "AAA, computePaseVerifier: devicePtr [${devicePtr}] pinCode [${pinCode}] iterations [${iterations}] salt [${salt}]"
-        }
-        return chipDeviceController.computePaseVerifier(devicePtr, pinCode, iterations, salt)
     }
 
     suspend fun awaitEstablishPaseConnection(
@@ -227,12 +204,6 @@ class ChipClient(
                         continuation.resume(Unit)
                     }
                 })
-
-            // Temporary workaround to remove interface indexes from ipAddress
-            // due to https://github.com/project-chip/connectedhomeip/pull/19394/files
-            // TODO: Fix it.
-//            chipDeviceController.establishPaseConnection(
-//                deviceId, stripLinkLocalInIpAddress(ipAddress), port, setupPinCode)
             chipDeviceController.establishPaseConnection(
                 deviceId.longValue,
                 ipAddress,
@@ -246,8 +217,6 @@ class ChipClient(
         return suspendCancellableCoroutine { continuation ->
             chipDeviceController.setCompletionListener(
                 object : BaseCompletionListener() {
-                    // Note that an error in processing is not necessarily communicated via onError().
-                    // onCommissioningComplete with an "errorCode != 0" also denotes an error in processing.
                     override fun onCommissioningComplete(nodeId: Long, errorCode: Long) {
                         super.onCommissioningComplete(nodeId, errorCode)
                         if (errorCode != 0L) {
@@ -265,142 +234,6 @@ class ChipClient(
                     }
                 })
             chipDeviceController.commissionDevice(deviceId.longValue, networkCredentials)
-        }
-    }
-
-    suspend fun awaitOpenPairingWindowWithPIN(
-        connectedDevicePointer: Long,
-        duration: Int,
-        iteration: Long,
-        discriminator: Int,
-        setupPinCode: Long
-    ) {
-        return suspendCancellableCoroutine { continuation ->
-            Napier.d { "AAA, Calling chipDeviceController.openPairingWindowWithPIN" }
-            val callback: OpenCommissioningCallback =
-                object : OpenCommissioningCallback {
-                    override fun onError(status: Int, deviceId: Long) {
-                        Napier.e { "AAA, awaitOpenPairingWindowWithPIN.onError: status [${status}] device [${deviceId}]" }
-                        continuation.resumeWithException(
-                            java.lang.IllegalStateException(
-                                "Failed opening the pairing window with status [${status}]"
-                            )
-                        )
-                    }
-
-                    override fun onSuccess(
-                        deviceId: Long,
-                        manualPairingCode: String?,
-                        qrCode: String?
-                    ) {
-                        Napier.d { "AAA, awaitOpenPairingWindowWithPIN.onSuccess: deviceId [${deviceId}]" }
-                        continuation.resume(Unit)
-                    }
-                }
-            chipDeviceController.openPairingWindowWithPINCallback(
-                connectedDevicePointer, duration, iteration, discriminator, setupPinCode, callback
-            )
-        }
-    }
-
-    /**
-     * Wrapper around [ChipDeviceController.getConnectedDevicePointer] to return the value directly.
-     */
-    suspend fun awaitGetConnectedDevicePointer(nodeId: Long): Long {
-        return suspendCancellableCoroutine { continuation ->
-            chipDeviceController.getConnectedDevicePointer(
-                nodeId,
-                object : GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback {
-                    override fun onDeviceConnected(devicePointer: Long) {
-                        Napier.d { "AAA, Got connected device pointer" }
-                        continuation.resume(devicePointer)
-                    }
-
-                    override fun onConnectionFailure(nodeId: Long, error: Exception) {
-                        val errorMessage = "Unable to get connected device with nodeId $nodeId"
-                        Napier.e(error) { errorMessage }
-                        continuation.resumeWithException(IllegalStateException(errorMessage))
-                    }
-                })
-        }
-    }
-
-    // ---------------------------------------------------------------------------
-    // We use our own mDNS discovery code, but interesting to note that
-    // ChipDeviceController also offers that feature.
-
-    fun getCommissionableNodes() {
-        chipDeviceController.discoverCommissionableNodes()
-    }
-
-    fun getDiscoveredDevice(index: Int): DiscoveredDevice? {
-        Napier.d { "AAA, getDiscoveredDevice(${index})" }
-        return chipDeviceController.getDiscoveredDevice(index)
-    }
-
-    // ---------------------------------------------------------------------------
-    // Access clusters via numeric ids. Useful to access manufacturer specific clusters.
-
-    suspend fun writeAttribute(
-        devicePtr: Long,
-        attributePath: ChipAttributePath,
-        tlv: ByteArray,
-        timedRequestTimeoutMs: Int = DEFAULT_TIMEOUT,
-        imTimeoutMs: Int = DEFAULT_TIMEOUT
-    ) {
-        return writeAttributes(
-            devicePtr, mapOf(attributePath to tlv), timedRequestTimeoutMs, imTimeoutMs
-        )
-    }
-
-    /** Wrapper around [ChipDeviceController.write] */
-    suspend fun writeAttributes(
-        devicePtr: Long,
-        attributes: Map<ChipAttributePath, ByteArray>,
-        timedRequestTimeoutMs: Int = DEFAULT_TIMEOUT,
-        imTimeoutMs: Int = DEFAULT_TIMEOUT
-    ) {
-        return suspendCancellableCoroutine { continuation ->
-            val requests: List<AttributeWriteRequest> =
-                attributes.toList().map {
-                    AttributeWriteRequest.newInstance(
-                        it.first.endpointId, it.first.clusterId, it.first.attributeId, it.second
-                    )
-                }
-            val callback: WriteAttributesCallback =
-                object : WriteAttributesCallback {
-                    override fun onError(
-                        attributePath: ChipAttributePath?,
-                        e: java.lang.Exception?
-                    ) {
-                        continuation.resumeWithException(
-                            IllegalStateException(
-                                "writeAttributes failed",
-                                e
-                            )
-                        )
-                    }
-
-                    override fun onResponse(attributePath: ChipAttributePath?, status: Status?) {
-                        if (attributePath!! ==
-                            ChipAttributePath.newInstance(
-                                requests.last().endpointId,
-                                requests.last().clusterId,
-                                requests.last().attributeId
-                            )
-                        ) {
-                            continuation.resume(Unit)
-                        }
-                    }
-                }
-
-            chipDeviceController.write(
-                callback,
-                devicePtr,
-                requests,
-                timedRequestTimeoutMs,
-                imTimeoutMs
-            )
         }
     }
 
@@ -433,7 +266,7 @@ class ChipClient(
                     override fun onReport(nodeState: NodeState?) {
                         val states: HashMap<ChipAttributePath, AttributeState> = HashMap()
                         for (path in attributePaths) {
-                            var endpoint: Int = path.endpointId.id.toInt()
+                            val endpoint: Int = path.endpointId.id.toInt()
                             nodeState?.getEndpointState(endpoint)
                                 ?.getClusterState(path.clusterId.id)
                                 ?.getAttributeState(path.attributeId.id)?.let {
@@ -450,8 +283,8 @@ class ChipClient(
             continuation.invokeOnCancellation {
                 // Optional: abort the interaction if the coroutine is canceled
                 // chipDeviceController.shutdownSubscriptions() or similar, if available
-                Napier.d { "AAA, read attribute coroutine cancelled"}
-                }
+                Napier.d { "AAA, read attribute coroutine cancelled" }
+            }
         }
     }
 
@@ -510,7 +343,10 @@ class ChipClient(
         return suspendCancellableCoroutine { continuation ->
             val fields = TlvWriter().apply {
                 startStructure(AnonymousTag)
-                put(ContextSpecificTag(0), true) // replace with appropriate put() overload for your type
+                put(
+                    ContextSpecificTag(0),
+                    true
+                ) // replace with appropriate put() overload for your type
                 endStructure()
             }.getEncoded()
 
@@ -659,4 +495,5 @@ class ChipClient(
             )
         }
     }
+
 }

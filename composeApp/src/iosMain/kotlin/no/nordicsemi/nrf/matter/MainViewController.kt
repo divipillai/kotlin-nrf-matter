@@ -2,9 +2,14 @@
 
 package no.nordicsemi.nrf.matter
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -15,11 +20,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.delay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
+import nrfmatterformobile.composeapp.generated.resources.Res
+import nrfmatterformobile.composeapp.generated.resources.light_fixture
+import nrfmatterformobile.composeapp.generated.resources.matter_loader
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
@@ -105,8 +116,12 @@ fun IosAppRoot() {
 
 @Composable
 fun CommissioningScreen() {
-    Box(Modifier.fillMaxSize()) {
-        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+    Box(Modifier.fillMaxSize().background(Color.White)) {
+        Image(
+            painter = painterResource(resource = Res.drawable.matter_loader),
+            contentDescription = null,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

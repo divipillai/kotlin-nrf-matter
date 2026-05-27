@@ -2,6 +2,7 @@ package no.nordicsemi.nrf.matter.chip
 
 import android.content.Context
 import chip.devicecontroller.ChipDeviceController
+import chip.devicecontroller.CommissionParameters
 import chip.devicecontroller.ControllerParams
 import chip.devicecontroller.GetConnectedDeviceCallbackJni
 import chip.devicecontroller.InvokeCallback
@@ -233,7 +234,12 @@ class ChipClient(
                         continuation.resumeWithException(error)
                     }
                 })
-            chipDeviceController.commissionDevice(deviceId.longValue, networkCredentials)
+
+            val commissionParameters = CommissionParameters.Builder()
+                .setNetworkCredentials(networkCredentials)
+                .build()
+
+            chipDeviceController.commissionDevice(deviceId.longValue, commissionParameters)
         }
     }
 

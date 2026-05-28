@@ -110,7 +110,7 @@ class HomeViewModelAndroid(
                         .toEpochMilliseconds(), // Date when the device was commissioned.
                     vendorId = gpsCommissioningResult?.commissionedDeviceDescriptor?.vendorId.toString(),
                     productId = gpsCommissioningResult?.commissionedDeviceDescriptor?.productId.toString(),
-                    deviceType = DeviceType.MANUFACTURER_SPECIFIC_DEVICE, // TODO: Change it to take list of device types.
+                    deviceType = deviceType.first(), // TODO: Change it to take list of device types.
                     deviceId = deviceId,
                     name = gpsCommissioningResult?.deviceName,
                     deviceMatterInfo = deviceMatterInfoList,

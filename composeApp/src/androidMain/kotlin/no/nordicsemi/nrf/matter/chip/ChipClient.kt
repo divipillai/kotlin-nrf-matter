@@ -295,7 +295,10 @@ class ChipClient(
     }
 
     suspend fun setLet(
-        deviceId: DeviceId
+        deviceId: DeviceId,
+        endpoint: Int,
+        clusterId: Long,
+        commandId: Long,
     ) {
         val ptr = getConnectedDevicePointer(deviceId.longValue)
         return suspendCancellableCoroutine { continuation ->
@@ -306,9 +309,9 @@ class ChipClient(
             tlvWriter.endStructure()
             val invokeElement =
                 InvokeElement.newInstance(
-                    1,
-                    0xFFF1FC01,
-                    0xFFF10000,
+                    endpoint,
+                    clusterId,
+                    commandId,
                     tlvWriter.getEncoded(),
                     null
                 )

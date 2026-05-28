@@ -60,7 +60,12 @@ class AndroidDeviceController(
         isOn: Boolean,
         endpoint: Int
     ) {
-        chipClient.setLet(deviceId)
+        chipClient.setLet(
+            deviceId,
+            0x1,
+            clusterId = 0xFFF1FC01L, // TODO: change the dynamic clusterId
+            commandId = 0xFFF10000L, // TODO: Change to the dynamic commandId
+        )
     }
 
     override suspend fun unlinkDevice(deviceId: DeviceId) {

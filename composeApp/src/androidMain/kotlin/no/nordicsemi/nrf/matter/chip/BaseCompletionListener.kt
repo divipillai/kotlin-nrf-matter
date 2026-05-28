@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.chip
 
 import chip.devicecontroller.ChipDeviceController
+import chip.devicecontroller.ICDDeviceInfo
 import io.github.aakira.napier.Napier
 
 /*
@@ -46,15 +47,17 @@ abstract class BaseCompletionListener : ChipDeviceController.CompletionListener 
         Napier.d { "AAA, BaseCompletionListener onStatusUpdate(): status [${status}]" }
     }
 
-    override fun onPairingComplete(code: Int) {
-        Napier.d { "AAA, BaseCompletionListener onPairingComplete(): code [${code}]" }
+    override fun onPairingComplete(errorCode: Long) {
+        Napier.d {
+            "AAA, BaseCompletionListener onCommissioningComplete (): errorCode [${errorCode}]"
+        }
     }
 
-    override fun onPairingDeleted(code: Int) {
-        Napier.d { "AAA, BaseCompletionListener onPairingDeleted(): code [${code}]" }
+    override fun onPairingDeleted(errorCode: Long) {
+        Napier.d { "AAA, BaseCompletionListener onPairingDeleted(): errorCode [${errorCode}]" }
     }
 
-    override fun onCommissioningComplete(nodeId: Long, errorCode: Int) {
+    override fun onCommissioningComplete(nodeId: Long, errorCode: Long) {
         Napier.d {
             "AAA, BaseCompletionListener onCommissioningComplete (): nodeId [${nodeId}] errorCode [${errorCode}]"
         }
@@ -87,9 +90,21 @@ abstract class BaseCompletionListener : ChipDeviceController.CompletionListener 
         }
     }
 
-    override fun onCommissioningStatusUpdate(nodeId: Long, stage: String?, errorCode: Int) {
+    override fun onCommissioningStatusUpdate(nodeId: Long, stage: String?, errorCode: Long) {
         Napier.d {
             "AAA, onCommissioningStatusUpdate nodeId [${nodeId}]  stage [${stage}]  errorCode [${errorCode}]"
         }
+    }
+
+    override fun onCommissioningStageStart(nodeId: Long, stage: String?) {
+        Napier.d { "AAA, onCommissioningStageStart onError()" }
+    }
+
+    override fun onICDRegistrationComplete(errorCode: Long, icdDeviceInfo: ICDDeviceInfo?) {
+        Napier.d { "AAA, onICDRegistrationComplete onError()" }
+    }
+
+    override fun onICDRegistrationInfoRequired() {
+        Napier.d { "AAA, onICDRegistrationInfoRequired onError()" }
     }
 }

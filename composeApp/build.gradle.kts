@@ -40,9 +40,11 @@ kotlin {
             // Home API SDK dependency
             implementation(libs.play.services.types)
             implementation(libs.play.services.home)
-            // Matter Android Demo SDK
-            implementation(libs.matter.android.demo.sdk)
-
+            // Matter Android sdk from the local
+            implementation(fileTree(mapOf(
+                "dir" to "libs",
+                "include" to listOf("*.jar", "*.so")
+            )))
         }
         commonMain.dependencies {
             implementation(libs.jetbrains.compose.runtime)
@@ -112,6 +114,12 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    sourceSets {
+        getByName("main") {
+            jniLibs.srcDirs("libs/jniLibs")
+        }
     }
 }
 

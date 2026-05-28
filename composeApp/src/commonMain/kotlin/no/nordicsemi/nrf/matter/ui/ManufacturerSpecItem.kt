@@ -46,7 +46,7 @@ internal fun ManufacturerSpecItem(
         .collectAsStateWithLifecycle(initialValue = false)
         .value
 
-    val data = device.device.deviceMatterInfo.first().manufacturerSpecificData!! // Shouldn't be null for this device.
+    val data = device.device.deviceMatterInfo.firstNotNullOf { it.manufacturerSpecificData } // Shouldn't be null for this device.
 
     Column {
         DeviceItemContainer(
@@ -168,7 +168,9 @@ private fun DeviceItemContainer(
                     .padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(onClick = { homeViewModel.generateRandomNumber(device.device.deviceId) }) {
+                Button(onClick = {
+                    homeViewModel.generateRandomNumber(device.device.deviceId)
+                }) {
                     Text("Generate number")
                 }
 

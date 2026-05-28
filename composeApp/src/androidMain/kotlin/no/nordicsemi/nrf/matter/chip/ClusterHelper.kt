@@ -2,8 +2,12 @@ package no.nordicsemi.nrf.matter.chip
 
 import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
+import chip.devicecontroller.model.AttributeState
+import chip.devicecontroller.model.ChipAttributePath
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
 import java.util.Optional
@@ -43,12 +47,9 @@ import kotlin.coroutines.resumeWithException
 
 class ClustersHelper(private val chipClient: ChipClient) {
 
-    // -----------------------------------------------------------------------------------------------
-    // Convenience functions
-
     /** Fetches MatterDeviceInfo for each endpoint supported by the device. */
     suspend fun fetchDeviceMatterInfo(deviceId: DeviceId): List<DeviceMatterInfo> {
-        Napier.d { "AAA, fetchDeviceMatterInfo(): deviceId [${deviceId}]" }
+        Napier.d { "AAA, fetchDevicet()MatterInfo(): deviceId [${deviceId}]" }
         val matterDeviceInfoList = arrayListOf<DeviceMatterInfo>()
         val connectedDevicePtr =
             try {
@@ -62,23 +63,20 @@ class ClustersHelper(private val chipClient: ChipClient) {
     }
 
     /** Fetches MatterDeviceInfo for a specific endpoint. */
-    suspend fun fetchDeviceMatterInfo(
+    private suspend fun fetchDeviceMatterInfo(
         nodeId: Long,
         connectedDevicePtr: Long,
         endpointInt: Int,
         matterDeviceInfoList: ArrayList<DeviceMatterInfo>
     ) {
-        Napier.d { "AAA, fetchDeviceMatterInfo(): nodeId [${nodeId}] endpoint [$endpointInt]" }
 
         val partsListAttribute =
             readDescriptorClusterPartsListAttribute(connectedDevicePtr, endpointInt)
-        Napier.d { "AAA, partsListAttribute [${partsListAttribute}]" }
 
         // DeviceListAttribute
         val deviceListAttribute =
             readDescriptorClusterDeviceListAttribute(connectedDevicePtr, endpointInt)
         val types = arrayListOf<Long>()
-        // todo: device type is deprecated
         deviceListAttribute.forEach { types.add(it.deviceType) }
 
         // ServerListAttribute
@@ -93,21 +91,43 @@ class ClustersHelper(private val chipClient: ChipClient) {
         val clientClusters = arrayListOf<Long>()
         clientListAttribute.forEach { clientClusters.add(it) }
 
-        // Build the DeviceMatterInfo
-        val deviceMatterInfo = DeviceMatterInfo(endpointInt, types, serverClusters, clientClusters)
+        // manufacturer specific
+        val manufacturerSpecificData = if (serverListAttribute.contains(0xFFF1FC01)) {
+            getManufacturerSpecificData(endpointInt.toLong(), connectedDevicePtr)
+        } else {
+            Napier.i { "No manufacturer specific cluster" }
+            null
+        }
+
+        val deviceMatterInfo = DeviceMatterInfo(
+            endpointInt,
+            types,
+            serverClusters,
+            clientClusters,
+            manufacturerSpecificData
+        )
         matterDeviceInfoList.add(deviceMatterInfo)
 
         // Recursive call for the parts supported by the endpoint.
         // For each part (endpoint)
         partsListAttribute?.forEach { part ->
-            Napier.d { "AAA, part [$part] is [${part.javaClass}]" }
-            val endpointInt =
-                when (part) {
-                    is Int -> part
-                    else -> return@forEach
-                }
-            Napier.d { "AAA, Processing part [$part]" }
-            fetchDeviceMatterInfo(nodeId, connectedDevicePtr, endpointInt, matterDeviceInfoList)
+            val childEndpoint = part as? Int ?: return@forEach
+
+            val childServerList = try {
+                readDescriptorClusterServerListAttribute(connectedDevicePtr, childEndpoint)
+            } catch (_: Throwable) {
+                Napier.w("Endpoint $childEndpoint has no Descriptor cluster, skipping...")
+                return@forEach
+            }
+
+            if (childServerList.isNotEmpty()) {
+                fetchDeviceMatterInfo(
+                    nodeId,
+                    connectedDevicePtr,
+                    childEndpoint,
+                    matterDeviceInfoList
+                )
+            }
         }
     }
 
@@ -116,12 +136,6 @@ class ClustersHelper(private val chipClient: ChipClient) {
 
     /**
      * PartsListAttribute. These are the endpoints supported.
-     *
-     * ```
-     * For example, on endpoint 0:
-     *     sendReadPartsListAttribute part: [1]
-     *     sendReadPartsListAttribute part: [2]
-     * ```
      */
     suspend fun readDescriptorClusterPartsListAttribute(
         devicePtr: Long,
@@ -141,6 +155,82 @@ class ClustersHelper(private val chipClient: ChipClient) {
                     })
         }
     }
+
+    suspend fun getManufacturerSpecificData(
+        endpoint: Long,
+        connectedDevicePtr: Long
+    ): ManufacturerSpecificData? {
+        return try {
+            val ep = endpoint.toInt()
+
+            val namePath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10000)
+            val ledPath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10001)
+            val buttonPath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10002)
+            Napier.d("namePath: $namePath, ledPath: $ledPath, buttonPath: $buttonPath", tag = "AAA")
+            val results = chipClient.readAttributes(
+                connectedDevicePtr,
+                listOf<ChipAttributePath>(namePath, ledPath, buttonPath)
+            )
+
+            // Look up by matching IDs instead of by path object reference
+            fun Map<ChipAttributePath, AttributeState>.findValue(
+                endpointId: Int,
+                clusterId: Long,
+                attributeId: Long
+            ): AttributeState? = entries.firstOrNull { (path, _) ->
+                path.endpointId.id.toInt() == endpointId &&
+                        path.clusterId.id == clusterId &&
+                        path.attributeId.id == attributeId
+            }?.value
+
+            val name =
+                results.findValue(ep, 0xFFF1FC01L, 0xFFF10000L)?.value as? String ?: return null
+            val led = results.findValue(ep, 0xFFF1FC01L, 0xFFF10001L)?.value as? Boolean ?: false
+            val button = results.findValue(ep, 0xFFF1FC01L, 0xFFF10002L)?.value as? Boolean ?: false
+
+            Napier.d("name=$name led=$led button=$button", tag = "AAA")
+
+            ManufacturerSpecificData(name, led, button)
+        } catch (t: Throwable) {
+            Napier.e("getManufacturerSpecificData failed: ${t.message}", tag = "AAA")
+            null
+        }
+    }
+
+    suspend fun generateRandomNumber(deviceId: DeviceId): Int? {
+        return try {
+            val deviceId = deviceId
+            val connectedDevicePtr = chipClient.getConnectedDevicePointer(deviceId.longValue)
+            chipClient.generateRandomNumber(
+                connectedDevicePtr,
+                ChipAttributePath.newInstance(
+                    0,
+                    0x28,
+                    0x00,
+                )
+
+            )
+            val namePath = ChipAttributePath.newInstance(0, 0x0028, 0x00017)
+            val nameAttr = chipClient.readAttribute(connectedDevicePtr, namePath)
+            nameAttr?.value as? Int
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            null
+        }
+    }
+
+    // Subscribe to button changes.
+    fun subscribeToButtonChanges(
+        deviceId: DeviceId,
+        endpoint: Int,
+        clusterId: Long,
+        attributeId: Long,
+    ): Flow<Boolean> = chipClient.subscribeToAttribute(
+        deviceId,
+        endpoint,
+        clusterId,
+        attributeId
+    )
 
     /**
      * DeviceListAttribute
@@ -174,34 +264,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
     }
 
     /**
-     * ServerListAttribute See
-     * https://github.com/project-chip/connectedhomeip/blob/master/zzz_generated/app-common/app-common/zap-generated/ids/Clusters.h
-     *
-     * ```
-     * For example: on endpoint 0
-     *     sendReadServerListAttribute: [3]
-     *     sendReadServerListAttribute: [4]
-     *     sendReadServerListAttribute: [29]
-     *     ... and more ...
-     * on endpoint 1:
-     *     sendReadServerListAttribute: [3]
-     *     sendReadServerListAttribute: [4]
-     *     sendReadServerListAttribute: [5]
-     *     sendReadServerListAttribute: [6]
-     *     sendReadServerListAttribute: [7]
-     *     ... and more ...
-     * on endpoint 2:
-     *     sendReadServerListAttribute: [4]
-     *     sendReadServerListAttribute: [6]
-     *     sendReadServerListAttribute: [29]
-     *     sendReadServerListAttribute: [1030]
-     *
-     * Some mappings:
-     *     namespace Groups = 0x00000004 (4)
-     *     namespace OnOff = 0x00000006 (6)
-     *     namespace Descriptor = 0x0000001D (29)
-     *     namespace OccupancySensing = 0x00000406 (1030)
-     * ```
+     * ServerListAttribute
      */
     suspend fun readDescriptorClusterServerListAttribute(
         devicePtr: Long,
@@ -293,8 +356,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         val connectedDevicePtr =
             try {
                 chipClient.getConnectedDevicePointer(deviceId.longValue)
-            } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
+            } catch (_: IllegalStateException) {
                 return ""
             }
 
@@ -312,6 +374,18 @@ class ClustersHelper(private val chipClient: ChipClient) {
 
             ChipClusters.BasicInformationCluster(connectedDevicePtr, 0)
                 .readVendorNameAttribute(callback)
+        }
+    }
+
+    suspend fun readSoftwareVersionAttribute(deviceId: DeviceId): String? {
+        return try {
+            val connectedDevicePtr = chipClient.getConnectedDevicePointer(deviceId.longValue)
+            val namePath = ChipAttributePath.newInstance(0, 0x0028, 0x000A)
+            val nameAttr = chipClient.readAttribute(connectedDevicePtr, namePath)
+            nameAttr?.value as? String
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            null
         }
     }
 
@@ -349,9 +423,6 @@ class ClustersHelper(private val chipClient: ChipClient) {
     }
 
     suspend fun setOnOffDeviceStateOnOffCluster(deviceId: Long, isOn: Boolean, endpoint: Int) {
-        Napier.d {
-            "AAA, setOnOffDeviceStateOnOffCluster() [${deviceId}] isOn [${isOn}] endpoint [${endpoint}]"
-        }
         val connectedDevicePtr =
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
@@ -366,12 +437,10 @@ class ClustersHelper(private val chipClient: ChipClient) {
                     .on(
                         object : ChipClusters.DefaultClusterCallback {
                             override fun onSuccess() {
-                                Napier.d { "AAA, Success for setOnOffDeviceStateOnOffCluster" }
                                 continuation.resume(Unit)
                             }
 
                             override fun onError(ex: Exception) {
-                                Napier.e(ex) { "AAA, Failure for setOnOffDeviceStateOnOffCluster, ${ex.localizedMessage}" }
                                 continuation.resumeWithException(ex)
                             }
                         })
@@ -383,12 +452,10 @@ class ClustersHelper(private val chipClient: ChipClient) {
                     .off(
                         object : ChipClusters.DefaultClusterCallback {
                             override fun onSuccess() {
-                                Napier.d { "AAA, Success for getOnOffDeviceStateOnOffCluster" }
                                 continuation.resume(Unit)
                             }
 
                             override fun onError(ex: Exception) {
-                                Napier.e(ex) { "AAA, Failure for getOnOffDeviceStateOnOffCluster" }
                                 continuation.resumeWithException(ex)
                             }
                         })
@@ -405,8 +472,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         val connectedDevicePtr =
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
-            } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
+            } catch (_: IllegalStateException) {
                 return
             }
 
@@ -439,50 +505,6 @@ class ClustersHelper(private val chipClient: ChipClient) {
         }
     }
 
-    suspend fun onOffSwitch(
-        deviceId: Long,
-        isSwitchOn: Boolean,
-        endpoint: Int,
-        pinCode: String? = null
-    ) {
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId)
-            } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
-                return
-            }
-
-        // If pin code is not provided then pull empty value.
-        val pinOptional = pinCode?.let {
-            Optional.of(it.toByteArray(Charsets.UTF_8))
-        } ?: Optional.empty()
-
-        return suspendCancellableCoroutine { continuation ->
-            val cluster = getOnOffSwitchClusterForDevice(connectedDevicePtr, endpoint)
-            val callback = object : ChipClusters.DefaultClusterCallback {
-                override fun onSuccess() {
-                    if (continuation.isActive) continuation.resume(Unit)
-                }
-
-                override fun onError(ex: Exception?) {
-                    if (continuation.isActive) {
-                        continuation.resumeWithException(
-                            ex ?: RuntimeException("Unknown Matter Error")
-                        )
-                    }
-                }
-            }
-
-            if (isSwitchOn) {
-                // TODO: implement this to on switch cluster.
-
-            } else {
-               // TODO: implement this to off switch cluster.
-            }
-        }
-    }
-
     private fun getOnOffClusterForDevice(
         devicePtr: Long,
         endpoint: Int
@@ -495,13 +517,6 @@ class ClustersHelper(private val chipClient: ChipClient) {
         endpoint: Int
     ): ChipClusters.DoorLockCluster {
         return ChipClusters.DoorLockCluster(devicePtr, endpoint)
-    }
-
-    private fun getOnOffSwitchClusterForDevice(
-        devicePtr: Long,
-        endpoint: Int
-    ): ChipClusters.OnOffSwitchConfigurationCluster{
-        return ChipClusters.OnOffSwitchConfigurationCluster(devicePtr, endpoint)
     }
 
 }

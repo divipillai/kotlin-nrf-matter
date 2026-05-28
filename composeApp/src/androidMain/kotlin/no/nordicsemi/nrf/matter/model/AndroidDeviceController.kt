@@ -60,7 +60,12 @@ class AndroidDeviceController(
         isOn: Boolean,
         endpoint: Int
     ) {
-        TODO("Not yet implemented")
+        chipClient.setLet(
+            deviceId,
+            0x1,
+            clusterId = 0xFFF1FC01L, // TODO: change the dynamic clusterId
+            commandId = 0xFFF10000L, // TODO: Change to the dynamic commandId
+        )
     }
 
     override suspend fun unlinkDevice(deviceId: DeviceId) {
@@ -108,10 +113,17 @@ class AndroidDeviceController(
         deviceId: DeviceId,
         endpoint: Int
     ): Flow<Boolean> {
-        TODO("Not yet implemented")
+        return clustersHelper.subscribeToButtonChanges(
+            deviceId,
+            endpoint,
+            clusterId = 0xFFF1FC01L, // TODO: fix with dynamic clusterId.
+            attributeId = 0xfff10002L // TODO: fix with dynamic attributeId.
+        )
     }
 
     override suspend fun generateRandomNumber(deviceId: DeviceId): Int {
-        TODO("Not yet implemented")
+        return clustersHelper.generateRandomNumber(
+            deviceId
+        ) ?: -1
     }
 }

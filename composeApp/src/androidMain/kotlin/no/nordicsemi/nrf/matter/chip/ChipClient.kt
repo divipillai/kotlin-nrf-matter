@@ -474,7 +474,6 @@ class ChipClient(
 
         awaitClose {
             Napier.d("Subscription closed", tag = "SubscribeToAttribute")
-            chipDeviceController.shutdownSubscriptions()
         }
     }
 

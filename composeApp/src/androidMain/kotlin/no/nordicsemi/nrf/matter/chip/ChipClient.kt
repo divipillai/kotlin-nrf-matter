@@ -361,7 +361,7 @@ class ChipClient(
 
                 override fun onError(e: Exception) {
                     Napier.i("Error on invoke Callback!, ${e.printStackTrace()}")
-                    continuation.resume(Unit)
+                    continuation.resumeWithException(e)
                 }
 
                 override fun onResponse(

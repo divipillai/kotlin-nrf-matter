@@ -69,7 +69,7 @@ class DevicePresenter(
 
     private var bindingJob: Job? = null
 
-    private val _bindingState = MutableStateFlow<BindingUiState>(UiState.Idle)
+    private val _bindingState = MutableStateFlow<BindingUiState>(UiState.Idle())
     val bindingState: StateFlow<BindingUiState> = _bindingState.asStateFlow()
 
     private val _bindingTargetDevices = MutableStateFlow<List<Device>>(emptyList())
@@ -164,7 +164,7 @@ class DevicePresenter(
         try {
             scope.launch {
                 devicesStateRepository.updateDeviceState(deviceId, true, isOn)
-                deviceCommandHandler.execute(deviceId, isOn)
+//                deviceCommandHandler.execute(deviceId, isOn)
             }
         } catch (e: Exception) {
             // revert or show error

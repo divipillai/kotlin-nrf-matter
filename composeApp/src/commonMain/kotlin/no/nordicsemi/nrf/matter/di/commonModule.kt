@@ -68,7 +68,6 @@ val commonModule = module {
     // Device command handler.
     single {
         DeviceCommandHandler(
-            get<DevicesRepository>(),
             get<DevicesStateRepository>(),
             get<DeviceController>(),
             get<BindingRepository>()

@@ -65,7 +65,7 @@ import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.Loader
-import no.nordicsemi.nrf.matter.ui.LockItem
+import no.nordicsemi.nrf.matter.ui.lock.LockItem
 import no.nordicsemi.nrf.matter.ui.SectionTitle
 import no.nordicsemi.nrf.matter.utils.toDateString
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -242,7 +242,7 @@ private fun DeviceDetails(
                     AlertDialogView(
                         onDismiss = {
                             // Change state to idle.
-                            devicePresenter.updateBindingState(UiState.Idle)
+                            devicePresenter.updateBindingState(UiState.Idle())
                         },
                         onConfirm = {
                             // Retry binding.
@@ -257,7 +257,7 @@ private fun DeviceDetails(
                     )
                 }
 
-                UiState.Idle -> {
+                is UiState.Idle -> {
                     LightSwitchBindingCard(
                         boundDevices = device.boundLights,
                         targetDevices = targetDevices
@@ -270,7 +270,7 @@ private fun DeviceDetails(
                     }
                 }
 
-                UiState.Loading -> {
+                is UiState.Loading -> {
                     BindingLoaderDialog(dummyLogsForBinding) {
                         // Text Content
                         Text(
@@ -299,7 +299,7 @@ private fun DeviceDetails(
                     Napier.i { "AAA, Success" }
                     // Load the binding table one more time.
                     devicePresenter.loadBindingTable(device.device.deviceId)
-                    devicePresenter.updateBindingState(UiState.Idle)
+                    devicePresenter.updateBindingState(UiState.Idle())
                     showToast(
                         message = "Binding completed successfully!",
                         duration = ToastDuration.Long,
@@ -355,14 +355,11 @@ private fun DeviceControlSection(
 
         DeviceType.DOOR_LOCK -> {
             LockItem(
-                deviceId = device.device.deviceId,
-                title = "Front Door",
-                subtitle = "Smart Lock",
-                isLocked = device.isOn,
+                device = device,
                 onLockUnlockDoor = { id, value ->
                     presenter.togglePower(id, value)
                 },
-                onDeviceClick = {}
+                onClick = {}
             )
         }
 

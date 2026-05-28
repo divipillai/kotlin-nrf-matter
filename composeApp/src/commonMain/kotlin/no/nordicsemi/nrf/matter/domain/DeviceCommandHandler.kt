@@ -4,17 +4,18 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import no.nordicsemi.nrf.matter.device.BindingUiState
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.repository.BindingRepository
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 
 /*
@@ -48,42 +49,14 @@ import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 class DeviceCommandHandler(
-    private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
     private val bindingRepository: BindingRepository,
 ) {
-
-    suspend fun execute(
-        deviceId: DeviceId,
-        command: Boolean
-    ) {
-        val device = devicesRepository.getDeviceOrNull(deviceId) ?: return
-
-        when (device.deviceType) {
-            DeviceType.UNKNOWN -> {
-                // TODO: Handle unknown devices.
-            }
-
-            DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> handleLed(device, command)
-            DeviceType.LIGHT_ON_OFF,
-            DeviceType.DIMMABLE_LIGHT,
-            DeviceType.LIGHT_SWITCH,
-            DeviceType.COLOR_TEMPERATURE_LIGHT,
-            DeviceType.EXTENDED_COLOR_LIGHT -> handlePower(device, deviceId, command)
-
-            DeviceType.LIGHT_SWITCH, DeviceType.OUTLET -> {
-                // Do nothing, since the role of switch is different from other device types.
-            }
-
-            DeviceType.DOOR_LOCK -> handleLock(device, deviceId, command)
-        }
-    }
-
-    private suspend fun handleLed(
+    fun handleLed(
         device: Device,
         isOn: Boolean
-    ) {
+    ) = withUiState {
         val deviceId = device.deviceId
         val endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
 
@@ -100,6 +73,7 @@ class DeviceCommandHandler(
                 endpoint = endpoint
             )
 
+            isOn
         } catch (e: Exception) {
 
             devicesStateRepository.updateDeviceState(
@@ -108,48 +82,47 @@ class DeviceCommandHandler(
                 isOn = !isOn
             )
 
-            throw e
+            !isOn
         }
     }
 
-    private suspend fun handlePower(
+    fun handlePower(
         device: Device,
-        deviceId: DeviceId,
         isOn: Boolean
-    ) {
+    ) = withUiState {
         val endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
 
         try {
             devicesStateRepository.updateDeviceState(
-                deviceId = deviceId,
+                deviceId = device.deviceId,
                 isOnline = true,
                 isOn = isOn
             )
 
             deviceController.setDeviceOnOff(
-                deviceId = deviceId,
+                deviceId = device.deviceId,
                 isDeviceOnline = true,
                 isOn = isOn,
                 endpoint = endpoint
             )
 
+            isOn
         } catch (e: Exception) {
 
             devicesStateRepository.updateDeviceState(
-                deviceId = deviceId,
+                deviceId = device.deviceId,
                 isOnline = false,
                 isOn = !isOn
             )
 
-            throw e
+            !isOn
         }
     }
 
-    private suspend fun handleLock(
+    fun handleLock(
         device: Device,
-        deviceId: DeviceId,
         isLocked: Boolean
-    ) {
+    ) = withUiState {
         val endpoint =
             resolveEndpoint(
                 device,
@@ -158,26 +131,27 @@ class DeviceCommandHandler(
 
         try {
             devicesStateRepository.updateDeviceState(
-                deviceId = deviceId,
+                deviceId = device.deviceId,
                 isOnline = true,
                 isOn = isLocked
             )
 
             deviceController.lockUnlockDoor(
-                deviceId = deviceId,
+                deviceId = device.deviceId,
                 isLocked = isLocked,
                 endpoint = endpoint,
             )
 
+            isLocked
         } catch (e: Exception) {
 
             devicesStateRepository.updateDeviceState(
-                deviceId = deviceId,
+                deviceId = device.deviceId,
                 isOnline = false,
                 isOn = !isLocked
             )
 
-            throw e
+            !isLocked
         }
     }
 
@@ -191,7 +165,7 @@ class DeviceCommandHandler(
         switchNodeId: DeviceId,
         lightNodeId: DeviceId,
     ): Flow<BindingUiState> = flow {
-        emit(UiState.Loading)
+        emit(UiState.Loading())
 
         try {
             deviceController.bind(
@@ -221,12 +195,33 @@ class DeviceCommandHandler(
         }
     }.flowOn(Dispatchers.IO)
 
-    fun subscribeToButtonChanges(deviceId: DeviceId): Flow<Boolean> {
-        return deviceController.subscribeToButtonChanges(deviceId, 1)
+    fun subscribeToButtonChanges(deviceId: DeviceId): Flow<UiState<Boolean>> {
+        return deviceController.subscribeToButtonChanges(deviceId, 1).withUiState()
     }
 
-    suspend fun generateRandomNumber(deviceId: DeviceId): Int {
-        return deviceController.generateRandomNumber(deviceId)
+    fun generateRandomNumber(deviceId: DeviceId): Flow<UiState<Int>> {
+        return withUiState {
+            deviceController.generateRandomNumber(deviceId)
+        }
+    }
+
+    private fun <T> Flow<T>.withUiState(): Flow<UiState<T>> {
+        return this
+            .map<T, UiState<T>> { UiState.Success(it) }
+            .onStart { emit(UiState.Loading()) }
+            .catch { emit(UiState.Error("Error during executing operation.", it)) }
+    }
+
+    private fun <T> withUiState(block: suspend () -> T): Flow<UiState<T>> {
+        return flow {
+            try {
+                emit(UiState.Loading())
+                emit(UiState.Success(block()))
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                emit(UiState.Error("Error during executing operation.", t))
+            }
+        }
     }
 
     companion object {

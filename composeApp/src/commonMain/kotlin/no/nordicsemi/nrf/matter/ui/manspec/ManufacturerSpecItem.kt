@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.ui
+package no.nordicsemi.nrf.matter.ui.manspec
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -23,11 +23,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import no.nordicsemi.nrf.matter.HomeViewModel
-import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -36,34 +34,27 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 internal fun ManufacturerSpecItem(
-    homeViewModel: HomeViewModel,
     device: DeviceUiModel,
-    enabled: Boolean,
-    updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
+    manufacturerSpecificData: ManufacturerSpecificData,
+    isLedOn: UiState<Boolean>,
+    isButtonOn: UiState<Boolean>,
+    randomNumber: UiState<Int>,
+    setLed: (Boolean) -> Unit,
+    generateRandomNumber: () -> Unit,
     onClick: () -> Unit
 ) {
-    val isButtonOn = homeViewModel.subscribeToButtonChanges(device.device.deviceId)
-        .collectAsStateWithLifecycle(initialValue = false)
-        .value
-
-    val data = device.device.deviceMatterInfo.firstNotNullOf { it.manufacturerSpecificData } // Shouldn't be null for this device.
-
     Column {
         DeviceItemContainer(
-            homeViewModel = homeViewModel,
             device = device,
-            icon = painterResource(Res.drawable.light_bulb),
-            title = data.name,
-            subtitle = "Turn light ON or OFF",
-            isOnline = enabled,
-            onDeviceClick = onClick
+            manufacturerSpecificData = manufacturerSpecificData,
+            randomNumber = randomNumber,
+            generateRandomNumber = generateRandomNumber,
+            onDeviceClick = onClick,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Switch(
-                    checked = enabled,
-                    onCheckedChange = {
-                        updateDeviceState(device.device.deviceId, it)
-                    }
+                    checked = (isLedOn as? UiState.Success)?.data ?: false,
+                    onCheckedChange = setLed
                 )
 
                 Text("LED", style = MaterialTheme.typography.labelSmall)
@@ -71,10 +62,8 @@ internal fun ManufacturerSpecItem(
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Switch(
-                    checked = isButtonOn,
-                    onCheckedChange = {
-                        updateDeviceState(device.device.deviceId, it)
-                    },
+                    checked = (isButtonOn as? UiState.Success)?.data ?: false,
+                    onCheckedChange = { /* disabled */ },
                     enabled = false,
                 )
 
@@ -86,20 +75,16 @@ internal fun ManufacturerSpecItem(
 
 @Composable
 private fun DeviceItemContainer(
-    homeViewModel: HomeViewModel,
     device: DeviceUiModel,
-    icon: Painter,
-    title: String,
-    subtitle: String,
-    isOnline: Boolean = true,
+    manufacturerSpecificData: ManufacturerSpecificData,
+    randomNumber: UiState<Int>,
     onDeviceClick: () -> Unit,
+    generateRandomNumber: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    val randomNumber = homeViewModel.randomNumber.collectAsStateWithLifecycle().value
-
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
-        border = if (isOnline) BorderStroke(
+        border = if (device.isOnline) BorderStroke(
             width = 1.dp,
             color = MaterialTheme.colorScheme.primary.copy(0.3f)
         ) else CardDefaults.outlinedCardBorder(),
@@ -116,7 +101,7 @@ private fun DeviceItemContainer(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                val boxColor = if (isOnline)
+                val boxColor = if (device.isOnline)
                     NordicSun
                 else MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f)
                 Box(
@@ -129,9 +114,9 @@ private fun DeviceItemContainer(
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        icon,
+                        painterResource(Res.drawable.light_bulb),
                         contentDescription = null,
-                        tint = if (isOnline)
+                        tint = if (device.isOnline)
                             MaterialTheme.colorScheme.primary else
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         modifier = Modifier.size(28.dp)
@@ -144,12 +129,12 @@ private fun DeviceItemContainer(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = title,
+                        text = manufacturerSpecificData.name,
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Text(
-                        text = subtitle,
+                        text = "Turn light ON or OFF",
                         style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -168,16 +153,14 @@ private fun DeviceItemContainer(
                     .padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(onClick = {
-                    homeViewModel.generateRandomNumber(device.device.deviceId)
-                }) {
+                Button(onClick = { generateRandomNumber() }) {
                     Text("Generate number")
                 }
 
                 Spacer(modifier = Modifier.padding(16.dp))
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("${randomNumber ?: "<empty>"}")
+                    Text("${(randomNumber as? UiState.Success)?.data ?: "<empty>"}")
                     Text("Random number", style = MaterialTheme.typography.labelSmall)
                 }
             }

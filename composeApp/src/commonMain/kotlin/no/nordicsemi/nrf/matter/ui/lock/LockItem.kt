@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.ui
+package no.nordicsemi.nrf.matter.ui.lock
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
@@ -13,9 +13,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.toDeviceId
+import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.ui.TestDeviceLockDoor
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.door_lock
 import nrfmatterformobile.composeapp.generated.resources.door_lock_open_right
@@ -24,28 +25,26 @@ import org.jetbrains.compose.resources.painterResource
 // Lock Item
 @Composable
 internal fun LockItem(
-    deviceId: DeviceId,
-    title: String,
-    subtitle: String,
-    isLocked: Boolean,
+    device: DeviceUiModel,
     onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
-    onDeviceClick: () -> Unit,
+    onClick: () -> Unit,
 ) {
+    val isLocked = device.isOn
     val icon = if (isLocked)
         painterResource(Res.drawable.door_lock)
     else painterResource(Res.drawable.door_lock_open_right)
 
     DeviceItemContainer(
         icon = icon,
-        title = title,
-        subtitle = subtitle,
-        onDeviceClick = onDeviceClick
+        title = "Front Door",
+        subtitle = "Smart Lock",
+        onDeviceClick = onClick
     ) {
         Surface(
             color = Color.LightGray.copy(alpha = 0.2f),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.clickable {
-                onLockUnlockDoor(deviceId, !isLocked)
+                onLockUnlockDoor(device.device.deviceId, !isLocked)
             }
         ) {
             Text(
@@ -65,11 +64,8 @@ private fun LockItemPreview() {
     NordicTheme {
         LockItem(
             onLockUnlockDoor = { _, _ -> },
-            deviceId = 1L.toDeviceId(),
-            title = "Front Door",
-            subtitle = "Smart Lock",
-            isLocked = false,
-            onDeviceClick = {}
+            device = TestDeviceLockDoor,
+            onClick = {}
         )
     }
 }

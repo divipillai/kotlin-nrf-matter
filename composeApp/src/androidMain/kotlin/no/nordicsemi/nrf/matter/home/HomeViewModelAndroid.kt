@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.chip.ChipClient
@@ -72,23 +73,32 @@ class HomeViewModelAndroid(
     fun onCommissionedDeviceNameCaptured(deviceName: String) {
         viewModelScope.launch {
             val deviceId = gpsCommissioningResult?.token!!.toDeviceId()
-            val vendorName =
-                try {
-                    clustersHelper.readBasicClusterVendorNameAttribute(deviceId)
-                } catch (ex: Exception) {
-                    Napier.e(ex) { "AAA, Failed to read VendorName attribute with exception: $ex" }
-                    ""
-                }
+            val vendorId = async {
+                clustersHelper.readVendorIDAttribute(deviceId)
+            }.await()
+            val vendorName = async {
+                clustersHelper.readVendorNameAttribute(deviceId)
+            }.await()
+            val productId = async {
+                clustersHelper.readProductIDAttribute(deviceId)
+            }.await()
+            val productName = async {
+                clustersHelper.readProductNameAttribute(deviceId)
+            }.await()
 
-            val productName =
-                try {
-                    clustersHelper.readBasicClusterProductNameAttribute(deviceId)
-                } catch (ex: Exception) {
-                    Napier.e(ex) { "AAA, Failed to read ProductName attribute with exception: $ex" }
-                    ""
-                }
-            val softwareVersion = clustersHelper.readSoftwareVersionAttribute(deviceId)
-            Napier.d("Software version: $softwareVersion", tag = "AAA")
+            val softwareVersion = async {
+                clustersHelper.readSoftwareVersionAttribute(deviceId)
+            }.await()
+            val serialNumber = async {
+                clustersHelper.readSerialNumberAttribute(deviceId)
+            }.await()
+            val specificationVersion = async {
+                clustersHelper.readSpecificationVersionAttribute(deviceId)
+            }.await()
+            val uniqueId = async {
+                clustersHelper.readUniqueIdAttribute(deviceId)
+            }.await()
+
             val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
             Napier.d("device matter info list: $deviceMatterInfoList", tag = "AAA")
             val deviceType = mutableStateListOf<DeviceType>()
@@ -108,12 +118,17 @@ class HomeViewModelAndroid(
                     productName = productName,
                     dateCommissioned = Clock.System.now()
                         .toEpochMilliseconds(), // Date when the device was commissioned.
-                    vendorId = gpsCommissioningResult?.commissionedDeviceDescriptor?.vendorId.toString(),
-                    productId = gpsCommissioningResult?.commissionedDeviceDescriptor?.productId.toString(),
+                    vendorId = vendorId.toString(),
+                    productId = productId.toString(),
                     deviceType = deviceType.first(), // TODO: Change it to take list of device types.
                     deviceId = deviceId,
                     name = gpsCommissioningResult?.deviceName,
+                    uniqueId = uniqueId.toString(),
+                    softwareVersion = softwareVersion,
+                    serialNumer = serialNumber,
+                    specificationVersion = specificationVersion,
                     deviceMatterInfo = deviceMatterInfoList,
+
                 )
                 baseViewModel.addCommissionedDevice(device, isOnline = true, isOn = false)
 

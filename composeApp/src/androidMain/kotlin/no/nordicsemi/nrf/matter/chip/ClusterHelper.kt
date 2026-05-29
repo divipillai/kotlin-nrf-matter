@@ -346,48 +346,159 @@ class ClustersHelper(private val chipClient: ChipClient) {
     }
 
     /**
-     * Reads the vendor name attribute. See spec section "11.1.6.3. Attributes" of the "Basic
-     * Information Cluster".
+     * Reads the vendor name attribute.
      *
      * @param deviceId the device identifier.
      * @return the vendor name
      */
-    suspend fun readBasicClusterVendorNameAttribute(deviceId: DeviceId): String {
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId.longValue)
-            } catch (_: IllegalStateException) {
-                return ""
-            }
-
-        return suspendCancellableCoroutine { continuation ->
-            val callback =
-                object : ChipClusters.CharStringAttributeCallback {
-                    override fun onSuccess(value: String) {
-                        continuation.resume(value)
-                    }
-
-                    override fun onError(ex: Exception) {
-                        continuation.resumeWithException(ex)
-                    }
-                }
-
-            ChipClusters.BasicInformationCluster(connectedDevicePtr, 0)
-                .readVendorNameAttribute(callback)
+    suspend fun readVendorNameAttribute(deviceId: DeviceId): String? {
+        return readBasicInformationAttribute(deviceId) { ptr, cb ->
+            ChipClusters.BasicInformationCluster(ptr, 0)
+                .readVendorNameAttribute(stringCallback(cb))
         }
     }
 
-    suspend fun readSoftwareVersionAttribute(deviceId: DeviceId): String? {
+    /**
+     * Reads the vendor id attribute.
+     *
+     * @param deviceId the device identifier.
+     * @return the vendor id
+     */
+    suspend fun readVendorIDAttribute(deviceId: DeviceId): Int? {
+        return readBasicInformationAttribute(deviceId) { ptr, cb ->
+            ChipClusters.BasicInformationCluster(ptr, 0)
+                .readVendorIDAttribute(integerCallback(cb))
+        }
+    }
+
+
+    /**
+     * Reads the product id attribute.
+     *
+     * @param deviceId the device identifier.
+     * @return the product id
+     */
+    suspend fun readProductIDAttribute(deviceId: DeviceId): Int? {
+        return readBasicInformationAttribute(deviceId) { ptr, cb ->
+            ChipClusters.BasicInformationCluster(ptr, 0)
+                .readProductIDAttribute(integerCallback(cb))
+        }
+    }
+
+    /**
+     * Reads the product name attribute.
+     *
+     * @param deviceId the device identifier.
+     * @return the product name
+     */
+    suspend fun readProductNameAttribute(deviceId: DeviceId): String? {
+        return readBasicInformationAttribute(deviceId) { ptr, cb ->
+            ChipClusters.BasicInformationCluster(ptr, 0)
+                .readProductNameAttribute(stringCallback(cb))
+        }
+    }
+
+    /**
+     * Read software version attribute.
+     *
+     * @param deviceId the device identifier.
+     * @return the software version
+     */
+    suspend fun readSoftwareVersionAttribute(deviceId: DeviceId): String? =
+        readBasicInformationAttribute(deviceId) { ptr, cb ->
+            ChipClusters.BasicInformationCluster(ptr, 0)
+                .readSoftwareVersionStringAttribute(stringCallback(cb))
+        }
+
+    /**
+     * Read serial number attribute.
+     *
+     * @param deviceId the device identifier.
+     * @return the serial number
+     */
+    suspend fun readSerialNumberAttribute(deviceId: DeviceId): String? =
+        readBasicInformationAttribute(deviceId) { ptr, cb ->
+            ChipClusters.BasicInformationCluster(ptr, 0)
+                .readSerialNumberAttribute(stringCallback(cb))
+        }
+
+    /**
+     * Read unique id attribute.
+     *
+     * @param deviceId the device identifier.
+     * @return the unique id
+     */
+    suspend fun readUniqueIdAttribute(deviceId: DeviceId): String? =
+        readBasicInformationAttribute(deviceId) { ptr, cb ->
+            ChipClusters.BasicInformationCluster(ptr, 0)
+                .readUniqueIDAttribute(stringCallback(cb))
+        }
+
+    /**
+     * Read specification version attribute.
+     *
+     * @param deviceId the device identifier.
+     * @return the specification version
+     */
+    suspend fun readSpecificationVersionAttribute(deviceId: DeviceId): Long? =
+        readBasicInformationAttribute(deviceId) { ptr, cb ->
+            ChipClusters.BasicInformationCluster(ptr, 0)
+                .readSpecificationVersionAttribute(longCallback(cb))
+        }
+
+    private suspend fun <T> readBasicInformationAttribute(
+        deviceId: DeviceId,
+        reader: (Long, (Result<T>) -> Unit) -> Unit
+    ): T? {
         return try {
-            val connectedDevicePtr = chipClient.getConnectedDevicePointer(deviceId.longValue)
-            val namePath = ChipAttributePath.newInstance(0, 0x0028, 0x000A)
-            val nameAttr = chipClient.readAttribute(connectedDevicePtr, namePath)
-            nameAttr?.value as? String
+            val devicePtr = chipClient.getConnectedDevicePointer(deviceId.longValue)
+
+            suspendCancellableCoroutine { continuation ->
+                reader(devicePtr) { result ->
+                    result
+                        .onSuccess { continuation.resume(it) }
+                        .onFailure { continuation.resumeWithException(it) }
+                }
+            }
         } catch (t: Throwable) {
             t.printStackTrace()
             null
         }
     }
+
+    private fun stringCallback(callback: (Result<String>) -> Unit) =
+        object : ChipClusters.CharStringAttributeCallback {
+            override fun onSuccess(value: String) {
+                callback(Result.success(value))
+            }
+
+            override fun onError(ex: Exception) {
+                callback(Result.failure(ex))
+            }
+        }
+
+    private fun longCallback(callback: (Result<Long>) -> Unit) =
+        object : ChipClusters.LongAttributeCallback {
+            override fun onSuccess(value: Long) {
+                callback(Result.success(value))
+            }
+
+            override fun onError(ex: Exception) {
+                callback(Result.failure(ex))
+            }
+        }
+
+    private fun integerCallback(callback: (Result<Int>) -> Unit) =
+        object : ChipClusters.IntegerAttributeCallback {
+
+            override fun onSuccess(value: Int) {
+                callback(Result.success(value))
+            }
+
+            override fun onError(ex: Exception) {
+                callback(Result.failure(ex))
+            }
+        }
 
     /**
      * Reads node's product name attribute. See spec section "11.1.6.3. Attributes" of the "Basic

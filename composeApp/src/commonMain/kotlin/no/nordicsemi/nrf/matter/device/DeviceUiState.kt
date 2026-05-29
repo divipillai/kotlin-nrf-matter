@@ -2,6 +2,7 @@ package no.nordicsemi.nrf.matter.device
 
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.ui.MatterController
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -50,5 +51,6 @@ sealed interface RemoveDeviceState {
 
 data class DeviceUiState(
     val deviceUiModel: DeviceUiModel? = null,
+    val controller: MatterController? = null,
     val removeDeviceState: RemoveDeviceState = RemoveDeviceState.Idle,
 )

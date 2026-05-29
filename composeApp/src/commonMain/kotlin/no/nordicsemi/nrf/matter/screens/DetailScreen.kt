@@ -65,6 +65,7 @@ import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.Loader
+import no.nordicsemi.nrf.matter.ui.MatterController
 import no.nordicsemi.nrf.matter.ui.lock.LockItem
 import no.nordicsemi.nrf.matter.ui.SectionTitle
 import no.nordicsemi.nrf.matter.utils.toDateString
@@ -146,6 +147,7 @@ fun DeviceScreen(
         Text("Loading device…")
         return
     }
+    val controller = uiState.controller
     val bindingState by devicePresenter.bindingState.collectAsState()
 
     when (uiState.removeDeviceState) {
@@ -212,7 +214,7 @@ fun DeviceScreen(
             .then(if (isRemoving) Modifier.cloudy() else Modifier)
             .then(if (bindingState is UiState.Loading) Modifier.cloudy() else Modifier)
     ) {
-        DeviceDetails(device, devicePresenter)
+        DeviceDetails(device, controller, devicePresenter)
     }
 
 }
@@ -220,7 +222,8 @@ fun DeviceScreen(
 @Composable
 private fun DeviceDetails(
     device: DeviceUiModel,
-    devicePresenter: DevicePresenter
+    controller: MatterController?,
+    devicePresenter: DevicePresenter,
 ) {
     val targetDevices by devicePresenter.bindingTargetDevices.collectAsState()
     val selectedDevices = remember { mutableListOf<Device>() }
@@ -246,10 +249,10 @@ private fun DeviceDetails(
                         },
                         onConfirm = {
                             // Retry binding.
-                            devicePresenter.initiateBinding(
-                                device.device.deviceId,
-                                selectedDevices.toList()
-                            )
+//                            devicePresenter.initiateBinding(
+//                                device.device.deviceId,
+//                                selectedDevices.toList()
+//                            )
                         },
                         title = "Binding Failed.",
                         message = "Unable to bind the device, please try again.",
@@ -263,10 +266,10 @@ private fun DeviceDetails(
                         targetDevices = targetDevices
                     ) {
                         selectedDevices.addAll(it)
-                        devicePresenter.initiateBinding(
-                            sourceNodeId = device.device.deviceId,
-                            targetDevices = it
-                        )
+//                        devicePresenter.initiateBinding(
+//                            sourceNodeId = device.device.deviceId,
+//                            targetDevices = it
+//                        )
                     }
                 }
 
@@ -309,6 +312,11 @@ private fun DeviceDetails(
             }
         }
 
+        controller?.let {
+            SectionTitle("Control")
+            it.Item {}
+        }
+
         SectionTitle("Sharing")
         ShareCard {}
 
@@ -342,7 +350,7 @@ private fun DeviceControlSection(
                 icon = painterResource(Res.drawable.light_bulb),
                 enabled = device.isOn,
                 updateDeviceState = { id, value ->
-                    presenter.togglePower(id, value)
+//                    presenter.togglePower(id, value)
                 },
                 onClick = {}
             )
@@ -357,7 +365,7 @@ private fun DeviceControlSection(
             LockItem(
                 device = device,
                 onLockUnlockDoor = { id, value ->
-                    presenter.togglePower(id, value)
+//                    presenter.togglePower(id, value)
                 },
                 onClick = {}
             )

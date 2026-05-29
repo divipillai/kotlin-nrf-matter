@@ -60,6 +60,20 @@ import org.koin.core.component.KoinComponent
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+fun DeviceUiModel.toController(scope: CoroutineScope, koin: KoinComponent): MatterController {
+    return when (device.deviceType) {
+        DeviceType.COLOR_TEMPERATURE_LIGHT,
+        DeviceType.EXTENDED_COLOR_LIGHT,
+        DeviceType.UNKNOWN -> TODO()
+        DeviceType.DIMMABLE_LIGHT,
+        DeviceType.LIGHT_ON_OFF -> LightController(this, koin.getKoin().get(), scope)
+        DeviceType.OUTLET,
+        DeviceType.LIGHT_SWITCH -> SwitchController(this, koin.getKoin().get(), scope)
+        DeviceType.DOOR_LOCK -> LockController(this, koin.getKoin().get(), scope)
+        DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> ManufacturerSpecController(this, koin.getKoin().get(), scope)
+    }
+}
+
 class HomeViewModel(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
@@ -92,19 +106,7 @@ class HomeViewModel(
             DevicesListUiModel(
                 devices = processDevices(devices, states, prefs),
                 showOfflineDevices = !prefs.hideOfflineDevices
-            ).devices.map {
-                when (it.device.deviceType) {
-                    DeviceType.COLOR_TEMPERATURE_LIGHT,
-                    DeviceType.EXTENDED_COLOR_LIGHT,
-                    DeviceType.UNKNOWN -> TODO()
-                    DeviceType.DIMMABLE_LIGHT,
-                    DeviceType.LIGHT_ON_OFF -> LightController(it, getKoin().get(), scope)
-                    DeviceType.OUTLET,
-                    DeviceType.LIGHT_SWITCH -> SwitchController(it, getKoin().get(), scope)
-                    DeviceType.DOOR_LOCK -> LockController(it, getKoin().get(), scope)
-                    DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> ManufacturerSpecController(it, getKoin().get(), scope)
-                }
-            }
+            ).devices.map { it.toController(scope, this) }
         }.stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     val devicesUiModelFlow: StateFlow<DevicesListUiModel> =

@@ -20,6 +20,8 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
+import no.nordicsemi.nrf.matter.toController
+import org.koin.core.component.KoinComponent
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -57,7 +59,7 @@ class DevicePresenter(
     private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
     private val bindingRepository: BindingRepository,
-) {
+) : KoinComponent {
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
     )
@@ -87,14 +89,17 @@ class DevicePresenter(
                 .distinctUntilChanged() // optional
                 .collect { isOn ->
                     val device = devicesRepository.getDeviceOrNull(deviceId) ?: return@collect
+                    val uiModel = DeviceUiModel(
+                        device = device,
+                        isOnline = true, // or from state
+                        isOn = isOn,
+                        boundLights = bindingRepository.getBindingsForDevice(deviceId)
+                    )
+                    val controller = uiModel.toController(scope, this@DevicePresenter)
                     _uiState.update {
                         it.copy(
-                            deviceUiModel = DeviceUiModel(
-                                device = device,
-                                isOnline = true, // or from state
-                                isOn = isOn,
-                                boundLights = bindingRepository.getBindingsForDevice(deviceId)
-                            )
+                            deviceUiModel = uiModel,
+                            controller = controller,
                         )
                     }
                 }
@@ -155,34 +160,6 @@ class DevicePresenter(
                 Napier.e(e) { "Error removing device: ${e.message}" }
             }
 
-        }
-    }
-
-    fun togglePower(deviceId: DeviceId, isOn: Boolean) {
-        try {
-            scope.launch {
-                devicesStateRepository.updateDeviceState(deviceId, true, isOn)
-//                deviceCommandHandler.execute(deviceId, isOn)
-            }
-        } catch (e: Exception) {
-            // revert or show error
-            Napier.e { "Error toggling power: ${e.message}" }
-        }
-    }
-
-    fun initiateBinding(
-        sourceNodeId: DeviceId,
-        targetDevices: List<Device>
-    ) {
-        bindingJob?.cancel()
-
-        bindingJob = scope.launch {
-//            deviceCommandHandler.bind(
-//                switchNodeId = sourceNodeId,
-//                lightNodeId = targetDevices.first().deviceId // TODO: support multiple devices binding
-//            ).collect { state ->
-//                _bindingState.value = state
-//            }
         }
     }
 

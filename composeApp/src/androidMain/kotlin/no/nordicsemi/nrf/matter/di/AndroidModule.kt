@@ -29,6 +29,10 @@ import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
+import no.nordicsemi.nrf.matter.ui.light.LightCommandHandler
+import no.nordicsemi.nrf.matter.ui.lock.LockCommandHandler
+import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecCommandHandler
+import no.nordicsemi.nrf.matter.ui.switch.SwitchCommandHandler
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -111,6 +115,10 @@ val androidModule = module {
 
     factory<NativePlatformLogger> { AndroidPlatformLogger() }
     factory<PlatformLogger> { PlatformLogger(get()) }
+    factory { LightCommandHandler(get(), get()) }
+    factory { LockCommandHandler(get(), get()) }
+    factory { ManufacturerSpecCommandHandler(get(), get()) }
+    factory { SwitchCommandHandler(get(), get(), get()) }
 
     // Binding Viewmodel
     viewModelOf(::BeaconViewModel)

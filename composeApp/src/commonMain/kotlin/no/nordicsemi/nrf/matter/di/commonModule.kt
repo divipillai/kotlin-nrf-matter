@@ -4,7 +4,6 @@ import no.nordicsemi.nrf.matter.BeaconRepository
 import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
 import no.nordicsemi.nrf.matter.binding.BindingDataSource
 import no.nordicsemi.nrf.matter.device.DevicePresenter
-import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
@@ -60,19 +59,10 @@ val commonModule = module {
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
             get<DeviceController>(),
-            get<DeviceCommandHandler>(),
             get<BindingRepository>()
         )
     }
 
-    // Device command handler.
-    single {
-        DeviceCommandHandler(
-            get<DevicesStateRepository>(),
-            get<DeviceController>(),
-            get<BindingRepository>()
-        )
-    }
     single<BindingDataSource> {
         BaseBindingDataSource(get())
     }

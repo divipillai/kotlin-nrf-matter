@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
@@ -27,6 +26,8 @@ import no.nordicsemi.nrf.matter.ui.light.LightController
 import no.nordicsemi.nrf.matter.ui.lock.LockController
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecController
 import no.nordicsemi.nrf.matter.ui.switch.SwitchController
+import org.koin.compose.getKoin
+import org.koin.core.component.KoinComponent
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -63,8 +64,7 @@ class HomeViewModel(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     userPreferencesRepository: UserPreferencesRepository,
-    private val deviceCommandHandler: DeviceCommandHandler,
-) : ViewModel() {
+) : ViewModel(), KoinComponent {
 
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
@@ -98,11 +98,11 @@ class HomeViewModel(
                     DeviceType.EXTENDED_COLOR_LIGHT,
                     DeviceType.UNKNOWN -> TODO()
                     DeviceType.DIMMABLE_LIGHT,
-                    DeviceType.LIGHT_ON_OFF -> LightController(it, deviceCommandHandler, scope)
+                    DeviceType.LIGHT_ON_OFF -> LightController(it, getKoin().get(), scope)
                     DeviceType.OUTLET,
-                    DeviceType.LIGHT_SWITCH -> SwitchController(it, deviceCommandHandler, scope)
-                    DeviceType.DOOR_LOCK -> LockController(it, deviceCommandHandler, scope)
-                    DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> ManufacturerSpecController(it, deviceCommandHandler, scope)
+                    DeviceType.LIGHT_SWITCH -> SwitchController(it, getKoin().get(), scope)
+                    DeviceType.DOOR_LOCK -> LockController(it, getKoin().get(), scope)
+                    DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> ManufacturerSpecController(it, getKoin().get(), scope)
                 }
             }
         }.stateIn(scope, SharingStarted.Eagerly, emptyList())

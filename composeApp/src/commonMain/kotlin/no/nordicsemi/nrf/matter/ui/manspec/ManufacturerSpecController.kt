@@ -9,30 +9,29 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import no.nordicsemi.nrf.matter.device.UiState
-import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.ui.MatterController
 
 class ManufacturerSpecController(
     private val device: DeviceUiModel,
-    private val deviceCommandHandler: DeviceCommandHandler,
+    private val commandHandler: ManufacturerSpecCommandHandler,
     private val scope: CoroutineScope,
 ) : MatterController {
 
     private val ledState = MutableStateFlow<UiState<Boolean>>(UiState.Success(device.isOn))
     private val randomNumber = MutableStateFlow<UiState<Int>>(UiState.Idle())
-    private val buttonState = deviceCommandHandler.subscribeToButtonChanges(device.device.deviceId)
+    private val buttonState = commandHandler.subscribeToButtonChanges(device.device.deviceId)
         .stateIn(scope, SharingStarted.Eagerly, UiState.Idle())
 
     private fun setLed(value: Boolean) {
-        deviceCommandHandler.handleLed(device.device, value)
+        commandHandler.handleLed(device.device, value)
             .onEach { ledState.value = it }
             .launchIn(scope)
     }
 
     private fun generateRandomNumber() {
-        deviceCommandHandler.generateRandomNumber(device.device.deviceId)
+        commandHandler.generateRandomNumber(device.device.deviceId)
             .onEach { randomNumber.value = it }
             .launchIn(scope)
     }

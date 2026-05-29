@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.nrf.matter.device.UiState
-import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
@@ -14,14 +13,14 @@ import no.nordicsemi.nrf.matter.ui.MatterController
 
 class LockController(
     private val device: DeviceUiModel,
-    private val deviceCommandHandler: DeviceCommandHandler,
+    private val commandHandler: LockCommandHandler,
     private val scope: CoroutineScope,
 )  : MatterController {
 
     val lockState = MutableStateFlow<UiState<Boolean>>(UiState.Idle())
 
     fun setLock(device: Device, isOn: Boolean) {
-        deviceCommandHandler.handleLock(device, isOn)
+        commandHandler.handleLock(device, isOn)
             .onEach { lockState.value = it }
             .launchIn(scope)
     }

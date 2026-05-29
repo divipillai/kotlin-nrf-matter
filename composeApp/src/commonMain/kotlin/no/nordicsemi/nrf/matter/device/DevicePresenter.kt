@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -57,7 +56,6 @@ class DevicePresenter(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
-    private val deviceCommandHandler: DeviceCommandHandler,
     private val bindingRepository: BindingRepository,
 ) {
     private val scope = CoroutineScope(
@@ -179,12 +177,12 @@ class DevicePresenter(
         bindingJob?.cancel()
 
         bindingJob = scope.launch {
-            deviceCommandHandler.bind(
-                switchNodeId = sourceNodeId,
-                lightNodeId = targetDevices.first().deviceId // TODO: support multiple devices binding
-            ).collect { state ->
-                _bindingState.value = state
-            }
+//            deviceCommandHandler.bind(
+//                switchNodeId = sourceNodeId,
+//                lightNodeId = targetDevices.first().deviceId // TODO: support multiple devices binding
+//            ).collect { state ->
+//                _bindingState.value = state
+//            }
         }
     }
 

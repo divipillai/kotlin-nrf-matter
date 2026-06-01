@@ -124,6 +124,6 @@ class AndroidDeviceController(
     override suspend fun generateRandomNumber(deviceId: DeviceId): Int {
         return clustersHelper.generateRandomNumber(
             deviceId
-        ) ?: -1
+        )?.toInt() ?: -1
     }
 }

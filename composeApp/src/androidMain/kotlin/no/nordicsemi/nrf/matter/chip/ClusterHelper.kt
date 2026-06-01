@@ -197,7 +197,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         }
     }
 
-    suspend fun generateRandomNumber(deviceId: DeviceId): Int? {
+    suspend fun generateRandomNumber(deviceId: DeviceId): Long? {
         return try {
             val deviceId = deviceId
             val connectedDevicePtr = chipClient.getConnectedDevicePointer(deviceId.longValue)
@@ -212,7 +212,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             )
             val namePath = ChipAttributePath.newInstance(0, 0x0028, 0x00017)
             val nameAttr = chipClient.readAttribute(connectedDevicePtr, namePath)
-            nameAttr?.value as? Int
+            nameAttr?.value as? Long
         } catch (t: Throwable) {
             t.printStackTrace()
             null

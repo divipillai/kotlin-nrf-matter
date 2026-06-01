@@ -8,7 +8,6 @@ import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.device.DevicePresenter
-import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.IosDeviceController
@@ -19,6 +18,10 @@ import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
 import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
+import no.nordicsemi.nrf.matter.ui.light.LightCommandHandler
+import no.nordicsemi.nrf.matter.ui.lock.LockCommandHandler
+import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecCommandHandler
+import no.nordicsemi.nrf.matter.ui.switch.SwitchCommandHandler
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -112,10 +115,12 @@ val iosModule = module {
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
             get<DeviceController>(),
-            get<DeviceCommandHandler>(),
             get<BindingRepository>()
-
         )
     }
 
+    factory { LightCommandHandler(get(), get()) }
+    factory { LockCommandHandler(get(), get()) }
+    factory { ManufacturerSpecCommandHandler(get(), get()) }
+    factory { SwitchCommandHandler(get(), get(), get()) }
 }

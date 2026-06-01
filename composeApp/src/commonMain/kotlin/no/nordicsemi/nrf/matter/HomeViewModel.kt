@@ -6,15 +6,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.Devices
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
@@ -23,6 +21,13 @@ import no.nordicsemi.nrf.matter.model.UserPreferences
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
+import no.nordicsemi.nrf.matter.ui.MatterController
+import no.nordicsemi.nrf.matter.ui.light.LightController
+import no.nordicsemi.nrf.matter.ui.lock.LockController
+import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecController
+import no.nordicsemi.nrf.matter.ui.switch.SwitchController
+import org.koin.compose.getKoin
+import org.koin.core.component.KoinComponent
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -55,13 +60,25 @@ import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+fun DeviceUiModel.toController(scope: CoroutineScope, koin: KoinComponent): MatterController {
+    return when (device.deviceType) {
+        DeviceType.COLOR_TEMPERATURE_LIGHT,
+        DeviceType.EXTENDED_COLOR_LIGHT,
+        DeviceType.UNKNOWN -> TODO()
+        DeviceType.DIMMABLE_LIGHT,
+        DeviceType.LIGHT_ON_OFF -> LightController(this, koin.getKoin().get(), scope)
+        DeviceType.OUTLET,
+        DeviceType.LIGHT_SWITCH -> SwitchController(this, koin.getKoin().get(), scope)
+        DeviceType.DOOR_LOCK -> LockController(this, koin.getKoin().get(), scope)
+        DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> ManufacturerSpecController(this, koin.getKoin().get(), scope)
+    }
+}
+
 class HomeViewModel(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     userPreferencesRepository: UserPreferencesRepository,
-    private val deviceCommandHandler: DeviceCommandHandler,
-) : ViewModel() {
-    val randomNumber = MutableStateFlow<Int?>(null)
+) : ViewModel(), KoinComponent {
 
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
@@ -78,6 +95,19 @@ class HomeViewModel(
                 showOfflineDevices = !prefs.hideOfflineDevices
             )
         }
+
+    val devices: StateFlow<List<MatterController>> =
+        combine(
+            devicesRepository.devicesFlow,
+            devicesStateRepository.devicesStateFlow,
+            userPreferencesRepository.userPreferencesFlow
+        ) { devices, states, prefs ->
+            Napier.i { "AAA, combine devices: $devices states: ${states.devicesStateList}" }
+            DevicesListUiModel(
+                devices = processDevices(devices, states, prefs),
+                showOfflineDevices = !prefs.hideOfflineDevices
+            ).devices.map { it.toController(scope, this) }
+        }.stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     val devicesUiModelFlow: StateFlow<DevicesListUiModel> =
         devicesListUiModelFlow.stateIn(
@@ -124,28 +154,6 @@ class HomeViewModel(
         if (resultCode == 0) {
             // User simply wilfully exited from commissioning.
             return
-        }
-    }
-
-    fun changeDeviceState(deviceId: DeviceId, isOn: Boolean) {
-        try {
-            scope.launch {
-                devicesStateRepository.updateDeviceState(deviceId, true, isOn)
-                deviceCommandHandler.execute(deviceId, isOn)
-            }
-        } catch (e: Exception) {
-            // revert or show error
-            Napier.e { "Error toggling power: ${e.message}" }
-        }
-    }
-
-    fun subscribeToButtonChanges(deviceId: DeviceId): Flow<Boolean> {
-        return deviceCommandHandler.subscribeToButtonChanges(deviceId)
-    }
-
-    fun generateRandomNumber(deviceId: DeviceId) {
-        scope.launch {
-            randomNumber.value = deviceCommandHandler.generateRandomNumber(deviceId)
         }
     }
 }

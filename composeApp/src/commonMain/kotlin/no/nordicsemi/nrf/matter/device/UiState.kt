@@ -34,8 +34,8 @@ import no.nordicsemi.nrf.matter.model.DeviceBinding
  */
 sealed interface UiState<out T> {
 
-    data object Idle : UiState<Nothing>
-    data object Loading : UiState<Nothing>
+    class Idle<T> : UiState<T>
+    class Loading<T> : UiState<T>
 
     data class Success<T>(val data: T) : UiState<T>
 

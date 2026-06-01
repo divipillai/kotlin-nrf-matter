@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.ui.DeviceList
@@ -58,12 +59,8 @@ fun HomeScreen(
             )
         } else {
             DeviceList(
-                homeViewModel = homeViewModel,
-                onDeviceClick = { onDeviceClick(it.device.deviceId) },
-                updateDeviceState = { deviceId, value ->
-                    homeViewModel.changeDeviceState(deviceId, value)
-                },
-                devicesList = devicesUiModel.devices,
+                devices = homeViewModel.devices.collectAsStateWithLifecycle().value,
+                onClick = onDeviceClick,
             )
         }
     }

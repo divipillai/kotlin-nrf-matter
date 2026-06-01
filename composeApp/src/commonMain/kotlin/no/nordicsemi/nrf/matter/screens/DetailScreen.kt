@@ -65,7 +65,8 @@ import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.Loader
-import no.nordicsemi.nrf.matter.ui.LockItem
+import no.nordicsemi.nrf.matter.ui.MatterController
+import no.nordicsemi.nrf.matter.ui.lock.LockItem
 import no.nordicsemi.nrf.matter.ui.SectionTitle
 import no.nordicsemi.nrf.matter.utils.toDateString
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -146,6 +147,7 @@ fun DeviceScreen(
         Text("Loading device…")
         return
     }
+    val controller = uiState.controller
     val bindingState by devicePresenter.bindingState.collectAsState()
 
     when (uiState.removeDeviceState) {
@@ -212,7 +214,7 @@ fun DeviceScreen(
             .then(if (isRemoving) Modifier.cloudy() else Modifier)
             .then(if (bindingState is UiState.Loading) Modifier.cloudy() else Modifier)
     ) {
-        DeviceDetails(device, devicePresenter)
+        DeviceDetails(device, controller, devicePresenter)
     }
 
 }
@@ -220,7 +222,8 @@ fun DeviceScreen(
 @Composable
 private fun DeviceDetails(
     device: DeviceUiModel,
-    devicePresenter: DevicePresenter
+    controller: MatterController?,
+    devicePresenter: DevicePresenter,
 ) {
     val targetDevices by devicePresenter.bindingTargetDevices.collectAsState()
     val selectedDevices = remember { mutableListOf<Device>() }
@@ -242,14 +245,14 @@ private fun DeviceDetails(
                     AlertDialogView(
                         onDismiss = {
                             // Change state to idle.
-                            devicePresenter.updateBindingState(UiState.Idle)
+                            devicePresenter.updateBindingState(UiState.Idle())
                         },
                         onConfirm = {
                             // Retry binding.
-                            devicePresenter.initiateBinding(
-                                device.device.deviceId,
-                                selectedDevices.toList()
-                            )
+//                            devicePresenter.initiateBinding(
+//                                device.device.deviceId,
+//                                selectedDevices.toList()
+//                            )
                         },
                         title = "Binding Failed.",
                         message = "Unable to bind the device, please try again.",
@@ -257,20 +260,20 @@ private fun DeviceDetails(
                     )
                 }
 
-                UiState.Idle -> {
+                is UiState.Idle -> {
                     LightSwitchBindingCard(
                         boundDevices = device.boundLights,
                         targetDevices = targetDevices
                     ) {
                         selectedDevices.addAll(it)
-                        devicePresenter.initiateBinding(
-                            sourceNodeId = device.device.deviceId,
-                            targetDevices = it
-                        )
+//                        devicePresenter.initiateBinding(
+//                            sourceNodeId = device.device.deviceId,
+//                            targetDevices = it
+//                        )
                     }
                 }
 
-                UiState.Loading -> {
+                is UiState.Loading -> {
                     BindingLoaderDialog(dummyLogsForBinding) {
                         // Text Content
                         Text(
@@ -299,7 +302,7 @@ private fun DeviceDetails(
                     Napier.i { "AAA, Success" }
                     // Load the binding table one more time.
                     devicePresenter.loadBindingTable(device.device.deviceId)
-                    devicePresenter.updateBindingState(UiState.Idle)
+                    devicePresenter.updateBindingState(UiState.Idle())
                     showToast(
                         message = "Binding completed successfully!",
                         duration = ToastDuration.Long,
@@ -307,6 +310,11 @@ private fun DeviceDetails(
                     )
                 }
             }
+        }
+
+        controller?.let {
+            SectionTitle("Control")
+            it.Item {}
         }
 
         SectionTitle("Sharing")
@@ -342,7 +350,7 @@ private fun DeviceControlSection(
                 icon = painterResource(Res.drawable.light_bulb),
                 enabled = device.isOn,
                 updateDeviceState = { id, value ->
-                    presenter.togglePower(id, value)
+//                    presenter.togglePower(id, value)
                 },
                 onClick = {}
             )
@@ -355,14 +363,11 @@ private fun DeviceControlSection(
 
         DeviceType.DOOR_LOCK -> {
             LockItem(
-                deviceId = device.device.deviceId,
-                title = "Front Door",
-                subtitle = "Smart Lock",
-                isLocked = device.isOn,
+                device = device,
                 onLockUnlockDoor = { id, value ->
-                    presenter.togglePower(id, value)
+//                    presenter.togglePower(id, value)
                 },
-                onDeviceClick = {}
+                onClick = {}
             )
         }
 

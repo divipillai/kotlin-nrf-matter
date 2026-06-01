@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.ui
+package no.nordicsemi.nrf.matter.ui.switch
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,7 +44,7 @@ internal fun SwitchItem(
     deviceId: DeviceId,
     title: String,
     subtitle: String,
-    onDeviceClick: () -> Unit,
+    onClick: () -> Unit,
 ) {
 
     DeviceItemContainer(
@@ -52,7 +52,7 @@ internal fun SwitchItem(
         title = title,
         subtitle = subtitle,
         isOnline = false,
-        onDeviceClick = onDeviceClick
+        onDeviceClick = onClick
     ) {}
 }
 
@@ -63,6 +63,6 @@ private fun SwitchItem_Preview() {
         deviceId = DeviceId.Zero,
         title = "Light switch",
         subtitle = "Bind the device with other devices ",
-        onDeviceClick = {}
+        onClick = {}
     )
 }

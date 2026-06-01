@@ -137,7 +137,7 @@ internal fun BindConfiguration(
 
 }
 
-private val DeviceBindingTest =
+internal val DeviceBindingTest =
     DeviceBinding(
         sourceNodeId = DeviceId.Zero,
         sourceEndpoint = 1,

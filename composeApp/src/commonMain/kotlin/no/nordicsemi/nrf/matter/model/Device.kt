@@ -69,6 +69,7 @@ data class Device(
     val uniqueId: String? = null,
     val softwareVersion: String? = null,
     val specificationVersion: Long ? = null,
+    val serialNumer: String? = null,
     val deviceMatterInfo: List<DeviceMatterInfo>,
 )
 

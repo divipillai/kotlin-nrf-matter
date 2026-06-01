@@ -49,7 +49,8 @@ class HomeKitCommissioner : MatterCommissioner {
             vendorName: accessory.manufacturer,
             uniqueId: "", //todo
             softwareVersion: "", //todo
-            specificationVersion: KotlinLong(value: 0), //todo
+            specificationVersion: KotlinLong(value: 0),
+            serialNumer: "", //todo
             deviceMatterInfo: [] //todo
         )
     }

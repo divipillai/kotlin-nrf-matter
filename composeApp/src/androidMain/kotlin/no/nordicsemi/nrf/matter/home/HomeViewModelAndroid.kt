@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter.home
 
-import android.content.Context
 import androidx.activity.result.ActivityResult
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
@@ -9,8 +8,8 @@ import com.google.android.gms.home.matter.commissioning.CommissioningResult
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.HomeViewModel
-import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
+import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.toDeviceId
@@ -49,11 +48,10 @@ import kotlin.time.Clock
 
 class HomeViewModelAndroid(
     private val baseViewModel: HomeViewModel,
-    private val chipClient: ChipClient,
-    context: Context,
+    private val basicInfoProvider: MatterBasicInfoProvider,
+    private val clustersHelper: ClustersHelper,
 ) : ViewModel() {
     private var gpsCommissioningResult: CommissioningResult? = null
-    val clustersHelper: ClustersHelper = ClustersHelper(chipClient)
 
     fun gpsCommissioningDeviceSucceeded(activityResult: ActivityResult) {
         gpsCommissioningResult =
@@ -72,23 +70,8 @@ class HomeViewModelAndroid(
     fun onCommissionedDeviceNameCaptured(deviceName: String) {
         viewModelScope.launch {
             val deviceId = gpsCommissioningResult?.token!!.toDeviceId()
-            val vendorName =
-                try {
-                    clustersHelper.readBasicClusterVendorNameAttribute(deviceId)
-                } catch (ex: Exception) {
-                    Napier.e(ex) { "AAA, Failed to read VendorName attribute with exception: $ex" }
-                    ""
-                }
+            val basicInfo = basicInfoProvider.fetchBasicInfo(deviceId)
 
-            val productName =
-                try {
-                    clustersHelper.readBasicClusterProductNameAttribute(deviceId)
-                } catch (ex: Exception) {
-                    Napier.e(ex) { "AAA, Failed to read ProductName attribute with exception: $ex" }
-                    ""
-                }
-            val softwareVersion = clustersHelper.readSoftwareVersionAttribute(deviceId)
-            Napier.d("Software version: $softwareVersion", tag = "AAA")
             val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
             Napier.d("device matter info list: $deviceMatterInfoList", tag = "AAA")
             val deviceType = mutableStateListOf<DeviceType>()
@@ -104,15 +87,19 @@ class HomeViewModelAndroid(
                     }
                 }
                 val device = Device(
-                    vendorName = vendorName,
-                    productName = productName,
+                    vendorName = basicInfo.vendorName,
+                    productName = basicInfo.productName,
                     dateCommissioned = Clock.System.now()
                         .toEpochMilliseconds(), // Date when the device was commissioned.
-                    vendorId = gpsCommissioningResult?.commissionedDeviceDescriptor?.vendorId.toString(),
-                    productId = gpsCommissioningResult?.commissionedDeviceDescriptor?.productId.toString(),
+                    vendorId = basicInfo.vendorId.toString(),
+                    productId = basicInfo.productId.toString(),
                     deviceType = deviceType.first(), // TODO: Change it to take list of device types.
                     deviceId = deviceId,
                     name = gpsCommissioningResult?.deviceName,
+                    uniqueId = basicInfo.uniqueId.toString(),
+                    softwareVersion = basicInfo.softwareVersion,
+                    serialNumer = basicInfo.serialNumber,
+                    specificationVersion = basicInfo.specificationVersion,
                     deviceMatterInfo = deviceMatterInfoList,
                 )
                 baseViewModel.addCommissionedDevice(device, isOnline = true, isOn = false)

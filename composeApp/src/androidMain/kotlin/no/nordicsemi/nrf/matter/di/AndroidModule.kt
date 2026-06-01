@@ -12,6 +12,7 @@ import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
+import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
@@ -99,6 +100,7 @@ val androidModule = module {
     single<ChipClient> { ChipClient(context = androidContext()) }
     single<ClustersHelper> { ClustersHelper(chipClient = get()) }
     single { BindingManager(chipClient = get()) }
+    single<MatterBasicInfoProvider> { MatterBasicInfoProvider(chipClient = get()) }
 
 
     // Define CoroutineScope as a singleton

@@ -1,17 +1,15 @@
 package no.nordicsemi.nrf.matter.home
 
-import android.content.Context
 import androidx.activity.result.ActivityResult
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.HomeViewModel
-import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
+import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.toDeviceId
@@ -50,11 +48,10 @@ import kotlin.time.Clock
 
 class HomeViewModelAndroid(
     private val baseViewModel: HomeViewModel,
-    private val chipClient: ChipClient,
-    context: Context,
+    private val basicInfoProvider: MatterBasicInfoProvider,
+    private val clustersHelper: ClustersHelper,
 ) : ViewModel() {
     private var gpsCommissioningResult: CommissioningResult? = null
-    val clustersHelper: ClustersHelper = ClustersHelper(chipClient)
 
     fun gpsCommissioningDeviceSucceeded(activityResult: ActivityResult) {
         gpsCommissioningResult =
@@ -73,31 +70,7 @@ class HomeViewModelAndroid(
     fun onCommissionedDeviceNameCaptured(deviceName: String) {
         viewModelScope.launch {
             val deviceId = gpsCommissioningResult?.token!!.toDeviceId()
-            val vendorId = async {
-                clustersHelper.readVendorIDAttribute(deviceId)
-            }.await()
-            val vendorName = async {
-                clustersHelper.readVendorNameAttribute(deviceId)
-            }.await()
-            val productId = async {
-                clustersHelper.readProductIDAttribute(deviceId)
-            }.await()
-            val productName = async {
-                clustersHelper.readProductNameAttribute(deviceId)
-            }.await()
-
-            val softwareVersion = async {
-                clustersHelper.readSoftwareVersionAttribute(deviceId)
-            }.await()
-            val serialNumber = async {
-                clustersHelper.readSerialNumberAttribute(deviceId)
-            }.await()
-            val specificationVersion = async {
-                clustersHelper.readSpecificationVersionAttribute(deviceId)
-            }.await()
-            val uniqueId = async {
-                clustersHelper.readUniqueIdAttribute(deviceId)
-            }.await()
+            val basicInfo = basicInfoProvider.fetchBasicInfo(deviceId)
 
             val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
             Napier.d("device matter info list: $deviceMatterInfoList", tag = "AAA")
@@ -114,21 +87,20 @@ class HomeViewModelAndroid(
                     }
                 }
                 val device = Device(
-                    vendorName = vendorName,
-                    productName = productName,
+                    vendorName = basicInfo.vendorName,
+                    productName = basicInfo.productName,
                     dateCommissioned = Clock.System.now()
                         .toEpochMilliseconds(), // Date when the device was commissioned.
-                    vendorId = vendorId.toString(),
-                    productId = productId.toString(),
+                    vendorId = basicInfo.vendorId.toString(),
+                    productId = basicInfo.productId.toString(),
                     deviceType = deviceType.first(), // TODO: Change it to take list of device types.
                     deviceId = deviceId,
                     name = gpsCommissioningResult?.deviceName,
-                    uniqueId = uniqueId.toString(),
-                    softwareVersion = softwareVersion,
-                    serialNumer = serialNumber,
-                    specificationVersion = specificationVersion,
+                    uniqueId = basicInfo.uniqueId.toString(),
+                    softwareVersion = basicInfo.softwareVersion,
+                    serialNumer = basicInfo.serialNumber,
+                    specificationVersion = basicInfo.specificationVersion,
                     deviceMatterInfo = deviceMatterInfoList,
-
                 )
                 baseViewModel.addCommissionedDevice(device, isOnline = true, isOn = false)
 

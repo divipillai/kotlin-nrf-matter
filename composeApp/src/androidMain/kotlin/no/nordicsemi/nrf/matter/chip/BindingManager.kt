@@ -121,7 +121,6 @@ class BindingManager(
                 )
             ),
             /* fabricIndex */
-            Optional.empty(),
             fabricIndex
         )
 

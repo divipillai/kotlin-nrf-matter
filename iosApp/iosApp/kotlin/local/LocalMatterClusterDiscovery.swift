@@ -105,6 +105,16 @@ class LocalMatterClusterDiscovery {
     }
     
     /**
+     * Read serial number from Basic Information Cluster.
+     */
+    func getSerialNumber() async -> String? {
+        let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
+        let serialNumber = try? await information?.readAttributeSerialNumber() ?? nil
+        SharedLogger.debug("Serial number: \(serialNumber)")
+        return serialNumber
+    }
+    
+    /**
      * The main function of this class for reading all available data.
      * It reads vendor name, vendor id, product name, product id from the main endpoint 0
      * as well as device type, client clusters and server clusters for all other endpoints.
@@ -121,6 +131,7 @@ class LocalMatterClusterDiscovery {
         let uniqueId = await getUniqueId()
         let swVersion = await getSoftwareVersion()
         let specVersion = await getSpecificationVersion()
+        let serialNumber = await getSerialNumber()
         
         let deviceTypes = await getDeviceType(endpoint: 0)
         SharedLogger.debug("deviceTypes AAA: \(deviceTypes)")
@@ -162,6 +173,7 @@ class LocalMatterClusterDiscovery {
             uniqueId: uniqueId,
             softwareVersion: swVersion,
             specificationVersion: specVersion.map { KotlinLong(value: $0.int64Value) },
+            serialNumer: serialNumber,
             deviceMatterInfo: deviceMatterInfo,
         )
     }

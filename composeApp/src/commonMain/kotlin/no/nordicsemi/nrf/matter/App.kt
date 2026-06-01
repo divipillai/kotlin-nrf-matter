@@ -1,7 +1,7 @@
 package no.nordicsemi.nrf.matter
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
@@ -15,7 +15,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
@@ -29,11 +33,13 @@ import no.nordicsemi.nrf.matter.logger.LoggerScreen
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
-import no.nordicsemi.nrf.matter.navigation.CommissioningRoute
+import no.nordicsemi.nrf.matter.navigation.BindingRoute
 import no.nordicsemi.nrf.matter.navigation.DetailsRoute
 import no.nordicsemi.nrf.matter.navigation.HomeRoute
 import no.nordicsemi.nrf.matter.navigation.LoggerRoute
 import no.nordicsemi.nrf.matter.navigation.config
+import no.nordicsemi.nrf.matter.navigation.icon
+import no.nordicsemi.nrf.matter.navigation.title
 import no.nordicsemi.nrf.matter.screens.DeviceScreen
 import no.nordicsemi.nrf.matter.screens.HomeScreen
 import no.nordicsemi.nrf.matter.theme.NordicTheme
@@ -72,7 +78,6 @@ import no.nordicsemi.nrf.matter.theme.NordicTheme
 @Composable
 fun App(homeViewModel: HomeViewModel) {
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
-
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)
     val onBack: () -> Unit = {
         if (backStack.size > 1) {
@@ -80,7 +85,10 @@ fun App(homeViewModel: HomeViewModel) {
         }
     }
 
+    val currentRoute = backStack.lastOrNull() ?: HomeRoute
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val tabs = remember { listOf(HomeRoute, BindingRoute, LoggerRoute) }
 
     NordicTheme {
         Surface(
@@ -94,11 +102,6 @@ fun App(homeViewModel: HomeViewModel) {
                             backStack = backStack,
                             devicesUiModel = devicesUiModel
                         ),
-                        onNavigationIconClick = {
-                            if (backStack.size > 1) {
-                                backStack.removeLastOrNull()
-                            }
-                        },
                         onLoggerIconClick = {
                             backStack.add(LoggerRoute)
                         }
@@ -144,6 +147,13 @@ fun App(homeViewModel: HomeViewModel) {
     }
 }
 
+@Composable
+fun BindingScreen(
+
+) {
+    Text("Bindings")
+}
+
 private fun EntryProviderScope<NavKey>.screens(
     snackbarHostState: SnackbarHostState,
     homeViewModel: HomeViewModel,
@@ -179,6 +189,13 @@ private fun EntryProviderScope<NavKey>.screens(
                 backStack.removeLastOrNull()
             }
         }
+
+    entry<BindingRoute> {
+        BindingScreen()
+    }
+
+    entry<LoggerRoute> { _ ->
+        LoggerScreen(padding = padding)
     }
 }
 

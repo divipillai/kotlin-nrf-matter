@@ -66,8 +66,8 @@ import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.Loader
 import no.nordicsemi.nrf.matter.ui.MatterController
-import no.nordicsemi.nrf.matter.ui.lock.LockItem
 import no.nordicsemi.nrf.matter.ui.SectionTitle
+import no.nordicsemi.nrf.matter.ui.lock.LockItem
 import no.nordicsemi.nrf.matter.utils.toDateString
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.light_bulb
@@ -501,12 +501,16 @@ private fun TechnicalDetailsCard(device: Device) {
             }
             DetailRow("Device Type", device.deviceType.toString())
             device.dateCommissioned?.let {
-                DetailRow("Date Commissioned", it.toDateString(), divider = false)
+                DetailRow("Date Commissioned", it.toDateString())
             }
-//            DetailRow("Specification Version", "N/A") // TODO: Get this from the device. what is specification version??
-//            DetailRow("Software Version", "N/A") // TODO: Get this from the device. what is software version??
-//            DetailRow("Serial Number", "N/A") // TODO: Get this from the device. what is serial number??
-//            DetailRow("Unique ID", "N/A") // TODO: Get this from the device. what is unique ID??
+            DetailRow("Software Version", device.softwareVersion ?: "N/A")
+            DetailRow("Serial Number", device.serialNumer ?: "N/A")
+            DetailRow("Unique ID", device.uniqueId ?: "N/A")
+            DetailRow(
+                "Specification Version",
+                device.specificationVersion.toString(),
+                divider = false
+            )
         }
     }
 }

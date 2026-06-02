@@ -1,8 +1,6 @@
 package no.nordicsemi.nrf.matter
 
 import android.app.Application
-import io.github.aakira.napier.DebugAntilog
-import io.github.aakira.napier.Napier
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -36,8 +34,5 @@ import io.github.aakira.napier.Napier
  */
 
 class LoggingApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        Napier.base(DebugAntilog())
-    }
+
 }

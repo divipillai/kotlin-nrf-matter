@@ -24,7 +24,6 @@ import chip.platform.NsdManagerServiceBrowser
 import chip.platform.NsdManagerServiceResolver
 import chip.platform.PreferencesConfigurationManager
 import chip.platform.PreferencesKeyValueStoreManager
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -32,6 +31,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import matter.tlv.AnonymousTag
 import matter.tlv.ContextSpecificTag
 import matter.tlv.TlvWriter
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -103,13 +103,13 @@ class ChipClient(
                 nodeId,
                 object : GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback {
                     override fun onDeviceConnected(devicePointer: Long) {
-                        Napier.i { "Got connected device pointer" }
+                        NordicLogger.info("Got connected device pointer")
                         continuation.resume(devicePointer)
                     }
 
                     override fun onConnectionFailure(nodeId: Long, error: Exception) {
                         val errorMessage = "Unable to get connected device with nodeId $nodeId."
-                        Napier.e(error) { errorMessage }
+                        NordicLogger.error(errorMessage, error)
                         continuation.resumeWithException(IllegalStateException(errorMessage))
                     }
                 })
@@ -137,14 +137,14 @@ class ChipClient(
 
                     override fun onSuccess(nodeId: Long) {
                         if (continuation.isActive) {
-                            Napier.i { "awaitUnpairDevice.onSuccess: deviceId [$nodeId]" }
+                            NordicLogger.info("awaitUnpairDevice.onSuccess: deviceId [$nodeId]")
                             continuation.resume(Unit)
                         }
                     }
                 }
             chipDeviceController.unpairDeviceCallback(nodeId, callback)
             continuation.invokeOnCancellation {
-                Napier.i { "Unpair coroutine cancelled" }
+                NordicLogger.info("Unpair coroutine cancelled")
             }
         }
     }
@@ -260,7 +260,7 @@ class ChipClient(
                         eventPath: ChipEventPath?,
                         e: Exception
                     ) {
-                        Napier.i("Oh no!")
+                        NordicLogger.info("Oh no!")
                         continuation.resumeWithException(
                             IllegalStateException(
                                 "readAttributes failed",
@@ -289,7 +289,7 @@ class ChipClient(
             continuation.invokeOnCancellation {
                 // Optional: abort the interaction if the coroutine is canceled
                 // chipDeviceController.shutdownSubscriptions() or similar, if available
-                Napier.d { "AAA, read attribute coroutine cancelled" }
+                NordicLogger.debug("AAA, read attribute coroutine cancelled")
             }
         }
     }
@@ -319,7 +319,7 @@ class ChipClient(
             val customInvokeCallback = object : InvokeCallback {
 
                 override fun onError(e: Exception) {
-                    Napier.i("Error on invoke Callback!, ${e.printStackTrace()}")
+                    NordicLogger.info("Error on invoke Callback!, ${e.printStackTrace()}")
                     continuation.resume(Unit)
                 }
 
@@ -327,9 +327,9 @@ class ChipClient(
                     invokeElement: InvokeElement?,
                     successCode: Long
                 ) {
-                    Napier.i("Command successs: ${invokeElement}")
-                    Napier.i("Command successs tlv: ${invokeElement?.tlvByteArray}")
-                    Napier.i("Command successs json: ${invokeElement?.jsonString}")
+                    NordicLogger.info("Command successs: ${invokeElement}")
+                    NordicLogger.info("Command successs tlv: ${invokeElement?.tlvByteArray}")
+                    NordicLogger.info("Command successs json: ${invokeElement?.jsonString}")
                     continuation.resume(Unit)
                 }
 
@@ -363,7 +363,7 @@ class ChipClient(
             val customInvokeCallback = object : InvokeCallback {
 
                 override fun onError(e: Exception) {
-                    Napier.i("Error on invoke Callback!, ${e.printStackTrace()}")
+                    NordicLogger.info("Error on invoke Callback!, ${e.printStackTrace()}")
                     continuation.resumeWithException(e)
                 }
 
@@ -371,9 +371,9 @@ class ChipClient(
                     invokeElement: InvokeElement?,
                     successCode: Long
                 ) {
-                    Napier.i("Command successs: ${invokeElement}")
-                    Napier.i("Command successs tlv: ${invokeElement?.tlvByteArray}")
-                    Napier.i("Command successs json: ${invokeElement?.jsonString}")
+                    NordicLogger.info("Command successs: ${invokeElement}")
+                    NordicLogger.info("Command successs tlv: ${invokeElement?.tlvByteArray}")
+                    NordicLogger.info("Command successs json: ${invokeElement?.jsonString}")
                     continuation.resume(Unit)
                 }
 
@@ -414,7 +414,7 @@ class ChipClient(
         chipDeviceController.subscribeToAttributePath(
             object : SubscriptionEstablishedCallback {
                 override fun onSubscriptionEstablished(subscriptionId: Long) {
-                    Napier.d(
+                    NordicLogger.debug(
                         "Subscription established: $subscriptionId",
                         tag = "SubscribeToAttribute"
                     )
@@ -428,7 +428,7 @@ class ChipClient(
                     eventPath: ChipEventPath?,
                     e: Exception
                 ) {
-                    Napier.e(
+                    NordicLogger.error(
                         "Subscription error", e,
                         tag = "SubscribeToAttribute"
                     )
@@ -456,7 +456,7 @@ class ChipClient(
 
                         val value = attributeState?.value as? Boolean
 
-                        Napier.d("Button pressed: $value", tag = "SubscribeToAttribute")
+                        NordicLogger.debug("Button pressed: $value", tag = "SubscribeToAttribute")
 
                         if (value != null) {
                             trySend(value)
@@ -476,7 +476,7 @@ class ChipClient(
         )
 
         awaitClose {
-            Napier.d("Subscription closed", tag = "SubscribeToAttribute")
+            NordicLogger.debug("Subscription closed", tag = "SubscribeToAttribute")
         }
     }
 

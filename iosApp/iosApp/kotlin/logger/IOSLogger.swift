@@ -1,5 +1,5 @@
 //
-//  NativePlatformLoggerImpl.swift
+//  IOSLoggerImpl.swift
 //  iosApp
 //
 //  Created by Sylwester Zielinski on 04/05/2026.
@@ -8,7 +8,7 @@
 import ComposeApp
 import SharedCode
 
-class NativePlatformLoggerImpl : NativePlatformLogger {
+class IOSLoggerImpl : IOSLogger {
     
     func info(tag: String, message: String) {
         SharedLogger.info(tag: tag, message)

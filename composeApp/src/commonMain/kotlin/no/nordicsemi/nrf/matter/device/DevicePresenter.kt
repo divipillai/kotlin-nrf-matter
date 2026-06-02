@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter.device
 
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -12,6 +11,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -125,7 +125,7 @@ class DevicePresenter(
             try {
                 deviceController.unlinkDevice(deviceId)
             } catch (e: Exception) {
-                Napier.e(e) { "Error unlinking device: ${e.message}" }
+                NordicLogger.error("Error unlinking device: ${e.message}", e)
                 // Error on removing device. Show error dialog with an option to force remove.
                 updateRemoveDeviceState(RemoveDeviceState.ForceRemove(deviceId))
                 return@launch
@@ -134,7 +134,7 @@ class DevicePresenter(
                 devicesRepository.removeDevice(deviceId)
                 updateRemoveDeviceState(RemoveDeviceState.Removed(deviceId))
             } catch (e: Exception) {
-                Napier.e(e) { "Error removing device: ${e.message}" }
+                NordicLogger.error("Error removing device: ${e.message}", e)
             }
 
         }
@@ -157,7 +157,7 @@ class DevicePresenter(
                 // Notify UI so we navigate back to Home screen.
                 updateRemoveDeviceState(RemoveDeviceState.Removed(deviceId))
             } catch (e: Exception) {
-                Napier.e(e) { "Error removing device: ${e.message}" }
+                NordicLogger.error("Error removing device: ${e.message}", e)
             }
 
         }

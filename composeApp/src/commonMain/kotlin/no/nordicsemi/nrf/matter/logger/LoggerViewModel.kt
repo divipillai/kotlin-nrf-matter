@@ -10,13 +10,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlin.math.log
 
-class LoggerViewModel(private val logger: PlatformLogger) : ViewModel() {
+class LoggerViewModel : ViewModel() {
 
     private val scope = CoroutineScope( // todo
         SupervisorJob() + Dispatchers.Main
     )
 
-    private val logs = logger.getLogs()
+    private val logs = NordicLogger.getLogs()
         .stateIn(scope, SharingStarted.Lazily, emptyList())
 
     val filter = MutableStateFlow("")

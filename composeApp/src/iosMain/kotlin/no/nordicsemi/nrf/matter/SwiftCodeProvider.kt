@@ -1,7 +1,7 @@
 package no.nordicsemi.nrf.matter
 
 import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
-import no.nordicsemi.nrf.matter.logger.PlatformLogger
+import no.nordicsemi.nrf.matter.logger.IOSLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 
@@ -23,7 +23,7 @@ interface SwiftCodeProvider {
 
     fun getMatterClusterExtensionController(): MatterClusterExtensionController
 
-    fun getLogger(): PlatformLogger
+    fun getLogger(): IOSLogger
 }
 
 interface MatterCommissioner {

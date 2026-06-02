@@ -1,6 +1,6 @@
 package no.nordicsemi.nrf.matter.logger
 
-interface NativePlatformLogger {
+interface IOSLogger {
 
     fun getLogs(onReady: (List<LogEntity>) -> Unit)
 

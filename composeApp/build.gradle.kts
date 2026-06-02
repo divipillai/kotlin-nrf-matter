@@ -76,8 +76,6 @@ kotlin {
 
             // Cloudy to have blur effect.
             implementation(libs.compose.cloudy)
-            // Logger
-            implementation(libs.napier)
             // CMPToast: Toasts for Compose Multiplatform
             implementation(libs.cmptoast)
         }

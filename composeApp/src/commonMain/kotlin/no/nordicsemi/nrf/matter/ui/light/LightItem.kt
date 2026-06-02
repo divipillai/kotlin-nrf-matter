@@ -220,39 +220,7 @@ internal fun LightControlItem(
                 }
 
                 // Decommission device
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    OutlinedCard(
-                        shape = RoundedCornerShape(16.dp),
-                        border = CardDefaults.outlinedCardBorder(enabled = false),
-                        modifier = Modifier
-                            .padding(16.dp)
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable {
-                                    // todo: remove device
-                                },
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                            )
-                            Text(
-                                "Remove/Decommission Device", fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                }
+                DecommissionDevice()
             }
 
         }
@@ -261,6 +229,43 @@ internal fun LightControlItem(
     // Basic Information Bottom Sheet Dialog
     if (showMatterDeviceInfo) {
         BasicInformationBottomSheet(onDismiss = { showMatterDeviceInfo = false })
+    }
+}
+
+@Composable
+internal fun DecommissionDevice() {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        OutlinedCard(
+            shape = RoundedCornerShape(16.dp),
+            border = CardDefaults.outlinedCardBorder(enabled = false),
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable {
+                        // todo: remove device
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                )
+                Text(
+                    "Remove/Decommission Device", fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
     }
 }
 
@@ -282,7 +287,7 @@ fun InfoItem(
                 shape = RoundedCornerShape(8.dp)
             )
             .background(containerColor)
-            .padding(12.dp) // p-3
+            .padding(12.dp)
     ) {
         Text(
             text = label,

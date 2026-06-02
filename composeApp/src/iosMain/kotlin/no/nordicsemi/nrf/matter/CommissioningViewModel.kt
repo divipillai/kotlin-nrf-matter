@@ -1,9 +1,9 @@
 package no.nordicsemi.nrf.matter
 
 import androidx.lifecycle.ViewModel
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 
 class CommissioningViewModel(
@@ -14,8 +14,8 @@ class CommissioningViewModel(
 
     suspend fun startIosCommissioning(onError: () -> Unit): Device? {
         mutex.withLock {
-            Napier.d("startIosCommissioning: $this")
-            Napier.d("iOS commissioning has started!")
+            NordicLogger.debug("startIosCommissioning: $this")
+            NordicLogger.debug("iOS commissioning has started!")
             return swiftCodeProvider.getMatterCommissioner().startIosCommissioning(onError)
         }
     }

@@ -19,8 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.ComposeUIViewController
-import io.github.aakira.napier.DebugAntilog
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.delay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
 import no.nordicsemi.nrf.matter.logger.NordicLogger
@@ -50,11 +48,6 @@ fun MainViewController(swiftCodeProvider: SwiftCodeProvider): UIViewController {
     )
 
     return ComposeUIViewController {
-
-        // Initialize Napier for logging
-        Napier.base(DebugAntilog())
-        Napier.i("Napier log initiated")
-
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
@@ -86,7 +79,7 @@ fun IosAppRoot() {
         }
     }
 
-    Napier.i("State: ${state.value}")
+    NordicLogger.info("State: ${state.value}")
     LaunchedEffect(state.value) {
         (state.value as? ScreenState.Commissioning)?.let {
             delay(1000)

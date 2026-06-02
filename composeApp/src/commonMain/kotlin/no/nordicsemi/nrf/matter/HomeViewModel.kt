@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter
 
 import androidx.lifecycle.ViewModel
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -11,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
@@ -26,7 +26,6 @@ import no.nordicsemi.nrf.matter.ui.light.LightController
 import no.nordicsemi.nrf.matter.ui.lock.LockController
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecController
 import no.nordicsemi.nrf.matter.ui.switch.SwitchController
-import org.koin.compose.getKoin
 import org.koin.core.component.KoinComponent
 
 /*
@@ -89,7 +88,7 @@ class HomeViewModel(
             devicesStateRepository.devicesStateFlow,
             userPreferencesRepository.userPreferencesFlow
         ) { devices, states, prefs ->
-            Napier.i { "AAA, combine devices: $devices states: ${states.devicesStateList}" }
+            NordicLogger.info("AAA, combine devices: $devices states: ${states.devicesStateList}")
             DevicesListUiModel(
                 devices = processDevices(devices, states, prefs),
                 showOfflineDevices = !prefs.hideOfflineDevices
@@ -102,7 +101,7 @@ class HomeViewModel(
             devicesStateRepository.devicesStateFlow,
             userPreferencesRepository.userPreferencesFlow
         ) { devices, states, prefs ->
-            Napier.i { "AAA, combine devices: $devices states: ${states.devicesStateList}" }
+            NordicLogger.info("AAA, combine devices: $devices states: ${states.devicesStateList}")
             DevicesListUiModel(
                 devices = processDevices(devices, states, prefs),
                 showOfflineDevices = !prefs.hideOfflineDevices

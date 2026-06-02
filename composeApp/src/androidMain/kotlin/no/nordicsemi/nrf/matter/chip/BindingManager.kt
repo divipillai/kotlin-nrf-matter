@@ -2,8 +2,8 @@ package no.nordicsemi.nrf.matter.chip
 
 import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.suspendCancellableCoroutine
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import java.util.Optional
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -80,7 +80,7 @@ class BindingManager(
 
         // Read existing ACL
         val existingAcl = cluster.awaitReadAcl()
-        Napier.d("Light has already existing ACL of size: ${existingAcl.size}", tag = TAG)
+        NordicLogger.debug("Light has already existing ACL of size: ${existingAcl.size}", tag = TAG)
             .takeIf { existingAcl.isNotEmpty() }
 
         // Check duplicates
@@ -92,7 +92,7 @@ class BindingManager(
         }
 
         if (alreadyExists) {
-            Napier.d("ACL already exists, skipping", tag = TAG)
+            NordicLogger.debug("ACL already exists, skipping", tag = TAG)
             return
         }
         // Get Fabric Index
@@ -102,7 +102,7 @@ class BindingManager(
 
         // Save non-null fabric index locally since we are using the same fabric index for both devices.
         fabricIndex?.let {
-            Napier.d("Fabric Index: $it", tag = TAG)
+            NordicLogger.debug("Fabric Index: $it", tag = TAG)
             lightSwitchFabricIndex = it
         }
 
@@ -130,7 +130,7 @@ class BindingManager(
         // Write full list
         cluster.awaitWriteAcl(existingAcl)
 
-        Napier.d("ACL updated successfully (cluster API)", tag = TAG)
+        NordicLogger.debug("ACL updated successfully (cluster API)", tag = TAG)
     }
 
     /**
@@ -150,7 +150,7 @@ class BindingManager(
                 override fun onSuccess(
                     valueList: List<ChipStructs.AccessControlClusterAccessControlEntryStruct?>?
                 ) {
-                    Napier.d("Read ACL (Access Control List) success", tag = TAG)
+                    NordicLogger.debug("Read ACL (Access Control List) success", tag = TAG)
                     val result = ArrayList(
                         valueList ?: emptyList()
                     )
@@ -161,14 +161,14 @@ class BindingManager(
                 }
 
                 override fun onError(ex: Exception) {
-                    Napier.e("Read ACL (Access Control List) failed with exception: $ex", tag = TAG)
+                    NordicLogger.error("Read ACL (Access Control List) failed with exception: $ex", tag = TAG)
                     if (continuation.isActive) {
                         continuation.resumeWithException(ex)
                     }
                 }
             })
             continuation.invokeOnCancellation {
-                Napier.d("Read ACL (Access Control List) cancelled", tag = TAG)
+                NordicLogger.debug("Read ACL (Access Control List) cancelled", tag = TAG)
             }
         }
     }
@@ -187,14 +187,14 @@ class BindingManager(
             writeAclAttribute(
                 object : ChipClusters.DefaultClusterCallback {
                     override fun onSuccess() {
-                        Napier.d("Write ACL (Access Control List) success", tag = TAG)
+                        NordicLogger.debug("Write ACL (Access Control List) success", tag = TAG)
                         if (continuation.isActive) {
                             continuation.resume(Unit)
                         }
                     }
 
                     override fun onError(ex: Exception) {
-                        Napier.e(
+                        NordicLogger.error(
                             "Write ACL (Access Control List) failed with exception: $ex",
                             tag = TAG
                         )
@@ -207,7 +207,7 @@ class BindingManager(
             )
 
             continuation.invokeOnCancellation {
-                Napier.d("Write ACL (Access Control List) cancelled", tag = TAG)
+                NordicLogger.debug("Write ACL (Access Control List) cancelled", tag = TAG)
             }
         }
     }
@@ -229,7 +229,7 @@ class BindingManager(
                 override fun onSuccess(
                     valueList: List<ChipStructs.BindingClusterTargetStruct?>?
                 ) {
-                    Napier.d("Read Binding success", tag = TAG)
+                    NordicLogger.debug("Read Binding success", tag = TAG)
                     val result = ArrayList(
                         valueList ?: emptyList()
                     )
@@ -240,7 +240,7 @@ class BindingManager(
                 }
 
                 override fun onError(ex: Exception) {
-                    Napier.e("Read Binding failed with exception: $ex", tag = TAG)
+                    NordicLogger.error("Read Binding failed with exception: $ex", tag = TAG)
                     if (continuation.isActive) {
                         continuation.resumeWithException(ex)
                     }
@@ -248,7 +248,7 @@ class BindingManager(
             })
 
             continuation.invokeOnCancellation {
-                Napier.d("Read Binding cancelled", tag = TAG)
+                NordicLogger.debug("Read Binding cancelled", tag = TAG)
             }
         }
     }
@@ -267,14 +267,14 @@ class BindingManager(
             writeBindingAttribute(
                 object : ChipClusters.DefaultClusterCallback {
                     override fun onSuccess() {
-                        Napier.d("Write Binding success", tag = TAG)
+                        NordicLogger.debug("Write Binding success", tag = TAG)
                         if (continuation.isActive) {
                             continuation.resume(Unit)
                         }
                     }
 
                     override fun onError(ex: Exception) {
-                        Napier.e("Write Binding failed with exception: $ex", tag = TAG)
+                        NordicLogger.error("Write Binding failed with exception: $ex", tag = TAG)
                         if (continuation.isActive) {
                             continuation.resumeWithException(ex)
                         }
@@ -284,7 +284,7 @@ class BindingManager(
             )
 
             continuation.invokeOnCancellation {
-                Napier.d("Write Binding cancelled", tag = TAG)
+                NordicLogger.debug("Write Binding cancelled", tag = TAG)
             }
         }
     }
@@ -327,7 +327,7 @@ class BindingManager(
         }
 
         if (alreadyExists) {
-            Napier.d("Binding already exists, skipping", tag = "BindingLightSwitch")
+            NordicLogger.debug("Binding already exists, skipping", tag = "BindingLightSwitch")
             return
         }
         // Get fabric Index
@@ -353,7 +353,7 @@ class BindingManager(
         // Write full list
         cluster.awaitWriteBinding(existingBindings)
 
-        Napier.d("Binding written successfully", tag = TAG)
+        NordicLogger.debug("Binding written successfully", tag = TAG)
 
     }
 

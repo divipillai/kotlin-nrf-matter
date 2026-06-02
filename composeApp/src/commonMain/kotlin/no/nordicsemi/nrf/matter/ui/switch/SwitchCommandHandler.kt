@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter.ui.switch
 
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
@@ -8,6 +7,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import no.nordicsemi.nrf.matter.device.BindingUiState
 import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceController
@@ -85,7 +85,7 @@ class SwitchCommandHandler(
             emit(UiState.Success(bindingDevice))
 
         } catch (e: Exception) {
-            Napier.e(e) { "Binding failed: ${e.message}" }
+            NordicLogger.error("Binding failed: ${e.message}", e)
             emit(UiState.Error(e.message ?: "Unknown error"))
         }
     }.flowOn(Dispatchers.IO)

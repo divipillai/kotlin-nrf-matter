@@ -1,6 +1,6 @@
 package no.nordicsemi.nrf.matter.logger
 
-import io.github.aakira.napier.Napier
+import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -13,7 +13,7 @@ actual object NordicLogger {
         return logs
     }
 
-    actual fun info(tag: String, message: String) {
+    actual fun info(message: String, tag: String) {
         val logEntity = LogEntity(
             date = System.currentTimeMillis(),
             level = LogLevel.INFO,
@@ -21,10 +21,10 @@ actual object NordicLogger {
             message = message,
         )
         logs.update { it + logEntity }
-        Napier.i(tag = tag, message = message)
+        Log.i(tag, message)
     }
 
-    actual fun debug(tag: String, message: String) {
+    actual fun debug(message: String, tag: String) {
         val logEntity = LogEntity(
             date = System.currentTimeMillis(),
             level = LogLevel.DEBUG,
@@ -32,10 +32,10 @@ actual object NordicLogger {
             message = message,
         )
         logs.update { it + logEntity }
-        Napier.d(tag = tag, message = message)
+        Log.d(tag, message)
     }
 
-    actual fun error(tag: String, message: String) {
+    actual fun error(message: String, t: Throwable?, tag: String) {
         val logEntity = LogEntity(
             date = System.currentTimeMillis(),
             level = LogLevel.ERROR,
@@ -43,6 +43,6 @@ actual object NordicLogger {
             message = message,
         )
         logs.update { it + logEntity }
-        Napier.e(tag = tag, message = message)
+        Log.e(tag, message, t)
     }
 }

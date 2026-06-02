@@ -48,7 +48,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.cloudy.cloudy
-import io.github.aakira.napier.Napier
 import multiplatform.network.cmptoast.ToastDuration
 import multiplatform.network.cmptoast.ToastGravity
 import multiplatform.network.cmptoast.showToast
@@ -57,6 +56,7 @@ import no.nordicsemi.nrf.matter.binding.LightSwitchBindingCard
 import no.nordicsemi.nrf.matter.device.DevicePresenter
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
@@ -299,7 +299,7 @@ private fun DeviceDetails(
                 is UiState.Success -> {
                     // TODO: Show success message and show bonded lights in the UI.
                     // Show a Toast of success binding.
-                    Napier.i { "AAA, Success" }
+                    NordicLogger.info("AAA, Success")
                     // Load the binding table one more time.
                     devicePresenter.loadBindingTable(device.device.deviceId)
                     devicePresenter.updateBindingState(UiState.Idle())

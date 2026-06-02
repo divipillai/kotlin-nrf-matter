@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.logger
 
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
@@ -14,18 +15,22 @@ actual object NordicLogger {
     actual fun getLogs(): Flow<List<LogEntity>> {
         return callbackFlow {
             logger.getLogs { trySend(it) }
+
+            awaitClose {
+                
+            }
         }
     }
 
-    actual fun info(tag: String, message: String) {
+    actual fun info(message: String, tag: String) {
         logger.info(tag, message)
     }
 
-    actual fun debug(tag: String, message: String) {
+    actual fun debug(message: String, tag: String) {
         logger.debug(tag, message)
     }
 
-    actual fun error(tag: String, message: String) {
+    actual fun error(message: String, t: Throwable?, tag: String) {
         logger.error(tag, message)
     }
 }

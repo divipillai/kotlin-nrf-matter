@@ -5,14 +5,15 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.toDeviceId
+import no.nordicsemi.nrf.matter.theme.NordicTheme
 import kotlin.time.Clock
 
 /*
@@ -73,7 +74,7 @@ class HomeViewModelAndroid(
             val basicInfo = basicInfoProvider.fetchBasicInfo(deviceId)
 
             val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
-            Napier.d("device matter info list: $deviceMatterInfoList", tag = "AAA")
+            NordicLogger.debug("device matter info list: $deviceMatterInfoList", tag = "AAA")
             val deviceType = mutableStateListOf<DeviceType>()
             try {
                 deviceMatterInfoList.forEach {
@@ -106,14 +107,14 @@ class HomeViewModelAndroid(
 
             } catch (e: Exception) {
                 val msg = "Adding device [${deviceId}] [${deviceName}] to app's repository failed."
-                Napier.e(e) { "BBB, onCommissionedDeviceNameCaptured: $msg, $e" }
+                NordicLogger.error("BBB, onCommissionedDeviceNameCaptured: $msg", e)
             }
 
             // update device name
             try {
                 clustersHelper.writeBasicClusterNodeLabelAttribute(deviceId, deviceName)
             } catch (ex: Exception) {
-                Napier.e(ex) { "AAA,  Failed to write NodeLabel $deviceName with exception: $ex" }
+                NordicLogger.error("AAA,  Failed to write NodeLabel $deviceName with exception)", ex)
             }
         }
     }

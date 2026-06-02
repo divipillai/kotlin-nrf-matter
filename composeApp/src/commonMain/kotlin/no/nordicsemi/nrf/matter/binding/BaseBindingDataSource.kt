@@ -4,9 +4,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 
@@ -51,7 +51,7 @@ class BaseBindingDataSource(
         dataStore.edit { prefs ->
             val current = prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
             val updated = current.filterNot { it.id == binding.id } + binding
-            Napier.d("updated binding table: $updated", tag = "AAA")
+            NordicLogger.debug("updated binding table: $updated", tag = "AAA")
             prefs[BINDINGS_KEY] = encode(updated)
         }
     }

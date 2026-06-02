@@ -4,12 +4,13 @@ import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
 import chip.devicecontroller.model.AttributeState
 import chip.devicecontroller.model.ChipAttributePath
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
+import no.nordicsemi.nrf.matter.theme.NordicTheme
 import java.util.Optional
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -49,13 +50,13 @@ class ClustersHelper(private val chipClient: ChipClient) {
 
     /** Fetches MatterDeviceInfo for each endpoint supported by the device. */
     suspend fun fetchDeviceMatterInfo(deviceId: DeviceId): List<DeviceMatterInfo> {
-        Napier.d { "AAA, fetchDevicet()MatterInfo(): deviceId [${deviceId}]" }
+        NordicLogger.debug("AAA, fetchDevicet()MatterInfo(): deviceId [${deviceId}]")
         val matterDeviceInfoList = arrayListOf<DeviceMatterInfo>()
         val connectedDevicePtr =
             try {
                 chipClient.getConnectedDevicePointer(deviceId.longValue)
             } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
+                NordicLogger.error("AAA, Can't get connectedDevicePointer.", e)
                 return emptyList()
             }
         fetchDeviceMatterInfo(deviceId.longValue, connectedDevicePtr, 0, matterDeviceInfoList)
@@ -95,7 +96,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         val manufacturerSpecificData = if (serverListAttribute.contains(0xFFF1FC01)) {
             getManufacturerSpecificData(endpointInt.toLong(), connectedDevicePtr)
         } else {
-            Napier.i { "No manufacturer specific cluster" }
+            NordicLogger.info("No manufacturer specific cluster")
             null
         }
 
@@ -116,7 +117,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val childServerList = try {
                 readDescriptorClusterServerListAttribute(connectedDevicePtr, childEndpoint)
             } catch (_: Throwable) {
-                Napier.w("Endpoint $childEndpoint has no Descriptor cluster, skipping...")
+                NordicLogger.error("Endpoint $childEndpoint has no Descriptor cluster, skipping...")
                 return@forEach
             }
 
@@ -166,7 +167,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val namePath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10000)
             val ledPath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10001)
             val buttonPath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10002)
-            Napier.d("namePath: $namePath, ledPath: $ledPath, buttonPath: $buttonPath", tag = "AAA")
+            NordicLogger.debug("namePath: $namePath, ledPath: $ledPath, buttonPath: $buttonPath", tag = "AAA")
             val results = chipClient.readAttributes(
                 connectedDevicePtr,
                 listOf<ChipAttributePath>(namePath, ledPath, buttonPath)
@@ -188,11 +189,11 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val led = results.findValue(ep, 0xFFF1FC01L, 0xFFF10001L)?.value as? Boolean ?: false
             val button = results.findValue(ep, 0xFFF1FC01L, 0xFFF10002L)?.value as? Boolean ?: false
 
-            Napier.d("name=$name led=$led button=$button", tag = "AAA")
+            NordicLogger.debug("name=$name led=$led button=$button", tag = "AAA")
 
             ManufacturerSpecificData(name, led, button)
         } catch (t: Throwable) {
-            Napier.e("getManufacturerSpecificData failed: ${t.message}", tag = "AAA")
+            NordicLogger.error("getManufacturerSpecificData failed: ${t.message}", tag = "AAA")
             null
         }
     }
@@ -324,7 +325,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId.longValue)
             } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
+                NordicLogger.error("AAA, Can't get connectedDevicePointer.", e)
                 return
             }
 
@@ -350,7 +351,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
+                NordicLogger.error("AAA, Can't get connectedDevicePointer.", e)
                 return
             }
         if (isOn) {

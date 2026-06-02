@@ -44,13 +44,13 @@ import android.content.Context.BLUETOOTH_SERVICE
 import android.os.ParcelUuid
 import android.os.SystemClock
 import androidx.annotation.RequiresPermission
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import no.nordicsemi.nrf.matter.MatterBeacon
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.Transport
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import java.util.concurrent.ConcurrentHashMap
 
 /** [MatterBeaconProducer] which emits Bluetooth LE beacons as they are discovered. */
@@ -73,7 +73,7 @@ class MatterBeaconProducerBle(
                                 ?: 0) > BEACON_EMITTING_DEBOUNCE_IN_MS
                         if (shouldWeEmitItAgain) {
                             beaconEmittedTime[beacon] = currentTime
-                            Napier.d("AAA, Emitting BLE beacon [${beacon}]")
+                            NordicLogger.debug("AAA, Emitting BLE beacon [${beacon}]")
                             trySend(beacon)
                         }
                     }
@@ -81,7 +81,7 @@ class MatterBeaconProducerBle(
             }
 
         if (bluetoothLeScanner != null) {
-            Napier.d("AAA, Starting BLE scan.")
+            NordicLogger.debug("AAA, Starting BLE scan.")
             bluetoothLeScanner.startScan(
                 listOf(
                     ScanFilter.Builder()
@@ -95,19 +95,19 @@ class MatterBeaconProducerBle(
                 scanCallback,
             )
         } else {
-            Napier.d("AAA, BLE Scanner not available.")
+            NordicLogger.debug("AAA, BLE Scanner not available.")
         }
 
         awaitClose {
             if (bluetoothLeScanner == null) {
-                Napier.d("AAA, BLE Scanner not available.")
+                NordicLogger.error("AAA, BLE Scanner not available.")
                 return@awaitClose
             }
 
             val bluetoothAdapter: BluetoothAdapter =
                 (context.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager).adapter
             if (bluetoothAdapter.state == BluetoothAdapter.STATE_ON) {
-                Napier.d("AAA, Stopping BLE scan.")
+                NordicLogger.debug("AAA, Stopping BLE scan.")
                 bluetoothLeScanner.stopScan(scanCallback)
             }
         }
@@ -121,14 +121,14 @@ class MatterBeaconProducerBle(
         val data = scanRecord?.bytes ?: return null
         // Full record must be at least 14 bytes.
         if (data.size < 14) {
-            Napier.d("AAA, Dropping BLE ad with record length %d (expected 14) ${data.size}")
+            NordicLogger.debug("AAA, Dropping BLE ad with record length %d (expected 14) ${data.size}")
             return null
         }
 
         // Data payload length is byte 4 and should be exactly 10.
         val dataLength = data[3].toInt()
         if (dataLength < 10) {
-            Napier.w("AAA, Dropping BLE ad with data length [${dataLength}] (expected >= 10)")
+            NordicLogger.error("AAA, Dropping BLE ad with data length [${dataLength}] (expected >= 10)")
             return null
         }
 

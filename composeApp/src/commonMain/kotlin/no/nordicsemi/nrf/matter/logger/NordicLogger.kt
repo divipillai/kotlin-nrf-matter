@@ -1,8 +1,10 @@
 package no.nordicsemi.nrf.matter.logger
 
-interface NativePlatformLogger {
+import kotlinx.coroutines.flow.Flow
 
-    fun getLogs(onReady: (List<LogEntity>) -> Unit)
+expect object NordicLogger {
+
+    fun getLogs(): Flow<List<LogEntity>>
 
     fun info(tag: String, message: String)
 

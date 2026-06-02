@@ -1,45 +1,48 @@
 package no.nordicsemi.nrf.matter.logger
 
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 
-class AndroidPlatformLogger : NativePlatformLogger {
+actual object NordicLogger {
 
-    private val logs = mutableListOf<LogEntity>() //TODO: make persistent
+    private val logs = MutableStateFlow<List<LogEntity>>(emptyList()) //TODO: make persistent
 
-    override fun getLogs(onReady: (List<LogEntity>) -> Unit) {
-        onReady(logs.toList())
+    actual fun getLogs(): Flow<List<LogEntity>> {
+        return logs
     }
 
-    override fun info(tag: String, message: String) {
+    actual fun info(tag: String, message: String) {
         val logEntity = LogEntity(
             date = System.currentTimeMillis(),
             level = LogLevel.INFO,
             tag = tag,
             message = message,
         )
-        logs.add(logEntity)
+        logs.update { it + logEntity }
         Napier.i(tag = tag, message = message)
     }
 
-    override fun debug(tag: String, message: String) {
+    actual fun debug(tag: String, message: String) {
         val logEntity = LogEntity(
             date = System.currentTimeMillis(),
             level = LogLevel.DEBUG,
             tag = tag,
             message = message,
         )
-        logs.add(logEntity)
+        logs.update { it + logEntity }
         Napier.d(tag = tag, message = message)
     }
 
-    override fun error(tag: String, message: String) {
+    actual fun error(tag: String, message: String) {
         val logEntity = LogEntity(
             date = System.currentTimeMillis(),
             level = LogLevel.ERROR,
             tag = tag,
             message = message,
         )
-        logs.add(logEntity)
+        logs.update { it + logEntity }
         Napier.e(tag = tag, message = message)
     }
 }

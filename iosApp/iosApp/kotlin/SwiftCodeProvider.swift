@@ -51,7 +51,7 @@ class SwiftCodeProviderImpl : @MainActor SwiftCodeProvider {
         return LocalMatterClusterExtController()
     }
     
-    func getLogger() -> PlatformLogger {
-        return PlatformLogger(logger: NativePlatformLoggerImpl())
+    func getLogger() -> any IOSLogger {
+        return IOSLoggerImpl()
     }
 }

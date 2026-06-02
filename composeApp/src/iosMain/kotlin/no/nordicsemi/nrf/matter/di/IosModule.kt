@@ -106,9 +106,7 @@ val iosModule = module {
 
     viewModel { CommissioningViewModel(get()) }
 
-    viewModel {
-        LoggerViewModel(get<SwiftCodeProvider>().getLogger())
-    }
+    viewModel { LoggerViewModel() }
 
     single {
         DevicePresenter(

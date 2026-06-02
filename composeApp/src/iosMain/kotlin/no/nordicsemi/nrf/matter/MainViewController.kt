@@ -7,9 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -21,19 +18,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.delay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import nrfmatterformobile.composeapp.generated.resources.Res
-import nrfmatterformobile.composeapp.generated.resources.light_fixture
 import nrfmatterformobile.composeapp.generated.resources.matter_loader
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
+import platform.UIKit.UIViewController
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 class IosCommissionHandler(
@@ -44,14 +40,16 @@ class IosCommissionHandler(
     }
 }
 
-fun MainViewController(swiftCodeProvider: SwiftCodeProvider) =
-    ComposeUIViewController {
-        // Initialize koin
-        initKoin (
-            module {
-                single { swiftCodeProvider }
-            }
-        )
+fun MainViewController(swiftCodeProvider: SwiftCodeProvider): UIViewController {
+    NordicLogger.setLogger(swiftCodeProvider.getLogger())
+
+    initKoin(
+        module {
+            single { swiftCodeProvider }
+        }
+    )
+
+    return ComposeUIViewController {
 
         // Initialize Napier for logging
         Napier.base(DebugAntilog())
@@ -63,8 +61,8 @@ fun MainViewController(swiftCodeProvider: SwiftCodeProvider) =
         ) {
             IosAppRoot()
         }
-
     }
+}
 
 sealed interface ScreenState {
     data object Initial : ScreenState

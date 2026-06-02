@@ -17,10 +17,7 @@ import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
-import no.nordicsemi.nrf.matter.logger.AndroidPlatformLogger
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
-import no.nordicsemi.nrf.matter.logger.NativePlatformLogger
-import no.nordicsemi.nrf.matter.logger.PlatformLogger
 import no.nordicsemi.nrf.matter.model.AndroidDeviceController
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
@@ -115,8 +112,6 @@ val androidModule = module {
     // Inject DeviceController
     single<DeviceController> { AndroidDeviceController(get(), get(), get()) }
 
-    factory<NativePlatformLogger> { AndroidPlatformLogger() }
-    factory<PlatformLogger> { PlatformLogger(get()) }
     factory { LightCommandHandler(get(), get()) }
     factory { LockCommandHandler(get(), get()) }
     factory { ManufacturerSpecCommandHandler(get(), get()) }
@@ -126,5 +121,5 @@ val androidModule = module {
     viewModelOf(::BeaconViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::HomeViewModelAndroid)
-    viewModel { LoggerViewModel(get()) }
+    viewModel { LoggerViewModel() }
 }

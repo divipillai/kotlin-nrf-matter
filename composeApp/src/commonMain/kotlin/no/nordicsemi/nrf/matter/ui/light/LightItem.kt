@@ -56,6 +56,7 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.DeviceControlItem
 import no.nordicsemi.nrf.matter.ui.TestDeviceLight
+import no.nordicsemi.nrf.matter.ui.manspec.ControlCardContainer
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.light_bulb
 import org.jetbrains.compose.resources.painterResource
@@ -99,10 +100,10 @@ internal fun LightControlItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .clip(RoundedCornerShape(16.dp))
             .clickable {
                 isExpanded = !isExpanded
             }
-            .clip(RoundedCornerShape(16.dp))
             .then(if (showMatterDeviceInfo) Modifier.cloudy() else Modifier)
     ) {
         Row(
@@ -275,20 +276,7 @@ fun InfoItem(
     value: String,
     modifier: Modifier = Modifier
 ) {
-    val containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f)
-    val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .border(
-                width = 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .background(containerColor)
-            .padding(12.dp)
-    ) {
+    ControlCardContainer(modifier = modifier) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,

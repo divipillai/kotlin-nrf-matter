@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -37,6 +38,8 @@ kotlin {
             implementation(libs.androidx.material3)
             implementation(libs.androidx.material)
             implementation(libs.androidx.runtime.livedata)
+            implementation(libs.room.core)
+            implementation(libs.room.ktx)
             // Home API SDK dependency
             implementation(libs.play.services.types)
             implementation(libs.play.services.home)
@@ -123,5 +126,6 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+    ksp(libs.room.ksp)
 }
 

@@ -41,9 +41,9 @@ class ManufacturerSpecController(
         return ManufacturerSpecItem(
             device,
             manufacturerSpecificData = device.device.deviceMatterInfo.firstNotNullOf { it.manufacturerSpecificData },
-            isLedOn = ledState.collectAsStateWithLifecycle(initialValue = UiState.Idle()).value,
-            isButtonOn = buttonState.collectAsStateWithLifecycle(initialValue = UiState.Idle()).value,
-            randomNumber = randomNumber.collectAsStateWithLifecycle(initialValue = UiState.Idle()).value,
+            isLedOn = ledState.collectAsStateWithLifecycle().value,
+            isButtonOn = buttonState.collectAsStateWithLifecycle().value,
+            randomNumber = randomNumber.collectAsStateWithLifecycle().value,
             setLed = ::setLed,
             generateRandomNumber = ::generateRandomNumber,
             onClick = { onDeviceClick(device.device.deviceId) },

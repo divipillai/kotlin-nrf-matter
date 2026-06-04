@@ -31,29 +31,20 @@ class LocalMatterCommissioner : MatterCommissioner {
      * After successful commissioning, descriptor clusters for all available endpoint are read and
      * all the meta data is returned.
      */
-    func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {
-        return await commission()
-    }
-    
-    private func commission() async -> Device? {
+    func startIosCommissioning() async throws -> Device {
         let homes = [MatterAddDeviceRequest.Home(displayName: "Nordic Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "Nordic Ecosystem", homes: homes)
         
         let request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
         
-        do {
-            let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
-            storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.local.rawValue)
-            
-            try await request.perform()
-            
-            let nodeID: NSNumber = NodeIdProvider.id // todo
-            
-            let device = await LocalMatterClusterDiscovery(nodeId: nodeID).discoverClusters()
-            return device
-        } catch {
-            SharedLogger.info("Failed to set up device with error: \(error.localizedDescription).")
-        }
-        return nil
+        let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
+        storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.local.rawValue)
+        
+        try await request.perform()
+        
+        let nodeID: NSNumber = NodeIdProvider.id // todo
+        
+        let device = try await LocalMatterClusterDiscovery(nodeId: nodeID).discoverClusters()
+        return device
     }
 }

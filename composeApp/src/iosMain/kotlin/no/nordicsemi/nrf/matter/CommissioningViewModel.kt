@@ -12,11 +12,11 @@ class CommissioningViewModel(
 
     private val mutex = Mutex()
 
-    suspend fun startIosCommissioning(onError: () -> Unit): Device? {
+    suspend fun startIosCommissioning(): Device {
         mutex.withLock {
             NordicLogger.debug("startIosCommissioning: $this")
             NordicLogger.debug("iOS commissioning has started!")
-            return swiftCodeProvider.getMatterCommissioner().startIosCommissioning(onError)
+            return swiftCodeProvider.getMatterCommissioner().startIosCommissioning()
         }
     }
 }

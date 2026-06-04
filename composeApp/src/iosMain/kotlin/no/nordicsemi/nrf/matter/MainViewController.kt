@@ -84,12 +84,12 @@ fun IosAppRoot() {
         (state.value as? ScreenState.Commissioning)?.let {
             delay(1000)
 
-            val device = commissioningViewModel.startIosCommissioning {
-                state.value = ScreenState.Error
-            }
-            device?.let {
+            try {
+                val device = commissioningViewModel.startIosCommissioning()
                 state.value = ScreenState.Initial
-                homeViewModel.addCommissionedDevice(it, true, false)
+                homeViewModel.addCommissionedDevice(device, true, false)
+            } catch (t: Throwable) {
+                state.value = ScreenState.Error
             }
         }
     }

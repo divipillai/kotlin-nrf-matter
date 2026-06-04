@@ -29,11 +29,11 @@ enum PairingError: Error {
 @MainActor
 class GoogleHomeCommissioner : @MainActor MatterCommissioner {
     
-    func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {
-        return await commission()
+    func startIosCommissioning() async throws -> Device {
+        return try await commission()
     }
     
-    func commission() async -> Device? {
+    func commission() async throws -> Device {
         let controller = GoogleHomeController.instance()
         await controller.initialize() //todo
         let structure = await controller.getStructure()
@@ -59,14 +59,14 @@ class GoogleHomeCommissioner : @MainActor MatterCommissioner {
             
             guard let commissionedDeviceID = (try await structure.completeMatterCommissioning()).first else {
                 SharedLogger.debug("Comisioned device id is nil.")
-                return nil
+                throw OperationError.unknown
             }
             
             SharedLogger.debug("Obtaining device details.")
             
             guard let device = await controller.getDevice(id: commissionedDeviceID) else {
                 SharedLogger.debug("Device not found.")
-                return nil
+                throw OperationError.unknown
             }
             
             let rootDevice = await device.parts.get(RootNodeDeviceType.self)
@@ -106,6 +106,6 @@ class GoogleHomeCommissioner : @MainActor MatterCommissioner {
             SharedLogger.error("Failed to complete MatterAddDeviceRequest: \(result.detailedError).")
         }
         SharedLogger.debug("Returning nil.")
-        return nil
+        throw OperationError.unknown
     }
 }

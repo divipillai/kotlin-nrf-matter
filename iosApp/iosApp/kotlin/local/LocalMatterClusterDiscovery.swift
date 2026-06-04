@@ -18,18 +18,18 @@ class LocalMatterClusterDiscovery {
     private let nodeId: NSNumber
     private let baseDevice: MTRBaseDevice
 
-    init(nodeId: NSNumber) {
+    init(nodeId: NSNumber) throws {
         self.nodeId = nodeId
-        let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()
+        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         baseDevice = MTRBaseDevice(nodeID: nodeId, controller: controller)
     }
     
     /**
      * Read device name from Basic Information Cluster.
      */
-    func getName() async -> String {
+    func getName() async throws -> String {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        let name = (try? await information?.readAttributeNodeLabel()) ?? "unknown"
+        let name = (try await information?.readAttributeNodeLabel()) ?? "unknown"
         SharedLogger.debug("Name: \(name)")
         return name
     }
@@ -37,9 +37,9 @@ class LocalMatterClusterDiscovery {
     /**
      * Read product name from Basic Information Cluster.
      */
-    func getProductName() async -> String {
+    func getProductName() async throws -> String {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        let productName = (try? await information?.readAttributeProductName()) ?? "unknown"
+        let productName = (try await information?.readAttributeProductName()) ?? "unknown"
         SharedLogger.debug("ProductName: \(productName)")
         return productName
     }
@@ -47,9 +47,9 @@ class LocalMatterClusterDiscovery {
     /**
      * Read product id from Basic Information Cluster.
      */
-    func getProductId() async -> NSNumber? {
+    func getProductId() async throws -> NSNumber? {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        let productId = try? await information?.readAttributeProductID() ?? nil
+        let productId = try await information?.readAttributeProductID() ?? nil
         SharedLogger.debug("ProductId: \(productId)")
         return productId
     }
@@ -57,9 +57,9 @@ class LocalMatterClusterDiscovery {
     /**
      * Read vendor name from Basic Information Cluster.
      */
-    func getVendorName() async -> String {
+    func getVendorName() async throws -> String {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        let vendorName = (try? await information?.readAttributeVendorName()) ?? "unknown"
+        let vendorName = (try await information?.readAttributeVendorName()) ?? "unknown"
         SharedLogger.debug("VendorName: \(vendorName)")
         return vendorName
     }
@@ -67,9 +67,9 @@ class LocalMatterClusterDiscovery {
     /**
      * Read vendor id from Basic Information Cluster.
      */
-    func getVendorId() async -> NSNumber? {
+    func getVendorId() async throws -> NSNumber? {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        let vendorId = try? await information?.readAttributeVendorID() ?? nil
+        let vendorId = try await information?.readAttributeVendorID() ?? nil
         SharedLogger.debug("VendorId: \(vendorId)")
         return vendorId
     }
@@ -77,9 +77,9 @@ class LocalMatterClusterDiscovery {
     /**
      * Read unique id from Basic Information Cluster.
      */
-    func getUniqueId() async -> String? {
+    func getUniqueId() async throws -> String? {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        let uniqueId = try? await information?.readAttributeUniqueID() ?? nil
+        let uniqueId = try await information?.readAttributeUniqueID() ?? nil
         SharedLogger.debug("UniqueId: \(uniqueId)")
         return uniqueId
     }
@@ -87,9 +87,9 @@ class LocalMatterClusterDiscovery {
     /**
      * Read software version from Basic Information Cluster.
      */
-    func getSoftwareVersion() async -> String? {
+    func getSoftwareVersion() async throws -> String? {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        let swVersion = try? await information?.readAttributeSoftwareVersionString() ?? nil
+        let swVersion = try await information?.readAttributeSoftwareVersionString() ?? nil
         SharedLogger.debug("Software version: \(swVersion)")
         return swVersion
     }
@@ -97,9 +97,9 @@ class LocalMatterClusterDiscovery {
     /**
      * Read specification version from Basic Information Cluster.
      */
-    func getSpecificationVersion() async -> NSNumber? {
+    func getSpecificationVersion() async throws -> NSNumber? {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        let specVersion = try? await information?.readAttributeSpecificationVersion() ?? nil
+        let specVersion = try await information?.readAttributeSpecificationVersion() ?? nil
         SharedLogger.debug("Specification version: \(specVersion)")
         return specVersion
     }
@@ -107,9 +107,9 @@ class LocalMatterClusterDiscovery {
     /**
      * Read serial number from Basic Information Cluster.
      */
-    func getSerialNumber() async -> String? {
+    func getSerialNumber() async throws -> String? {
         let information = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        let serialNumber = try? await information?.readAttributeSerialNumber() ?? nil
+        let serialNumber = try await information?.readAttributeSerialNumber() ?? nil
         SharedLogger.debug("Serial number: \(serialNumber)")
         return serialNumber
     }
@@ -121,31 +121,31 @@ class LocalMatterClusterDiscovery {
      *
      * It returns a type that contains all the data. 
      */
-    func discoverClusters() async -> Device {
+    func discoverClusters() async throws -> Device {
         let deviceId = DeviceId(value: nodeId.stringValue)
         let name = "Matter device: \(nodeId)"
-        let vendorId = await getVendorId()
-        let vendorName = await getVendorName()
-        let productId = await getProductId()
-        let productName = await getProductName()
-        let uniqueId = await getUniqueId()
-        let swVersion = await getSoftwareVersion()
-        let specVersion = await getSpecificationVersion()
-        let serialNumber = await getSerialNumber()
+        let vendorId = try await getVendorId()
+        let vendorName = try await getVendorName()
+        let productId = try await getProductId()
+        let productName = try await getProductName()
+        let uniqueId = try await getUniqueId()
+        let swVersion = try await getSoftwareVersion()
+        let specVersion = try await getSpecificationVersion()
+        let serialNumber = try await getSerialNumber()
         
-        let deviceTypes = await getDeviceType(endpoint: 0)
+        let deviceTypes = try await getDeviceType(endpoint: 0)
         SharedLogger.debug("deviceTypes AAA: \(deviceTypes)")
 
-        await readEndpoint0()
+        try await readEndpoint0()
 
         var deviceMatterInfo: [DeviceMatterInfo] = []
-        let endpoints = await readEndpoints()
+        let endpoints = try await readEndpoints()
         for endpoint in endpoints {
-            let deviceTypes = await getDeviceType(endpoint: endpoint)
-            let clientClusters = await readClientClusters(endpoint: endpoint)
-            let serverClusters = await readServerClusters(endpoint: endpoint)
+            let deviceTypes = try await getDeviceType(endpoint: endpoint)
+            let clientClusters = try await readClientClusters(endpoint: endpoint)
+            let serverClusters = try await readServerClusters(endpoint: endpoint)
             let controller = LocalMatterCustomClusterController()
-            let manufacturerSpecificData = try? await controller.getData(deviceId: deviceId, endpoint: Int32(truncating: endpoint))
+            let manufacturerSpecificData = try await controller.getData(deviceId: deviceId, endpoint: Int32(truncating: endpoint))
 
             let newInfo = DeviceMatterInfo(
                 endpoint: endpoint.int32Value,
@@ -181,10 +181,10 @@ class LocalMatterClusterDiscovery {
     /**
      * A helper function for reading device type, client clusters and server clusters for the root endpoint 0.
      */
-    func readEndpoint0() async {
-        let deviceTypes = await getDeviceType(endpoint: 0)
-        let clientClusters = await readClientClusters(endpoint: 0)
-        let serverClusters = await readServerClusters(endpoint: 0)
+    func readEndpoint0() async throws {
+        let deviceTypes = try await getDeviceType(endpoint: 0)
+        let clientClusters = try await readClientClusters(endpoint: 0)
+        let serverClusters = try await readServerClusters(endpoint: 0)
         SharedLogger.debug("Endpoint 0 - devicetypes: \(deviceTypes)")
         SharedLogger.debug("Endpoint 0 - clientClusters: \(clientClusters)")
         SharedLogger.debug("Endpoint 0 - serverClusters: \(serverClusters)")
@@ -211,10 +211,10 @@ class LocalMatterClusterDiscovery {
      * It says what kind of device is defined for this endpoints.
      * The definition specifies which clusters are mandatory and which one are optional for this device type.
      */
-    func getDeviceType(endpoint: NSNumber) async -> [MTRDescriptorClusterDeviceTypeStruct] {
+    func getDeviceType(endpoint: NSNumber) async throws -> [MTRDescriptorClusterDeviceTypeStruct] {
         SharedLogger.debug("getDeviceType")
         let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: endpoint, queue: DispatchQueue.global())
-        let result = (try? await descriptor?.readAttributeDeviceTypeList())?.map { $0 as! MTRDescriptorClusterDeviceTypeStruct} ?? []
+        let result = (try await descriptor?.readAttributeDeviceTypeList())?.map { $0 as! MTRDescriptorClusterDeviceTypeStruct} ?? []
         SharedLogger.debug("Supported device types: \(result)")
         return result
     }
@@ -224,10 +224,10 @@ class LocalMatterClusterDiscovery {
      * Parts list is a set of endpoint logically connected with the endpoint.
      * Root endpoint 0 should return all the endpoints available on the device.
      */
-    func readEndpoints() async -> [NSNumber] {
+    func readEndpoints() async throws -> [NSNumber] {
         SharedLogger.debug("readEndpoints")
         let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        let result = (try? await descriptor?.readAttributePartsList())?.map { $0 as! NSNumber} ?? []
+        let result = (try await descriptor?.readAttributePartsList())?.map { $0 as! NSNumber} ?? []
         SharedLogger.debug("Supported endpoints: \(result)")
         return result
     }
@@ -238,10 +238,10 @@ class LocalMatterClusterDiscovery {
      *
      * It can be a light bulb that can receive on/off commands.
      */
-    func readServerClusters(endpoint: NSNumber) async -> [NSNumber] {
+    func readServerClusters(endpoint: NSNumber) async throws -> [NSNumber] {
         SharedLogger.debug("readServerClusters")
         let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: endpoint, queue: DispatchQueue.global())
-        let result = (try? await descriptor?.readAttributeServerList())?.map { $0 as! NSNumber} ?? []
+        let result = (try await descriptor?.readAttributeServerList())?.map { $0 as! NSNumber} ?? []
         SharedLogger.debug("Supported server clusters: \(result)")
         return result
     }
@@ -253,10 +253,10 @@ class LocalMatterClusterDiscovery {
      *
      * It can be a switch that sends on/off command to a light bulb.
      */
-    func readClientClusters(endpoint: NSNumber) async -> [NSNumber] {
+    func readClientClusters(endpoint: NSNumber) async throws -> [NSNumber] {
         SharedLogger.debug("readClientClusters")
         let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: endpoint, queue: DispatchQueue.global())
-        let result = (try? await descriptor?.readAttributeClientList())?.map { $0 as! NSNumber} ?? []
+        let result = (try await descriptor?.readAttributeClientList())?.map { $0 as! NSNumber} ?? []
         SharedLogger.debug("Supported client clusters: \(result)")
         return result
     }

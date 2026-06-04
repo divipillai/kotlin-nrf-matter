@@ -32,12 +32,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
-import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.ui.light.BasicInformationBottomSheet
+import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.light.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
 
@@ -74,6 +73,7 @@ import no.nordicsemi.nrf.matter.ui.light.InfoItem
 
 @Composable
 internal fun SwitchItem(
+    device: DeviceUiModel,
     deviceId: DeviceId,
     title: String,
     subtitle: String,
@@ -81,6 +81,7 @@ internal fun SwitchItem(
 ) {
 
     SwitchControlContainer(
+        device = device,
         title = title,
         subtitle = subtitle,
         isOnline = false,
@@ -88,19 +89,9 @@ internal fun SwitchItem(
     )
 }
 
-@Preview
-@Composable
-private fun SwitchItem_Preview() {
-    SwitchItem(
-        deviceId = DeviceId.Zero,
-        title = "Light switch",
-        subtitle = "Bind the device with other devices ",
-        onClick = {}
-    )
-}
-
 @Composable
 fun SwitchControlContainer(
+    device: DeviceUiModel,
     title: String,
     subtitle: String,
     isOnline: Boolean = true,
@@ -118,7 +109,9 @@ fun SwitchControlContainer(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { onDeviceClick() }
+            .clickable {
+                isExpanded = !isExpanded
+            }
     ) {
         Row(
             modifier = Modifier
@@ -242,12 +235,12 @@ fun SwitchControlContainer(
                         ) {
                             InfoItem(
                                 label = "Vendor",
-                                value = "Nordic Semi",
+                                value = device.device.vendorName ?: "UNKNOWN",
                                 modifier = Modifier.weight(1f)
                             )
                             InfoItem(
                                 label = "Firmware",
-                                value = "v1.2.4-stable",
+                                value = device.device.softwareVersion ?: "UNKNOWN",
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -262,21 +255,9 @@ fun SwitchControlContainer(
 
         // Basic Information Bottom Sheet Dialog
         if (showMatterDeviceInfo) {
-            BasicInformationBottomSheet(onDismiss = { showMatterDeviceInfo = false })
+            BasicInformationBottomSheet(device, onDismiss = { showMatterDeviceInfo = false })
         }
 
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun SwitchControlItem_Preview() {
-    NordicTheme {
-        SwitchControlContainer(
-            title = "Light switch",
-            subtitle = "Bind the device with other devices ",
-            isOnline = false,
-            onDeviceClick = {}
-        )
-    }
-}

@@ -1,9 +1,7 @@
 package no.nordicsemi.nrf.matter.logger
 
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -12,12 +10,8 @@ import kotlinx.coroutines.flow.update
 
 class LoggerViewModel : ViewModel() {
 
-    private val scope = CoroutineScope( // todo
-        SupervisorJob() + Dispatchers.Main
-    )
-
     private val logs = NordicLogger.getLogs()
-        .stateIn(scope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     val filter = MutableStateFlow("")
     val selectedLogLevels = MutableStateFlow(listOf(SelectableLogLevel.ALL))
@@ -25,7 +19,7 @@ class LoggerViewModel : ViewModel() {
     val filteredLogs = combine(logs, filter, selectedLogLevels) { logs, filter, logLevel ->
         logs.filter { it.message.lowercase().contains(filter.lowercase()) }
             .filter { isLogLevelIncluded(it.level) }
-    }.stateIn(scope, SharingStarted.Lazily, logs.value)
+    }.stateIn(viewModelScope, SharingStarted.Lazily, logs.value)
 
     fun setSearch(value: String) {
         filter.value = value

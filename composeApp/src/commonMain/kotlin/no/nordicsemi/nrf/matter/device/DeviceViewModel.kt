@@ -1,9 +1,8 @@
 package no.nordicsemi.nrf.matter.device
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -54,15 +53,12 @@ import org.koin.core.component.KoinComponent
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class DevicePresenter(
+class DeviceViewModel(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
     private val bindingRepository: BindingRepository,
-) : KoinComponent {
-    private val scope = CoroutineScope(
-        SupervisorJob() + Dispatchers.Main
-    )
+) : ViewModel(), KoinComponent {
 
     private val _uiState = MutableStateFlow(DeviceUiState())
     val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
@@ -80,7 +76,7 @@ class DevicePresenter(
     }
 
     fun observeDevice(deviceId: DeviceId) {
-        scope.launch {
+        viewModelScope.launch {
             devicesStateRepository.devicesStateFlow
                 .map { states ->
                     val state = states.devicesStateList.find { it.deviceId == deviceId }
@@ -95,7 +91,7 @@ class DevicePresenter(
                         isOn = isOn,
                         boundLights = bindingRepository.getBindingsForDevice(deviceId)
                     )
-                    val controller = uiModel.toController(scope, this@DevicePresenter)
+                    val controller = uiModel.toController(viewModelScope, this@DeviceViewModel)
                     _uiState.update {
                         it.copy(
                             deviceUiModel = uiModel,
@@ -121,7 +117,7 @@ class DevicePresenter(
             it.copy(removeDeviceState = RemoveDeviceState.Removing)
         }
 
-        scope.launch {
+        viewModelScope.launch {
             try {
                 deviceController.unlinkDevice(deviceId)
             } catch (e: Exception) {
@@ -150,7 +146,7 @@ class DevicePresenter(
     // and the user has confirmed that the device should still be removed from the app's device
     // repository.
     fun removeDeviceWithoutUnlink(deviceId: DeviceId) {
-        scope.launch {
+        viewModelScope.launch {
             try {
                 // Remove device from the app's devices repository.
                 devicesRepository.removeDevice(deviceId)
@@ -172,7 +168,7 @@ class DevicePresenter(
     }
 
     private fun loadTargetDevices() {
-        scope.launch {
+        viewModelScope.launch {
             val lightDevicesInRepository = devicesRepository.getAllDevices().devicesList.filter {
                 it.deviceType == DeviceType.LIGHT_ON_OFF ||
                         it.deviceType == DeviceType.DIMMABLE_LIGHT

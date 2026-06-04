@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -79,9 +80,6 @@ class HomeViewModel(
     userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel(), KoinComponent {
 
-    private val scope = CoroutineScope(
-        SupervisorJob() + Dispatchers.Main
-    )
     private val devicesListUiModelFlow: Flow<DevicesListUiModel> =
         combine(
             devicesRepository.devicesFlow,
@@ -105,12 +103,12 @@ class HomeViewModel(
             DevicesListUiModel(
                 devices = processDevices(devices, states, prefs),
                 showOfflineDevices = !prefs.hideOfflineDevices
-            ).devices.map { it.toController(scope, this) }
-        }.stateIn(scope, SharingStarted.Eagerly, emptyList())
+            ).devices.map { it.toController(viewModelScope, this) }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val devicesUiModelFlow: StateFlow<DevicesListUiModel> =
         devicesListUiModelFlow.stateIn(
-            scope,
+            viewModelScope,
             SharingStarted.Eagerly,
             DevicesListUiModel(emptyList(), showOfflineDevices = true)
         )
@@ -138,7 +136,7 @@ class HomeViewModel(
         isOnline: Boolean,
         isOn: Boolean,
     ) {
-        scope.launch {
+        viewModelScope.launch {
             devicesRepository.addDevice(device)
             devicesStateRepository.addDeviceState(
                 device.deviceId,
@@ -156,4 +154,3 @@ class HomeViewModel(
         }
     }
 }
-

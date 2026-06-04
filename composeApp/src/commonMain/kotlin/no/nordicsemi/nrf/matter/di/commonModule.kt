@@ -3,13 +3,14 @@ package no.nordicsemi.nrf.matter.di
 import no.nordicsemi.nrf.matter.BeaconRepository
 import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
 import no.nordicsemi.nrf.matter.binding.BindingDataSource
-import no.nordicsemi.nrf.matter.device.DevicePresenter
+import no.nordicsemi.nrf.matter.device.DeviceViewModel
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 /*
@@ -54,8 +55,8 @@ val commonModule = module {
     singleOf(::BindingRepository)
 
     // Device viewmodel.
-    single {
-        DevicePresenter(
+    viewModel {
+        DeviceViewModel(
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
             get<DeviceController>(),

@@ -56,7 +56,7 @@ import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.theme.NordicRed
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.ui.light.BasicInformationBottomSheet
+import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.light.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -76,6 +76,7 @@ fun ManufacturerSpecItem(
 ) {
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
     var isExpanded by rememberSaveable { mutableStateOf(true) }
+    
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
         border = if (device.isOnline) BorderStroke(
@@ -192,12 +193,12 @@ fun ManufacturerSpecItem(
                     ) {
                         InfoItem(
                             label = "Vendor",
-                            value = "Nordic Semi",
+                            value = device.device.vendorName ?: "UNKNOWN",
                             modifier = Modifier.weight(1f)
                         )
                         InfoItem(
                             label = "Firmware",
-                            value = "v1.2.4-stable",
+                            value = device.device.softwareVersion ?: "UNKNOWN",
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -212,7 +213,7 @@ fun ManufacturerSpecItem(
 
     // Basic Information Bottom Sheet Dialog
     if (showMatterDeviceInfo) {
-        BasicInformationBottomSheet(onDismiss = { showMatterDeviceInfo = false })
+        BasicInformationBottomSheet(device, onDismiss = { showMatterDeviceInfo = false })
     }
 
 }

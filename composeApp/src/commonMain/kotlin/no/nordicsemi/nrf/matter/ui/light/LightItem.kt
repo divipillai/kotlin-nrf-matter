@@ -204,12 +204,12 @@ internal fun LightItemContainer(
                     ) {
                         InfoItem(
                             label = "Vendor",
-                            value = "Nordic Semi",
+                            value = device.device.vendorName ?: "UNKNOWN",
                             modifier = Modifier.weight(1f)
                         )
                         InfoItem(
                             label = "Firmware",
-                            value = "v1.2.4-stable",
+                            value = device.device.softwareVersion ?: "UNKNOWN",
                             modifier = Modifier.weight(1f)
                         )
                     }

@@ -30,19 +30,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
-import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.TestDeviceLockDoor
-import no.nordicsemi.nrf.matter.ui.light.BasicInformationBottomSheet
-import no.nordicsemi.nrf.matter.ui.light.BrightnessControlCard
 import no.nordicsemi.nrf.matter.ui.light.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -62,29 +59,14 @@ internal fun LockItem(
         painterResource(Res.drawable.door_lock)
     else painterResource(Res.drawable.door_lock_open_right)
 
-    DeviceItemContainer(
-        icon = icon,
+    LockItemContainer(
+        deviceUiModel = device,
         title = "Front Door",
         subtitle = "Smart Lock",
+        isOnline = device.isOnline,
+        onLockUnlockDoor = onLockUnlockDoor,
         onDeviceClick = onClick
-    ) {
-        Surface(
-            color = Color.LightGray.copy(alpha = 0.2f),
-            shape = RoundedCornerShape(8.dp),
-            modifier = Modifier.clickable {
-                onLockUnlockDoor(device.device.deviceId, !isLocked)
-            }
-        ) {
-            Text(
-                text = if (isLocked) "Locked" else "Unlocked",
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                style = MaterialTheme.typography.labelSmall,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFE11D48)
-            )
-        }
-    }
+    )
 
 }
 
@@ -101,14 +83,20 @@ private fun LockItemPreview() {
 }
 
 @Composable
-fun LockControlItem(
-    icon: Painter,
+fun LockItemContainer(
+    deviceUiModel: DeviceUiModel,
     title: String,
     subtitle: String,
-    isOnline: Boolean = true,
+    isOnline: Boolean,
+    onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
     onDeviceClick: () -> Unit,
 ) {
-    var isExpanded by rememberSaveable { mutableStateOf(true) }
+    val isLocked = deviceUiModel.isOn
+    val icon = if (isLocked)
+        painterResource(Res.drawable.door_lock)
+    else painterResource(Res.drawable.door_lock_open_right)
+
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
 
     OutlinedCard(
@@ -120,7 +108,9 @@ fun LockControlItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { onDeviceClick() }
+            .clickable {
+                isExpanded = !isExpanded
+            }
     ) {
         Row(
             modifier = Modifier
@@ -175,11 +165,11 @@ fun LockControlItem(
                 color = Color.LightGray.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.clickable {
-                    // todo: lock/unlock device
+                    onLockUnlockDoor(deviceUiModel.device.deviceId, !isLocked)
                 }
             ) {
                 Text(
-                    text = if (isOnline) "Locked" else "Unlocked",
+                    text = if (isLocked) "Locked" else "Unlocked",
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     style = MaterialTheme.typography.labelSmall,
                     fontFamily = FontFamily.Monospace,
@@ -225,12 +215,12 @@ fun LockControlItem(
                         ) {
                             InfoItem(
                                 label = "Vendor",
-                                value = "Nordic Semi",
+                                value = deviceUiModel.device.vendorName ?: "UNKNOWN",
                                 modifier = Modifier.weight(1f)
                             )
                             InfoItem(
                                 label = "Firmware",
-                                value = "v1.2.4-stable",
+                                value = deviceUiModel.device.softwareVersion ?: "UNKNOWN",
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -245,7 +235,7 @@ fun LockControlItem(
 
         // Basic Information Bottom Sheet Dialog
         if (showMatterDeviceInfo) {
-            BasicInformationBottomSheet(onDismiss = { showMatterDeviceInfo = false })
+            BasicInformationBottomSheet(deviceUiModel, onDismiss = { showMatterDeviceInfo = false })
         }
 
     }
@@ -253,11 +243,13 @@ fun LockControlItem(
 
 @Preview(showBackground = true)
 @Composable
-private fun LockControlItemPreview() {
-    LockControlItem(
-        icon = painterResource(Res.drawable.door_lock),
+private fun LockItemContainerPreview() {
+    LockItemContainer(
+        deviceUiModel = TestDeviceLockDoor,
         title = "Front Door",
         subtitle = "Smart Lock",
+        onLockUnlockDoor = { _, _ -> },
+        isOnline = true,
         onDeviceClick = {},
     )
 }

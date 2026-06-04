@@ -64,7 +64,7 @@ import nrfmatterformobile.composeapp.generated.resources.light_bulb
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-internal fun ManufacturerSpecItem(
+fun ManufacturerSpecItem(
     device: DeviceUiModel,
     manufacturerSpecificData: ManufacturerSpecificData,
     isLedOn: UiState<Boolean>,
@@ -72,52 +72,7 @@ internal fun ManufacturerSpecItem(
     randomNumber: UiState<Int>,
     setLed: (Boolean) -> Unit,
     generateRandomNumber: () -> Unit,
-    onClick: () -> Unit
-) {
-    Column {
-        DeviceItemContainer(
-            device = device,
-            manufacturerSpecificData = manufacturerSpecificData,
-            randomNumber = randomNumber,
-            generateRandomNumber = generateRandomNumber,
-            isButtonOn = isButtonOn,
-            setLed = setLed,
-            onDeviceClick = onClick,
-            isLedOn = isLedOn,
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Switch(
-                    checked = (isLedOn as? UiState.Success)?.data ?: false,
-                    onCheckedChange = setLed
-                )
-
-                Text("LED", style = MaterialTheme.typography.labelSmall)
-            }
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Switch(
-                    checked = (isButtonOn as? UiState.Success)?.data ?: false,
-                    onCheckedChange = { /* disabled */ },
-                    enabled = false,
-                )
-
-                Text("Button", style = MaterialTheme.typography.labelSmall)
-            }
-        }
-    }
-}
-
-@Composable
-private fun DeviceItemContainer(
-    device: DeviceUiModel,
-    manufacturerSpecificData: ManufacturerSpecificData,
-    randomNumber: UiState<Int>,
-    isLedOn: UiState<Boolean>,
-    isButtonOn: UiState<Boolean>,
-    setLed: (Boolean) -> Unit,
-    onDeviceClick: () -> Unit,
-    generateRandomNumber: () -> Unit,
-    content: @Composable () -> Unit
+    onClick: () -> Unit,
 ) {
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
     var isExpanded by rememberSaveable { mutableStateOf(true) }
@@ -182,8 +137,6 @@ private fun DeviceItemContainer(
                             .alpha(0.5f)
                     )
                 }
-
-                content()
             }
 
             Column(
@@ -267,7 +220,7 @@ private fun DeviceItemContainer(
 @Composable
 private fun GenerateRandomNumberBlock(
     randomNumber: UiState<Int>,
-    generateRandomNumber: () -> Unit,
+    generateRandomNumber: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -329,8 +282,8 @@ private fun GenerateRandomNumberBlock(
 private fun LedButtonRow(
     isLedOn: UiState<Boolean>,
     isButtonOn: UiState<Boolean>,
+    isButtonPressed: Boolean,
     setLed: (Boolean) -> Unit,
-    isButtonPressed: Boolean = true,
 ) {
     val ledState = (isLedOn as? UiState.Success)?.data ?: false
     val buttonState = (isButtonOn as? UiState.Success)?.data == true
@@ -421,17 +374,16 @@ fun ControlCardContainer(
 @Composable
 fun DeviceItemContainerPreview() {
     NordicTheme {
-        DeviceItemContainer(
+        ManufacturerSpecItem(
             device = TestDeviceManu,
             manufacturerSpecificData = TestDeviceManu.device.deviceMatterInfo[0].manufacturerSpecificData!!,
             randomNumber = UiState.Success(123),
             generateRandomNumber = {},
             isButtonOn = UiState.Success(true),
             setLed = {},
-            onDeviceClick = {},
             isLedOn = UiState.Success(true),
-        ) {
-        }
+            onClick = {},
+        )
     }
 }
 

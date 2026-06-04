@@ -243,28 +243,35 @@ internal fun DecommissionDevice() {
         OutlinedCard(
             shape = RoundedCornerShape(16.dp),
             border = CardDefaults.outlinedCardBorder(enabled = false),
-            modifier = Modifier
-                .padding(16.dp)
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            colors = CardDefaults.outlinedCardColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.error
+            )
         ) {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable {
-                        // todo: remove device
-                    },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error,
-                )
-                Text(
-                    "Remove/Decommission Device", fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.error
-                )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable {
+                            // todo: remove device
+                        },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = null,
+                    )
+                    Text(
+                        "Remove/Decommission Device", fontWeight = FontWeight.Bold,
+//                    color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }

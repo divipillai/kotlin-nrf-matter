@@ -7,7 +7,7 @@ import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.device.DevicePresenter
+import no.nordicsemi.nrf.matter.device.DeviceViewModel
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.IosDeviceController
@@ -107,15 +107,6 @@ val iosModule = module {
     viewModel { CommissioningViewModel(get()) }
 
     viewModel { LoggerViewModel() }
-
-    single {
-        DevicePresenter(
-            get<DevicesRepository>(),
-            get<DevicesStateRepository>(),
-            get<DeviceController>(),
-            get<BindingRepository>()
-        )
-    }
 
     factory { LightCommandHandler(get(), get()) }
     factory { LockCommandHandler(get(), get()) }

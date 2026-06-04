@@ -53,7 +53,7 @@ import multiplatform.network.cmptoast.ToastGravity
 import multiplatform.network.cmptoast.showToast
 import no.nordicsemi.nrf.matter.binding.BindingLoaderDialog
 import no.nordicsemi.nrf.matter.binding.LightSwitchBindingCard
-import no.nordicsemi.nrf.matter.device.DevicePresenter
+import no.nordicsemi.nrf.matter.device.DeviceViewModel
 import no.nordicsemi.nrf.matter.device.RemoveDeviceState
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
@@ -74,7 +74,7 @@ import nrfmatterformobile.composeapp.generated.resources.light_bulb
 import nrfmatterformobile.composeapp.generated.resources.light_fixture
 import nrfmatterformobile.composeapp.generated.resources.no_matter_devices
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.getKoin
+import org.koin.compose.viewmodel.koinViewModel
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -129,14 +129,14 @@ fun DeviceScreen(
     snackbarHostState: SnackbarHostState,
     onBack: () -> Unit
 ) {
-    val devicePresenter: DevicePresenter = getKoin().get()
-    val uiState by devicePresenter.uiState.collectAsState()
+    val deviceViewModel: DeviceViewModel = koinViewModel()
+    val uiState by deviceViewModel.uiState.collectAsState()
     var isRemoving by remember {
         mutableStateOf(false)
     }
 
     LaunchedEffect(deviceId) {
-        devicePresenter.observeDevice(deviceId)
+        deviceViewModel.observeDevice(deviceId)
     }
     if (uiState.deviceUiModel == null) {
         Text("Still loading the device information")
@@ -148,15 +148,15 @@ fun DeviceScreen(
         return
     }
     val controller = uiState.controller
-    val bindingState by devicePresenter.bindingState.collectAsState()
+    val bindingState by deviceViewModel.bindingState.collectAsState()
 
     when (uiState.removeDeviceState) {
 
         RemoveDeviceState.ConfirmRemove -> {
             isRemoving = true
             AlertDialogView(
-                onDismiss = { devicePresenter.updateRemoveDeviceState(RemoveDeviceState.Idle) },
-                onConfirm = { devicePresenter.removeDevice(device.device.deviceId) },
+                onDismiss = { deviceViewModel.updateRemoveDeviceState(RemoveDeviceState.Idle) },
+                onConfirm = { deviceViewModel.removeDevice(device.device.deviceId) },
                 title = "Remove Device",
                 message = "Are you sure you want to remove this device?"
             )
@@ -165,9 +165,9 @@ fun DeviceScreen(
         is RemoveDeviceState.ForceRemove -> {
             isRemoving = true
             AlertDialogView(
-                onDismiss = { devicePresenter.updateRemoveDeviceState(RemoveDeviceState.Idle) },
+                onDismiss = { deviceViewModel.updateRemoveDeviceState(RemoveDeviceState.Idle) },
                 onConfirm = {
-                    devicePresenter.removeDeviceWithoutUnlink(device.device.deviceId)
+                    deviceViewModel.removeDeviceWithoutUnlink(device.device.deviceId)
                 },
                 title = "Force Remove Device",
                 message = "Unable to unlink device. Force remove?"
@@ -179,7 +179,7 @@ fun DeviceScreen(
             LaunchedEffect(true) {
                 snackbarHostState.showSnackbar("Device removed")
             }
-            devicePresenter.updateRemoveDeviceState(RemoveDeviceState.Idle)
+            deviceViewModel.updateRemoveDeviceState(RemoveDeviceState.Idle)
             onBack()
         }
 
@@ -214,7 +214,7 @@ fun DeviceScreen(
             .then(if (isRemoving) Modifier.cloudy() else Modifier)
             .then(if (bindingState is UiState.Loading) Modifier.cloudy() else Modifier)
     ) {
-        DeviceDetails(device, controller, devicePresenter)
+        DeviceDetails(device, controller, deviceViewModel)
     }
 
 }
@@ -223,9 +223,9 @@ fun DeviceScreen(
 private fun DeviceDetails(
     device: DeviceUiModel,
     controller: MatterController?,
-    devicePresenter: DevicePresenter,
+    deviceViewModel: DeviceViewModel,
 ) {
-    val targetDevices by devicePresenter.bindingTargetDevices.collectAsState()
+    val targetDevices by deviceViewModel.bindingTargetDevices.collectAsState()
     val selectedDevices = remember { mutableListOf<Device>() }
     Column(
         modifier = Modifier
@@ -236,16 +236,16 @@ private fun DeviceDetails(
 
         DeviceHeader(device.device.name ?: "Device")
 
-        DeviceControlSection(device, devicePresenter)
+        DeviceControlSection(device, deviceViewModel)
 
         if (device.device.deviceType == DeviceType.LIGHT_SWITCH) {
-            val bindingState by devicePresenter.bindingState.collectAsState()
+            val bindingState by deviceViewModel.bindingState.collectAsState()
             when (bindingState) {
                 is UiState.Error -> {
                     AlertDialogView(
                         onDismiss = {
                             // Change state to idle.
-                            devicePresenter.updateBindingState(UiState.Idle())
+                            deviceViewModel.updateBindingState(UiState.Idle())
                         },
                         onConfirm = {
                             // Retry binding.
@@ -301,8 +301,8 @@ private fun DeviceDetails(
                     // Show a Toast of success binding.
                     NordicLogger.info("AAA, Success")
                     // Load the binding table one more time.
-                    devicePresenter.loadBindingTable(device.device.deviceId)
-                    devicePresenter.updateBindingState(UiState.Idle())
+                    deviceViewModel.loadBindingTable(device.device.deviceId)
+                    deviceViewModel.updateBindingState(UiState.Idle())
                     showToast(
                         message = "Binding completed successfully!",
                         duration = ToastDuration.Long,
@@ -326,7 +326,7 @@ private fun DeviceDetails(
         Spacer(Modifier.height(16.dp))
 
         RemoveDeviceSection {
-            devicePresenter.updateRemoveDeviceState(RemoveDeviceState.ConfirmRemove)
+            deviceViewModel.updateRemoveDeviceState(RemoveDeviceState.ConfirmRemove)
         }
     }
 }
@@ -334,7 +334,7 @@ private fun DeviceDetails(
 @Composable
 private fun DeviceControlSection(
     device: DeviceUiModel,
-    presenter: DevicePresenter
+    presenter: DeviceViewModel
 ) {
     when (device.device.deviceType) {
 

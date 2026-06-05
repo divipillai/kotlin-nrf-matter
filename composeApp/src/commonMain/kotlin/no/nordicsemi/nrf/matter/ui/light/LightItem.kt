@@ -175,7 +175,9 @@ internal fun LightItemContainer(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp).clickable {
+                        .padding(16.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable {
                             showMatterDeviceInfo = true
                         },
                     verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -231,14 +233,21 @@ internal fun LightItemContainer(
 @Composable
 internal fun DecommissionDevice() {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         OutlinedCard(
             shape = RoundedCornerShape(16.dp),
             border = CardDefaults.outlinedCardBorder(enabled = false),
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .clickable {
+                    // todo: remove device
+                },
             colors = CardDefaults.outlinedCardColors(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
                 contentColor = MaterialTheme.colorScheme.error
@@ -251,11 +260,7 @@ internal fun DecommissionDevice() {
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable {
-                            // todo: remove device
-                        },
+                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(

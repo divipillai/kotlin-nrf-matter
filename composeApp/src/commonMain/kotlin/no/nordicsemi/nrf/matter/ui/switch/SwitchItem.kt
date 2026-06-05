@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -206,7 +207,9 @@ fun SwitchControlContainer(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp).clickable {
+                            .padding(16.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable {
                                 showMatterDeviceInfo = true
                             },
                         verticalArrangement = Arrangement.spacedBy(16.dp)

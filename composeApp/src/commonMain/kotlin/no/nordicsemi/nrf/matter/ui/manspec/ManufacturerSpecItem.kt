@@ -163,7 +163,9 @@ fun ManufacturerSpecItem(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp).clickable {
+                        .padding(16.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable {
                             showMatterDeviceInfo = true
                         },
                     verticalArrangement = Arrangement.spacedBy(16.dp)

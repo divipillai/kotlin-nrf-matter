@@ -253,5 +253,3 @@ private fun LockItemContainerPreview() {
         onDeviceClick = {},
     )
 }
-
-

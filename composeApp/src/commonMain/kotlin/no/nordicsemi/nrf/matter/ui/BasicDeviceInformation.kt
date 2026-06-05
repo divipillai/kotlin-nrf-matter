@@ -43,8 +43,6 @@ internal fun BasicInformationBottomSheet(
     }
 }
 
-
-@Preview(showBackground = true)
 @Composable
 internal fun BasicDeviceInformation(
     modifier: Modifier = Modifier,

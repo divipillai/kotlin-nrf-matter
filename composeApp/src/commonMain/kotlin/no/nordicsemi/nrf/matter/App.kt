@@ -107,10 +107,7 @@ fun App(homeViewModel: HomeViewModel) {
                         topAppBarTitle = rememberTopBarTitle(
                             backStack = backStack,
                             devicesUiModel = devicesUiModel
-                        ),
-                        onLoggerIconClick = {
-                            backStack.add(LoggerRoute)
-                        }
+                        )
                     )
                 },
                 floatingActionButton = {
@@ -239,10 +236,10 @@ private fun EntryProviderScope<NavKey>.screens(
                 backStack.removeLastOrNull()
             }
         }
+    }
 
-        entry<BindingRoute> {
-            BindingScreen()
-        }
+    entry<BindingRoute> {
+        BindingScreen()
     }
 }
 

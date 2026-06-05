@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Terminal
@@ -81,6 +82,7 @@ val NavKey.title: String
         is HomeRoute -> "Dashboard"
         is BindingRoute -> "Bindings"
         is LoggerRoute -> "Logs Panel"
+        is CommissioningRoute -> "Commissioning"
         else -> "Unknown"
     }
 
@@ -89,5 +91,6 @@ val NavKey.icon: ImageVector
         is HomeRoute -> Icons.Default.Home
         is BindingRoute -> Icons.Default.Cable
         is LoggerRoute -> Icons.Default.Terminal
+        is CommissioningRoute -> Icons.Default.Add
         else -> Icons.Default.Home
     }

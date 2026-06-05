@@ -11,11 +11,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.union
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -60,7 +56,6 @@ import no.nordicsemi.nrf.matter.theme.light_md_appBarColor
 @Composable
 fun AppBar(
     topAppBarTitle: String,
-    onLoggerIconClick: () -> Unit,
 ) {
     TopAppBar(
         title = {
@@ -85,14 +80,5 @@ fun AppBar(
             .union(WindowInsets.navigationBars)
             .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
 
-        actions = {
-            IconButton(onClick = {
-                onLoggerIconClick()
-            }) {
-                Icon(
-                    Icons.Filled.Search, contentDescription = "Logs",
-                )
-            }
-        },
-    )
+        )
 }

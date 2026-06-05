@@ -1,21 +1,26 @@
 package no.nordicsemi.nrf.matter
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -34,6 +39,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
 import no.nordicsemi.nrf.matter.navigation.BindingRoute
+import no.nordicsemi.nrf.matter.navigation.CommissioningRoute
 import no.nordicsemi.nrf.matter.navigation.DetailsRoute
 import no.nordicsemi.nrf.matter.navigation.HomeRoute
 import no.nordicsemi.nrf.matter.navigation.LoggerRoute
@@ -118,6 +124,50 @@ fun App(homeViewModel: HomeViewModel) {
                             Icon(Icons.Default.Add, null)
                         }
                     }
+                },
+                bottomBar = {
+                    NavigationBar(
+                        modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
+                        containerColor = MaterialTheme.colorScheme.background,
+                        tonalElevation = 8.dp
+                    ) {
+                        tabs.forEach { tabRoute ->
+                            val isSelected = currentRoute::class == tabRoute::class
+
+                            NavigationBarItem(
+                                selected = isSelected,
+                                onClick = {
+                                    if (!isSelected) {
+                                        // Clear current tab route and add the new selection
+                                        while (backStack.isNotEmpty()) {
+                                            backStack.removeLastOrNull()
+                                        }
+
+                                        val targetRoute = when (tabRoute) {
+                                            is HomeRoute -> HomeRoute
+                                            is BindingRoute -> BindingRoute
+                                            is LoggerRoute -> LoggerRoute
+                                            else -> error("Unknown tab route: $tabRoute")
+                                        }
+                                        backStack.add(targetRoute)
+                                    }
+                                },
+                                icon = {
+                                    Icon(
+                                        imageVector = tabRoute.icon,
+                                        contentDescription = tabRoute.title
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = tabRoute.title,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
+                            )
+                        }
+                    }
                 }
             ) { padding ->
                 NavDisplay(
@@ -190,12 +240,13 @@ private fun EntryProviderScope<NavKey>.screens(
             }
         }
 
-    entry<BindingRoute> {
-        BindingScreen()
-    }
+        entry<BindingRoute> {
+            BindingScreen()
+        }
 
-    entry<LoggerRoute> { _ ->
-        LoggerScreen(padding = padding)
+        entry<LoggerRoute> { _ ->
+            LoggerScreen()
+        }
     }
 }
 

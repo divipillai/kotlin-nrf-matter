@@ -125,7 +125,6 @@ val MatterGreen = Color(0xFF22C55E)
 @Composable
 fun DeviceScreen(
     deviceId: DeviceId,
-    padding: PaddingValues,
     snackbarHostState: SnackbarHostState,
     onBack: () -> Unit
 ) {
@@ -209,7 +208,6 @@ fun DeviceScreen(
     }
     Box(
         modifier = Modifier
-            .padding(padding)
             .fillMaxWidth()
             .then(if (isRemoving) Modifier.cloudy() else Modifier)
             .then(if (bindingState is UiState.Loading) Modifier.cloudy() else Modifier)

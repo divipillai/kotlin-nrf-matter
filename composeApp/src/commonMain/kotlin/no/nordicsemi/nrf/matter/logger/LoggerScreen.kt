@@ -38,7 +38,7 @@ import no.nordicsemi.nrf.matter.theme.NordicRed
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun LoggerScreen(padding: PaddingValues) {
+fun LoggerScreen() {
     val viewModel: LoggerViewModel = koinViewModel()
 
     val listState = rememberLazyListState()
@@ -48,7 +48,7 @@ fun LoggerScreen(padding: PaddingValues) {
 
     val filteredLogs = viewModel.filteredLogs.collectAsStateWithLifecycle().value
 
-    Row(Modifier.padding(padding)) {
+    Row {
         Column(
             modifier = Modifier
                 .fillMaxSize()

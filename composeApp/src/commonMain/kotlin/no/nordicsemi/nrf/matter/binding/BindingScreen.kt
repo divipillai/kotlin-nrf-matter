@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.ui
+package no.nordicsemi.nrf.matter.binding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +37,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import no.nordicsemi.nrf.matter.binding.DeviceBindingTest
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 
 /*
@@ -71,9 +70,8 @@ import no.nordicsemi.nrf.matter.model.DeviceBinding
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@Preview(showBackground = true)
 @Composable
-private fun BindingsScreen(
+internal fun BindingsScreen(
     eligibleSources: List<DeviceBinding> = emptyList(),
     eligibleTargets: List<DeviceBinding> = emptyList(),
     bindings: List<DeviceBinding> = listOf(DeviceBindingTest)

@@ -81,6 +81,7 @@ kotlin {
             implementation(libs.compose.cloudy)
             // CMPToast: Toasts for Compose Multiplatform
             implementation(libs.cmptoast)
+            implementation(libs.compottie)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

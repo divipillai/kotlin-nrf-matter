@@ -1,7 +1,7 @@
 package no.nordicsemi.nrf.matter
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
@@ -15,7 +15,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
@@ -25,11 +24,12 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import no.nordicsemi.nrf.matter.commission.CommissionHandler
+import no.nordicsemi.nrf.matter.commission.CommissioningScreen
 import no.nordicsemi.nrf.matter.logger.LoggerScreen
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
+import no.nordicsemi.nrf.matter.navigation.CommissioningRoute
 import no.nordicsemi.nrf.matter.navigation.DetailsRoute
 import no.nordicsemi.nrf.matter.navigation.HomeRoute
 import no.nordicsemi.nrf.matter.navigation.LoggerRoute
@@ -69,11 +69,6 @@ import no.nordicsemi.nrf.matter.theme.NordicTheme
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-val LocalCommissionHandler =
-    staticCompositionLocalOf<CommissionHandler> {
-        error("CommissionHandler not provided")
-    }
-
 @Composable
 fun App(homeViewModel: HomeViewModel) {
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
@@ -85,7 +80,6 @@ fun App(homeViewModel: HomeViewModel) {
         }
     }
 
-    val commissionHandler = LocalCommissionHandler.current
     val snackbarHostState = remember { SnackbarHostState() }
 
     NordicTheme {
@@ -115,7 +109,7 @@ fun App(homeViewModel: HomeViewModel) {
                         FloatingActionButton(
                             onClick = {
                                 // invoke onCommission click action.
-                                commissionHandler.onCommissioningStarted()
+                                backStack.add(CommissioningRoute)
                             }
                         ) {
                             Icon(Icons.Default.Add, null)
@@ -128,10 +122,9 @@ fun App(homeViewModel: HomeViewModel) {
                     onBack = onBack,
                     entryProvider = entryProvider {
                         screens(
-                            padding = padding,
                             snackbarHostState = snackbarHostState,
                             onCommissioningStarted = {
-                                commissionHandler.onCommissioningStarted()
+                                backStack.add(CommissioningRoute)
                             },
                             backStack = backStack,
                             homeViewModel = homeViewModel,
@@ -144,6 +137,7 @@ fun App(homeViewModel: HomeViewModel) {
                         rememberSaveableStateHolderNavEntryDecorator(),
                         rememberViewModelStoreNavEntryDecorator(),
                     ),
+                    modifier = Modifier.padding(padding)
                 )
             }
         }
@@ -151,7 +145,6 @@ fun App(homeViewModel: HomeViewModel) {
 }
 
 private fun EntryProviderScope<NavKey>.screens(
-    padding: PaddingValues,
     snackbarHostState: SnackbarHostState,
     homeViewModel: HomeViewModel,
     backStack: NavBackStack<NavKey>,
@@ -160,7 +153,6 @@ private fun EntryProviderScope<NavKey>.screens(
 ) {
     entry<HomeRoute> {
         HomeScreen(
-            innerPaddings = padding,
             homeViewModel = homeViewModel,
             onCommissionClick = onCommissioningStarted,
             onDeviceClick = { onDeviceClick(it) }
@@ -170,7 +162,6 @@ private fun EntryProviderScope<NavKey>.screens(
     entry<DetailsRoute> { key ->
         DeviceScreen(
             deviceId = key.id,
-            padding = padding,
             snackbarHostState = snackbarHostState,
             onBack = {
                 if (backStack.size > 1) {
@@ -180,7 +171,14 @@ private fun EntryProviderScope<NavKey>.screens(
         )
     }
     entry<LoggerRoute> { key ->
-        LoggerScreen(padding = padding)
+        LoggerScreen()
+    }
+    entry<CommissioningRoute> { key ->
+        CommissioningScreen {
+            if (backStack.size > 1) {
+                backStack.removeLastOrNull()
+            }
+        }
     }
 }
 

@@ -5,15 +5,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.toDeviceId
-import no.nordicsemi.nrf.matter.theme.NordicTheme
 import kotlin.time.Clock
 
 /*
@@ -48,11 +47,12 @@ import kotlin.time.Clock
  */
 
 class HomeViewModelAndroid(
-    private val baseViewModel: HomeViewModel,
     private val basicInfoProvider: MatterBasicInfoProvider,
     private val clustersHelper: ClustersHelper,
 ) : ViewModel() {
     private var gpsCommissioningResult: CommissioningResult? = null
+
+    val deviceEvent = Channel<Device>()
 
     fun gpsCommissioningDeviceSucceeded(activityResult: ActivityResult) {
         gpsCommissioningResult =
@@ -62,10 +62,6 @@ class HomeViewModelAndroid(
             )
         // TODO: Now we need to capture the device name.
         onCommissionedDeviceNameCaptured("Device-Test")
-    }
-
-    fun commissionDeviceFailed(resultCode: Int) {
-        baseViewModel.commissioningFailed(resultCode)
     }
 
     fun onCommissionedDeviceNameCaptured(deviceName: String) {
@@ -103,18 +99,11 @@ class HomeViewModelAndroid(
                     specificationVersion = basicInfo.specificationVersion,
                     deviceMatterInfo = deviceMatterInfoList,
                 )
-                baseViewModel.addCommissionedDevice(device, isOnline = true, isOn = false)
 
+                deviceEvent.send(device)
             } catch (e: Exception) {
                 val msg = "Adding device [${deviceId}] [${deviceName}] to app's repository failed."
                 NordicLogger.error("BBB, onCommissionedDeviceNameCaptured: $msg", e)
-            }
-
-            // update device name
-            try {
-                clustersHelper.writeBasicClusterNodeLabelAttribute(deviceId, deviceName)
-            } catch (ex: Exception) {
-                NordicLogger.error("AAA,  Failed to write NodeLabel $deviceName with exception)", ex)
             }
         }
     }
@@ -135,6 +124,4 @@ class HomeViewModelAndroid(
             else -> DeviceType.UNKNOWN
         }
     }
-
 }
-

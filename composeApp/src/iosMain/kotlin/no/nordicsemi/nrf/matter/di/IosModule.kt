@@ -1,13 +1,12 @@
 package no.nordicsemi.nrf.matter.di
 
-import no.nordicsemi.nrf.matter.CommissioningViewModel
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.SwiftCodeProvider
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
+import no.nordicsemi.nrf.matter.commission.CommissioningViewModel
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
-import no.nordicsemi.nrf.matter.device.DeviceViewModel
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.IosDeviceController

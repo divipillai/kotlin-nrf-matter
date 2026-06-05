@@ -45,14 +45,13 @@ import no.nordicsemi.nrf.matter.ui.DeviceList
 
 @Composable
 fun HomeScreen(
-    innerPaddings: PaddingValues,
     homeViewModel: HomeViewModel,
     onCommissionClick: () -> Unit,
     onDeviceClick: (deviceId: DeviceId) -> Unit,
 ) {
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
 
-    Box(modifier = Modifier.padding(innerPaddings)) {
+    Box {
         if (devicesUiModel.devices.isEmpty()) {
             NoDevicesScreen(
                 onAddDeviceClick = onCommissionClick

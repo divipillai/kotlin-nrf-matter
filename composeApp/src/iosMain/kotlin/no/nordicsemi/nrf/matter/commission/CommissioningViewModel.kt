@@ -1,8 +1,9 @@
-package no.nordicsemi.nrf.matter
+package no.nordicsemi.nrf.matter.commission
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import no.nordicsemi.nrf.matter.SwiftCodeProvider
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 

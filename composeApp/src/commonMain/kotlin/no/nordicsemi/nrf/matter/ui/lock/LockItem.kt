@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -29,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -39,8 +42,8 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
+import no.nordicsemi.nrf.matter.ui.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.TestDeviceLockDoor
-import no.nordicsemi.nrf.matter.ui.light.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.door_lock
@@ -52,20 +55,13 @@ import org.jetbrains.compose.resources.painterResource
 internal fun LockItem(
     device: DeviceUiModel,
     onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
-    onClick: () -> Unit,
 ) {
-    val isLocked = device.isOn
-    val icon = if (isLocked)
-        painterResource(Res.drawable.door_lock)
-    else painterResource(Res.drawable.door_lock_open_right)
-
     LockItemContainer(
         deviceUiModel = device,
         title = "Front Door",
         subtitle = "Smart Lock",
         isOnline = device.isOnline,
-        onLockUnlockDoor = onLockUnlockDoor,
-        onDeviceClick = onClick
+        onLockUnlockDoor = onLockUnlockDoor
     )
 
 }
@@ -76,8 +72,7 @@ private fun LockItemPreview() {
     NordicTheme {
         LockItem(
             onLockUnlockDoor = { _, _ -> },
-            device = TestDeviceLockDoor,
-            onClick = {}
+            device = TestDeviceLockDoor
         )
     }
 }
@@ -89,7 +84,6 @@ fun LockItemContainer(
     subtitle: String,
     isOnline: Boolean,
     onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
-    onDeviceClick: () -> Unit,
 ) {
     val isLocked = deviceUiModel.isOn
     val icon = if (isLocked)
@@ -186,12 +180,13 @@ fun LockItemContainer(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp).clickable {
+                            .padding(16.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable {
                                 showMatterDeviceInfo = true
                             },
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -201,11 +196,15 @@ fun LockItemContainer(
                                 imageVector = Icons.Outlined.Info,
                                 contentDescription = "Info",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-
-                                )
+                            )
                             Text(
                                 text = "Matter Device information",
                                 fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = if (showMatterDeviceInfo) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                                contentDescription = "Info",
                             )
                         }
 
@@ -250,6 +249,5 @@ private fun LockItemContainerPreview() {
         subtitle = "Smart Lock",
         onLockUnlockDoor = { _, _ -> },
         isOnline = true,
-        onDeviceClick = {},
     )
 }

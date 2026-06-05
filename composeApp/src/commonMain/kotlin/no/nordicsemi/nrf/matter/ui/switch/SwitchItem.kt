@@ -38,7 +38,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
-import no.nordicsemi.nrf.matter.ui.light.DecommissionDevice
+import no.nordicsemi.nrf.matter.ui.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
 
 /*

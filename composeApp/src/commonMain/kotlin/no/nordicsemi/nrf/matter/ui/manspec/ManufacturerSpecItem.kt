@@ -57,7 +57,7 @@ import no.nordicsemi.nrf.matter.theme.NordicRed
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
-import no.nordicsemi.nrf.matter.ui.light.DecommissionDevice
+import no.nordicsemi.nrf.matter.ui.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.light_bulb

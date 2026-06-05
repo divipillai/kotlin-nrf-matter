@@ -248,14 +248,14 @@ internal val testDevices = listOf(
     object : MatterController {
         @Composable
         override fun Item(onDeviceClick: (DeviceId) -> Unit) {
-            LightItem(TestDeviceLight, { d, b ->}, {})
+            LightItem(TestDeviceLight, { d, b ->})
         }
 
     },
     object : MatterController {
         @Composable
         override fun Item(onDeviceClick: (DeviceId) -> Unit) {
-            LockItem(TestDeviceLockDoor, { d, b ->}, {})
+            LockItem(TestDeviceLockDoor, { d, b ->})
         }
 
     }

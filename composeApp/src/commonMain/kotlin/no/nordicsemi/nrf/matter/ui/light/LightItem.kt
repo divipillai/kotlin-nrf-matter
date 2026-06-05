@@ -14,8 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.CardDefaults
@@ -41,6 +42,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.skydoves.cloudy.cloudy
@@ -48,6 +50,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
+import no.nordicsemi.nrf.matter.ui.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.TestDeviceLight
 import no.nordicsemi.nrf.matter.ui.manspec.ControlCardContainer
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -58,8 +61,7 @@ import kotlin.math.roundToInt
 @Composable
 fun LightItem(
     device: DeviceUiModel,
-    updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
-    onClick: () -> Unit
+    updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit
 ) {
     LightItemContainer(
         device = device,
@@ -68,8 +70,7 @@ fun LightItem(
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
         enabled = device.isOn,
-        updateDeviceState = updateDeviceState,
-        onClick = onClick
+        updateDeviceState = updateDeviceState
     )
 }
 
@@ -81,11 +82,11 @@ internal fun LightItemContainer(
     subtitle: String,
     icon: Painter,
     enabled: Boolean,
-    updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
-    onClick: () -> Unit
+    updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit
 ) {
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
     var isExpanded by rememberSaveable { mutableStateOf(false) }
+
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
         border = if (enabled) BorderStroke(
@@ -182,7 +183,6 @@ internal fun LightItemContainer(
                         },
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -192,11 +192,15 @@ internal fun LightItemContainer(
                             imageVector = Icons.Outlined.Info,
                             contentDescription = "Info",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-
-                            )
+                        )
                         Text(
                             text = "Matter Device information",
                             fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = if (showMatterDeviceInfo) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                            contentDescription = "Info",
                         )
                     }
 
@@ -231,52 +235,6 @@ internal fun LightItemContainer(
 }
 
 @Composable
-internal fun DecommissionDevice() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        OutlinedCard(
-            shape = RoundedCornerShape(16.dp),
-            border = CardDefaults.outlinedCardBorder(enabled = false),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .clickable {
-                    // todo: remove device
-                },
-            colors = CardDefaults.outlinedCardColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.error
-            )
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = null,
-                    )
-                    Text(
-                        "Remove/Decommission Device", fontWeight = FontWeight.Bold,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun InfoItem(
     label: String,
     value: String,
@@ -291,6 +249,8 @@ fun InfoItem(
         )
         Text(
             text = value,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -379,7 +339,6 @@ private fun LightItemContainerPreview() {
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
         enabled = true,
-        updateDeviceState = { _, _ -> },
-        {}
+        updateDeviceState = { _, _ -> }
     )
 }

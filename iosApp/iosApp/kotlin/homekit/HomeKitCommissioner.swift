@@ -18,25 +18,25 @@ import HomeKit
  */
 class HomeKitCommissioner : MatterCommissioner {
 
-    func startIosCommissioning(onError: @escaping () -> Void) async throws -> Device? {
+    func startIosCommissioning() async throws -> Device {
         let controller = HomeKitController.shared()
         let uuid = await controller.addAccessory()
         
         guard let uuid else {
             print("Couldn't add accessory.")
-            return nil
+            throw OperationError.unknown
         }
       
         let accessory = controller.getAccessory(uuid: uuid)
         
         guard let accessory else {
             print("Couldn't find accessory.")
-            return nil
+            throw OperationError.unknown
         }
         
         let nodeId = accessory.matterNodeID
         
-        guard let nodeId else { return nil }
+        guard let nodeId else { throw OperationError.unknown }
         
         return Device(
             deviceId: DeviceId(value: String(nodeId)),

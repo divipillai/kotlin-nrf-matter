@@ -8,4 +8,5 @@
 enum OperationError: Error {
     case missingAttribute
     case wrongType
+    case unknown
 }

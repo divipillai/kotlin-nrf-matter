@@ -32,7 +32,6 @@ class SwitchController(
             deviceId = device.device.deviceId,
             title = "Light Switch",
             subtitle = "Bind the switch with other devices",
-            onClick = { onDeviceClick(device.device.deviceId) },
         )
     }
 }

@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material3.Card
@@ -78,15 +80,13 @@ internal fun SwitchItem(
     deviceId: DeviceId,
     title: String,
     subtitle: String,
-    onClick: () -> Unit,
 ) {
 
     SwitchControlContainer(
         device = device,
         title = title,
         subtitle = subtitle,
-        isOnline = false,
-        onDeviceClick = onClick
+        isOnline = false
     )
 }
 
@@ -96,7 +96,6 @@ fun SwitchControlContainer(
     title: String,
     subtitle: String,
     isOnline: Boolean = true,
-    onDeviceClick: () -> Unit,
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(true) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
@@ -229,6 +228,11 @@ fun SwitchControlContainer(
                             Text(
                                 text = "Matter Device information",
                                 fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = if (showMatterDeviceInfo) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                                contentDescription = "Info",
                             )
                         }
 

@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Button
@@ -72,11 +74,10 @@ fun ManufacturerSpecItem(
     randomNumber: UiState<Int>,
     setLed: (Boolean) -> Unit,
     generateRandomNumber: () -> Unit,
-    onClick: () -> Unit,
 ) {
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
     var isExpanded by rememberSaveable { mutableStateOf(true) }
-    
+
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
         border = if (device.isOnline) BorderStroke(
@@ -185,6 +186,11 @@ fun ManufacturerSpecItem(
                         Text(
                             text = "Matter Device information",
                             fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = if (showMatterDeviceInfo) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                            contentDescription = "Info",
                         )
                     }
 
@@ -385,7 +391,6 @@ fun DeviceItemContainerPreview() {
             isButtonOn = UiState.Success(true),
             setLed = {},
             isLedOn = UiState.Success(true),
-            onClick = {},
         )
     }
 }

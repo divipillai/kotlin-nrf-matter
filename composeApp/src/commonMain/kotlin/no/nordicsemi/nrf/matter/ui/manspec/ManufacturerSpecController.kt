@@ -46,7 +46,6 @@ class ManufacturerSpecController(
             randomNumber = randomNumber.collectAsStateWithLifecycle().value,
             setLed = ::setLed,
             generateRandomNumber = ::generateRandomNumber,
-            onClick = { onDeviceClick(device.device.deviceId) },
         )
     }
 }

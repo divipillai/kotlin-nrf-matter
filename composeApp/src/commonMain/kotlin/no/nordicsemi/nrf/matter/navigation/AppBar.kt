@@ -12,10 +12,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Loop
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -63,7 +60,6 @@ import no.nordicsemi.nrf.matter.theme.light_md_appBarColor
 @Composable
 fun AppBar(
     topAppBarTitle: String,
-    onNavigationIconClick: () -> Unit,
     onLoggerIconClick: () -> Unit,
 ) {
     TopAppBar(
@@ -89,29 +85,12 @@ fun AppBar(
             .union(WindowInsets.navigationBars)
             .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
 
-        navigationIcon = {
-            IconButton(onClick = {
-                // Navigate to Home screen.
-                onNavigationIconClick()
-            }) {
-                Icon(
-                    Icons.Filled.Home, contentDescription = "Home",
-                )
-            }
-        },
         actions = {
             IconButton(onClick = {
                 onLoggerIconClick()
             }) {
                 Icon(
                     Icons.Filled.Search, contentDescription = "Logs",
-                )
-            }
-            IconButton(onClick = {
-                // onClick Settings
-            }) {
-                Icon(
-                    Icons.Filled.Settings, contentDescription = "Settings",
                 )
             }
         },

@@ -30,7 +30,6 @@ class LightController(
         LightItem(
             device = device,
             updateDeviceState = { deviceId, state -> setLet(device.device, state) },
-            onClick = { onDeviceClick(device.device.deviceId) },
         )
     }
 }

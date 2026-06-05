@@ -364,8 +364,7 @@ private fun DeviceControlSection(
                 device = device,
                 onLockUnlockDoor = { id, value ->
 //                    presenter.togglePower(id, value)
-                },
-                onClick = {}
+                }
             )
         }
 

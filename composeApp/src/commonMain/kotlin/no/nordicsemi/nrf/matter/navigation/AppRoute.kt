@@ -1,5 +1,10 @@
 package no.nordicsemi.nrf.matter.navigation
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cable
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Terminal
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.serialization.SerialName
@@ -44,6 +49,10 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 data object HomeRoute : NavKey
 
 @Serializable
+@SerialName("Binding")
+data object BindingRoute : NavKey
+
+@Serializable
 @SerialName("Details")
 data class DetailsRoute(val id: DeviceId) : NavKey
 
@@ -61,6 +70,24 @@ val config = SavedStateConfiguration {
             subclass(HomeRoute::class, HomeRoute.serializer())
             subclass(DetailsRoute::class, DetailsRoute.serializer())
             subclass(CommissioningRoute::class, CommissioningRoute.serializer())
+            subclass(BindingRoute::class, BindingRoute.serializer())
+            subclass(LoggerRoute::class, LoggerRoute.serializer())
         }
     }
 }
+
+val NavKey.title: String
+    get() = when (this) {
+        is HomeRoute -> "Dashboard"
+        is BindingRoute -> "Bindings"
+        is LoggerRoute -> "Logs Panel"
+        else -> "Unknown"
+    }
+
+val NavKey.icon: ImageVector
+    get() = when (this) {
+        is HomeRoute -> Icons.Default.Home
+        is BindingRoute -> Icons.Default.Cable
+        is LoggerRoute -> Icons.Default.Terminal
+        else -> Icons.Default.Home
+    }

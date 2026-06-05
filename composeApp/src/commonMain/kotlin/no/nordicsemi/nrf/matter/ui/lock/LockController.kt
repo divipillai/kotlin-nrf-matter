@@ -30,7 +30,6 @@ class LockController(
         LockItem(
             device = device,
             onLockUnlockDoor = { deviceId, state -> setLock(device.device, state) },
-            onClick = { onDeviceClick(device.device.deviceId) },
         )
     }
 }

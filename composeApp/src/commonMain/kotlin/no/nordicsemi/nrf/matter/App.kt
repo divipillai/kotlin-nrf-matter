@@ -1,21 +1,30 @@
 package no.nordicsemi.nrf.matter
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
@@ -29,11 +38,14 @@ import no.nordicsemi.nrf.matter.logger.LoggerScreen
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
+import no.nordicsemi.nrf.matter.navigation.BindingRoute
 import no.nordicsemi.nrf.matter.navigation.CommissioningRoute
 import no.nordicsemi.nrf.matter.navigation.DetailsRoute
 import no.nordicsemi.nrf.matter.navigation.HomeRoute
 import no.nordicsemi.nrf.matter.navigation.LoggerRoute
 import no.nordicsemi.nrf.matter.navigation.config
+import no.nordicsemi.nrf.matter.navigation.icon
+import no.nordicsemi.nrf.matter.navigation.title
 import no.nordicsemi.nrf.matter.screens.DeviceScreen
 import no.nordicsemi.nrf.matter.screens.HomeScreen
 import no.nordicsemi.nrf.matter.theme.NordicTheme
@@ -72,7 +84,6 @@ import no.nordicsemi.nrf.matter.theme.NordicTheme
 @Composable
 fun App(homeViewModel: HomeViewModel) {
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
-
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)
     val onBack: () -> Unit = {
         if (backStack.size > 1) {
@@ -80,7 +91,10 @@ fun App(homeViewModel: HomeViewModel) {
         }
     }
 
+    val currentRoute = backStack.lastOrNull() ?: HomeRoute
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val tabs = remember { listOf(HomeRoute, BindingRoute, LoggerRoute) }
 
     NordicTheme {
         Surface(
@@ -94,11 +108,6 @@ fun App(homeViewModel: HomeViewModel) {
                             backStack = backStack,
                             devicesUiModel = devicesUiModel
                         ),
-                        onNavigationIconClick = {
-                            if (backStack.size > 1) {
-                                backStack.removeLastOrNull()
-                            }
-                        },
                         onLoggerIconClick = {
                             backStack.add(LoggerRoute)
                         }
@@ -113,6 +122,50 @@ fun App(homeViewModel: HomeViewModel) {
                             }
                         ) {
                             Icon(Icons.Default.Add, null)
+                        }
+                    }
+                },
+                bottomBar = {
+                    NavigationBar(
+                        modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
+                        containerColor = MaterialTheme.colorScheme.background,
+                        tonalElevation = 8.dp
+                    ) {
+                        tabs.forEach { tabRoute ->
+                            val isSelected = currentRoute::class == tabRoute::class
+
+                            NavigationBarItem(
+                                selected = isSelected,
+                                onClick = {
+                                    if (!isSelected) {
+                                        // Clear current tab route and add the new selection
+                                        while (backStack.isNotEmpty()) {
+                                            backStack.removeLastOrNull()
+                                        }
+
+                                        val targetRoute = when (tabRoute) {
+                                            is HomeRoute -> HomeRoute
+                                            is BindingRoute -> BindingRoute
+                                            is LoggerRoute -> LoggerRoute
+                                            else -> error("Unknown tab route: $tabRoute")
+                                        }
+                                        backStack.add(targetRoute)
+                                    }
+                                },
+                                icon = {
+                                    Icon(
+                                        imageVector = tabRoute.icon,
+                                        contentDescription = tabRoute.title
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = tabRoute.title,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
+                            )
                         }
                     }
                 }
@@ -144,6 +197,13 @@ fun App(homeViewModel: HomeViewModel) {
     }
 }
 
+@Composable
+fun BindingScreen(
+
+) {
+    Text("Bindings")
+}
+
 private fun EntryProviderScope<NavKey>.screens(
     snackbarHostState: SnackbarHostState,
     homeViewModel: HomeViewModel,
@@ -170,14 +230,18 @@ private fun EntryProviderScope<NavKey>.screens(
             }
         )
     }
-    entry<LoggerRoute> { key ->
+    entry<LoggerRoute> { _ ->
         LoggerScreen()
     }
-    entry<CommissioningRoute> { key ->
+    entry<CommissioningRoute> { _ ->
         CommissioningScreen {
             if (backStack.size > 1) {
                 backStack.removeLastOrNull()
             }
+        }
+
+        entry<BindingRoute> {
+            BindingScreen()
         }
     }
 }

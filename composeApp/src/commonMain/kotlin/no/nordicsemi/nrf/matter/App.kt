@@ -230,10 +230,10 @@ private fun EntryProviderScope<NavKey>.screens(
             }
         )
     }
-    entry<LoggerRoute> { key ->
+    entry<LoggerRoute> { _ ->
         LoggerScreen()
     }
-    entry<CommissioningRoute> { key ->
+    entry<CommissioningRoute> { _ ->
         CommissioningScreen {
             if (backStack.size > 1) {
                 backStack.removeLastOrNull()
@@ -242,10 +242,6 @@ private fun EntryProviderScope<NavKey>.screens(
 
         entry<BindingRoute> {
             BindingScreen()
-        }
-
-        entry<LoggerRoute> { _ ->
-            LoggerScreen()
         }
     }
 }

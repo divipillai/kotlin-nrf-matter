@@ -2,6 +2,7 @@ package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.SwiftCodeProvider
+import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.commission.CommissioningViewModel
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
@@ -106,6 +107,7 @@ val iosModule = module {
     viewModel { CommissioningViewModel(get()) }
 
     viewModel { LoggerViewModel() }
+    viewModel { BindingViewModel(get(), get()) }
 
     factory { LightCommandHandler(get(), get()) }
     factory { LockCommandHandler(get(), get()) }

@@ -8,6 +8,7 @@ import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
 import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
+import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
@@ -117,5 +118,6 @@ val androidModule = module {
     viewModelOf(::BeaconViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::HomeViewModelAndroid)
+    viewModelOf(::BindingViewModel)
     viewModel { LoggerViewModel() }
 }

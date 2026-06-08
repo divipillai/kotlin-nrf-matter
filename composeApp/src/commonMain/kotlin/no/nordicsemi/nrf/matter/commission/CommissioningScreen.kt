@@ -13,7 +13,7 @@ sealed interface CommissioningScreenState {
 }
 
 @Composable
-fun CommissioningScreen(onBack: () -> Unit) {
+fun CommissioningScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
     val homeViewModel: HomeViewModel = koinViewModel()
     val state = remember { mutableStateOf<CommissioningScreenState>(CommissioningScreenState.InProgress) }
 
@@ -32,6 +32,6 @@ fun CommissioningScreen(onBack: () -> Unit) {
 
     when (state.value) {
         CommissioningScreenState.InProgress -> CommissioningInProgressScreen()
-        CommissioningScreenState.Error -> CommissioningErrorScreen(onBack)
+        CommissioningScreenState.Error -> CommissioningErrorScreen(onBack, navigateToLogs)
     }
 }

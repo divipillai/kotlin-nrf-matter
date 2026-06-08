@@ -230,14 +230,18 @@ private fun EntryProviderScope<NavKey>.screens(
     entry<LoggerRoute> { _ ->
         LoggerScreen()
     }
-    entry<CommissioningRoute> { _ ->
-        CommissioningScreen {
-            if (backStack.size > 1) {
-                backStack.removeLastOrNull()
+    entry<CommissioningRoute> { key ->
+        CommissioningScreen(
+            onBack = {
+                if (backStack.size > 1) {
+                    backStack.removeLastOrNull()
+                }
+            },
+            navigateToLogs = {
+                backStack.add(LoggerRoute)
             }
-        }
+        )
     }
-
     entry<BindingRoute> {
         BindingScreen()
     }

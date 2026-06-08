@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.binding
 
+import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 
@@ -37,8 +38,8 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 interface BindingDataSource {
     suspend fun save(binding: DeviceBinding)
 
-    suspend fun getBindingsForDevice(deviceId: DeviceId): List<DeviceBinding>
+    fun getBindingsForDevice(deviceId: DeviceId): Flow<List<DeviceBinding>>
 
-    suspend fun getAll() : List<DeviceBinding>
+    suspend fun getAll(): Flow<List<DeviceBinding>>
 
 }

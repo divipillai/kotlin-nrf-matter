@@ -4,7 +4,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
@@ -51,24 +52,25 @@ class BaseBindingDataSource(
         dataStore.edit { prefs ->
             val current = prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
             val updated = current.filterNot { it.id == binding.id } + binding
-            NordicLogger.debug("updated binding table: $updated", tag = "AAA")
+            NordicLogger.info("updated binding table: $updated", tag = "Bindings")
             prefs[BINDINGS_KEY] = encode(updated)
         }
     }
 
-    override suspend fun getBindingsForDevice(deviceId: DeviceId): List<DeviceBinding> {
-        val prefs = dataStore.data.first()
-        val bindings = prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
+    override fun getBindingsForDevice(deviceId: DeviceId): Flow<List<DeviceBinding>> {
+        return dataStore.data.map { prefs ->
+            val bindings = prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
 
-        return bindings.filter {
-            it.sourceNodeId == deviceId || it.targetNodeId == deviceId
+            bindings.filter {
+                it.sourceNodeId == deviceId || it.targetNodeId == deviceId
+            }
         }
     }
 
-    override suspend fun getAll(): List<DeviceBinding> =
-        dataStore.data.first()[BINDINGS_KEY]?.let {
-            decode(it)
-        } ?: emptyList()
+    override suspend fun getAll(): Flow<List<DeviceBinding>> =
+        dataStore.data.map { prefs ->
+            prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
+        }
 
 
     private fun encode(list: List<DeviceBinding>): String = Json.encodeToString(list)

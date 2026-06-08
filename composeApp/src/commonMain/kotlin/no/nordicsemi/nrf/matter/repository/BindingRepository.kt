@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.repository
 
+import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.binding.BindingDataSource
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -43,11 +44,11 @@ class BindingRepository(
         localDataSource.save(binding)
     }
 
-    suspend fun getBindingsForDevice(deviceId: DeviceId): List<DeviceBinding> {
+    fun getTargetsForDevice(deviceId: DeviceId): Flow<List<DeviceBinding>> {
         return localDataSource.getBindingsForDevice(deviceId)
     }
 
-    suspend fun getAllBinding(): List<DeviceBinding>{
+    suspend fun getAllBinding(): Flow<List<DeviceBinding>> {
         return localDataSource.getAll()
     }
 }

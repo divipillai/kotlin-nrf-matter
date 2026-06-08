@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingFlat
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.SwapCalls
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Transform
@@ -29,6 +28,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,7 +40,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.nrf.matter.model.DeviceBinding
+import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.ui.DeviceTest_LIGHT
+import org.koin.compose.viewmodel.koinViewModel
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -72,10 +80,10 @@ import no.nordicsemi.nrf.matter.model.DeviceBinding
 
 @Composable
 internal fun BindingsScreen(
-    eligibleSources: List<DeviceBinding> = emptyList(),
-    eligibleTargets: List<DeviceBinding> = emptyList(),
-    bindings: List<DeviceBinding> = listOf(DeviceBindingTest)
 ) {
+    val bindingViewModel: BindingViewModel = koinViewModel()
+    val bindingScreenState by bindingViewModel.bindingScreenState.collectAsStateWithLifecycle()
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -95,15 +103,16 @@ internal fun BindingsScreen(
                         contentDescription = "Bindings Explanation",
                         tint = MaterialTheme.colorScheme.primary,
                     )
-                    Column {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Text(
                             text = "Understanding Matter Bindings",
-                            style = MaterialTheme.typography.titleSmall,
                         )
                         Text(
                             text = "The Binding Cluster (0x001E) allows client nodes to directly control target servers over unicast/multicast fabric connections, bypassing intermediate bridge proxies entirely.",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                         )
                     }
                 }
@@ -120,159 +129,40 @@ internal fun BindingsScreen(
         }
 
         item {
-            OutlinedCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+            if (bindingScreenState.sourceDevices.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Selector for Source Node
-                    Column {
-                        Text(
-                            text = "Select Client / Source Node (Write Client):",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp)
-                        ) {
-                            OutlinedButton(
-                                onClick = { },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Select Switch Source"
-                                    )
-                                    Icon(
-                                        Icons.Default.ArrowDropDown,
-                                        contentDescription = "Open dropdown"
-                                    )
-                                }
-                            }
-
-                            DropdownMenu(
-                                expanded = false,
-                                onDismissRequest = { },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                eligibleSources.forEach { device ->
-                                    DropdownMenuItem(
-                                        text = { Text("${device.id} (Node ID: ${device.sourceNodeId})") },
-                                        onClick = {
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Selector for Target Server Node ID
-                    Column {
-                        Text(
-                            text = "Select Server / Target Node (Control Target):",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp)
-                        ) {
-                            OutlinedButton(
-                                onClick = { },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Select Device Target"
-                                    )
-                                    Icon(
-                                        Icons.Default.ArrowDropDown,
-                                        contentDescription = "Open dropdown"
-                                    )
-                                }
-                            }
-
-                            DropdownMenu(
-                                expanded = false,
-                                onDismissRequest = { },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                eligibleTargets.forEach { _ ->
-                                    DropdownMenuItem(
-                                        text = { Text("Target Device name (Node ID: 0x006L)") },
-                                        onClick = {
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Cluster Info static tag
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SwapCalls,
-                            contentDescription = "Target Cluster",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Target Action: Write Cluster 0x0006 (OnOff Bind Struct)",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    Button(
-                        onClick = {
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(imageVector = Icons.Default.Cable, contentDescription = "Link")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Write Fabric Binding Table (Cluster 0x001E)")
-                    }
+                    Text(
+                        text = "No eligible source devices found. Please add a Light Switch or Outlet device to configure bindings.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
                 }
+                return@item
+            } else {
+                BindingTableDetails(bindingScreenState, {
+                    bindingViewModel.onSourceSelected(it)
+
+                }, { sourceId, targetId ->
+                    bindingViewModel.initiateBinding(sourceId, targetId)
+                })
             }
         }
 
         // Active Binding Lists
         item {
             Text(
-                text = "Active Binding Table Entries (${bindings.size})",
+                text = "Active Binding Table Entries (${bindingScreenState.activeBindings.size})",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
         }
 
-        if (bindings.isEmpty()) {
+        if (bindingScreenState.activeBindings.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier
@@ -287,8 +177,184 @@ internal fun BindingsScreen(
                 }
             }
         } else {
+            // List active bindings
             item {
-                BindingCardRow(binding = bindings.first())
+                bindingScreenState.activeBindings.forEach { binding ->
+                    BindingCardRow(binding = binding)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BindingTableDetails(
+    bindingScreenState: BindingScreenState,
+    onSourceSelected: (sourceDeviceId: DeviceId) -> Unit,
+    initiateBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId) -> Unit,
+) {
+    var selectedTargetDevice by rememberSaveable { mutableStateOf<DeviceId?>(null) }
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Selector for Source Node
+            Column {
+                Text(
+                    text = "Select Client / Source Node (Write Client)",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = {
+                            // TODO: Show dropdown of source devices (filter by device type, clusters, etc.)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Select Switch Source"
+                            )
+                            Icon(
+                                Icons.Default.ArrowDropDown,
+                                contentDescription = "Open dropdown"
+                            )
+                        }
+                    }
+
+                    DropdownMenu(
+                        expanded = false,
+                        onDismissRequest = { },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        bindingScreenState.sourceDevices.forEach { device ->
+                            DropdownMenuItem(
+                                text = { Text("${device.productName} (Node ID: ${device.deviceId})") },
+                                onClick = {
+                                    // TODO: Show the target devices that are eligible for binding with this source device (filter by device type, clusters, etc.)
+                                    onSourceSelected(device.deviceId)
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Selector for Target Server Node ID
+            if (bindingScreenState.eligibleTargetDevices.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No eligible target devices found for the selected source. Please ensure you have a compatible Light or Outlet device added.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                }
+                return@Column
+            } else {
+                Column {
+                    Text(
+                        text = "Select Server / Target Node (Control Target)",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Select Device Target"
+                                )
+                                Icon(
+                                    Icons.Default.ArrowDropDown,
+                                    contentDescription = "Open dropdown"
+                                )
+                            }
+                        }
+
+                        DropdownMenu(
+                            expanded = false,
+                            onDismissRequest = { },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            bindingScreenState.eligibleTargetDevices.forEach {
+                                DropdownMenuItem(
+                                    text = { Text("Target Device name (Node ID: 0x006L)") },
+                                    onClick = {
+                                        selectedTargetDevice = it.deviceId
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Cluster Info static tag
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.SwapCalls,
+                    contentDescription = "Target Cluster",
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Target Action: Write Cluster 0x0006 (OnOff Bind Struct)",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+
+            Button(
+                onClick = {
+                    if (selectedTargetDevice != null) {
+                        initiateBinding(
+                            bindingScreenState.selectedSourceDeviceId!!,
+                            selectedTargetDevice!!,
+                        )
+                    }
+
+                },
+                enabled = selectedTargetDevice != null,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Write Binding ")
             }
         }
     }
@@ -296,8 +362,26 @@ internal fun BindingsScreen(
 
 @Preview(showBackground = true)
 @Composable
+private fun BindingTableDetailsPreview() {
+    NordicTheme {
+        BindingTableDetails(
+            bindingScreenState = BindingScreenState(
+                sourceDevices = listOf(
+                    DeviceTest_LIGHT
+                ),
+                eligibleTargetDevices = listOf(
+                    DeviceTest_LIGHT
+                )
+            ),
+            {},
+        ) { _, _ -> }
+
+    }
+}
+
+@Composable
 fun BindingCardRow(
-    binding: DeviceBinding = DeviceBindingTest
+    binding: DeviceBinding
 ) {
     OutlinedCard(
         modifier = Modifier.fillMaxWidth()
@@ -330,7 +414,7 @@ fun BindingCardRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Client ID: ${binding.sourceNodeId}",
+                        text = "Client ID: ${binding.sourceNodeId.longValue}",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace
@@ -344,7 +428,7 @@ fun BindingCardRow(
                     )
 
                     Text(
-                        text = "Server ID: ${binding.targetNodeId}",
+                        text = "Server ID: ${binding.targetNodeId.longValue}",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace,
@@ -353,11 +437,19 @@ fun BindingCardRow(
                 }
 
                 Text(
-                    text = "Bound Cluster ID: ${binding.clusterId}",
+                    text = "Bound Cluster ID: 0x00${binding.clusterId}L (OnOff Cluster)",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BindingCardRowPreview() {
+    BindingCardRow(
+        binding = DeviceBindingTest
+    )
 }

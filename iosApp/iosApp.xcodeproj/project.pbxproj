@@ -105,6 +105,12 @@
 			path = Configuration;
 			sourceTree = "<group>";
 		};
+		A7228F212FD844A4009CC829 /* src */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			name = src;
+			path = ../composeApp/src;
+			sourceTree = SOURCE_ROOT;
+		};
 		A725F1BB2F4DAACB005BC977 /* nrfMatter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -166,6 +172,7 @@
 		7A153F9AB70F98838999796F = {
 			isa = PBXGroup;
 			children = (
+				A7228F212FD844A4009CC829 /* src */,
 				924494A307E640B6954B6B71 /* Configuration */,
 				208BF3748A4E27EC7D0D131C /* iosApp */,
 				A725F1BB2F4DAACB005BC977 /* nrfMatter */,

@@ -267,8 +267,8 @@ private fun BindingTableDetails(
     var isSourceDropdownExpanded by rememberSaveable { mutableStateOf(false) }
     var isTargetDropdownExpanded by rememberSaveable { mutableStateOf(false) }
 
-    var sourceText by rememberSaveable { mutableStateOf("Select Switch sources") }
-    var targetText by rememberSaveable { mutableStateOf("Select Light targets") }
+    var sourceText by rememberSaveable { mutableStateOf("Select Light Switch") }
+    var targetText by rememberSaveable { mutableStateOf("Select Light Bulb") }
 
     OutlinedCard(
         modifier = Modifier.fillMaxWidth()
@@ -395,10 +395,10 @@ private fun BindingTableDetails(
                                         Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
                                     },
                                     onClick = {
-                                        sourceText = device.productName
+                                        targetText = device.productName
                                             ?: "Node ${device.deviceId.longValue}"
                                         isTargetDropdownExpanded = false
-                                        selectedTargetDevice = device.deviceId
+                                        selectedTargetDevice = device.deviceId.longValue
                                     }
                                 )
                             }

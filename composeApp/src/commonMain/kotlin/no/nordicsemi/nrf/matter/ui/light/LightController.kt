@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.ui.light
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -29,7 +30,10 @@ class LightController(
     override fun Item(onDeviceClick: (DeviceId) -> Unit) {
         LightItem(
             device = device,
-            updateDeviceState = { deviceId, state -> setLet(device.device, state) },
+            isLedOn = ledState.collectAsStateWithLifecycle().value,
+            updateDeviceState = { deviceId, state ->
+                setLet(device.device, state)
+            },
         )
     }
 }

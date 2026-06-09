@@ -92,7 +92,8 @@ class DeviceViewModel(
                         isOn = isOn,
                         boundLights = bindingRepository.getBindingsForDevice(deviceId)
                     )
-                    val controller = matterControllerCache[uiModel.device.deviceId] ?: matterControllerCache.create(uiModel)
+                    val controller = matterControllerCache[uiModel.device.deviceId]
+                        ?: matterControllerCache.create(uiModel)
                     _uiState.update {
                         it.copy(
                             deviceUiModel = uiModel,

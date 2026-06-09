@@ -82,7 +82,9 @@ class HomeViewModel(
                 devices = processDevices(devices, states, prefs),
                 showOfflineDevices = !prefs.hideOfflineDevices
             ).devices.map { device ->
-                matterControllerCache[device.device.deviceId] ?: matterControllerCache.create(device)
+                (matterControllerCache[device.device.deviceId] ?: matterControllerCache.create(device)).also {
+                    NordicLogger.debug("Device $it", "MatterController")
+                }
             }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 

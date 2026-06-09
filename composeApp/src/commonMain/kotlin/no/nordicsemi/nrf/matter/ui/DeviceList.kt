@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
@@ -248,7 +249,7 @@ internal val testDevices = listOf(
     object : MatterController {
         @Composable
         override fun Item(onDeviceClick: (DeviceId) -> Unit) {
-            LightItem(TestDeviceLight, { d, b ->})
+            LightItem(TestDeviceLight, UiState.Idle(), { d, b ->})
         }
 
     },

@@ -1,5 +1,8 @@
 package no.nordicsemi.nrf.matter.di
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import no.nordicsemi.nrf.matter.BeaconRepository
 import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
 import no.nordicsemi.nrf.matter.binding.BindingDataSource
@@ -9,6 +12,7 @@ import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
+import no.nordicsemi.nrf.matter.ui.MatterControllerCache
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -45,6 +49,10 @@ import org.koin.dsl.module
  */
 
 val commonModule = module {
+
+    // Define CoroutineScope as a singleton
+    single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
+
     // Beacon.
     singleOf(::BeaconRepository)
 
@@ -59,14 +67,14 @@ val commonModule = module {
         DeviceViewModel(
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
-            get<DeviceController>(),
-            get<BindingRepository>()
+            get<DeviceController>(), get<BindingRepository>(),
+            get(),
         )
     }
+
+    single { MatterControllerCache(get()) }
 
     single<BindingDataSource> {
         BaseBindingDataSource(get())
     }
-
 }
-

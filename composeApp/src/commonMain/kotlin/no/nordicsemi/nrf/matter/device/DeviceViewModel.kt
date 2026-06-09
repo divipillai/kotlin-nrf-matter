@@ -19,7 +19,7 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.toController
+import no.nordicsemi.nrf.matter.ui.MatterControllerCache
 import org.koin.core.component.KoinComponent
 
 /*
@@ -58,6 +58,7 @@ class DeviceViewModel(
     private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
     private val bindingRepository: BindingRepository,
+    private val matterControllerCache: MatterControllerCache,
 ) : ViewModel(), KoinComponent {
 
     private val _uiState = MutableStateFlow(DeviceUiState())
@@ -91,7 +92,7 @@ class DeviceViewModel(
                         isOn = isOn,
                         boundLights = bindingRepository.getBindingsForDevice(deviceId)
                     )
-                    val controller = uiModel.toController(viewModelScope, this@DeviceViewModel)
+                    val controller = matterControllerCache[uiModel.device.deviceId] ?: matterControllerCache.create(uiModel)
                     _uiState.update {
                         it.copy(
                             deviceUiModel = uiModel,

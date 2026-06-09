@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -15,17 +16,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingFlat
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.SwapCalls
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Transform
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -187,6 +191,7 @@ internal fun BindingsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BindingTableDetails(
     bindingScreenState: BindingScreenState,
@@ -194,6 +199,12 @@ private fun BindingTableDetails(
     initiateBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId) -> Unit,
 ) {
     var selectedTargetDevice by rememberSaveable { mutableStateOf<DeviceId?>(null) }
+    var isSourceDropdownExpanded by rememberSaveable { mutableStateOf(false) }
+    var isTargetDropdownExpanded by rememberSaveable { mutableStateOf(false) }
+
+    var sourceText by rememberSaveable { mutableStateOf("Select Switch sources") }
+    var targetText by rememberSaveable { mutableStateOf("Select Light targets") }
+
     OutlinedCard(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -206,44 +217,42 @@ private fun BindingTableDetails(
                 Text(
                     text = "Select Client / Source Node (Write Client)",
                     style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 8.dp),
                 )
-                Box(
+                ExposedDropdownMenuBox(
+                    expanded = isSourceDropdownExpanded,
+                    onExpandedChange = { isSourceDropdownExpanded = !isSourceDropdownExpanded },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = {
-                            // TODO: Show dropdown of source devices (filter by device type, clusters, etc.)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Select Switch Source"
-                            )
-                            Icon(
-                                Icons.Default.ArrowDropDown,
-                                contentDescription = "Open dropdown"
-                            )
-                        }
-                    }
 
-                    DropdownMenu(
-                        expanded = false,
-                        onDismissRequest = { },
-                        modifier = Modifier.fillMaxWidth()
+                    OutlinedTextField(
+                        value = sourceText,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier
+                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                            .fillMaxWidth(),
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = isSourceDropdownExpanded)
+                        },
+                        shape = RoundedCornerShape(8.dp)
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = isSourceDropdownExpanded,
+                        onDismissRequest = { isSourceDropdownExpanded = false }
                     ) {
                         bindingScreenState.sourceDevices.forEach { device ->
                             DropdownMenuItem(
-                                text = { Text("${device.productName} (Node ID: ${device.deviceId})") },
+                                text = {
+                                    Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
+                                },
                                 onClick = {
-                                    // TODO: Show the target devices that are eligible for binding with this source device (filter by device type, clusters, etc.)
+                                    sourceText =
+                                        device.productName ?: "Node ${device.deviceId.longValue}"
+                                    isSourceDropdownExpanded = false
                                     onSourceSelected(device.deviceId)
                                 }
                             )
@@ -253,7 +262,11 @@ private fun BindingTableDetails(
             }
 
             // Selector for Target Server Node ID
-            if (bindingScreenState.eligibleTargetDevices.isEmpty()) {
+            NordicLogger.debug(
+                "Eligible target devices for selected source (${bindingScreenState.selectedSourceDeviceId}): ${bindingScreenState.eligibleTargetDevices.map { it.deviceId }}",
+                tag = "BindingScreen"
+            )
+            if (bindingScreenState.selectedSourceDeviceId == null) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -261,7 +274,7 @@ private fun BindingTableDetails(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No eligible target devices found for the selected source. Please ensure you have a compatible Light or Outlet device added.",
+                        text = "Please select a source device to see eligible target devices.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
                 }
@@ -271,42 +284,43 @@ private fun BindingTableDetails(
                     Text(
                         text = "Select Server / Target Node (Control Target)",
                         style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(horizontal = 8.dp),
                     )
-                    Box(
+                    ExposedDropdownMenuBox(
+                        expanded = isTargetDropdownExpanded,
+                        onExpandedChange = { isTargetDropdownExpanded = !isTargetDropdownExpanded },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
                     ) {
-                        OutlinedButton(
-                            onClick = { },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Select Device Target"
-                                )
-                                Icon(
-                                    Icons.Default.ArrowDropDown,
-                                    contentDescription = "Open dropdown"
-                                )
-                            }
-                        }
 
-                        DropdownMenu(
-                            expanded = false,
-                            onDismissRequest = { },
-                            modifier = Modifier.fillMaxWidth()
+                        OutlinedTextField(
+                            value = targetText,
+                            onValueChange = {},
+                            readOnly = true,
+                            modifier = Modifier
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                                .fillMaxWidth(),
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isTargetDropdownExpanded)
+                            },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = isTargetDropdownExpanded,
+                            onDismissRequest = { isTargetDropdownExpanded = false }
                         ) {
-                            bindingScreenState.eligibleTargetDevices.forEach {
+                            bindingScreenState.eligibleTargetDevices.forEach { device ->
                                 DropdownMenuItem(
-                                    text = { Text("Target Device name (Node ID: 0x006L)") },
+                                    text = {
+                                        Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
+                                    },
                                     onClick = {
-                                        selectedTargetDevice = it.deviceId
+                                        sourceText = device.productName
+                                            ?: "Node ${device.deviceId.longValue}"
+                                        isTargetDropdownExpanded = false
+                                        selectedTargetDevice = device.deviceId
                                     }
                                 )
                             }

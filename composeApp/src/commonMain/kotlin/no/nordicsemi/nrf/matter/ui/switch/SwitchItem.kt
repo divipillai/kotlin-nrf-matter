@@ -97,7 +97,7 @@ fun SwitchControlContainer(
     subtitle: String,
     isOnline: Boolean = true,
 ) {
-    var isExpanded by rememberSaveable { mutableStateOf(true) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
 
     OutlinedCard(

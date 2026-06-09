@@ -76,7 +76,7 @@ fun ManufacturerSpecItem(
     generateRandomNumber: () -> Unit,
 ) {
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
-    var isExpanded by rememberSaveable { mutableStateOf(true) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
 
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),

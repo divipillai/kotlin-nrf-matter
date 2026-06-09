@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter.commission
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,18 +19,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircleOutline
-import androidx.compose.material.icons.rounded.LinkOff
-import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Terminal
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -40,24 +38,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import no.nordicsemi.nrf.matter.theme.BorderDark
-import no.nordicsemi.nrf.matter.theme.BorderLight
-import no.nordicsemi.nrf.matter.theme.CardDark
-import no.nordicsemi.nrf.matter.theme.CardLight
-import no.nordicsemi.nrf.matter.theme.ErrorBannerBgDark
-import no.nordicsemi.nrf.matter.theme.ErrorBannerBgLight
-import no.nordicsemi.nrf.matter.theme.ErrorDescDark
-import no.nordicsemi.nrf.matter.theme.ErrorDescLight
-import no.nordicsemi.nrf.matter.theme.ErrorTitleDark
-import no.nordicsemi.nrf.matter.theme.ErrorTitleLight
-import no.nordicsemi.nrf.matter.theme.NordicRed
-import no.nordicsemi.nrf.matter.theme.PillBgDark
-import no.nordicsemi.nrf.matter.theme.PillBgLight
-import no.nordicsemi.nrf.matter.theme.SlatePrimary
-import no.nordicsemi.nrf.matter.theme.TextBodyDark
-import no.nordicsemi.nrf.matter.theme.TextBodyLight
-import no.nordicsemi.nrf.matter.theme.TextTitleDark
-import no.nordicsemi.nrf.matter.theme.TextTitleLight
+
+private val SlatePrimary = Color(0xFF556791)
+private val CardLight = Color.White
+private val CardDark = Color(0xFF1E293B)
+private val TextTitleLight = Color(0xFF1E293B)
+private val TextTitleDark = Color.White
+private val TextBodyLight = Color(0xFF64748B)
+private val TextBodyDark = Color(0xFF94A3B8)
+private val BorderLight = Color(0xFFE2E8F0)
+private val BorderDark = Color(0xFF334155)
+private val PillBgLight = Color(0xFFF1F5F9)
+private val PillBgDark = Color(0xFF334155)
 
 @Composable
 fun CommissioningErrorScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
@@ -69,10 +61,6 @@ fun CommissioningErrorScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
                 .padding(horizontal = 24.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ErrorBanner(isSystemInDarkTheme())
-
-            Spacer(modifier = Modifier.height(32.dp))
-
             Text(
                 text = "Connection Failed",
                 fontSize = 28.sp,
@@ -86,7 +74,7 @@ fun CommissioningErrorScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
                 text = buildAnnotatedString {
                     append("We were unable to pair the ")
                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("RetroBulb Smart Gen 2")
+                        append("Matter device")
                     }
                     append(" to your network.")
                 },
@@ -119,7 +107,7 @@ fun CommissioningErrorScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 TroubleshootItem(
-                    text = "Verify that the Fabric ID 0x2A19F8 is correctly configured.",
+                    text = "Verify that the Fabric ID 0x000001 is correctly configured.",
                     isDark = isSystemInDarkTheme()
                 )
             }
@@ -127,22 +115,22 @@ fun CommissioningErrorScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
             Spacer(modifier = Modifier.height(40.dp))
 
             Button(
-                onClick = { },
-                colors = ButtonDefaults.buttonColors(containerColor = SlatePrimary),
+                onClick = { navigateToLogs() },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
-                Icon(Icons.Rounded.Refresh, contentDescription = null)
+                Icon(Icons.Rounded.Terminal, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Retry Commissioning", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("Go to Logs Panel", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Surface(
-                onClick = { },
+                onClick = { onBack() },
                 color = if (isSystemInDarkTheme()) PillBgDark else PillBgLight,
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
@@ -154,13 +142,13 @@ fun CommissioningErrorScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        Icons.Rounded.Terminal,
+                        Icons.Rounded.Close,
                         contentDescription = null,
                         tint = if (isSystemInDarkTheme()) TextTitleDark else TextTitleLight
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "Go to Logs Panel",
+                        "Finish",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (isSystemInDarkTheme()) TextTitleDark else TextTitleLight
@@ -169,65 +157,6 @@ fun CommissioningErrorScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-        }
-    }
-}
-
-
-@Composable
-fun NavLabel(text: String, color: Color = Color.Unspecified) {
-    Text(
-        text = text,
-        fontSize = 10.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 0.sp,
-        color = color,
-        maxLines = 1
-    )
-}
-
-@Composable
-fun ErrorBanner(isDark: Boolean) {
-    Surface(
-        color = if (isDark) ErrorBannerBgDark else ErrorBannerBgLight,
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(if (isDark) CardDark else CardLight)
-                    .padding(12.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.LinkOff,
-                    contentDescription = "Error",
-                    tint = NordicRed,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column {
-                Text(
-                    text = "Commissioning Error",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = if (isDark) ErrorTitleDark else ErrorTitleLight
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "The Matter node (0x1034) could not be reached. The process timed out while establishing the secure channel over Fabric Index 1.",
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    color = if (isDark) ErrorDescDark else ErrorDescLight
-                )
-            }
         }
     }
 }
@@ -251,7 +180,7 @@ fun DetailsCard(isDark: Boolean) {
                         shape = RoundedCornerShape(6.dp)
                     ) {
                         Text(
-                            text = "0x00000032",
+                            text = "0x0000001", //TODO
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
@@ -267,7 +196,7 @@ fun DetailsCard(isDark: Boolean) {
                 label = "Reason",
                 value = {
                     Text(
-                        text = "Network Timeout (MLE)",
+                        text = "Timeout",
                         fontSize = 14.sp,
                         color = if (isDark) TextTitleDark else TextTitleLight
                     )
@@ -279,7 +208,7 @@ fun DetailsCard(isDark: Boolean) {
                 label = "Protocol",
                 value = {
                     Text(
-                        text = "Project CHIP JNI",
+                        text = "Matter",
                         fontSize = 14.sp,
                         color = if (isDark) TextTitleDark else TextTitleLight
                     )

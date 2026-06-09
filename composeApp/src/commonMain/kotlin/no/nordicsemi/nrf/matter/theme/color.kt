@@ -120,33 +120,3 @@ val dark_md_theme_primaryInverse = Color(0xFF006780)
 val dark_md_appBarColor = Color(0xFF333f48)
 val dark_md_statusBarColor = NordicDarkGray
 val dark_md_navigationBarColor = Color(0xFF17282C)
-
-val SlatePrimary = Color(0xFF556791)
-val BackgroundLight = Color(0xFFF8F9FE)
-val BackgroundDark = Color(0xFF0F172A)
-
-val CardLight = Color.White
-val CardDark = Color(0xFF1E293B)
-
-val ErrorBannerBgLight = Color(0xFFF0EEFF)
-val ErrorBannerBgDark = Color(0xFF2D2A45)
-
-val ErrorIconColor = Color(0xFF8B5CF6)
-val ErrorTitleLight = Color(0xFF4A4471)
-val ErrorTitleDark = Color(0xFFE0DDF2)
-val ErrorDescLight = Color(0xFF6B658F)
-val ErrorDescDark = Color(0xFFAFA9CD)
-
-val TextTitleLight = Color(0xFF1E293B)
-val TextTitleDark = Color.White
-val TextBodyLight = Color(0xFF64748B)
-val TextBodyDark = Color(0xFF94A3B8)
-
-val BorderLight = Color(0xFFE2E8F0)
-val BorderDark = Color(0xFF334155)
-
-val PillBgLight = Color(0xFFF1F5F9)
-val PillBgDark = Color(0xFF334155)
-
-val BottomNavBgLight = Color(0xFFF0F2F9)
-val BottomNavBgDark = Color(0xFF0F172A)

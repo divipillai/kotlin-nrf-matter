@@ -105,7 +105,7 @@ class BindingViewModel(
             it.copy(selectedSourceDeviceId = sourceDeviceId)
         }
 
-        observeTargetDevices(sourceDeviceId)
+        updateEligibleTargetDevices(sourceDeviceId)
     }
 
     fun initiateBinding(sourceDeviceId: DeviceId, targetDeviceId: DeviceId) =
@@ -154,13 +154,18 @@ class BindingViewModel(
         }
     }.flowOn(Dispatchers.IO)
 
-    fun observeTargetDevices(sourceDeviceId: DeviceId) = viewModelScope.launch {
+    fun updateEligibleTargetDevices(sourceDeviceId: DeviceId) = viewModelScope.launch {
         bindingRepository.getTargetsForDevice(sourceDeviceId)
             .collect { bindings ->
+                // Filter out devices that are lights and are not already bound to the selected source device.
+                val lightDevicesInRepository =
+                    devicesRepository.getAllDevices().devicesList.filter {
+                        it.deviceType == DeviceType.LIGHT_ON_OFF ||
+                                it.deviceType == DeviceType.DIMMABLE_LIGHT
+                    }
                 val targetIds = bindings.map { it.targetNodeId }.toSet()
-                val devices = devicesRepository.getAllDevices().devicesList
 
-                val result = devices.filterNot { it.deviceId in targetIds }
+                val result = lightDevicesInRepository.filterNot { it.deviceId in targetIds }
 
                 _bindingScreenState.update {
                     it.copy(eligibleTargetDevices = result)

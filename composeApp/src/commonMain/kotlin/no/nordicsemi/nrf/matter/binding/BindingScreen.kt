@@ -52,6 +52,7 @@ import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.screens.dummyLogsForBinding
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
@@ -262,7 +263,7 @@ private fun BindingTableDetails(
     onSourceSelected: (sourceDeviceId: DeviceId) -> Unit,
     initiateBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId) -> Unit,
 ) {
-    var selectedTargetDevice by rememberSaveable { mutableStateOf<DeviceId?>(null) }
+    var selectedTargetDevice by rememberSaveable { mutableStateOf<Long?>(null) }
     var isSourceDropdownExpanded by rememberSaveable { mutableStateOf(false) }
     var isTargetDropdownExpanded by rememberSaveable { mutableStateOf(false) }
 
@@ -433,9 +434,13 @@ private fun BindingTableDetails(
             Button(
                 onClick = {
                     if (selectedTargetDevice != null) {
+                        NordicLogger.debug(
+                            "Initiating binding with source: ${bindingScreenState.selectedSourceDeviceId}, target: $selectedTargetDevice",
+                            tag = "BindingScreen"
+                        )
                         initiateBinding(
                             bindingScreenState.selectedSourceDeviceId,
-                            selectedTargetDevice!!,
+                            (selectedTargetDevice as Long).toDeviceId(),
                         )
                     }
 

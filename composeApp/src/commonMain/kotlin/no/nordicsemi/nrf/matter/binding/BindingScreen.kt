@@ -45,9 +45,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import multiplatform.network.cmptoast.ToastDuration
+import multiplatform.network.cmptoast.ToastGravity
+import multiplatform.network.cmptoast.showToast
+import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.screens.dummyLogsForBinding
+import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.DeviceTest_LIGHT
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -88,6 +96,62 @@ internal fun BindingsScreen(
     val bindingViewModel: BindingViewModel = koinViewModel()
     val bindingScreenState by bindingViewModel.bindingScreenState.collectAsStateWithLifecycle()
 
+    when (val bindingState = bindingScreenState.bindingUiState) {
+        is UiState.Error -> {
+            AlertDialogView(
+                onDismiss = {
+                    // Change state to idle.
+                    bindingViewModel.updateBindingState(UiState.Idle())
+                },
+                onConfirm = {
+                    // Retry binding. Set state to loading and call the binding function again.
+                },
+                title = "Binding Failed.",
+                message = "Unable to bind the device, please try again.",
+                confirmText = "Retry"
+            )
+        }
+
+        is UiState.Idle -> {
+                // Do nothing, show the normal UI.
+        }
+
+        is UiState.Loading -> {
+            BindingLoaderDialog(dummyLogsForBinding) {
+                // Text Content
+                Text(
+                    text = "Binding...",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.WarningAmber,
+                        contentDescription = null,
+                        tint = NordicSun
+                    )
+                    Text(text = "Binding in progress, it might take few seconds. Please don't close the app")
+                }
+            }
+        }
+
+        is UiState.Success -> {
+            // TODO: Show success message and show bonded lights in the UI.
+            // Show a Toast of success binding.
+            NordicLogger.info("Binding Success", tag = "Bindings")
+            bindingViewModel.updateActiveBinding(bindingState.data)
+            bindingViewModel.updateBindingState(UiState.Idle())
+            showToast(
+                message = "Binding completed successfully!",
+                duration = ToastDuration.Long,
+                gravity = ToastGravity.Center
+            )
+        }
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -370,7 +434,7 @@ private fun BindingTableDetails(
                 onClick = {
                     if (selectedTargetDevice != null) {
                         initiateBinding(
-                            bindingScreenState.selectedSourceDeviceId!!,
+                            bindingScreenState.selectedSourceDeviceId,
                             selectedTargetDevice!!,
                         )
                     }

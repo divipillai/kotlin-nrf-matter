@@ -172,4 +172,20 @@ class BindingViewModel(
                 }
             }
     }
+
+
+    fun updateActiveBinding(binding: DeviceBinding) = viewModelScope.launch {
+        val activeBindings = _bindingScreenState.value.activeBindings.toMutableList()
+        // Check if the binding already exists in the active bindings list. If it does, update it. If it doesn't, add it to the list.
+        val index = activeBindings.indexOfFirst { it.id == binding.id }
+        if (index != -1) {
+            activeBindings[index] = binding
+        } else {
+            activeBindings.add(binding)
+        }
+
+        _bindingScreenState.update {
+            it.copy(activeBindings = activeBindings)
+        }
+    }
 }

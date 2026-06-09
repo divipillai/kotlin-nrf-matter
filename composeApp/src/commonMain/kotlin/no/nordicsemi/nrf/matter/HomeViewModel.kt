@@ -66,7 +66,6 @@ class HomeViewModel(
             devicesStateRepository.devicesStateFlow,
             userPreferencesRepository.userPreferencesFlow
         ) { devices, states, prefs ->
-            NordicLogger.info("AAA, combine devices: $devices states: ${states.devicesStateList}")
             DevicesListUiModel(
                 devices = processDevices(devices, states, prefs),
                 showOfflineDevices = !prefs.hideOfflineDevices
@@ -79,7 +78,6 @@ class HomeViewModel(
             devicesStateRepository.devicesStateFlow,
             userPreferencesRepository.userPreferencesFlow
         ) { devices, states, prefs ->
-            NordicLogger.info("AAA, combine devices: $devices states: ${states.devicesStateList}")
             DevicesListUiModel(
                 devices = processDevices(devices, states, prefs),
                 showOfflineDevices = !prefs.hideOfflineDevices

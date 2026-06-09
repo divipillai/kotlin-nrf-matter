@@ -279,6 +279,19 @@ private fun BindingTableDetails(
                     )
                 }
                 return@Column
+            } else if (bindingScreenState.eligibleTargetDevices.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No eligible target devices found for the selected source. Please ensure you have a compatible Light or Dimmable light device added.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                }
+                return@Column
             } else {
                 Column {
                     Text(

@@ -699,7 +699,7 @@ private val DeviceTest =
 
     )
 
-private val dummyLogsForBinding = listOf(
+internal val dummyLogsForBinding = listOf(
     "Initializing secure handshake.",
     "Fetching remote server configuration.",
     "Resolving DNS for api.connection.service.",

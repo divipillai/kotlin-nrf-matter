@@ -99,10 +99,6 @@ val androidModule = module {
     single { BindingManager(chipClient = get()) }
     single<MatterBasicInfoProvider> { MatterBasicInfoProvider(chipClient = get()) }
 
-
-    // Define CoroutineScope as a singleton
-    single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
-
     // NOTE to myself: even though I have it in the common module, it also need to be declared in each module.
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }

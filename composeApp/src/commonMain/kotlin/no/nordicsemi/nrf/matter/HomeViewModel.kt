@@ -2,7 +2,6 @@ package no.nordicsemi.nrf.matter
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +10,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.Devices
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
@@ -21,10 +19,7 @@ import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import no.nordicsemi.nrf.matter.ui.MatterController
-import no.nordicsemi.nrf.matter.ui.light.LightController
-import no.nordicsemi.nrf.matter.ui.lock.LockController
-import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecController
-import no.nordicsemi.nrf.matter.ui.switch.SwitchController
+import no.nordicsemi.nrf.matter.ui.MatterControllerCache
 import org.koin.core.component.KoinComponent
 
 /*
@@ -58,23 +53,10 @@ import org.koin.core.component.KoinComponent
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-fun DeviceUiModel.toController(scope: CoroutineScope, koin: KoinComponent): MatterController {
-    return when (device.deviceType) {
-        DeviceType.COLOR_TEMPERATURE_LIGHT,
-        DeviceType.EXTENDED_COLOR_LIGHT,
-        DeviceType.UNKNOWN -> TODO()
-        DeviceType.DIMMABLE_LIGHT,
-        DeviceType.LIGHT_ON_OFF -> LightController(this, koin.getKoin().get(), scope)
-        DeviceType.OUTLET,
-        DeviceType.LIGHT_SWITCH -> SwitchController(this, koin.getKoin().get(), scope)
-        DeviceType.DOOR_LOCK -> LockController(this, koin.getKoin().get(), scope)
-        DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> ManufacturerSpecController(this, koin.getKoin().get(), scope)
-    }
-}
-
 class HomeViewModel(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
+    private val matterControllerCache: MatterControllerCache,
     userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel(), KoinComponent {
 
@@ -101,7 +83,9 @@ class HomeViewModel(
             DevicesListUiModel(
                 devices = processDevices(devices, states, prefs),
                 showOfflineDevices = !prefs.hideOfflineDevices
-            ).devices.map { it.toController(viewModelScope, this) }
+            ).devices.map { device ->
+                matterControllerCache[device.device.deviceId] ?: matterControllerCache.create(device)
+            }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val devicesUiModelFlow: StateFlow<DevicesListUiModel> =

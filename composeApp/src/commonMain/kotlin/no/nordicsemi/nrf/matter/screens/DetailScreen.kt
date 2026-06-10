@@ -147,7 +147,6 @@ fun DeviceScreen(
         return
     }
     val controller = uiState.controller
-    val bindingState by deviceViewModel.bindingState.collectAsState()
 
     when (uiState.removeDeviceState) {
 
@@ -210,7 +209,6 @@ fun DeviceScreen(
         modifier = Modifier
             .fillMaxWidth()
             .then(if (isRemoving) Modifier.cloudy() else Modifier)
-            .then(if (bindingState is UiState.Loading) Modifier.cloudy() else Modifier)
     ) {
         DeviceDetails(device, controller, deviceViewModel)
     }
@@ -223,8 +221,6 @@ private fun DeviceDetails(
     controller: MatterController?,
     deviceViewModel: DeviceViewModel,
 ) {
-    val targetDevices by deviceViewModel.bindingTargetDevices.collectAsState()
-    val selectedDevices = remember { mutableListOf<Device>() }
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -235,80 +231,6 @@ private fun DeviceDetails(
         DeviceHeader(device.device.name ?: "Device")
 
         DeviceControlSection(device, deviceViewModel)
-
-        if (device.device.deviceType == DeviceType.LIGHT_SWITCH) {
-            val bindingState by deviceViewModel.bindingState.collectAsState()
-            when (bindingState) {
-                is UiState.Error -> {
-                    AlertDialogView(
-                        onDismiss = {
-                            // Change state to idle.
-                            deviceViewModel.updateBindingState(UiState.Idle())
-                        },
-                        onConfirm = {
-                            // Retry binding.
-//                            devicePresenter.initiateBinding(
-//                                device.device.deviceId,
-//                                selectedDevices.toList()
-//                            )
-                        },
-                        title = "Binding Failed.",
-                        message = "Unable to bind the device, please try again.",
-                        confirmText = "Retry"
-                    )
-                }
-
-                is UiState.Idle -> {
-                    LightSwitchBindingCard(
-                        boundDevices = device.boundLights,
-                        targetDevices = targetDevices
-                    ) {
-                        selectedDevices.addAll(it)
-//                        devicePresenter.initiateBinding(
-//                            sourceNodeId = device.device.deviceId,
-//                            targetDevices = it
-//                        )
-                    }
-                }
-
-                is UiState.Loading -> {
-                    BindingLoaderDialog(dummyLogsForBinding) {
-                        // Text Content
-                        Text(
-                            text = "Binding...",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.WarningAmber,
-                                contentDescription = null,
-                                tint = NordicSun
-                            )
-                            Text(text = "Binding in progress, it might take few seconds. Please don't close the app")
-                        }
-                    }
-                }
-
-                is UiState.Success -> {
-                    // TODO: Show success message and show bonded lights in the UI.
-                    // Show a Toast of success binding.
-                    NordicLogger.info("AAA, Success")
-                    // Load the binding table one more time.
-                    deviceViewModel.loadBindingTable(device.device.deviceId)
-                    deviceViewModel.updateBindingState(UiState.Idle())
-                    showToast(
-                        message = "Binding completed successfully!",
-                        duration = ToastDuration.Long,
-                        gravity = ToastGravity.Center
-                    )
-                }
-            }
-        }
 
         controller?.let {
             SectionTitle("Control")

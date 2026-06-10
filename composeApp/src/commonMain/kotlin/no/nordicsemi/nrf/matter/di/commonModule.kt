@@ -74,7 +74,7 @@ val commonModule = module {
         DeviceViewModel(
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
-            get<DeviceController>(), get<BindingRepository>(),
+            get<DeviceController>(),
             get(),
         )
     }

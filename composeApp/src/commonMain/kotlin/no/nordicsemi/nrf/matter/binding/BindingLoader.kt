@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -113,10 +114,12 @@ internal fun BindingLoader() {
     val viewportWidth = 330f
     val viewportHeight = 205f
 
-    Box(contentAlignment = Alignment.Center) {
+    Box(contentAlignment = Alignment.Center,
+        modifier = Modifier.size(120.dp) ) {
         Image(
             painter = painterResource(Res.drawable.binding_links_only),
             contentDescription = null,
+            modifier = Modifier.fillMaxSize()
         )
 
         Canvas(modifier = Modifier.matchParentSize()) {

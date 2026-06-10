@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.binding
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -114,7 +115,7 @@ internal fun BindingsScreen(
         }
 
         is UiState.Idle -> {
-                // Do nothing, show the normal UI.
+            // Do nothing, show the normal UI.
         }
 
         is UiState.Loading -> {
@@ -124,18 +125,23 @@ internal fun BindingsScreen(
                     text = "Binding...",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
+                    color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.inverseOnSurface
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.WarningAmber,
                         contentDescription = null,
                         tint = NordicSun
                     )
-                    Text(text = "Binding in progress, it might take few seconds. Please don't close the app")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Binding in progress, it might take few seconds. Please don't close the app.",
+                        color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.inverseOnSurface
+                    )
                 }
             }
         }

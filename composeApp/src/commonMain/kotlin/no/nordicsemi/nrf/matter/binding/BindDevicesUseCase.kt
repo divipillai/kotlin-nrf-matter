@@ -1,22 +1,17 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.binding
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
-import no.nordicsemi.nrf.matter.binding.BindDevicesUseCase
-import no.nordicsemi.nrf.matter.binding.BindingDataSource
-import no.nordicsemi.nrf.matter.device.DeviceViewModel
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import no.nordicsemi.nrf.matter.device.BindingState
+import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.logger.NordicLogger
+import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceController
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.repository.BindingRepository
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import no.nordicsemi.nrf.matter.ui.MatterControllerCache
-import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModel
-import org.koin.dsl.module
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -48,40 +43,36 @@ import org.koin.dsl.module
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-val commonModule = module {
-
-    // Define CoroutineScope as a singleton
-    single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
-
-    // Beacon.
-    singleOf(::BeaconRepository)
-
-    // Repositories
-    singleOf(::DevicesRepository)
-    singleOf(::DevicesStateRepository)
-    singleOf(::UserPreferencesRepository)
-    singleOf(::BindingRepository)
-    single {
-        BindDevicesUseCase(
-            get(),
-            get(),
-        )
-    }
-
-    // Device viewmodel.
-    viewModel {
-        DeviceViewModel(
-            get<DevicesRepository>(),
-            get<DevicesStateRepository>(),
-            get<DeviceController>(), get<BindingRepository>(),
-            get(),
-        )
-    }
-
-    single { MatterControllerCache(get()) }
-
-    single<BindingDataSource> {
-        BaseBindingDataSource(get())
-    }
+class BindDevicesUseCase(
+    private val deviceController: DeviceController,
+    private val bindingRepository: BindingRepository,
+) {
+    operator fun invoke(
+        switchNodeId: DeviceId,
+        lightNodeId: DeviceId,
+    ): Flow<BindingState> = flow {
+        emit(UiState.Loading())
+        try {
+            deviceController.bind(
+                sourceNodeId = switchNodeId,
+                sourceEndpoint = 1,
+                targetNodeId = lightNodeId,
+                targetEndpoint = 1,
+                clusterId = 0x006L,
+            )
+            val bindingDevice = DeviceBinding(
+                id = "${switchNodeId}_${lightNodeId}",
+                sourceNodeId = switchNodeId,
+                targetNodeId = lightNodeId,
+                sourceEndpoint = 1,
+                targetEndpoint = 1,
+                clusterId = 0x006L
+            )
+            bindingRepository.save(bindingDevice)
+            emit(UiState.Success(bindingDevice))
+        } catch (e: Exception) {
+            NordicLogger.error("Binding failed: ${e.message}", e)
+            emit(UiState.Error(e.message ?: "Unknown error"))
+        }
+    }.flowOn(Dispatchers.IO)
 }

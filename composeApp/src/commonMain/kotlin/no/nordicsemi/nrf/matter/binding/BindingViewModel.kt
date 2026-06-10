@@ -2,22 +2,15 @@ package no.nordicsemi.nrf.matter.binding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.device.BindingUiState
+import no.nordicsemi.nrf.matter.device.BindingState
 import no.nordicsemi.nrf.matter.device.UiState
-import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceBinding
-import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.repository.BindingRepository
@@ -54,7 +47,7 @@ import no.nordicsemi.nrf.matter.repository.DevicesRepository
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 data class BindingScreenState(
-    val bindingUiState: BindingUiState = UiState.Idle(),
+    val bindingState: BindingState = UiState.Idle(),
     val sourceDevices: List<Device> = emptyList(),
     val activeBindings: List<DeviceBinding> = emptyList(),
     val selectedSourceDeviceId: DeviceId? = null,
@@ -64,7 +57,7 @@ data class BindingScreenState(
 class BindingViewModel(
     private val bindingRepository: BindingRepository,
     private val devicesRepository: DevicesRepository,
-    private val deviceController: DeviceController,
+    private val bindDevicesUseCase: BindDevicesUseCase,
 ) : ViewModel() {
 
     private val _bindingScreenState = MutableStateFlow(BindingScreenState())
@@ -73,12 +66,11 @@ class BindingViewModel(
     init {
         loadSourceDevices()
         getActiveBindings()
-
     }
 
-    fun updateBindingState(state: BindingUiState) =
+    fun updateBindingState(state: BindingState) =
         _bindingScreenState.update {
-            it.copy(bindingUiState = state)
+            it.copy(bindingState = state)
         }
 
     fun loadSourceDevices() = viewModelScope.launch {
@@ -111,48 +103,13 @@ class BindingViewModel(
     fun initiateBinding(sourceDeviceId: DeviceId, targetDeviceId: DeviceId) =
         viewModelScope.launch {
             updateBindingState(UiState.Loading())
-            bind(
+            bindDevicesUseCase.invoke(
                 switchNodeId = sourceDeviceId,
                 lightNodeId = targetDeviceId
             ).collect { state ->
                 updateBindingState(state)
             }
         }
-
-    // todo: Move it to other places like command handler.
-    fun bind(
-        switchNodeId: DeviceId,
-        lightNodeId: DeviceId,
-    ): Flow<BindingUiState> = flow {
-        emit(UiState.Loading())
-
-        try {
-            deviceController.bind(
-                sourceNodeId = switchNodeId,
-                sourceEndpoint = 1, // TODO: Add a function call that looks the endpoint of the switch where binding is configured.
-                targetNodeId = lightNodeId,
-                targetEndpoint = 1, // TODO: Add a function call that looks the endpoint of the light where cluster id is configured.
-                clusterId = 0x006L, // TODO: Change it to provide the cluster id based on the type of binding.
-            )
-
-            val bindingDevice = DeviceBinding(
-                id = "${switchNodeId}_${lightNodeId}_${0x006L}",
-                sourceNodeId = switchNodeId,
-                targetNodeId = lightNodeId,
-                sourceEndpoint = 1,
-                targetEndpoint = 1,
-                clusterId = 0x006L
-            )
-
-            bindingRepository.save(bindingDevice)
-
-            emit(UiState.Success(bindingDevice))
-
-        } catch (e: Exception) {
-            NordicLogger.error("Binding failed: ${e.message}", e)
-            emit(UiState.Error(e.message ?: "Unknown error"))
-        }
-    }.flowOn(Dispatchers.IO)
 
     fun updateEligibleTargetDevices(sourceDeviceId: DeviceId) = viewModelScope.launch {
         bindingRepository.getTargetsForDevice(sourceDeviceId)

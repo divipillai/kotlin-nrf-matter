@@ -1,9 +1,6 @@
 package no.nordicsemi.nrf.matter.di
 
 import android.bluetooth.BluetoothAdapter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.MatterBeaconProducer
 import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
@@ -100,7 +97,6 @@ val androidModule = module {
     single { BindingManager(chipClient = get()) }
     single<MatterBasicInfoProvider> { MatterBasicInfoProvider(chipClient = get()) }
 
-    // NOTE to myself: even though I have it in the common module, it also need to be declared in each module.
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<UserPreferencesRepository> { UserPreferencesRepository(get()) }

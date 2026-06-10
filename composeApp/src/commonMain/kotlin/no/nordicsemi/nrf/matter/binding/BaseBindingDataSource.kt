@@ -67,7 +67,7 @@ class BaseBindingDataSource(
         }
     }
 
-    override suspend fun getAll(): Flow<List<DeviceBinding>> =
+    override fun getAll(): Flow<List<DeviceBinding>> =
         dataStore.data.map { prefs ->
             prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
         }

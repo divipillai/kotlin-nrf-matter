@@ -48,7 +48,7 @@ class BindingRepository(
         return localDataSource.getBindingsForDevice(deviceId)
     }
 
-    suspend fun getAllBinding(): Flow<List<DeviceBinding>> {
+    fun getAllBinding(): Flow<List<DeviceBinding>> {
         return localDataSource.getAll()
     }
 }

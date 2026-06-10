@@ -40,6 +40,6 @@ interface BindingDataSource {
 
     fun getBindingsForDevice(deviceId: DeviceId): Flow<List<DeviceBinding>>
 
-    suspend fun getAll(): Flow<List<DeviceBinding>>
+    fun getAll(): Flow<List<DeviceBinding>>
 
 }

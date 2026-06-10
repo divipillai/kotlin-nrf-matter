@@ -141,8 +141,6 @@ internal fun BindingsScreen(
         }
 
         is UiState.Success -> {
-            // TODO: Show success message and show bonded lights in the UI.
-            // Show a Toast of success binding.
             NordicLogger.info("Binding Success", tag = "Bindings")
             bindingViewModel.updateActiveBinding(bindingState.data)
             bindingViewModel.updateBindingState(UiState.Idle())
@@ -316,7 +314,8 @@ private fun BindingTableDetails(
                                 },
                                 onClick = {
                                     sourceText =
-                                        device.productName ?: "Node ${device.deviceId.longValue}"
+                                        device.productName
+                                            ?: "Node ${device.deviceId.longValue}"
                                     isSourceDropdownExpanded = false
                                     onSourceSelected(device.deviceId)
                                 }

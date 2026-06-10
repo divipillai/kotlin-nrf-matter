@@ -3,9 +3,13 @@ package no.nordicsemi.nrf.matter.commission
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -19,6 +23,7 @@ import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import no.nordicsemi.nrf.matter.platform.PlatformType
 import no.nordicsemi.nrf.matter.platform.currentType
+import no.nordicsemi.nrf.matter.theme.NordicDarkGray
 
 @Composable
 fun CommissioningInProgressScreen() {
@@ -33,13 +38,19 @@ fun CommissioningInProgressScreen() {
         }
         val progress by animateLottieCompositionAsState(composition, iterations = Compottie.IterateForever)
 
-        Image(
-            painter = rememberLottiePainter(
-                composition = composition,
-                progress = { progress },
-            ),
-            contentDescription = "Lottie animation",
-            modifier = Modifier.fillMaxWidth().height(200.dp)
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(
+                painter = rememberLottiePainter(
+                    composition = composition,
+                    progress = { progress },
+                ),
+                contentDescription = "Lottie animation",
+                modifier = Modifier.fillMaxWidth().height(200.dp)
+            )
+
+            Spacer(Modifier.size(16.dp))
+
+            Text("Please wait while we prepare everything.", color = NordicDarkGray)
+        }
     }
 }

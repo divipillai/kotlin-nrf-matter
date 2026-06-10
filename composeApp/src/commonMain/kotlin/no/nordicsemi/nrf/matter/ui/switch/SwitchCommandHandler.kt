@@ -5,7 +5,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import no.nordicsemi.nrf.matter.device.BindingUiState
+import no.nordicsemi.nrf.matter.device.BindingState
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
@@ -59,7 +59,7 @@ class SwitchCommandHandler(
     fun bind(
         switchNodeId: DeviceId,
         lightNodeId: DeviceId,
-    ): Flow<BindingUiState> = flow {
+    ): Flow<BindingState> = flow {
         emit(UiState.Loading())
 
         try {

@@ -60,7 +60,6 @@ internal fun LockItem(
         deviceUiModel = device,
         title = "Front Door",
         subtitle = "Smart Lock",
-        isOnline = device.isOnline,
         onLockUnlockDoor = onLockUnlockDoor
     )
 
@@ -82,7 +81,6 @@ fun LockItemContainer(
     deviceUiModel: DeviceUiModel,
     title: String,
     subtitle: String,
-    isOnline: Boolean,
     onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
 ) {
     val isLocked = deviceUiModel.isOn
@@ -95,7 +93,7 @@ fun LockItemContainer(
 
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
-        border = if (isOnline) BorderStroke(
+        border = if (isLocked) BorderStroke(
             width = 1.dp,
             color = MaterialTheme.colorScheme.primary.copy(0.3f)
         ) else CardDefaults.outlinedCardBorder(),
@@ -113,7 +111,7 @@ fun LockItemContainer(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val boxColor = if (isOnline)
+            val boxColor = if (isLocked)
                 NordicSun
             else MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f)
             Box(
@@ -128,7 +126,7 @@ fun LockItemContainer(
                 Icon(
                     icon,
                     contentDescription = null,
-                    tint = if (isOnline)
+                    tint = if (isLocked)
                         MaterialTheme.colorScheme.primary else
                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     modifier = Modifier.size(28.dp)
@@ -248,6 +246,5 @@ private fun LockItemContainerPreview() {
         title = "Front Door",
         subtitle = "Smart Lock",
         onLockUnlockDoor = { _, _ -> },
-        isOnline = true,
     )
 }

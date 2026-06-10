@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import no.nordicsemi.nrf.matter.BeaconRepository
 import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
+import no.nordicsemi.nrf.matter.binding.BindDevicesUseCase
 import no.nordicsemi.nrf.matter.binding.BindingDataSource
 import no.nordicsemi.nrf.matter.device.DeviceViewModel
 import no.nordicsemi.nrf.matter.model.DeviceController
@@ -61,13 +62,19 @@ val commonModule = module {
     singleOf(::DevicesStateRepository)
     singleOf(::UserPreferencesRepository)
     singleOf(::BindingRepository)
+    single {
+        BindDevicesUseCase(
+            get(),
+            get(),
+        )
+    }
 
     // Device viewmodel.
     viewModel {
         DeviceViewModel(
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
-            get<DeviceController>(), get<BindingRepository>(),
+            get<DeviceController>(),
             get(),
         )
     }

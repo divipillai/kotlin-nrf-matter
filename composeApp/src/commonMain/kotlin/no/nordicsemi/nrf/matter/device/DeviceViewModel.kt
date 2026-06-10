@@ -2,7 +2,6 @@ package no.nordicsemi.nrf.matter.device
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,12 +10,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.logger.NordicLogger
-import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
-import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.ui.MatterControllerCache
@@ -57,24 +53,11 @@ class DeviceViewModel(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
-    private val bindingRepository: BindingRepository,
     private val matterControllerCache: MatterControllerCache,
 ) : ViewModel(), KoinComponent {
 
     private val _uiState = MutableStateFlow(DeviceUiState())
     val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
-
-    private var bindingJob: Job? = null
-
-    private val _bindingState = MutableStateFlow<BindingUiState>(UiState.Idle())
-    val bindingState: StateFlow<BindingUiState> = _bindingState.asStateFlow()
-
-    private val _bindingTargetDevices = MutableStateFlow<List<Device>>(emptyList())
-    val bindingTargetDevices = _bindingTargetDevices.asStateFlow()
-
-    init {
-        loadTargetDevices()
-    }
 
     fun observeDevice(deviceId: DeviceId) {
         viewModelScope.launch {
@@ -89,10 +72,10 @@ class DeviceViewModel(
                     val uiModel = DeviceUiModel(
                         device = device,
                         isOnline = true, // or from state
-                        isOn = isOn,
-                        boundLights = bindingRepository.getBindingsForDevice(deviceId)
+                        isOn = isOn
                     )
-                    val controller = matterControllerCache[uiModel.device.deviceId] ?: matterControllerCache.create(uiModel)
+                    val controller = matterControllerCache[uiModel.device.deviceId]
+                        ?: matterControllerCache.create(uiModel)
                     _uiState.update {
                         it.copy(
                             deviceUiModel = uiModel,
@@ -160,25 +143,4 @@ class DeviceViewModel(
         }
     }
 
-    fun updateBindingState(state: BindingUiState) {
-        _bindingState.value = state
-    }
-
-    fun loadBindingTable(deviceId: DeviceId) {
-        observeDevice(deviceId)
-    }
-
-    private fun loadTargetDevices() {
-        viewModelScope.launch {
-            val lightDevicesInRepository = devicesRepository.getAllDevices().devicesList.filter {
-                it.deviceType == DeviceType.LIGHT_ON_OFF ||
-                        it.deviceType == DeviceType.DIMMABLE_LIGHT
-            }
-            val bindings = bindingRepository.getAllBinding()
-            val targetIds = bindings.map { it.targetNodeId }.toSet()
-            val result = lightDevicesInRepository.filterNot { it.deviceId in targetIds }
-
-            _bindingTargetDevices.value = result
-        }
-    }
 }

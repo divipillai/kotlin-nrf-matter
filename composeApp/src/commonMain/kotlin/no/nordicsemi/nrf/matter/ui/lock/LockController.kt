@@ -29,7 +29,9 @@ class LockController(
     override fun Item(onDeviceClick: (DeviceId) -> Unit) {
         LockItem(
             device = device,
-            onLockUnlockDoor = { deviceId, state -> setLock(device.device, state) },
+            onLockUnlockDoor = { deviceId, state ->
+                setLock(device.device, state)
+                               },
         )
     }
 }

@@ -50,7 +50,6 @@ class ClustersHelper(private val chipClient: ChipClient) {
 
     /** Fetches MatterDeviceInfo for each endpoint supported by the device. */
     suspend fun fetchDeviceMatterInfo(deviceId: DeviceId): List<DeviceMatterInfo> {
-        NordicLogger.debug("AAA, fetchDevicet()MatterInfo(): deviceId [${deviceId}]")
         val matterDeviceInfoList = arrayListOf<DeviceMatterInfo>()
         val connectedDevicePtr =
             try {
@@ -167,7 +166,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val namePath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10000)
             val ledPath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10001)
             val buttonPath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10002)
-            NordicLogger.debug("namePath: $namePath, ledPath: $ledPath, buttonPath: $buttonPath", tag = "AAA")
+            NordicLogger.debug("namePath: $namePath, ledPath: $ledPath, buttonPath: $buttonPath", tag = "ManufacturerSpecificData")
             val results = chipClient.readAttributes(
                 connectedDevicePtr,
                 listOf<ChipAttributePath>(namePath, ledPath, buttonPath)
@@ -189,11 +188,11 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val led = results.findValue(ep, 0xFFF1FC01L, 0xFFF10001L)?.value as? Boolean ?: false
             val button = results.findValue(ep, 0xFFF1FC01L, 0xFFF10002L)?.value as? Boolean ?: false
 
-            NordicLogger.debug("name=$name led=$led button=$button", tag = "AAA")
+            NordicLogger.debug("name=$name led=$led button=$button", tag = "ManufacturerSpecificData")
 
             ManufacturerSpecificData(name, led, button)
         } catch (t: Throwable) {
-            NordicLogger.error("getManufacturerSpecificData failed: ${t.message}", tag = "AAA")
+            NordicLogger.error("Manufacturer Specific Data acquisition failed: ${t.message}", tag = "ManufacturerSpecificData")
             null
         }
     }
@@ -215,6 +214,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val nameAttr = chipClient.readAttribute(connectedDevicePtr, namePath)
             nameAttr?.value as? Long
         } catch (t: Throwable) {
+                NordicLogger.error("Random number generation failed: ${t.message}", t)
             t.printStackTrace()
             null
         }

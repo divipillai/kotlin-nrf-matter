@@ -1,8 +1,17 @@
 package no.nordicsemi.nrf.matter.binding
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import no.nordicsemi.nrf.matter.device.BindingState
+import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
+import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.repository.BindingRepository
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -34,12 +43,36 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-interface BindingDataSource {
-    suspend fun save(binding: DeviceBinding)
-
-    fun getBindingsForDevice(deviceId: DeviceId): Flow<List<DeviceBinding>>
-
-    fun getAll(): Flow<List<DeviceBinding>>
-
+class BindDevicesUseCase(
+    private val deviceController: DeviceController,
+    private val bindingRepository: BindingRepository,
+) {
+    operator fun invoke(
+        switchNodeId: DeviceId,
+        lightNodeId: DeviceId,
+    ): Flow<BindingState> = flow {
+        emit(UiState.Loading())
+        try {
+            deviceController.bind(
+                sourceNodeId = switchNodeId,
+                sourceEndpoint = 1,
+                targetNodeId = lightNodeId,
+                targetEndpoint = 1,
+                clusterId = 0x006L,
+            )
+            val bindingDevice = DeviceBinding(
+                id = "${switchNodeId}_${lightNodeId}",
+                sourceNodeId = switchNodeId,
+                targetNodeId = lightNodeId,
+                sourceEndpoint = 1,
+                targetEndpoint = 1,
+                clusterId = 0x006L
+            )
+            bindingRepository.save(bindingDevice)
+            emit(UiState.Success(bindingDevice))
+        } catch (e: Exception) {
+            NordicLogger.error("Binding failed: ${e.message}", e)
+            emit(UiState.Error(e.message ?: "Unknown error"))
+        }
+    }.flowOn(Dispatchers.IO)
 }

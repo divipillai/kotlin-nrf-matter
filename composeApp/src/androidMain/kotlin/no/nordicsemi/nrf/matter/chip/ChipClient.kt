@@ -103,7 +103,6 @@ class ChipClient(
                 nodeId,
                 object : GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback {
                     override fun onDeviceConnected(devicePointer: Long) {
-                        NordicLogger.info("Got connected device pointer")
                         continuation.resume(devicePointer)
                     }
 
@@ -289,7 +288,7 @@ class ChipClient(
             continuation.invokeOnCancellation {
                 // Optional: abort the interaction if the coroutine is canceled
                 // chipDeviceController.shutdownSubscriptions() or similar, if available
-                NordicLogger.debug("AAA, read attribute coroutine cancelled")
+                NordicLogger.debug("Read attribute coroutine cancelled")
             }
         }
     }
@@ -327,9 +326,10 @@ class ChipClient(
                     invokeElement: InvokeElement?,
                     successCode: Long
                 ) {
-                    NordicLogger.info("Command successs: ${invokeElement}")
-                    NordicLogger.info("Command successs tlv: ${invokeElement?.tlvByteArray}")
-                    NordicLogger.info("Command successs json: ${invokeElement?.jsonString}")
+                    NordicLogger.info(
+                        "Command Response Success!",
+                        tag = "SetLet"
+                    )
                     continuation.resume(Unit)
                 }
 
@@ -371,9 +371,10 @@ class ChipClient(
                     invokeElement: InvokeElement?,
                     successCode: Long
                 ) {
-                    NordicLogger.info("Command successs: ${invokeElement}")
-                    NordicLogger.info("Command successs tlv: ${invokeElement?.tlvByteArray}")
-                    NordicLogger.info("Command successs json: ${invokeElement?.jsonString}")
+                    NordicLogger.info(
+                        "Command Response Success!",
+                        tag = "GenerateRandomNumber"
+                    )
                     continuation.resume(Unit)
                 }
 

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -25,7 +26,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -114,10 +114,12 @@ internal fun BindingLoader() {
     val viewportWidth = 330f
     val viewportHeight = 205f
 
-    Box(contentAlignment = Alignment.Center) {
+    Box(contentAlignment = Alignment.Center,
+        modifier = Modifier.size(120.dp) ) {
         Image(
             painter = painterResource(Res.drawable.binding_links_only),
             contentDescription = null,
+            modifier = Modifier.fillMaxSize()
         )
 
         Canvas(modifier = Modifier.matchParentSize()) {
@@ -182,6 +184,7 @@ internal fun BindingLoaderDialog(
         }
     }
 
+    // TODO: The dialog is currently non-dismissible and has a dark background to match the console design, but this can be adjusted as needed.
     Dialog(
         onDismissRequest = { /* Do nothing */ },
         properties = DialogProperties(
@@ -190,64 +193,58 @@ internal fun BindingLoaderDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                BindingLoader()
+                Spacer(modifier = Modifier.height(16.dp))
+                loadingText()
+            }
 
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.inverseOnSurface
+                )
+            ) {
                 Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                        .fillMaxSize()
+                        .padding(12.dp)
                 ) {
-                    BindingLoader()
-                    Spacer(modifier = Modifier.height(16.dp))
-                    loadingText()
-                }
-
-                Card(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.inverseOnSurface // Dark console background
+                    Text(
+                        text = "PROCESS LOGS",
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
-                ) {
-                    Column(
+
+                    HorizontalDivider()
+
+                    LazyColumn(
+                        state = lazyListState,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(12.dp)
+                            .padding(top = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
-                            text = "PROCESS LOGS",
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-
-                        HorizontalDivider()
-
-                        LazyColumn(
-                            state = lazyListState,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(top = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            items(visibleLogs) { log ->
-                                Text(
-                                    text = log,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontFamily = FontFamily.Monospace, // Monospace terminal font
-                                    color = NordicBlue,
-                                    modifier = Modifier.animateContentSize()
-                                )
-                            }
+                        items(visibleLogs) { log ->
+                            Text(
+                                text = log,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontFamily = FontFamily.Monospace,
+                                color = NordicBlue,
+                                modifier = Modifier.animateContentSize()
+                            )
                         }
                     }
                 }

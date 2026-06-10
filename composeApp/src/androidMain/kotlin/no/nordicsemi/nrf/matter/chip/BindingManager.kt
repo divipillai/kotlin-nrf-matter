@@ -161,7 +161,10 @@ class BindingManager(
                 }
 
                 override fun onError(ex: Exception) {
-                    NordicLogger.error("Read ACL (Access Control List) failed with exception: $ex", tag = TAG)
+                    NordicLogger.error(
+                        "Read ACL (Access Control List) failed with exception: $ex",
+                        tag = TAG
+                    )
                     if (continuation.isActive) {
                         continuation.resumeWithException(ex)
                     }
@@ -342,7 +345,7 @@ class BindingManager(
         // Create new entry (Binding Table)
         val newEntry = ChipStructs.BindingClusterTargetStruct(
             Optional.of(lightNodeId),
-            null, // Taking null since for now we are using single light and switch binding.
+            Optional.empty(), // Taking empty since for now we are using single light and switch binding.
             Optional.of(lightEndpoint),
             Optional.of(clusterId), // ON/OFF cluster
             lightSwitchFabricIndex,

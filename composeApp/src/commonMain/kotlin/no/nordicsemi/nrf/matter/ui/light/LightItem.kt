@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.skydoves.cloudy.cloudy
+import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
@@ -61,6 +62,7 @@ import kotlin.math.roundToInt
 @Composable
 fun LightItem(
     device: DeviceUiModel,
+    isLedOn: UiState<Boolean>,
     updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit
 ) {
     LightItemContainer(
@@ -69,7 +71,7 @@ fun LightItem(
         title = "Light",
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
-        enabled = device.isOn,
+        enabled = (isLedOn as? UiState.Success)?.data ?: false, //TODO
         updateDeviceState = updateDeviceState
     )
 }

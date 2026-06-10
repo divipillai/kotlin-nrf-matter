@@ -46,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.skydoves.cloudy.cloudy
 import multiplatform.network.cmptoast.ToastDuration
 import multiplatform.network.cmptoast.ToastGravity
 import multiplatform.network.cmptoast.showToast
@@ -160,7 +161,8 @@ internal fun BindingsScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .then(if (bindingScreenState.bindingState is UiState.Loading) Modifier.cloudy() else Modifier),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // Concept Header

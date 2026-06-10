@@ -98,7 +98,7 @@ internal fun BindingsScreen(
     val bindingViewModel: BindingViewModel = koinViewModel()
     val bindingScreenState by bindingViewModel.bindingScreenState.collectAsStateWithLifecycle()
 
-    when (val bindingState = bindingScreenState.bindingUiState) {
+    when (val bindingState = bindingScreenState.bindingState) {
         is UiState.Error -> {
             AlertDialogView(
                 onDismiss = {

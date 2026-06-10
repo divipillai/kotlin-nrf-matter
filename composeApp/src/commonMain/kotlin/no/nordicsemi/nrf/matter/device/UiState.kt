@@ -45,4 +45,4 @@ sealed interface UiState<out T> {
     ) : UiState<Nothing>
 }
 
-typealias BindingUiState = UiState<DeviceBinding>
+typealias BindingState = UiState<DeviceBinding>

@@ -97,9 +97,9 @@ import org.koin.compose.viewmodel.koinViewModel
 internal fun BindingsScreen(
 ) {
     val bindingViewModel: BindingViewModel = koinViewModel()
-    val bindingScreenState by bindingViewModel.bindingScreenState.collectAsStateWithLifecycle()
+    val bindingUiState by bindingViewModel.bindingUiState.collectAsStateWithLifecycle()
 
-    when (val bindingState = bindingScreenState.bindingState) {
+    when (val bindingState = bindingUiState.bindingState) {
         is UiState.Error -> {
             AlertDialogView(
                 onDismiss = {
@@ -162,7 +162,7 @@ internal fun BindingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .then(if (bindingScreenState.bindingState is UiState.Loading) Modifier.cloudy() else Modifier),
+            .then(if (bindingUiState.bindingState is UiState.Loading) Modifier.cloudy() else Modifier),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // Concept Header
@@ -204,7 +204,7 @@ internal fun BindingsScreen(
         }
 
         item {
-            if (bindingScreenState.sourceDevices.isEmpty()) {
+            if (bindingUiState.sourceDevices.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -218,7 +218,7 @@ internal fun BindingsScreen(
                 }
                 return@item
             } else {
-                BindingTableDetails(bindingScreenState, {
+                BindingTableDetails(bindingUiState, {
                     bindingViewModel.onSourceSelected(it)
 
                 }, { sourceId, targetId ->
@@ -230,14 +230,14 @@ internal fun BindingsScreen(
         // Active Binding Lists
         item {
             Text(
-                text = "Active Binding Table Entries (${bindingScreenState.activeBindings.size})",
+                text = "Active Binding Table Entries (${bindingUiState.activeBindings.size})",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
         }
 
-        if (bindingScreenState.activeBindings.isEmpty()) {
+        if (bindingUiState.activeBindings.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier
@@ -254,7 +254,7 @@ internal fun BindingsScreen(
         } else {
             // List active bindings
             item {
-                bindingScreenState.activeBindings.forEach { binding ->
+                bindingUiState.activeBindings.forEach { binding ->
                     BindingCardRow(binding = binding)
                 }
             }
@@ -265,7 +265,7 @@ internal fun BindingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BindingTableDetails(
-    bindingScreenState: BindingScreenState,
+    bindingScreenState: BindingUiState,
     onSourceSelected: (sourceDeviceId: DeviceId) -> Unit,
     initiateBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId) -> Unit,
 ) {
@@ -468,7 +468,7 @@ private fun BindingTableDetails(
 private fun BindingTableDetailsPreview() {
     NordicTheme {
         BindingTableDetails(
-            bindingScreenState = BindingScreenState(
+            bindingScreenState = BindingUiState(
                 sourceDevices = listOf(
                     DeviceTest_LIGHT
                 ),

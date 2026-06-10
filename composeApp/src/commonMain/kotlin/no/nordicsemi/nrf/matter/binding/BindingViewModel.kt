@@ -46,7 +46,7 @@ import no.nordicsemi.nrf.matter.repository.DevicesRepository
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-data class BindingScreenState(
+data class BindingUiState(
     val bindingState: BindingState = UiState.Idle(),
     val sourceDevices: List<Device> = emptyList(),
     val activeBindings: List<DeviceBinding> = emptyList(),
@@ -60,8 +60,8 @@ class BindingViewModel(
     private val bindDevicesUseCase: BindDevicesUseCase,
 ) : ViewModel() {
 
-    private val _bindingScreenState = MutableStateFlow(BindingScreenState())
-    val bindingScreenState: StateFlow<BindingScreenState> = _bindingScreenState.asStateFlow()
+    private val _bindingUiState = MutableStateFlow(BindingUiState())
+    val bindingUiState: StateFlow<BindingUiState> = _bindingUiState.asStateFlow()
 
     init {
         loadSourceDevices()
@@ -69,7 +69,7 @@ class BindingViewModel(
     }
 
     fun updateBindingState(state: BindingState) =
-        _bindingScreenState.update {
+        _bindingUiState.update {
             it.copy(bindingState = state)
         }
 
@@ -78,7 +78,7 @@ class BindingViewModel(
             it.deviceType == DeviceType.LIGHT_SWITCH ||
                     it.deviceType == DeviceType.OUTLET
         }
-        _bindingScreenState.update {
+        _bindingUiState.update {
             it.copy(sourceDevices = bindingSourceDevices)
         }
     }
@@ -86,14 +86,14 @@ class BindingViewModel(
     fun getActiveBindings() = viewModelScope.launch {
         bindingRepository.getAllBinding()
             .collect {
-                _bindingScreenState.update { state ->
+                _bindingUiState.update { state ->
                     state.copy(activeBindings = it)
                 }
             }
     }
 
     fun onSourceSelected(sourceDeviceId: DeviceId) {
-        _bindingScreenState.update {
+        _bindingUiState.update {
             it.copy(selectedSourceDeviceId = sourceDeviceId)
         }
 
@@ -124,7 +124,7 @@ class BindingViewModel(
 
                 val result = lightDevicesInRepository.filterNot { it.deviceId in targetIds }
 
-                _bindingScreenState.update {
+                _bindingUiState.update {
                     it.copy(eligibleTargetDevices = result)
                 }
             }
@@ -132,7 +132,7 @@ class BindingViewModel(
 
 
     fun updateActiveBinding(binding: DeviceBinding) = viewModelScope.launch {
-        val activeBindings = _bindingScreenState.value.activeBindings.toMutableList()
+        val activeBindings = _bindingUiState.value.activeBindings.toMutableList()
         // Check if the binding already exists in the active bindings list. If it does, update it. If it doesn't, add it to the list.
         val index = activeBindings.indexOfFirst { it.id == binding.id }
         if (index != -1) {
@@ -141,7 +141,7 @@ class BindingViewModel(
             activeBindings.add(binding)
         }
 
-        _bindingScreenState.update {
+        _bindingUiState.update {
             it.copy(activeBindings = activeBindings)
         }
     }

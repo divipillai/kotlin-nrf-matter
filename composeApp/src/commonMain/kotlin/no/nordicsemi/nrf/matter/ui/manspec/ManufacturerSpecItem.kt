@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
@@ -59,7 +60,7 @@ import no.nordicsemi.nrf.matter.theme.NordicRed
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
-import no.nordicsemi.nrf.matter.ui.DecommissionDevice
+import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.light_bulb
@@ -74,6 +75,7 @@ fun ManufacturerSpecItem(
     randomNumber: UiState<Int>,
     setLed: (Boolean) -> Unit,
     generateRandomNumber: () -> Unit,
+    onDecommission: (DeviceId) -> Unit,
 ) {
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -213,7 +215,7 @@ fun ManufacturerSpecItem(
                 }
 
                 // Decommission device
-                DecommissionDevice()
+                DecommissionDevice(device.device.deviceId, onDecommission)
             }
 
         }
@@ -386,11 +388,12 @@ fun DeviceItemContainerPreview() {
         ManufacturerSpecItem(
             device = TestDeviceManu,
             manufacturerSpecificData = TestDeviceManu.device.deviceMatterInfo[0].manufacturerSpecificData!!,
-            randomNumber = UiState.Success(123),
-            generateRandomNumber = {},
-            isButtonOn = UiState.Success(true),
-            setLed = {},
             isLedOn = UiState.Success(true),
+            isButtonOn = UiState.Success(true),
+            randomNumber = UiState.Success(123),
+            setLed = {},
+            generateRandomNumber = {},
+            onDecommission = {}
         )
     }
 }

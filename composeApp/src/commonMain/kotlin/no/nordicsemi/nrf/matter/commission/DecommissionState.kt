@@ -1,20 +1,6 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.commission
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
-import no.nordicsemi.nrf.matter.binding.BindDevicesUseCase
-import no.nordicsemi.nrf.matter.binding.BindingDataSource
-import no.nordicsemi.nrf.matter.commission.DecommissionUseCases
-import no.nordicsemi.nrf.matter.repository.BindingRepository
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import no.nordicsemi.nrf.matter.ui.MatterControllerCache
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.module
+import no.nordicsemi.nrf.matter.model.DeviceId
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -46,37 +32,23 @@ import org.koin.dsl.module
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+sealed interface DecommissionState {
 
-val commonModule = module {
+    data object Idle : DecommissionState
 
-    // Define CoroutineScope as a singleton
-    single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
+    data object InProgress : DecommissionState
 
-    // Beacon.
-    singleOf(::BeaconRepository)
+    data class Success(
+        val deviceId: DeviceId,
+    ) : DecommissionState
 
-    // Repositories
-    singleOf(::DevicesRepository)
-    singleOf(::DevicesStateRepository)
-    singleOf(::UserPreferencesRepository)
-    singleOf(::BindingRepository)
-    single {
-        BindDevicesUseCase(
-            get(),
-            get(),
-        )
-    }
-    single {
-        DecommissionUseCases(
-            get(),
-            get(),
-            get()
-        )
-    }
+    data class ForceRemove(
+        val deviceId: DeviceId,
+    ) : DecommissionState
 
-    single { MatterControllerCache(get()) }
-
-    single<BindingDataSource> {
-        BaseBindingDataSource(get())
-    }
+    data class Error(
+        val deviceId: DeviceId,
+        val message: String?,
+    ) : DecommissionState
 }
+

@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.ui
+package no.nordicsemi.nrf.matter.commission
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import no.nordicsemi.nrf.matter.model.DeviceId
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -55,7 +56,7 @@ import androidx.compose.ui.unit.dp
  */
 
 @Composable
-internal fun DecommissionDevice() {
+internal fun DecommissionDevice(deviceId: DeviceId, onDecommission: (DeviceId) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth(),
@@ -68,7 +69,7 @@ internal fun DecommissionDevice() {
                 .padding(16.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .clickable {
-                    // todo: remove device
+                    onDecommission(deviceId)
                 },
             colors = CardDefaults.outlinedCardColors(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
@@ -102,6 +103,6 @@ internal fun DecommissionDevice() {
 @Composable
 private fun DecommissionDevicePreview() {
     MaterialTheme {
-        DecommissionDevice()
+        DecommissionDevice(DeviceId("1")) {}
     }
 }

@@ -40,7 +40,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
-import no.nordicsemi.nrf.matter.ui.DecommissionDevice
+import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
 
 /*
@@ -77,16 +77,17 @@ import no.nordicsemi.nrf.matter.ui.light.InfoItem
 @Composable
 internal fun SwitchItem(
     device: DeviceUiModel,
-    deviceId: DeviceId,
     title: String,
     subtitle: String,
+    onDecommission: (DeviceId) -> Unit,
 ) {
 
     SwitchControlContainer(
         device = device,
         title = title,
         subtitle = subtitle,
-        isOnline = false
+        isOnline = false,
+        onDecommission = onDecommission,
     )
 }
 
@@ -96,6 +97,7 @@ fun SwitchControlContainer(
     title: String,
     subtitle: String,
     isOnline: Boolean = true,
+    onDecommission: (DeviceId) -> Unit,
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
@@ -254,7 +256,7 @@ fun SwitchControlContainer(
                     }
 
                     // Decommission device
-                    DecommissionDevice()
+                    DecommissionDevice(device.device.deviceId, onDecommission)
                 }
 
             }

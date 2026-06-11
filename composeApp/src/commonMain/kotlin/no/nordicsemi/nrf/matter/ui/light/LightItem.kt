@@ -51,7 +51,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
-import no.nordicsemi.nrf.matter.ui.DecommissionDevice
+import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.TestDeviceLight
 import no.nordicsemi.nrf.matter.ui.manspec.ControlCardContainer
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -63,7 +63,8 @@ import kotlin.math.roundToInt
 fun LightItem(
     device: DeviceUiModel,
     isLedOn: UiState<Boolean>,
-    updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit
+    updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
+    onDecommission: (DeviceId) -> Unit,
 ) {
     LightItemContainer(
         device = device,
@@ -72,7 +73,8 @@ fun LightItem(
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
         enabled = (isLedOn as? UiState.Success)?.data ?: false, //TODO
-        updateDeviceState = updateDeviceState
+        updateDeviceState = updateDeviceState,
+        onDecommission = onDecommission
     )
 }
 
@@ -84,7 +86,8 @@ internal fun LightItemContainer(
     subtitle: String,
     icon: Painter,
     enabled: Boolean,
-    updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit
+    updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
+    onDecommission: (DeviceId) -> Unit,
 ) {
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -224,7 +227,10 @@ internal fun LightItemContainer(
                 }
 
                 // Decommission device
-                DecommissionDevice()
+                DecommissionDevice(
+                    deviceId,
+                    onDecommission
+                )
             }
 
         }
@@ -341,6 +347,7 @@ private fun LightItemContainerPreview() {
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
         enabled = true,
-        updateDeviceState = { _, _ -> }
+        updateDeviceState = { _, _ -> },
+        {}
     )
 }

@@ -4,7 +4,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -15,30 +17,28 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import no.nordicsemi.nrf.matter.device.UiState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.skydoves.cloudy.cloudy
+import multiplatform.network.cmptoast.ToastDuration
+import multiplatform.network.cmptoast.ToastGravity
+import multiplatform.network.cmptoast.showToast
+import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
-import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.ui.light.LightItem
-import no.nordicsemi.nrf.matter.ui.lock.LockItem
 import nrfmatterformobile.composeapp.generated.resources.Res
 import nrfmatterformobile.composeapp.generated.resources.door_lock
-import nrfmatterformobile.composeapp.generated.resources.door_lock_open_right
-import nrfmatterformobile.composeapp.generated.resources.light_bulb
-import nrfmatterformobile.composeapp.generated.resources.power_settings
-import nrfmatterformobile.composeapp.generated.resources.smart_outlet
 import nrfmatterformobile.composeapp.generated.resources.temperature
 import org.jetbrains.compose.resources.painterResource
 
@@ -75,30 +75,81 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 internal fun DeviceList(
-    devices: List<MatterController>,
-    onClick: (DeviceId) -> Unit
+    homeViewModel: HomeViewModel
 ) {
+    val decommissionState by homeViewModel.decommissionState.collectAsStateWithLifecycle()
+    val devices by homeViewModel.devices.collectAsStateWithLifecycle()
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp),
+            .padding(8.dp)
+            .then(if (decommissionState is DecommissionState.InProgress) Modifier.cloudy() else Modifier),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
 
         devices.forEach {
-            item { it.Item(onClick) }
-        }
-    }
-}
+            item {
+                when (val state = decommissionState) {
+                    is DecommissionState.Error -> {
+                        // Show error dialog with an option to force remove.
+                        AlertDialogView(
+                            onDismiss = {
+                                homeViewModel.updateDecommissionState(DecommissionState.Idle)
+                            },
+                            onConfirm = {
+                                homeViewModel.updateDecommissionState(
+                                    DecommissionState.ForceRemove(
+                                        state.deviceId
+                                    )
+                                )
+                            },
+                            title = "Error Removing Device",
+                            message = "An error occurred while removing the device. Force remove?"
+                        )
+                    }
 
-@Preview(showBackground = true)
-@Composable
-private fun DeviceListPreview() {
-    NordicTheme {
-        DeviceList(
-            devices = testDevices,
-            onClick = {},
-        )
+                    is DecommissionState.ForceRemove -> {
+                        homeViewModel.forceRemove(state.deviceId)
+                    }
+
+                    DecommissionState.Idle -> {
+                        // DO NOTHING
+                    }
+
+                    is DecommissionState.InProgress -> {
+                        // Show loader while the device is being removed.
+                        Loader {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    "Removing device...",
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Text(
+                                    "It might take a few seconds, please wait!",
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+                        }
+                    }
+
+                    is DecommissionState.Success -> {
+                        homeViewModel.updateDecommissionState(DecommissionState.Idle)
+                        showToast(
+                            message = "Device decommissioned successfully!",
+                            duration = ToastDuration.Long,
+                            gravity = ToastGravity.Center
+                        )
+                    }
+                }
+
+                it.Item { deviceId -> homeViewModel.decommissionDevice(deviceId) }
+            }
+        }
     }
 }
 
@@ -176,34 +227,6 @@ fun LockItem() {
     }
 }
 
-@Composable
-fun deviceIcon(device: DeviceUiModel): Painter {
-
-    return when (device.device.deviceType) {
-
-        DeviceType.LIGHT_ON_OFF,
-        DeviceType.DIMMABLE_LIGHT,
-        DeviceType.COLOR_TEMPERATURE_LIGHT,
-        DeviceType.EXTENDED_COLOR_LIGHT ->
-            painterResource(Res.drawable.light_bulb)
-
-        DeviceType.OUTLET ->
-            painterResource(Res.drawable.smart_outlet)
-
-        DeviceType.DOOR_LOCK ->
-            if (device.isOn)
-                painterResource(Res.drawable.door_lock_open_right)
-            else
-                painterResource(Res.drawable.door_lock)
-
-        DeviceType.LIGHT_SWITCH ->
-            painterResource(Res.drawable.power_settings)
-
-        else ->
-            painterResource(Res.drawable.power_settings)
-    }
-}
-
 // -----------------------------------------------------------------------------------------------
 // Constant objects used in Compose Preview
 
@@ -243,21 +266,4 @@ internal val TestDeviceLight = DeviceUiModel(
     device = DeviceTest_LIGHT,
     isOnline = true,
     isOn = true
-)
-
-internal val testDevices = listOf(
-    object : MatterController {
-        @Composable
-        override fun Item(onDeviceClick: (DeviceId) -> Unit) {
-            LightItem(TestDeviceLight, UiState.Idle(), { d, b ->})
-        }
-
-    },
-    object : MatterController {
-        @Composable
-        override fun Item(onDeviceClick: (DeviceId) -> Unit) {
-            LockItem(TestDeviceLockDoor, { d, b ->})
-        }
-
-    }
 )

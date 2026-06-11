@@ -26,12 +26,12 @@ class SwitchController(
     }
 
     @Composable
-    override fun Item(onDeviceClick: (DeviceId) -> Unit) {
+    override fun Item(onDecommission: (DeviceId) -> Unit) {
         SwitchItem(
             device = device,
-            deviceId = device.device.deviceId,
             title = "Light Switch",
             subtitle = "Bind the switch with other devices",
+            onDecommission = onDecommission,
         )
     }
 }

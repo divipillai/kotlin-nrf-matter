@@ -3,7 +3,6 @@ package no.nordicsemi.nrf.matter.di
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import no.nordicsemi.nrf.matter.BeaconRepository
 import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
 import no.nordicsemi.nrf.matter.binding.BindDevicesUseCase
 import no.nordicsemi.nrf.matter.binding.BindingDataSource
@@ -50,9 +49,6 @@ val commonModule = module {
 
     // Define CoroutineScope as a singleton
     single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
-
-    // Beacon.
-    singleOf(::BeaconRepository)
 
     // Repositories
     singleOf(::DevicesRepository)

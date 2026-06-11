@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.first
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.Devices
 import no.nordicsemi.nrf.matter.model.toDeviceId
 
@@ -61,34 +60,6 @@ class DevicesRepository(
         }
     }
 
-    suspend fun updateDevice(device: Device) {
-        dataSource.update { devices ->
-            devices.copy(
-                devicesList = devices.devicesList.map {
-                    if (it.deviceId == device.deviceId) device else it
-                }
-            )
-        }
-    }
-
-    suspend fun updateDeviceType(deviceId: DeviceId, deviceType: DeviceType) {
-        var updated = false
-
-        dataSource.update { devices ->
-            val updatedList = devices.devicesList.map {
-                if (it.deviceId == deviceId) {
-                    updated = true
-                    it.copy(deviceType = deviceType)
-                } else it
-            }
-            devices.copy(devicesList = updatedList)
-        }
-
-        if (!updated) {
-            throw IllegalStateException("Device not found: $deviceId")
-        }
-    }
-
     suspend fun removeDevice(deviceId: DeviceId) {
         var removed = false
 
@@ -107,13 +78,7 @@ class DevicesRepository(
         }
     }
 
-    suspend fun getDeviceOrNull(deviceId: DeviceId): Device? =
-        devicesFlow.first().devicesList.firstOrNull { it.deviceId == deviceId }
-
     suspend fun getAllDevices(): Devices =
         devicesFlow.first()
 
-    suspend fun clearAllData() {
-        dataSource.update { Devices() }
-    }
 }

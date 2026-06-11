@@ -70,7 +70,8 @@ val commonModule = module {
         DecommissionUseCases(
             get(),
             get(),
-            get()
+            get(),
+            get(),
         )
     }
 

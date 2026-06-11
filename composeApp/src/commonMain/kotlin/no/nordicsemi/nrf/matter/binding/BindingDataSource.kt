@@ -42,4 +42,6 @@ interface BindingDataSource {
 
     fun getAll(): Flow<List<DeviceBinding>>
 
+    suspend fun delete(binding: DeviceBinding)
+
 }

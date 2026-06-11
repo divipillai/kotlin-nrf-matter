@@ -148,9 +148,6 @@ class HomeViewModel(
      */
     fun decommissionDevice(deviceId: DeviceId) {
         viewModelScope.launch {
-            _decommissionState.update {
-                DecommissionState.InProgress
-            }
             decommissionUseCases.decommissionDevice(deviceId).collect {
                 updateDecommissionState(it)
             }
@@ -166,9 +163,6 @@ class HomeViewModel(
      */
     fun forceRemove(deviceId: DeviceId) {
         viewModelScope.launch {
-            _decommissionState.update {
-                DecommissionState.InProgress
-            }
             decommissionUseCases.forceRemoveDevice(deviceId).collect {
                 updateDecommissionState(it)
             }

@@ -5,7 +5,6 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
@@ -46,38 +45,37 @@ class DecommissionUseCases(
     private val devicesStateRepository: DevicesStateRepository,
     private val devicesRepository: DevicesRepository,
 ) {
-
-    fun decommissionDevice(deviceId: DeviceId): Flow<DecommissionState> = flow {
+    private fun decommissionFlow(
+        deviceId: DeviceId,
+        action: suspend () -> Unit
+    ): Flow<DecommissionState> = flow {
         emit(DecommissionState.InProgress)
+
         try {
+            action()
+            emit(DecommissionState.Success(deviceId))
+        } catch (e: Exception) {
+            emit(
+                DecommissionState.Error(
+                    deviceId = deviceId,
+                    message = e.message
+                )
+            )
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun decommissionDevice(deviceId: DeviceId): Flow<DecommissionState> =
+        decommissionFlow(deviceId) {
             deviceController.unlinkDevice(deviceId)
-            NordicLogger.info("Device $deviceId decommissioned successfully.")
-            emit(DecommissionState.Success(deviceId))
-
-            // Remove the device from the local repository after successful unlinking.
-            NordicLogger.info("Removing device $deviceId from local repository.")
             devicesStateRepository.removeDevice(deviceId)
             devicesRepository.removeDevice(deviceId)
-        } catch (e: Exception) {
-            NordicLogger.error("Decommissioning failed: ${e.message}", e)
-            emit(DecommissionState.Error(deviceId, e.message))
         }
-    }.flowOn(Dispatchers.IO)
 
-    fun forceRemoveDevice(deviceId: DeviceId): Flow<DecommissionState> = flow {
-        emit(DecommissionState.InProgress)
-        try {
-            // Force remove the device from the local repository without unlinking
-            NordicLogger.info("Force removing device $deviceId without unlinking.")
+
+    fun forceRemoveDevice(deviceId: DeviceId): Flow<DecommissionState> =
+        decommissionFlow(deviceId) {
             devicesStateRepository.removeDevice(deviceId)
             devicesRepository.removeDevice(deviceId)
 
-            NordicLogger.info("Device $deviceId removed successfully from local repository.")
-            emit(DecommissionState.Success(deviceId))
-        } catch (e: Exception) {
-            NordicLogger.error("Force removal failed: ${e.message}", e)
-            emit(DecommissionState.Error(deviceId, e.message))
         }
-    }.flowOn(Dispatchers.IO)
-
 }

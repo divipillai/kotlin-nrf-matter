@@ -89,6 +89,7 @@ fun ManufacturerSpecItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .clip(RoundedCornerShape(16.dp))
             .clickable {
                 isExpanded = !isExpanded
             }

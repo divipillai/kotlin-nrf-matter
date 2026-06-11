@@ -13,18 +13,15 @@ import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.model.AndroidDeviceController
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
-import no.nordicsemi.nrf.matter.repository.AndroidUserPreferencesDataSource
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import no.nordicsemi.nrf.matter.ui.light.LightCommandHandler
 import no.nordicsemi.nrf.matter.ui.lock.LockCommandHandler
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecCommandHandler
@@ -85,9 +82,6 @@ val androidModule = module {
             context = androidContext()
         )
     }
-    single<UserPreferencesDataSource> {
-        AndroidUserPreferencesDataSource(androidContext())
-    }
     single {
         DataStoreProvider(androidContext()).createDataStore()
     }
@@ -99,7 +93,6 @@ val androidModule = module {
 
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
-    single<UserPreferencesRepository> { UserPreferencesRepository(get()) }
     single<BindingRepository> { BindingRepository(get()) }
 
     // Inject DeviceController

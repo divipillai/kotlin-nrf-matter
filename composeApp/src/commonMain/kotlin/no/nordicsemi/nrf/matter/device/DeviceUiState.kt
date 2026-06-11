@@ -35,22 +35,7 @@ import no.nordicsemi.nrf.matter.ui.MatterController
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-sealed interface RemoveDeviceState {
-    object Idle : RemoveDeviceState
-    object Removing : RemoveDeviceState
-    data object ConfirmRemove : RemoveDeviceState
-
-    data class Removed(
-        val deviceId: DeviceId,
-    ) : RemoveDeviceState
-
-    data class ForceRemove(
-        val deviceId: DeviceId,
-    ) : RemoveDeviceState
-}
-
 data class DeviceUiState(
     val deviceUiModel: DeviceUiModel? = null,
     val controller: MatterController? = null,
-    val removeDeviceState: RemoveDeviceState = RemoveDeviceState.Idle,
 )

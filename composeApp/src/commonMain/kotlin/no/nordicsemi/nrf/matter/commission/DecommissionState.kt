@@ -1,4 +1,6 @@
-package no.nordicsemi.nrf.matter.model
+package no.nordicsemi.nrf.matter.commission
+
+import no.nordicsemi.nrf.matter.model.DeviceId
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -30,26 +32,23 @@ package no.nordicsemi.nrf.matter.model
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+sealed interface DecommissionState {
 
-/**
- * Encapsulates all of the information on a specific device. Note that the app currently only
- * supports Matter devices with server attribute "ON/OFF".
- */
-data class DeviceUiModel(
-    // Device information that is persisted in a DataStore.
-    val device: Device,
+    data object Idle : DecommissionState
 
-    // Device state information that is retrieved dynamically.
-    val isOnline: Boolean,
-    // Whether the device is on or off.
-    val isOn: Boolean,
-)
+    data object InProgress : DecommissionState
 
-/**
- * UI model that encapsulates the information about the devices to be displayed on the Home screen.
- */
-data class DevicesListUiModel(
-    // The list of devices.
-    val devices: List<DeviceUiModel>,
+    data class Success(
+        val deviceId: DeviceId,
+    ) : DecommissionState
 
-)
+    data class ForceRemove(
+        val deviceId: DeviceId,
+    ) : DecommissionState
+
+    data class Error(
+        val deviceId: DeviceId,
+        val message: String?,
+    ) : DecommissionState
+}
+

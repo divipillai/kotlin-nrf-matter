@@ -42,7 +42,7 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
-import no.nordicsemi.nrf.matter.ui.DecommissionDevice
+import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.TestDeviceLockDoor
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -55,12 +55,14 @@ import org.jetbrains.compose.resources.painterResource
 internal fun LockItem(
     device: DeviceUiModel,
     onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
+    onDecommission: (DeviceId) -> Unit,
 ) {
     LockItemContainer(
         deviceUiModel = device,
         title = "Front Door",
         subtitle = "Smart Lock",
-        onLockUnlockDoor = onLockUnlockDoor
+        onLockUnlockDoor = onLockUnlockDoor,
+        onDecommission = onDecommission
     )
 
 }
@@ -71,7 +73,8 @@ private fun LockItemPreview() {
     NordicTheme {
         LockItem(
             onLockUnlockDoor = { _, _ -> },
-            device = TestDeviceLockDoor
+            device = TestDeviceLockDoor,
+            onDecommission = { }
         )
     }
 }
@@ -82,6 +85,7 @@ fun LockItemContainer(
     title: String,
     subtitle: String,
     onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
+    onDecommission: (DeviceId) -> Unit,
 ) {
     val isLocked = deviceUiModel.isOn
     val icon = if (isLocked)
@@ -224,7 +228,7 @@ fun LockItemContainer(
                     }
 
                     // Decommission device
-                    DecommissionDevice()
+                    DecommissionDevice(deviceUiModel.device.deviceId, onDecommission)
                 }
 
             }
@@ -245,6 +249,7 @@ private fun LockItemContainerPreview() {
         deviceUiModel = TestDeviceLockDoor,
         title = "Front Door",
         subtitle = "Smart Lock",
-        onLockUnlockDoor = { _, _ -> },
+        { _, _ -> },
+        { }
     )
 }

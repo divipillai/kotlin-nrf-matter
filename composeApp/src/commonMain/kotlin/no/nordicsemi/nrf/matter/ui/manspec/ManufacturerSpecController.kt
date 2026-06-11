@@ -37,7 +37,7 @@ class ManufacturerSpecController(
     }
 
     @Composable
-    override fun Item(onDeviceClick: (DeviceId) -> Unit) {
+    override fun Item(onDecommission: (DeviceId) -> Unit) {
         return ManufacturerSpecItem(
             device,
             manufacturerSpecificData = device.device.deviceMatterInfo.firstNotNullOf { it.manufacturerSpecificData },
@@ -46,6 +46,7 @@ class ManufacturerSpecController(
             randomNumber = randomNumber.collectAsStateWithLifecycle().value,
             setLed = ::setLed,
             generateRandomNumber = ::generateRandomNumber,
+            onDecommission = onDecommission
         )
     }
 }

@@ -13,7 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,18 +35,15 @@ import androidx.navigation3.ui.NavDisplay
 import no.nordicsemi.nrf.matter.binding.BindingsScreen
 import no.nordicsemi.nrf.matter.commission.CommissioningScreen
 import no.nordicsemi.nrf.matter.logger.LoggerScreen
-import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
 import no.nordicsemi.nrf.matter.navigation.BindingRoute
 import no.nordicsemi.nrf.matter.navigation.CommissioningRoute
-import no.nordicsemi.nrf.matter.navigation.DetailsRoute
 import no.nordicsemi.nrf.matter.navigation.HomeRoute
 import no.nordicsemi.nrf.matter.navigation.LoggerRoute
 import no.nordicsemi.nrf.matter.navigation.config
 import no.nordicsemi.nrf.matter.navigation.icon
 import no.nordicsemi.nrf.matter.navigation.title
-import no.nordicsemi.nrf.matter.screens.DeviceScreen
 import no.nordicsemi.nrf.matter.screens.HomeScreen
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 
@@ -93,8 +89,6 @@ fun App(homeViewModel: HomeViewModel) {
     }
 
     val currentRoute = backStack.lastOrNull() ?: HomeRoute
-    val snackbarHostState = remember { SnackbarHostState() }
-
     val tabs = remember { listOf(HomeRoute, BindingRoute, LoggerRoute) }
 
     NordicTheme {
@@ -173,15 +167,11 @@ fun App(homeViewModel: HomeViewModel) {
                     onBack = onBack,
                     entryProvider = entryProvider {
                         screens(
-                            snackbarHostState = snackbarHostState,
                             onCommissioningStarted = {
                                 backStack.add(CommissioningRoute)
                             },
                             backStack = backStack,
-                            homeViewModel = homeViewModel,
-                            onDeviceClick = { deviceId ->
-                                backStack.add(DetailsRoute(deviceId))
-                            }
+                            homeViewModel = homeViewModel
                         )
                     },
                     entryDecorators = listOf(
@@ -196,35 +186,21 @@ fun App(homeViewModel: HomeViewModel) {
 }
 
 private fun EntryProviderScope<NavKey>.screens(
-    snackbarHostState: SnackbarHostState,
     homeViewModel: HomeViewModel,
     backStack: NavBackStack<NavKey>,
     onCommissioningStarted: () -> Unit,
-    onDeviceClick: (deviceId: DeviceId) -> Unit,
 ) {
     entry<HomeRoute> {
         HomeScreen(
             homeViewModel = homeViewModel,
-            onCommissionClick = onCommissioningStarted,
-            onDeviceClick = { onDeviceClick(it) }
+            onCommissionClick = onCommissioningStarted
         )
 
-    }
-    entry<DetailsRoute> { key ->
-        DeviceScreen(
-            deviceId = key.id,
-            snackbarHostState = snackbarHostState,
-            onBack = {
-                if (backStack.size > 1) {
-                    backStack.removeLastOrNull()
-                }
-            }
-        )
     }
     entry<LoggerRoute> { _ ->
         LoggerScreen()
     }
-    entry<CommissioningRoute> { key ->
+    entry<CommissioningRoute> { _ ->
         CommissioningScreen(
             onBack = {
                 if (backStack.size > 1) {
@@ -253,7 +229,9 @@ private fun rememberTopBarTitle(
                     if (devicesUiModel.devices.isEmpty()) "nRF Matter"
                     else "Home"
 
-                is DetailsRoute -> "Device" // TODO: device name
+                is CommissioningRoute -> "Commissioning"
+                is BindingRoute -> "Bindings"
+                is LoggerRoute -> "Logs"
                 else -> "nRF Matter"
             }
         }

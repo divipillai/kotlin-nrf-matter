@@ -27,13 +27,14 @@ class LightController(
     }
 
     @Composable
-    override fun Item(onDeviceClick: (DeviceId) -> Unit) {
+    override fun Item(onDecommission: (DeviceId) -> Unit) {
         LightItem(
             device = device,
             isLedOn = ledState.collectAsStateWithLifecycle().value,
             updateDeviceState = { deviceId, state ->
                 setLet(device.device, state)
             },
+            onDecommission = onDecommission
         )
     }
 }

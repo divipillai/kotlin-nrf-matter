@@ -15,7 +15,7 @@ class LockController(
     private val device: DeviceUiModel,
     private val commandHandler: LockCommandHandler,
     private val scope: CoroutineScope,
-)  : MatterController {
+) : MatterController {
 
     val lockState = MutableStateFlow<UiState<Boolean>>(UiState.Idle())
 
@@ -26,12 +26,13 @@ class LockController(
     }
 
     @Composable
-    override fun Item(onDeviceClick: (DeviceId) -> Unit) {
+    override fun Item(onDecommission: (DeviceId) -> Unit) {
         LockItem(
             device = device,
             onLockUnlockDoor = { deviceId, state ->
                 setLock(device.device, state)
-                               },
+            },
+            onDecommission = onDecommission,
         )
     }
 }

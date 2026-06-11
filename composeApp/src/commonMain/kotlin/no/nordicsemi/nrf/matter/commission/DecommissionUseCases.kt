@@ -1,20 +1,14 @@
-package no.nordicsemi.nrf.matter.di
+package no.nordicsemi.nrf.matter.commission
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import no.nordicsemi.nrf.matter.BeaconRepository
-import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
-import no.nordicsemi.nrf.matter.binding.BindDevicesUseCase
-import no.nordicsemi.nrf.matter.binding.BindingDataSource
-import no.nordicsemi.nrf.matter.commission.DecommissionUseCases
-import no.nordicsemi.nrf.matter.repository.BindingRepository
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import no.nordicsemi.nrf.matter.model.DeviceController
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
-import no.nordicsemi.nrf.matter.ui.MatterControllerCache
-import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.module
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -46,37 +40,42 @@ import org.koin.dsl.module
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+class DecommissionUseCases(
+    private val deviceController: DeviceController,
+    private val devicesStateRepository: DevicesStateRepository,
+    private val devicesRepository: DevicesRepository,
+) {
+    private fun decommissionFlow(
+        deviceId: DeviceId,
+        action: suspend () -> Unit
+    ): Flow<DecommissionState> = flow {
+        emit(DecommissionState.InProgress)
 
-val commonModule = module {
+        try {
+            action()
+            emit(DecommissionState.Success(deviceId))
+        } catch (e: Exception) {
+            emit(
+                DecommissionState.Error(
+                    deviceId = deviceId,
+                    message = e.message
+                )
+            )
+        }
+    }.flowOn(Dispatchers.IO)
 
-    // Define CoroutineScope as a singleton
-    single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
+    fun decommissionDevice(deviceId: DeviceId): Flow<DecommissionState> =
+        decommissionFlow(deviceId) {
+            deviceController.unlinkDevice(deviceId)
+            devicesStateRepository.removeDevice(deviceId)
+            devicesRepository.removeDevice(deviceId)
+        }
 
-    // Beacon.
-    singleOf(::BeaconRepository)
 
-    // Repositories
-    singleOf(::DevicesRepository)
-    singleOf(::DevicesStateRepository)
-    singleOf(::UserPreferencesRepository)
-    singleOf(::BindingRepository)
-    single {
-        BindDevicesUseCase(
-            get(),
-            get(),
-        )
-    }
-    single {
-        DecommissionUseCases(
-            get(),
-            get(),
-            get()
-        )
-    }
+    fun forceRemoveDevice(deviceId: DeviceId): Flow<DecommissionState> =
+        decommissionFlow(deviceId) {
+            devicesStateRepository.removeDevice(deviceId)
+            devicesRepository.removeDevice(deviceId)
 
-    single { MatterControllerCache(get()) }
-
-    single<BindingDataSource> {
-        BaseBindingDataSource(get())
-    }
+        }
 }

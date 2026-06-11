@@ -6,5 +6,5 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 interface MatterController {
 
     @Composable
-    fun Item(onDeviceClick: (DeviceId) -> Unit)
+    fun Item(onDecommission: (DeviceId) -> Unit)
 }

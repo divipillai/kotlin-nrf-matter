@@ -1,15 +1,10 @@
 package no.nordicsemi.nrf.matter.screens
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.nrf.matter.HomeViewModel
-import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.ui.DeviceList
 
 /*
@@ -47,7 +42,6 @@ import no.nordicsemi.nrf.matter.ui.DeviceList
 fun HomeScreen(
     homeViewModel: HomeViewModel,
     onCommissionClick: () -> Unit,
-    onDeviceClick: (deviceId: DeviceId) -> Unit,
 ) {
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
 
@@ -58,8 +52,7 @@ fun HomeScreen(
             )
         } else {
             DeviceList(
-                devices = homeViewModel.devices.collectAsStateWithLifecycle().value,
-                onClick = onDeviceClick,
+                homeViewModel = homeViewModel,
             )
         }
     }

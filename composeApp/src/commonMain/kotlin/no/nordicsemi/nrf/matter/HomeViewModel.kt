@@ -20,10 +20,8 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.Devices
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.model.DevicesState
-import no.nordicsemi.nrf.matter.model.UserPreferences
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import no.nordicsemi.nrf.matter.ui.MatterController
 import no.nordicsemi.nrf.matter.ui.MatterControllerCache
 import org.koin.core.component.KoinComponent
@@ -72,11 +70,10 @@ class HomeViewModel(
         combine(
             devicesRepository.devicesFlow,
             devicesStateRepository.devicesStateFlow,
-            userPreferencesRepository.userPreferencesFlow
-        ) { devices, states, prefs ->
+        ) { devices, states ->
             DevicesListUiModel(
-                devices = processDevices(devices, states, prefs),
-                showOfflineDevices = !prefs.hideOfflineDevices
+                devices = processDevices(devices, states),
+
             )
         }
 
@@ -84,13 +81,13 @@ class HomeViewModel(
         combine(
             devicesRepository.devicesFlow,
             devicesStateRepository.devicesStateFlow,
-            userPreferencesRepository.userPreferencesFlow
-        ) { devices, states, prefs ->
+        ) { devices, states ->
             DevicesListUiModel(
-                devices = processDevices(devices, states, prefs),
-                showOfflineDevices = !prefs.hideOfflineDevices
+                devices = processDevices(devices, states),
             ).devices.map { device ->
-                (matterControllerCache[device.device.deviceId] ?: matterControllerCache.create(device)).also {
+                (matterControllerCache[device.device.deviceId] ?: matterControllerCache.create(
+                    device
+                )).also {
                     NordicLogger.debug("Device $it", "MatterController")
                 }
             }
@@ -100,18 +97,16 @@ class HomeViewModel(
         devicesListUiModelFlow.stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            DevicesListUiModel(emptyList(), showOfflineDevices = true)
+            DevicesListUiModel(emptyList())
         )
 
     private fun processDevices(
         devices: Devices,
-        devicesStates: DevicesState,
-        userPreferences: UserPreferences
+        devicesStates: DevicesState
     ): List<DeviceUiModel> {
         val list = mutableListOf<DeviceUiModel>()
         devices.devicesList.forEach { device ->
             val state = devicesStates.devicesStateList.find { it.deviceId == device.deviceId }
-            if (userPreferences.hideOfflineDevices && state?.online != true) return@forEach
             if (state == null) {
                 list.add(DeviceUiModel(device, isOnline = false, isOn = false))
             } else {

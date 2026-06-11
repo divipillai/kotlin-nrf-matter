@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,7 +23,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
 import multiplatform.network.cmptoast.ToastDuration
@@ -36,11 +34,6 @@ import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.toDeviceId
-import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
-import nrfmatterformobile.composeapp.generated.resources.Res
-import nrfmatterformobile.composeapp.generated.resources.door_lock
-import nrfmatterformobile.composeapp.generated.resources.temperature
-import org.jetbrains.compose.resources.painterResource
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -181,54 +174,6 @@ fun FilterChipsRow() {
         }
     }
 }
-
-// Thermostat Item
-@Preview(showBackground = true)
-@Composable
-fun ThermostatItem() {
-    DeviceItemContainer(
-        icon = painterResource(resource = Res.drawable.temperature),
-        title = "Downstairs AC",
-        subtitle = "Target: 70°F", onDeviceClick = {}
-    ) {
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                "72°",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-            Text("Cooling", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-        }
-    }
-}
-
-// Lock Item
-@Preview(showBackground = true)
-@Composable
-fun LockItem() {
-    DeviceItemContainer(
-        icon = painterResource(Res.drawable.door_lock),// TODO: Change it based on the lock/unlock command.
-        title = "Front Door",
-        subtitle = "Smart Lock",
-        onDeviceClick = {}
-    ) {
-        Surface(
-            color = Color.LightGray.copy(alpha = 0.2f),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text(
-                "LOCKED",
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFE11D48)
-            )
-        }
-    }
-}
-
-// -----------------------------------------------------------------------------------------------
-// Constant objects used in Compose Preview
 
 internal val DeviceTest_LIGHT =
     Device(

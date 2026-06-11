@@ -52,6 +52,4 @@ data class DevicesListUiModel(
     // The list of devices.
     val devices: List<DeviceUiModel>,
 
-    // Whether offline devices should be shown.
-    val showOfflineDevices: Boolean,
 )

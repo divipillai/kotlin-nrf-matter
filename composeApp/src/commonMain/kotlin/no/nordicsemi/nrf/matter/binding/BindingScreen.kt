@@ -55,7 +55,6 @@ import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.toDeviceId
-import no.nordicsemi.nrf.matter.screens.dummyLogsForBinding
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
@@ -556,3 +555,28 @@ private fun BindingCardRowPreview() {
         binding = DeviceBindingTest
     )
 }
+
+
+internal val dummyLogsForBinding = listOf(
+    "Initializing secure handshake.",
+    "Fetching remote server configuration.",
+    "Resolving DNS for api.connection.service.",
+    "Establishing TCP connection on port 443.",
+    "TLS 1.3 encryption handshake successful.",
+    "Authenticating user credentials.",
+    "Session token generated successfully.",
+    "Fetching  client configuration.",
+    "Establishing the connection with local thread.",
+    "TLS 1.3 encryption handshake successful.",
+    "Authenticating user credentials.",
+    "Session token generated successfully.",
+    "Syncing fabric index of both source and target devices.",
+    "Sending ACL to target device",
+    "Waiting for ACL signal back from target device.",
+    "Creating Binding table...",
+    "Writing binding table to target device...",
+    "Writing binding table to source device...",
+    "Verifying the binding on both devices...",
+    "Verifying data integrity checks...",
+    "Connection fully established. Wrapping up..."
+)

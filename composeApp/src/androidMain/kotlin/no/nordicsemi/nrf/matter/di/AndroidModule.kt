@@ -83,7 +83,7 @@ val androidModule = module {
     // Inject DeviceController
     single<DeviceController> { AndroidDeviceController(get(), get(), get()) }
 
-    factory { LightCommandHandler(get(), get()) }
+    factory { LightCommandHandler(get()) }
     factory { LockCommandHandler(get(), get()) }
     factory { ManufacturerSpecCommandHandler(get(), get()) }
     factory { SwitchCommandHandler(get(), get()) }

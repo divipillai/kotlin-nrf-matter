@@ -98,7 +98,7 @@ val iosModule = module {
 
     viewModel { LoggerViewModel() }
     viewModel { BindingViewModel(get(), get(), get()) }
-    factory { LightCommandHandler(get(), get()) }
+    factory { LightCommandHandler(get()) }
     factory { LockCommandHandler(get(), get()) }
     factory { ManufacturerSpecCommandHandler(get(), get()) }
     factory { SwitchCommandHandler(get(), get()) }

@@ -67,21 +67,18 @@ fun LightItem(
     updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
+    val successData = (lightDeviceState as? UiState.Success)?.data // todo: handle other states
+
     LightItemContainer(
         device = device,
         deviceId = device.device.deviceId,
         title = device.device.productName ?: "Light",
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
-        enabled = (lightDeviceState as? UiState.Success)?.data?.isOn ?: false, //TODO
-        brightnessLevel = (lightDeviceState as? UiState.Success)?.data?.brightnessPercentage ?:0.0f, //TODO
+        enabled = successData?.isOn ?: false,
+        brightnessLevel = successData?.brightnessPercentage ?: 0.0f,
         updateDeviceState = updateDeviceState,
-        onBrightnessChange = { deviceId, brightnessLevel ->
-            onBrightnessChange(
-                deviceId,
-                brightnessLevel
-            )
-        },
+        onBrightnessChange = onBrightnessChange,
         onDecommission = onDecommission
     )
 }

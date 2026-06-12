@@ -538,13 +538,22 @@ class ClustersHelper(private val chipClient: ChipClient) {
                     // Brightness Level (Cluster 8, Attribute 0)
                     val levelCluster = endpointState.getClusterState(8)
                     val levelAttr = levelCluster?.getAttributeState(0)
-                    val rawLevel = levelAttr?.value as? Long
+                    val rawValue = levelAttr?.value as? Number
 
                     if (isOn != null) {
                         currentState = currentState.copy(isOn = isOn)
+                        NordicLogger.debug(
+                            "Received On/Off report: isLedOn=$isOn",
+                            tag = "ClustersHelper"
+                        )
                     }
-                    if (rawLevel != null) {
+                    if (rawValue != null) {
+                        val rawLevel = rawValue.toLong()
                         val percent = ((rawLevel.toFloat() - 1f) / 253f).coerceIn(0f, 1f)
+                        NordicLogger.debug(
+                            "Received Brightness report: brightnessPercentage=$percent",
+                            tag = "ClustersHelper"
+                        )
                         currentState = currentState.copy(brightnessPercentage = percent)
                     }
 

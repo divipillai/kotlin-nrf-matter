@@ -126,4 +126,16 @@ class AndroidDeviceController(
             deviceId
         )?.toInt() ?: -1
     }
+
+    override suspend fun setBrightnessLevel(
+        deviceId: DeviceId,
+        brightnessLevel: Int,
+        endpoint: Int
+    ) {
+        clustersHelper.setBrightnessLevel(
+            deviceId = deviceId,
+            brightnessLevel = brightnessLevel,
+            endpoint = endpoint
+        )
+    }
 }

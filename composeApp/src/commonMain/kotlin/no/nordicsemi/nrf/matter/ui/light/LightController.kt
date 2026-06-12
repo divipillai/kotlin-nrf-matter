@@ -19,10 +19,16 @@ class LightController(
 )  : MatterController {
 
     val ledState = MutableStateFlow<UiState<Boolean>>(UiState.Idle())
+    val brightnessState = MutableStateFlow<UiState<Int>>(UiState.Idle())
 
     fun setLet(device: Device, isOn: Boolean) {
         commandHandler.handleLed(device, isOn)
             .onEach { ledState.value = it }
+            .launchIn(scope)
+    }
+    fun setBrightness(device: Device, brightnessLevel: Int) {
+        commandHandler.handleBrightness(device, brightnessLevel)
+            .onEach { brightnessState.value = it }
             .launchIn(scope)
     }
 
@@ -31,6 +37,9 @@ class LightController(
         LightItem(
             device = device,
             isLedOn = ledState.collectAsStateWithLifecycle().value,
+            onBrightnessChange = { _, brightnessLevel ->
+                setBrightness(device.device, brightnessLevel)
+            },
             updateDeviceState = { deviceId, state ->
                 setLet(device.device, state)
             },

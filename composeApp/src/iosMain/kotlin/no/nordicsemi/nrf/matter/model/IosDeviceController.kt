@@ -115,4 +115,12 @@ class IosDeviceController(
     override suspend fun generateRandomNumber(deviceId: DeviceId): Int {
         return matterClusterExtensionController.generateRandomNumber(deviceId)
     }
+
+    override suspend fun setBrightnessLevel(
+        deviceId: DeviceId,
+        brightnessLevel: Int,
+        endpoint: Int
+    ) {
+        TODO("Not yet implemented")
+    }
 }

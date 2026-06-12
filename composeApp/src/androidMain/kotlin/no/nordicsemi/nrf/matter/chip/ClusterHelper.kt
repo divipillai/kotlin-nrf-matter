@@ -10,7 +10,6 @@ import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
-import no.nordicsemi.nrf.matter.theme.NordicTheme
 import java.util.Optional
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -166,7 +165,10 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val namePath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10000)
             val ledPath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10001)
             val buttonPath = ChipAttributePath.newInstance(ep, 0xFFF1FC01, 0xFFF10002)
-            NordicLogger.debug("namePath: $namePath, ledPath: $ledPath, buttonPath: $buttonPath", tag = "ManufacturerSpecificData")
+            NordicLogger.debug(
+                "namePath: $namePath, ledPath: $ledPath, buttonPath: $buttonPath",
+                tag = "ManufacturerSpecificData"
+            )
             val results = chipClient.readAttributes(
                 connectedDevicePtr,
                 listOf<ChipAttributePath>(namePath, ledPath, buttonPath)
@@ -188,11 +190,17 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val led = results.findValue(ep, 0xFFF1FC01L, 0xFFF10001L)?.value as? Boolean ?: false
             val button = results.findValue(ep, 0xFFF1FC01L, 0xFFF10002L)?.value as? Boolean ?: false
 
-            NordicLogger.debug("name=$name led=$led button=$button", tag = "ManufacturerSpecificData")
+            NordicLogger.debug(
+                "name=$name led=$led button=$button",
+                tag = "ManufacturerSpecificData"
+            )
 
             ManufacturerSpecificData(name, led, button)
         } catch (t: Throwable) {
-            NordicLogger.error("Manufacturer Specific Data acquisition failed: ${t.message}", tag = "ManufacturerSpecificData")
+            NordicLogger.error(
+                "Manufacturer Specific Data acquisition failed: ${t.message}",
+                tag = "ManufacturerSpecificData"
+            )
             null
         }
     }
@@ -214,7 +222,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val nameAttr = chipClient.readAttribute(connectedDevicePtr, namePath)
             nameAttr?.value as? Long
         } catch (t: Throwable) {
-                NordicLogger.error("Random number generation failed: ${t.message}", t)
+            NordicLogger.error("Random number generation failed: ${t.message}", t)
             t.printStackTrace()
             null
         }
@@ -441,6 +449,51 @@ class ClustersHelper(private val chipClient: ChipClient) {
         endpoint: Int
     ): ChipClusters.DoorLockCluster {
         return ChipClusters.DoorLockCluster(devicePtr, endpoint)
+    }
+
+    /**
+     * Writes the current brightness level to the Level Control cluster.
+     * The command used is "Move to Level with On/Off", which sets the brightness level and turns on
+     * or off the device based on the brightness level (if brightnessLevel > 0, the device will be turned on;
+     * if brightnessLevel == 0, the device will be turned off).
+     */
+    suspend fun setBrightnessLevel(
+        deviceId: DeviceId,
+        brightnessLevel: Int,
+        endpoint: Int
+    ) {
+        val connectedDevicePtr =
+            try {
+                chipClient.getConnectedDevicePointer(deviceId.longValue)
+            } catch (e: IllegalStateException) {
+                NordicLogger.error("Can't get connectedDevicePointer.", e, tag = "ClustersHelper")
+                return
+            }
+        return suspendCancellableCoroutine { continuation ->
+            getLevelControlClusterForDevice(connectedDevicePtr, endpoint)
+                .moveToLevelWithOnOff(
+                    object : ChipClusters.DefaultClusterCallback {
+                        override fun onSuccess() {
+                            continuation.resume(Unit)
+                        }
+
+                        override fun onError(ex: Exception) {
+                            continuation.resumeWithException(ex)
+                        }
+                    },
+                    brightnessLevel,
+                    0, // transitionTime (0 = instantaneous)
+                    0, // optionsMask
+                    0  // optionsOverride
+                )
+        }
+    }
+
+    private fun getLevelControlClusterForDevice(
+        devicePtr: Long,
+        endpoint: Int
+    ): ChipClusters.LevelControlCluster {
+        return ChipClusters.LevelControlCluster(devicePtr, endpoint)
     }
 
 }

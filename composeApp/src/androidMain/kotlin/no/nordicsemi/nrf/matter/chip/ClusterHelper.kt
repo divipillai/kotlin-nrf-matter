@@ -16,6 +16,7 @@ import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
 import no.nordicsemi.nrf.matter.ui.light.LightDeviceState
+import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
 import java.util.Optional
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -542,7 +543,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
 
                     if (isOn != null) {
                         currentState = currentState.copy(isOn = isOn)
-                        NordicLogger.debug(
+                        NordicLogger.info(
                             "Received On/Off report: isLedOn=$isOn",
                             tag = "ClustersHelper"
                         )
@@ -550,7 +551,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                     if (rawValue != null) {
                         val rawLevel = rawValue.toLong()
                         val percent = ((rawLevel.toFloat() - 1f) / 253f).coerceIn(0f, 1f)
-                        NordicLogger.debug(
+                        NordicLogger.info(
                             "Received Brightness report: brightnessPercentage=$percent",
                             tag = "ClustersHelper"
                         )
@@ -588,6 +589,66 @@ class ClustersHelper(private val chipClient: ChipClient) {
             awaitClose {
                 // Handle stream cleanup
             }
+        }
+
+    fun observeLockState(deviceId: DeviceId, endpoint: Int, doorLockClusterId: Long) =
+        callbackFlow {
+            var currentState = LockDeviceState()
+
+            val reportCallback = object : ReportCallback {
+                override fun onError(
+                    attributePath: ChipAttributePath?,
+                    eventPath: ChipEventPath?,
+                    e: Exception
+                ) {
+                    NordicLogger.error("Subscription error on lock: $attributePath", e)
+                }
+
+                override fun onReport(nodeState: NodeState) {
+                    val endpointState = nodeState.getEndpointState(endpoint) ?: return
+
+                    // Door Lock Cluster (257L), LockState Attribute (0)
+                    val lockCluster = endpointState.getClusterState(doorLockClusterId)
+                    val lockAttr = lockCluster?.getAttributeState(0)
+
+                    val rawValue = lockAttr?.value as? Number
+
+                    if (rawValue != null) {
+                        val lockStateEnum = rawValue.toInt()
+
+                        // 1 = Locked, 2 = Unlocked
+                        val isLocked = lockStateEnum == 1
+
+                        NordicLogger.info(
+                            "Received LockState report: isLocked=$isLocked",
+                            tag = "ClustersHelper"
+                        )
+
+                        currentState = currentState.copy(isLocked = isLocked)
+                        trySend(currentState)
+                    }
+                }
+            }
+
+            try {
+                val devicePtr = chipClient.getConnectedDevicePointer(deviceId.longValue)
+                val targetPaths = listOf(
+                    ChipAttributePath.newInstance(endpoint, doorLockClusterId, 0) // Track LockState
+                )
+
+                chipClient.subscribeAttribute(
+                    reportCallback = reportCallback,
+                    devicePtr = devicePtr,
+                    attributePaths = targetPaths,
+                    minIntervalS = 0,
+                    maxIntervalS = 10,
+                    timeoutMs = 10000
+                )
+            } catch (e: Exception) {
+                close(e)
+            }
+
+            awaitClose { /* Cleanup */ }
         }
 
 }

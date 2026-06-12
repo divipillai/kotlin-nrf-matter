@@ -84,7 +84,7 @@ val androidModule = module {
     single<DeviceController> { AndroidDeviceController(get(), get(), get()) }
 
     factory { LightCommandHandler(get()) }
-    factory { LockCommandHandler(get(), get()) }
+    factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get()) }
     factory { SwitchCommandHandler(get(), get()) }
 

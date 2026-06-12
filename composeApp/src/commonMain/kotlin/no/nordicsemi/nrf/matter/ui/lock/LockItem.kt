@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
+import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
@@ -54,13 +55,16 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 internal fun LockItem(
     device: DeviceUiModel,
+    lockState: UiState<LockDeviceState>,
     onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
+    val lockSuccessData = (lockState as? UiState.Success)?.data ?: LockDeviceState()
     LockItemContainer(
         deviceUiModel = device,
         title = "Front Door",
         subtitle = "Smart Lock",
+        lockDeviceState = lockSuccessData,
         onLockUnlockDoor = onLockUnlockDoor,
         onDecommission = onDecommission
     )
@@ -72,9 +76,10 @@ internal fun LockItem(
 private fun LockItemPreview() {
     NordicTheme {
         LockItem(
-            onLockUnlockDoor = { _, _ -> },
             device = TestDeviceLockDoor,
-            onDecommission = { }
+            lockState = UiState.Success(LockDeviceState(isLocked = true)),
+            onLockUnlockDoor = { _, _ -> },
+            onDecommission = { },
         )
     }
 }
@@ -84,10 +89,11 @@ fun LockItemContainer(
     deviceUiModel: DeviceUiModel,
     title: String,
     subtitle: String,
+    lockDeviceState: LockDeviceState,
     onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
-    val isLocked = deviceUiModel.isOn
+    val isLocked = lockDeviceState.isLocked
     val icon = if (isLocked)
         painterResource(Res.drawable.door_lock)
     else painterResource(Res.drawable.door_lock_open_right)
@@ -252,7 +258,8 @@ private fun LockItemContainerPreview() {
         deviceUiModel = TestDeviceLockDoor,
         title = "Front Door",
         subtitle = "Smart Lock",
+        lockDeviceState = LockDeviceState(isLocked = true),
         { _, _ -> },
-        { }
+        { },
     )
 }

@@ -20,7 +20,11 @@ final class LocalRequestHandler: RequestHandlerProtocol {
     }
 
     func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
-        try await commissioner.commission(payload: onboardingPayload, nodeID: NodeIdProvider.id)  // todo
+        let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
+        guard let nodeId = storage.getNumber(key: SharedConsts.nodeIdKey) else {
+            throw CommissioningError.missingNodeId
+        }
+        try await commissioner.commission(payload: onboardingPayload, nodeID: nodeId)
     }
 
     func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {

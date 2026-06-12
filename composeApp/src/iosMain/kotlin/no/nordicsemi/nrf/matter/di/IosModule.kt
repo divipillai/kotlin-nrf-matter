@@ -104,7 +104,7 @@ val iosModule = module {
     // View models.
     viewModelOf(::HomeViewModel)
 
-    viewModel { CommissioningViewModel(get()) }
+    viewModel { CommissioningViewModel(get(), get()) }
 
     viewModel { LoggerViewModel() }
     viewModel { BindingViewModel(get(), get(), get()) }

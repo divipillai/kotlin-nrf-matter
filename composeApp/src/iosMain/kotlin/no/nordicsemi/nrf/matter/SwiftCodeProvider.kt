@@ -28,7 +28,7 @@ interface SwiftCodeProvider {
 
 interface MatterCommissioner {
 
-    suspend fun startIosCommissioning(): Device
+    suspend fun startIosCommissioning(deviceId: DeviceId): Device
 }
 
 interface MatterDecommissioner {

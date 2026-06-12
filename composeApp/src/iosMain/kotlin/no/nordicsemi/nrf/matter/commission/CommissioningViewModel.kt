@@ -6,18 +6,22 @@ import kotlinx.coroutines.sync.withLock
 import no.nordicsemi.nrf.matter.SwiftCodeProvider
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.repository.DevicesRepository
 
 class CommissioningViewModel(
-    private val swiftCodeProvider: SwiftCodeProvider
+    private val swiftCodeProvider: SwiftCodeProvider,
+    private val devicesRepository: DevicesRepository,
 ) : ViewModel() {
 
     private val mutex = Mutex()
 
     suspend fun startIosCommissioning(): Device {
         mutex.withLock {
+            val deviceId = devicesRepository.incrementAndReturnLastDeviceId()
             NordicLogger.debug("startIosCommissioning: $this")
             NordicLogger.debug("iOS commissioning has started!")
-            return swiftCodeProvider.getMatterCommissioner().startIosCommissioning()
+            NordicLogger.debug("New device id: $deviceId")
+            return swiftCodeProvider.getMatterCommissioner().startIosCommissioning(deviceId)
         }
     }
 }

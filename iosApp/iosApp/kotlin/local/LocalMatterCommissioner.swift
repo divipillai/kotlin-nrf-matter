@@ -19,7 +19,7 @@ import SharedCode
  * The new device is added to a local fabric and managed by the phone.
  */
 class LocalMatterCommissioner : MatterCommissioner {
-    
+
     /**
      * Commission a new Matter device to a local fabric.
      *
@@ -31,7 +31,7 @@ class LocalMatterCommissioner : MatterCommissioner {
      * After successful commissioning, descriptor clusters for all available endpoint are read and
      * all the meta data is returned.
      */
-    func startIosCommissioning() async throws -> Device {
+    func startIosCommissioning(deviceId: DeviceId) async throws -> Device {
         let homes = [MatterAddDeviceRequest.Home(displayName: "Nordic Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "Nordic Ecosystem", homes: homes)
         
@@ -39,12 +39,11 @@ class LocalMatterCommissioner : MatterCommissioner {
         
         let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
         storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.local.rawValue)
+        storage.storeNumber(key: SharedConsts.nodeIdKey, value: deviceId.nsNumber())
         
         try await request.perform()
         
-        let nodeID: NSNumber = NodeIdProvider.id // todo
-        
-        let device = try await LocalMatterClusterDiscovery(nodeId: nodeID).discoverClusters()
+        let device = try await LocalMatterClusterDiscovery(nodeId: deviceId.nsNumber()).discoverClusters()
         return device
     }
 }

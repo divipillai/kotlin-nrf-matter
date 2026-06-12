@@ -52,6 +52,7 @@ struct iOSApp: App {
                 ]
             )
         }
+        KeypairInitializer.initKeychain()
     }
     
     var body: some Scene {

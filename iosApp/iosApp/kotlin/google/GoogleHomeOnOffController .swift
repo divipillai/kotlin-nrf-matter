@@ -1,5 +1,5 @@
 //
-//  GoogleHomeOnOffController .swift
+//  GoogleHomeLightController .swift
 //  iosApp
 //
 //  Created by Sylwester Zielinski on 16/03/2026.
@@ -14,7 +14,7 @@ import GoogleHomeTypes
 /**
  * A helper class from controlling a light type Matter device using Googel Home hub.
  */
-class GoogleHomeOnOffController : MatterOnOffController {
+class GoogleHomeLightController : MatterLightController {
 
     /**
      * Set the light on/off on a remote Matter device.
@@ -43,5 +43,12 @@ class GoogleHomeOnOffController : MatterOnOffController {
         } catch {
             
         }
+    }
+    
+    /**
+     * Set the brightness level on a remote Matter device.
+     */
+    func setBrightnessLevel(deviceId: DeviceId, level: Int32, endpoint: Int32) async throws {
+        //TODO
     }
 }

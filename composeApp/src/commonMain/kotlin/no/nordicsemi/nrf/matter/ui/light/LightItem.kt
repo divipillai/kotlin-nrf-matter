@@ -46,12 +46,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.skydoves.cloudy.cloudy
+import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
-import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.TestDeviceLight
 import no.nordicsemi.nrf.matter.ui.manspec.ControlCardContainer
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -63,6 +63,7 @@ import kotlin.math.roundToInt
 fun LightItem(
     device: DeviceUiModel,
     isLedOn: UiState<Boolean>,
+    onBrightnessChange: (deviceId: DeviceId, brightnessLevel: Int) -> Unit,
     updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
@@ -74,6 +75,12 @@ fun LightItem(
         icon = painterResource(Res.drawable.light_bulb),
         enabled = (isLedOn as? UiState.Success)?.data ?: false, //TODO
         updateDeviceState = updateDeviceState,
+        onBrightnessChange = { deviceId, brightnessLevel ->
+            onBrightnessChange(
+                deviceId,
+                brightnessLevel
+            )
+        },
         onDecommission = onDecommission
     )
 }
@@ -86,6 +93,7 @@ internal fun LightItemContainer(
     subtitle: String,
     icon: Painter,
     enabled: Boolean,
+    onBrightnessChange: (deviceId: DeviceId, brightnessLevel: Int) -> Unit,
     updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
@@ -174,7 +182,13 @@ internal fun LightItemContainer(
                 // TODO: Add if statement to show brightness only if the device supports it.
                 // Brightness control section
                 HorizontalDivider()
-                BrightnessControlCard()
+                BrightnessControlCard(
+                    deviceId = deviceId,
+                    modifier = Modifier.padding(16.dp),
+                    onBrightnessChange = { deviceId, brightnessLevel ->
+                        onBrightnessChange(deviceId, brightnessLevel)
+                    }
+                )
 
                 // Matter Device information section
                 HorizontalDivider()
@@ -267,8 +281,12 @@ fun InfoItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BrightnessControlCard(modifier: Modifier = Modifier) {
-    var brightness by remember { mutableFloatStateOf(0.85f) } // TODO: it has to be read from the device.
+fun BrightnessControlCard(
+    modifier: Modifier = Modifier,
+    deviceId: DeviceId,
+    onBrightnessChange: (deviceId: DeviceId, brightnessLevel: Int) -> Unit,
+) {
+    var brightness by remember { mutableFloatStateOf(0.85f) }
 
     Column(
         modifier = modifier
@@ -300,6 +318,9 @@ fun BrightnessControlCard(modifier: Modifier = Modifier) {
         Slider(
             value = brightness,
             onValueChange = { brightness = it },
+            onValueChangeFinished = {
+                onBrightnessChange(deviceId, brightness.toMatterBrightness())
+            },
             valueRange = 0f..1f,
             colors = SliderDefaults.colors(
                 activeTrackColor = MaterialTheme.colorScheme.primaryContainer,
@@ -347,6 +368,7 @@ private fun LightItemContainerPreview() {
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
         enabled = true,
+        onBrightnessChange = { _, _ -> },
         updateDeviceState = { _, _ -> },
         {}
     )

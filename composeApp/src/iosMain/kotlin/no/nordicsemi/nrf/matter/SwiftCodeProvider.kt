@@ -9,7 +9,7 @@ interface SwiftCodeProvider {
 
     fun getMatterCommissioner(): MatterCommissioner
 
-    fun getMatterOnOffController(): MatterOnOffController
+    fun getMatterOnOffController(): MatterLightController
 
     fun getDecommissioner(): MatterDecommissioner
 
@@ -36,11 +36,17 @@ interface MatterDecommissioner {
     suspend fun decommission(deviceId: DeviceId)
 }
 
-interface MatterOnOffController {
+interface MatterLightController {
 
     suspend fun setDeviceOnOff(
         deviceId: DeviceId,
         isOn: Boolean,
+        endpoint: Int,
+    )
+
+    suspend fun setBrightnessLevel(
+        deviceId: DeviceId,
+        level: Int,
         endpoint: Int,
     )
 }

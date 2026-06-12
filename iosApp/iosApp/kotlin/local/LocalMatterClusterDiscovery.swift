@@ -63,8 +63,14 @@ class LocalMatterClusterDiscovery {
             let deviceTypes = try await descriptor.getDeviceType(endpoint: endpoint)
             let clientClusters = try await descriptor.readClientClusters(endpoint: endpoint)
             let serverClusters = try await descriptor.readServerClusters(endpoint: endpoint)
-            let controller = LocalMatterCustomClusterController()
-            let manufacturerSpecificData = try await controller.getData(deviceId: deviceId, endpoint: Int32(truncating: endpoint))
+
+            let manufacturerSpecificData: ManufacturerSpecificData?
+            if (serverClusters.contains(0xFFF1FC01)) {
+                let controller = LocalMatterCustomClusterController()
+                manufacturerSpecificData = try await controller.getData(deviceId: deviceId, endpoint: Int32(truncating: endpoint))
+            } else {
+                manufacturerSpecificData = nil
+            }
 
             let newInfo = DeviceMatterInfo(
                 endpoint: endpoint.int32Value,

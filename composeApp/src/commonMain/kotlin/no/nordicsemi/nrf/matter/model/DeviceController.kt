@@ -73,7 +73,13 @@ interface DeviceController {
     fun subscribeToButtonChanges(
         deviceId: DeviceId,
         endpoint: Int,
-    ) : Flow<Boolean>
+    ): Flow<Boolean>
 
     suspend fun generateRandomNumber(deviceId: DeviceId): Int
+
+    suspend fun setBrightnessLevel(
+        deviceId: DeviceId,
+        brightnessLevel: Int,
+        endpoint: Int,
+    )
 }

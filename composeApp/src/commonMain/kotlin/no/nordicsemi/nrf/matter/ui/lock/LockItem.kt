@@ -37,12 +37,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
-import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.ui.TestDeviceLockDoor
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -104,6 +104,7 @@ fun LockItemContainer(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .clip(RoundedCornerShape(16.dp))
             .clickable {
                 isExpanded = !isExpanded
             }
@@ -160,9 +161,11 @@ fun LockItemContainer(
             Surface(
                 color = Color.LightGray.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.clickable {
-                    onLockUnlockDoor(deviceUiModel.device.deviceId, !isLocked)
-                }
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable {
+                        onLockUnlockDoor(deviceUiModel.device.deviceId, !isLocked)
+                    }
             ) {
                 Text(
                     text = if (isLocked) "Locked" else "Unlocked",

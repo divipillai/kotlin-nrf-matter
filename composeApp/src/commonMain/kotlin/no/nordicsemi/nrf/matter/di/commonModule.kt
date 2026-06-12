@@ -3,7 +3,6 @@ package no.nordicsemi.nrf.matter.di
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import no.nordicsemi.nrf.matter.BeaconRepository
 import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
 import no.nordicsemi.nrf.matter.binding.BindDevicesUseCase
 import no.nordicsemi.nrf.matter.binding.BindingDataSource
@@ -11,7 +10,6 @@ import no.nordicsemi.nrf.matter.commission.DecommissionUseCases
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import no.nordicsemi.nrf.matter.ui.MatterControllerCache
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -52,13 +50,9 @@ val commonModule = module {
     // Define CoroutineScope as a singleton
     single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
 
-    // Beacon.
-    singleOf(::BeaconRepository)
-
     // Repositories
     singleOf(::DevicesRepository)
     singleOf(::DevicesStateRepository)
-    singleOf(::UserPreferencesRepository)
     singleOf(::BindingRepository)
     single {
         BindDevicesUseCase(
@@ -70,7 +64,8 @@ val commonModule = module {
         DecommissionUseCases(
             get(),
             get(),
-            get()
+            get(),
+            get(),
         )
     }
 

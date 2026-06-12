@@ -7,7 +7,6 @@ import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.commission.CommissioningViewModel
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.IosDeviceController
@@ -16,8 +15,6 @@ import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
-import no.nordicsemi.nrf.matter.repository.IosUserPreferencesDataSource
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import no.nordicsemi.nrf.matter.ui.light.LightCommandHandler
 import no.nordicsemi.nrf.matter.ui.lock.LockCommandHandler
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecCommandHandler
@@ -66,9 +63,6 @@ val iosModule = module {
     single<DeviceStateDataSource> {
         IosDevicesStateDataSource()
     }
-    single<UserPreferencesDataSource> {
-        IosUserPreferencesDataSource()
-    }
     single {
         DataStoreProvider().createDataStore()
     }
@@ -79,9 +73,6 @@ val iosModule = module {
     }
     single<DevicesStateRepository> {
         DevicesStateRepository(dataSource = get())
-    }
-    single<UserPreferencesRepository> {
-        UserPreferencesRepository(dataSource = get())
     }
     single<BindingRepository> {
         BindingRepository(get())

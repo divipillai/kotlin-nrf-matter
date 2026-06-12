@@ -1,10 +1,6 @@
 package no.nordicsemi.nrf.matter.di
 
-import android.bluetooth.BluetoothAdapter
 import no.nordicsemi.nrf.matter.HomeViewModel
-import no.nordicsemi.nrf.matter.MatterBeaconProducer
-import no.nordicsemi.nrf.matter.beacon.BeaconViewModel
-import no.nordicsemi.nrf.matter.beacon.MatterBeaconProducerBle
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.chip.BindingManager
@@ -13,18 +9,15 @@ import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.datasource.UserPreferencesDataSource
 import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.model.AndroidDeviceController
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
-import no.nordicsemi.nrf.matter.repository.AndroidUserPreferencesDataSource
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
 import no.nordicsemi.nrf.matter.ui.light.LightCommandHandler
 import no.nordicsemi.nrf.matter.ui.lock.LockCommandHandler
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecCommandHandler
@@ -32,7 +25,6 @@ import no.nordicsemi.nrf.matter.ui.switch.SwitchCommandHandler
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 /*
@@ -67,16 +59,6 @@ import org.koin.dsl.module
  */
 val androidModule = module {
 
-    single(named("MatterBeaconScanner")) {
-        BluetoothAdapter.getDefaultAdapter()?.bluetoothLeScanner
-    }
-
-    single<MatterBeaconProducer> {
-        MatterBeaconProducerBle(
-            bluetoothLeScanner = get(named("MatterBeaconScanner")),
-            context = androidContext()
-        )
-    }
     single<DevicesDataSource> {
         AndroidDevicesDataSource(androidContext())
     }
@@ -84,9 +66,6 @@ val androidModule = module {
         AndroidDeviceStateDataSource(
             context = androidContext()
         )
-    }
-    single<UserPreferencesDataSource> {
-        AndroidUserPreferencesDataSource(androidContext())
     }
     single {
         DataStoreProvider(androidContext()).createDataStore()
@@ -99,7 +78,6 @@ val androidModule = module {
 
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
-    single<UserPreferencesRepository> { UserPreferencesRepository(get()) }
     single<BindingRepository> { BindingRepository(get()) }
 
     // Inject DeviceController
@@ -111,7 +89,6 @@ val androidModule = module {
     factory { SwitchCommandHandler(get(), get(), get()) }
 
     // Binding Viewmodel
-    viewModelOf(::BeaconViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::HomeViewModelAndroid)
     viewModelOf(::BindingViewModel)

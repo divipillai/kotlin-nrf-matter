@@ -253,8 +253,13 @@ internal fun BindingsScreen(
         } else {
             // List active bindings
             item {
-                bindingUiState.activeBindings.forEach { binding ->
-                    BindingCardRow(binding = binding)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(18.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    bindingUiState.activeBindings.forEach { binding ->
+                        BindingCardRow(binding = binding)
+                    }
                 }
             }
         }
@@ -486,8 +491,9 @@ fun BindingCardRow(
     binding: DeviceBinding
 ) {
     OutlinedCard(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+        modifier = Modifier.fillMaxWidth(),
+
+        ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

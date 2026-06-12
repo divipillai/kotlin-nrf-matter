@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter.repository
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceState
@@ -98,19 +97,6 @@ class DevicesStateRepository(
 
             currentState.copy(devicesStateList = updatedList)
         }
-    }
-
-    suspend fun loadDeviceState(deviceId: DeviceId): DeviceState? =
-        devicesStateFlow
-            .first()
-            .devicesStateList
-            .firstOrNull { it.deviceId == deviceId }
-
-    suspend fun getAllDevicesState(): DevicesState =
-        devicesStateFlow.first()
-
-    suspend fun clearAllData() {
-        dataSource.update { DevicesState() }
     }
 
     suspend fun removeDevice(deviceId: DeviceId) {

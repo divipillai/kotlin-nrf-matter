@@ -72,6 +72,15 @@ class BaseBindingDataSource(
             prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
         }
 
+    override suspend fun delete(binding: DeviceBinding) {
+        dataStore.edit { prefs ->
+            val current = prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
+            val updated = current.filterNot { it.id == binding.id }
+            NordicLogger.info("updated binding table: $updated", tag = "Bindings")
+            prefs[BINDINGS_KEY] = encode(updated)
+        }
+    }
+
 
     private fun encode(list: List<DeviceBinding>): String = Json.encodeToString(list)
     private fun decode(json: String): List<DeviceBinding> = Json.decodeFromString(json)

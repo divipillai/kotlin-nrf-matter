@@ -29,6 +29,22 @@ public class SharedStorage : NSObject, MTRStorage {
         defaults.string(forKey: key)
     }
     
+    public func storeNumber(key: String, value: NSNumber) {
+        defaults.set(value, forKey: key)
+    }
+    
+    public func getNumber(key: String) -> NSNumber? {
+        defaults.object(forKey: key) as? NSNumber
+    }
+    
+    public func storeBool(key: String, value: Bool) {
+        defaults.set(value, forKey: key)
+    }
+    
+    public func getBool(key: String) -> Bool? {
+        defaults.bool(forKey: key)
+    }
+    
     public func storageData(forKey key: String) -> Data? {
         return defaults.data(forKey: key)
     }

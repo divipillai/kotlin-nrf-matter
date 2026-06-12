@@ -28,8 +28,8 @@ enum PairingError: Error {
  */
 @MainActor
 class GoogleHomeCommissioner : @MainActor MatterCommissioner {
-    
-    func startIosCommissioning() async throws -> Device {
+
+    func startIosCommissioning(deviceId: DeviceId) async throws -> Device { // TODO: use deviceId
         return try await commission()
     }
     

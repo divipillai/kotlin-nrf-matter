@@ -18,7 +18,7 @@ import HomeKit
  */
 class HomeKitCommissioner : MatterCommissioner {
 
-    func startIosCommissioning() async throws -> Device {
+    func startIosCommissioning(deviceId: DeviceId) async throws -> Device { // TODO: use deviceID
         let controller = HomeKitController.shared()
         let uuid = await controller.addAccessory()
         

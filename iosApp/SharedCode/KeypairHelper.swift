@@ -81,7 +81,7 @@ class KeypairHelper {
         return (item as! SecKey)
     }
     
-    public func deletePrivateKey() {
+    func deletePrivateKey() {
         SharedLogger.debug("\(self.logTag) - Deleting private key.")
         
         let deleteQuery: [String: Any] = [

@@ -18,8 +18,8 @@ class SwiftCodeProviderImpl : @MainActor SwiftCodeProvider {
 //        return GoogleHomeCommissioner()
     }
     
-    func getMatterOnOffController() -> any MatterOnOffController {
-        return LocalMatterOnOffController()
+    func getMatterOnOffController() -> any MatterLightController {
+        return LocalMatterLightController()
 //        return HomeKitMatterOnOffController()
 //        return GoogleHomeOnOffController()
     }

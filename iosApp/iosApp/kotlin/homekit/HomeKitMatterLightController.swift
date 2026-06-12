@@ -1,5 +1,5 @@
 //
-//  HomeKitMatterOnOffController.swift
+//  HomeKitMatterLightController.swift
 //  iosApp
 //
 //  Created by Sylwester Zielinski on 13/03/2026.
@@ -13,7 +13,7 @@ import SharedCode
 /**
  * A helper class from controlling a light type Matter device using Home Kit app
  */
-class HomeKitMatterOnOffController : MatterOnOffController {
+class HomeKitMatterLightController : MatterLightController {
 
     /**
      * Set the light on/off on a remote Matter device.
@@ -33,5 +33,12 @@ class HomeKitMatterOnOffController : MatterOnOffController {
         }) else { return }
 
         try await characteristic.writeValue(isOn)
+    }
+    
+    /**
+     * Set the brightness level on a remote Matter device.
+     */
+    func setBrightnessLevel(deviceId: DeviceId, level: Int32, endpoint: Int32) async throws {
+        //TODO
     }
 }

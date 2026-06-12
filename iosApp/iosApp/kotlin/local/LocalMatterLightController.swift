@@ -1,5 +1,5 @@
 //
-//  MatterOnOffController.swift
+//  LocalMatterLightController.swift
 //  iosApp
 //
 //  Created by Sylwester Zielinski on 06/03/2026.
@@ -13,12 +13,13 @@ import OSLog
 /**
  * A helper class from controlling a light type Matter device in a local fabric.
  */
-class LocalMatterOnOffController : MatterOnOffController {
+class LocalMatterLightController : MatterLightController {
 
     /**
      * Set the light on/off on a remote Matter device.
      */
     func setDeviceOnOff(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
+        SharedLogger.debug("Set device on/off = \(isOn)")
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
 
@@ -32,9 +33,11 @@ class LocalMatterOnOffController : MatterOnOffController {
     }
     
     /**
-     * Set the light level on a remote Matter device.
+     * Set the brightness level on a remote Matter device.
      */
-    func setLevel(deviceId: DeviceId, isOn: Bool, endpoint: Int32, level: Int32) async throws {
+    func setBrightnessLevel(deviceId: DeviceId, level: Int32, endpoint: Int32) async throws {
+        SharedLogger.debug("Set brightess level: \(level)")
+
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
 

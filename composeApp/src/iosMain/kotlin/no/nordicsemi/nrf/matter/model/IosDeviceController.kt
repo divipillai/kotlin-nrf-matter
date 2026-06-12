@@ -8,7 +8,7 @@ import no.nordicsemi.nrf.matter.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.MatterDecommissioner
 import no.nordicsemi.nrf.matter.MatterDoorController
 import no.nordicsemi.nrf.matter.MatterManufacturerCustomDataController
-import no.nordicsemi.nrf.matter.MatterOnOffController
+import no.nordicsemi.nrf.matter.MatterLightController
 import no.nordicsemi.nrf.matter.MatterOutletController
 
 /*
@@ -43,7 +43,7 @@ import no.nordicsemi.nrf.matter.MatterOutletController
  */
 
 class IosDeviceController(
-    private val matterOnOffController: MatterOnOffController,
+    private val matterLightController: MatterLightController,
     private val matterDecommissioner: MatterDecommissioner,
     private val matterBinder: MatterBinder,
     private val matterDoorController: MatterDoorController,
@@ -58,7 +58,7 @@ class IosDeviceController(
         isOn: Boolean,
         endpoint: Int,
     ) {
-        matterOnOffController.setDeviceOnOff(deviceId, isOn, endpoint)
+        matterLightController.setDeviceOnOff(deviceId, isOn, endpoint)
     }
 
     override suspend fun setLed(
@@ -121,6 +121,6 @@ class IosDeviceController(
         brightnessLevel: Int,
         endpoint: Int
     ) {
-        TODO("Not yet implemented")
+        matterLightController.setBrightnessLevel(deviceId, brightnessLevel, endpoint)
     }
 }

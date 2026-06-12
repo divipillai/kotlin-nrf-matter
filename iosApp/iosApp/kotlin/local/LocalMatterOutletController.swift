@@ -19,7 +19,7 @@ class LocalMatterOutletController : MatterOutletController {
      * Set the state of a switch.
      */
     func handleOutlet(deviceId: DeviceId, isSwitchOn: Bool, endpoint: Int32) async throws {
-        let controller = LocalMatterOnOffController()
+        let controller = LocalMatterLightController()
         // TODO: not implemented yet
     }
 }

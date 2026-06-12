@@ -1,5 +1,7 @@
 package no.nordicsemi.nrf.matter.ui.light
 
+import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
@@ -70,9 +72,18 @@ class LightCommandHandler(
             brightnessLevel
         } catch (e: Exception) {
             NordicLogger.error("Failed to set brightness level for device $deviceId", e)
-            1// todo: Return a previous brightness level in case of failure with an appropriate error handling strategy.
+            0// FIxMe
         }
     }
+
+    fun observeLightDeviceState(
+        device: Device
+    ): Flow<UiState<LightDeviceState>> =
+        deviceController.observeLightDeviceState(
+            deviceId = device.deviceId,
+            endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
+        ).withUiState()
+
 }
 
 

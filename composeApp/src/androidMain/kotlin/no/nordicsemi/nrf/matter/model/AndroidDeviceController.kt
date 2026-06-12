@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
+import no.nordicsemi.nrf.matter.ui.light.LightDeviceState
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -127,6 +128,16 @@ class AndroidDeviceController(
         clustersHelper.setBrightnessLevel(
             deviceId = deviceId,
             brightnessLevel = brightnessLevel,
+            endpoint = endpoint
+        )
+    }
+
+    override fun observeLightDeviceState(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Flow<LightDeviceState> {
+        return clustersHelper.observeLightState(
+            deviceId = deviceId,
             endpoint = endpoint
         )
     }

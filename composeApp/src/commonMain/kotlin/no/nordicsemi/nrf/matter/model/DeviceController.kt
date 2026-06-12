@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.model
 
 import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.ui.light.LightDeviceState
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -75,4 +76,9 @@ interface DeviceController {
         brightnessLevel: Int,
         endpoint: Int,
     )
+
+    fun observeLightDeviceState(
+        deviceId: DeviceId,
+        endpoint: Int,
+    ): Flow<LightDeviceState>
 }

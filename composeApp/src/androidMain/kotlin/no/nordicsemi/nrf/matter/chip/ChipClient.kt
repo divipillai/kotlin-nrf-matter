@@ -505,4 +505,31 @@ class ChipClient(
         }
     }
 
+    /** Wrapper around [ChipDeviceController.subscribeToAttributePath] for multiple attributes */
+    fun subscribeAttribute(
+        reportCallback: ReportCallback,
+        devicePtr: Long,
+        attributePaths: List<ChipAttributePath>,
+        minIntervalS: Int,
+         maxIntervalS: Int,
+         timeoutMs: Int,
+    ) {
+        chipDeviceController.subscribeToAttributePath(
+            object : SubscriptionEstablishedCallback {
+                override fun onSubscriptionEstablished(subscriptionId: Long) {
+                    NordicLogger.debug(
+                        "Subscription established: $subscriptionId",
+                        tag = "SubscribeAttribute"
+                    )
+                }
+            },
+            reportCallback,
+            devicePtr,
+            attributePaths,
+            minIntervalS,
+            maxIntervalS,
+            timeoutMs,
+        )
+    }
+
 }

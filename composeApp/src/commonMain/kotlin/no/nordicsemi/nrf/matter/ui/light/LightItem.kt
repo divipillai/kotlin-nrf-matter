@@ -62,25 +62,23 @@ import kotlin.math.roundToInt
 @Composable
 fun LightItem(
     device: DeviceUiModel,
-    isLedOn: UiState<Boolean>,
+    lightDeviceState: UiState<LightDeviceState>,
     onBrightnessChange: (deviceId: DeviceId, brightnessLevel: Int) -> Unit,
     updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
+    val successData = (lightDeviceState as? UiState.Success)?.data // todo: handle other states
+
     LightItemContainer(
         device = device,
         deviceId = device.device.deviceId,
-        title = "Light",
+        title = device.device.productName ?: "Light",
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
-        enabled = (isLedOn as? UiState.Success)?.data ?: false, //TODO
+        enabled = successData?.isOn ?: false,
+        brightnessLevel = successData?.brightnessPercentage ?: 0.0f,
         updateDeviceState = updateDeviceState,
-        onBrightnessChange = { deviceId, brightnessLevel ->
-            onBrightnessChange(
-                deviceId,
-                brightnessLevel
-            )
-        },
+        onBrightnessChange = onBrightnessChange,
         onDecommission = onDecommission
     )
 }
@@ -93,8 +91,9 @@ internal fun LightItemContainer(
     subtitle: String,
     icon: Painter,
     enabled: Boolean,
-    onBrightnessChange: (deviceId: DeviceId, brightnessLevel: Int) -> Unit,
-    updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
+    brightnessLevel: Float,
+    onBrightnessChange: (DeviceId, Int) -> Unit,
+    updateDeviceState: (DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
@@ -184,6 +183,7 @@ internal fun LightItemContainer(
                 HorizontalDivider()
                 BrightnessControlCard(
                     deviceId = deviceId,
+                    brightnessLevel = brightnessLevel,
                     modifier = Modifier.padding(16.dp),
                     onBrightnessChange = { deviceId, brightnessLevel ->
                         onBrightnessChange(deviceId, brightnessLevel)
@@ -284,9 +284,10 @@ fun InfoItem(
 fun BrightnessControlCard(
     modifier: Modifier = Modifier,
     deviceId: DeviceId,
-    onBrightnessChange: (deviceId: DeviceId, brightnessLevel: Int) -> Unit,
+    brightnessLevel: Float,
+    onBrightnessChange: (DeviceId, Int) -> Unit,
 ) {
-    var brightness by remember { mutableFloatStateOf(0.85f) }
+    var brightness by remember { mutableFloatStateOf(brightnessLevel) }
 
     Column(
         modifier = modifier
@@ -368,8 +369,9 @@ private fun LightItemContainerPreview() {
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
         enabled = true,
+        brightnessLevel = 60f,
         onBrightnessChange = { _, _ -> },
         updateDeviceState = { _, _ -> },
-        {}
+        {},
     )
 }

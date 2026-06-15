@@ -1,6 +1,8 @@
 package no.nordicsemi.nrf.matter.model
 
 import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.ui.light.LightDeviceState
+import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -75,4 +77,17 @@ interface DeviceController {
         brightnessLevel: Int,
         endpoint: Int,
     )
+
+    // Observe the real-time state of the light device, including its On/Off status and brightness level.
+    fun observeLightDeviceState(
+        deviceId: DeviceId,
+        endpoint: Int,
+    ): Flow<LightDeviceState>
+
+    // Observe the real-time state of the door lock device, including its locked/unlocked status.
+    fun observeLockDeviceState(
+        deviceId: DeviceId,
+        endpoint: Int,
+        doorLockClusterId: Long,
+    ): Flow<LockDeviceState>
 }

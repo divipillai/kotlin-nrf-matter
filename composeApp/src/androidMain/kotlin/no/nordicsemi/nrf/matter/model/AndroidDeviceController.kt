@@ -4,6 +4,8 @@ import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
+import no.nordicsemi.nrf.matter.ui.light.LightDeviceState
+import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -128,6 +130,29 @@ class AndroidDeviceController(
             deviceId = deviceId,
             brightnessLevel = brightnessLevel,
             endpoint = endpoint
+        )
+    }
+
+    override fun observeLightDeviceState(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Flow<LightDeviceState> {
+        return clustersHelper.observeLightState(
+            deviceId = deviceId,
+            endpoint = endpoint
+        )
+    }
+
+    override fun observeLockDeviceState(
+        deviceId: DeviceId,
+        endpoint: Int,
+
+        doorLockClusterId: Long
+    ): Flow<LockDeviceState> {
+        return clustersHelper.observeLockState(
+            deviceId = deviceId,
+            endpoint = endpoint,
+            doorLockClusterId = doorLockClusterId
         )
     }
 }

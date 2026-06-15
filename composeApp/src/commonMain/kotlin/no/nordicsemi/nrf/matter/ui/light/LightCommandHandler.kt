@@ -1,9 +1,9 @@
 package no.nordicsemi.nrf.matter.ui.light
 
-import no.nordicsemi.nrf.matter.logger.NordicLogger
+import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.ui.CommandHandler
 import kotlin.math.roundToInt
 
@@ -11,10 +11,12 @@ private const val ON_OFF_CLUSTER_ID: Long = 0x0006L
 private const val LEVEL_CONTROL_CLUSTER_ID: Long = 0x0008L
 
 class LightCommandHandler(
-    private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
 ) : CommandHandler {
 
+    /**
+     * Sends an On/Off command to the Matter device.
+     */
     fun handleLed(
         device: Device,
         isOn: Boolean
@@ -22,34 +24,17 @@ class LightCommandHandler(
         val deviceId = device.deviceId
         val endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
 
-        try {
-            devicesStateRepository.updateDeviceState(
-                deviceId = deviceId,
-                isOnline = true,
-                isOn = isOn
-            )
-
-            deviceController.setDeviceOnOff(
-                deviceId = deviceId,
-                isOn = isOn,
-                endpoint = endpoint,
-                isDeviceOnline = true,
-            )
-
-            isOn
-        } catch (e: Exception) {
-
-            devicesStateRepository.updateDeviceState(
-                deviceId = deviceId,
-                isOnline = false,
-                isOn = !isOn
-            )
-
-            !isOn
-        }
+        deviceController.setDeviceOnOff(
+            deviceId = deviceId,
+            isOn = isOn,
+            endpoint = endpoint,
+            isDeviceOnline = true,
+        )
     }
 
-    // TODO: Implement brightness control
+    /**
+     * Sends a Brightness level command (0..100) to the Matter device.
+     */
     fun handleBrightness(
         device: Device,
         brightnessLevel: Int
@@ -57,22 +42,24 @@ class LightCommandHandler(
         val deviceId = device.deviceId
         val endpoint = resolveEndpoint(device, clusterId = LEVEL_CONTROL_CLUSTER_ID)
 
-        try {
-            deviceController.setBrightnessLevel(
-                deviceId = deviceId,
-                brightnessLevel = brightnessLevel,
-                endpoint = endpoint,
-            )
-            NordicLogger.debug(
-                "Brightness level set to $brightnessLevel for device $deviceId",
-                tag = "LightCommandHandler"
-            )
-            brightnessLevel
-        } catch (e: Exception) {
-            NordicLogger.error("Failed to set brightness level for device $deviceId", e)
-            1// todo: Return a previous brightness level in case of failure with an appropriate error handling strategy.
-        }
+        deviceController.setBrightnessLevel(
+            deviceId = deviceId,
+            brightnessLevel = brightnessLevel,
+            endpoint = endpoint,
+        )
     }
+
+    /**
+     * Observes the real-time state of the light device, including its On/Off status and brightness level.
+     */
+    fun observeLightDeviceState(
+        device: Device
+    ): Flow<UiState<LightDeviceState>> =
+        deviceController.observeLightDeviceState(
+            deviceId = device.deviceId,
+            endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
+        ).withUiState()
+
 }
 
 

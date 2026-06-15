@@ -9,6 +9,8 @@ import no.nordicsemi.nrf.matter.MatterDecommissioner
 import no.nordicsemi.nrf.matter.MatterDoorController
 import no.nordicsemi.nrf.matter.MatterLightController
 import no.nordicsemi.nrf.matter.MatterManufacturerCustomDataController
+import no.nordicsemi.nrf.matter.ui.light.LightDeviceState
+import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -48,7 +50,7 @@ class IosDeviceController(
     private val matterDoorController: MatterDoorController,
     private val matterManufacturerCustomDataController: MatterManufacturerCustomDataController,
     private val matterClusterExtensionController: MatterClusterExtensionController,
-): DeviceController {
+) : DeviceController {
 
     override suspend fun setDeviceOnOff(
         deviceId: DeviceId,
@@ -112,5 +114,20 @@ class IosDeviceController(
         endpoint: Int
     ) {
         matterLightController.setBrightnessLevel(deviceId, brightnessLevel, endpoint)
+    }
+
+    override fun observeLightDeviceState(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Flow<LightDeviceState> {
+        TODO("Not yet implemented")
+    }
+
+    override fun observeLockDeviceState(
+        deviceId: DeviceId,
+        endpoint: Int,
+        doorLockClusterId: Long,
+    ): Flow<LockDeviceState> {
+        TODO("Not yet implemented")
     }
 }

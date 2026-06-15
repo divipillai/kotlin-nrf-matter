@@ -18,7 +18,6 @@ import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
 import no.nordicsemi.nrf.matter.ui.light.LightCommandHandler
 import no.nordicsemi.nrf.matter.ui.lock.LockCommandHandler
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecCommandHandler
-import no.nordicsemi.nrf.matter.ui.switch.SwitchCommandHandler
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -98,8 +97,7 @@ val iosModule = module {
 
     viewModel { LoggerViewModel() }
     viewModel { BindingViewModel(get(), get(), get()) }
-    factory { LightCommandHandler(get(), get()) }
-    factory { LockCommandHandler(get(), get()) }
+    factory { LightCommandHandler(get()) }
+    factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get()) }
-    factory { SwitchCommandHandler(get(), get()) }
 }

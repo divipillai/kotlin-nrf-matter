@@ -21,7 +21,6 @@ import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.ui.light.LightCommandHandler
 import no.nordicsemi.nrf.matter.ui.lock.LockCommandHandler
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecCommandHandler
-import no.nordicsemi.nrf.matter.ui.switch.SwitchCommandHandler
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -86,7 +85,7 @@ val androidModule = module {
     factory { LightCommandHandler(get()) }
     factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get()) }
-    factory { SwitchCommandHandler(get(), get()) }
+
 
     // Binding Viewmodel
     viewModelOf(::HomeViewModel)

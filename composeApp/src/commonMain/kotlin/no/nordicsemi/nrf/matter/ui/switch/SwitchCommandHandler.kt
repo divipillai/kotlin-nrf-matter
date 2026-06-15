@@ -8,53 +8,18 @@ import kotlinx.coroutines.flow.flowOn
 import no.nordicsemi.nrf.matter.device.BindingState
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
-import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.repository.BindingRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.ui.CommandHandler
 
 private const val ON_OFF_CLUSTER_ID: Long = 0x0006L
 
 class SwitchCommandHandler(
-    private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
     private val bindingRepository: BindingRepository,
 ) : CommandHandler {
-
-    fun handleOutlet(
-        device: Device,
-        isOn: Boolean
-    ) = withUiState {
-        val endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
-
-        try {
-            devicesStateRepository.updateDeviceState(
-                deviceId = device.deviceId,
-                isOnline = true,
-                isOn = isOn
-            )
-
-            deviceController.handleOutlet(
-                deviceId = device.deviceId,
-                isSwitchOn = isOn,
-                endpoint = endpoint
-            )
-
-            isOn
-        } catch (e: Exception) {
-
-            devicesStateRepository.updateDeviceState(
-                deviceId = device.deviceId,
-                isOnline = false,
-                isOn = !isOn
-            )
-
-            !isOn
-        }
-    }
 
     fun bind(
         switchNodeId: DeviceId,

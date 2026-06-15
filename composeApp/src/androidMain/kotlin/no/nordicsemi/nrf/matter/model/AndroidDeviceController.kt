@@ -84,14 +84,6 @@ class AndroidDeviceController(
         )
     }
 
-    override suspend fun handleOutlet(
-        deviceId: DeviceId,
-        isSwitchOn: Boolean,
-        endpoint: Int
-    ) {
-        // TODO: Not yet implemented
-    }
-
     override suspend fun bind(
         sourceNodeId: DeviceId,
         sourceEndpoint: Int,

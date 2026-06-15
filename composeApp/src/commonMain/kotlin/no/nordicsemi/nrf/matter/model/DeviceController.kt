@@ -54,13 +54,6 @@ interface DeviceController {
         endpoint: Int,
     )
 
-    // function to handle outlet
-    suspend fun handleOutlet(
-        deviceId: DeviceId,
-        isSwitchOn: Boolean,
-        endpoint: Int,
-    )
-
     // Bind switch to light
     suspend fun bind(
         sourceNodeId: DeviceId,

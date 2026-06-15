@@ -38,10 +38,6 @@ class SwiftCodeProviderImpl : @MainActor SwiftCodeProvider {
         return LocalMatterDoorController()
     }
     
-    func getMatterOutletController() -> any MatterOutletController {
-        return LocalMatterOutletController()
-    }
-    
     func getMatterManufacturerCustomDataController() -> any MatterManufacturerCustomDataController {
         return LocalMatterCustomClusterController()
 //        return GoogleHomeCustomClusterController()

@@ -68,7 +68,7 @@ interface DeviceController {
         endpoint: Int,
     ): Flow<Boolean>
 
-    suspend fun generateRandomNumber(deviceId: DeviceId): Int
+    suspend fun generateRandomNumber(deviceId: DeviceId, endpoint: Int): Int
 
     suspend fun setBrightnessLevel(
         deviceId: DeviceId,

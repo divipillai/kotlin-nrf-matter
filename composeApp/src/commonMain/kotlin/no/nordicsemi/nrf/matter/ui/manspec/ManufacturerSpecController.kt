@@ -21,7 +21,7 @@ class ManufacturerSpecController(
 
     private val ledState = MutableStateFlow<UiState<Boolean>>(UiState.Success(device.isOn))
     private val randomNumber = MutableStateFlow<UiState<Int>>(UiState.Idle())
-    private val buttonState = commandHandler.subscribeToButtonChanges(device.device.deviceId)
+    private val buttonState = commandHandler.subscribeToButtonChanges(device.device)
         .stateIn(scope, SharingStarted.Eagerly, UiState.Idle())
 
     private fun setLed(value: Boolean) {
@@ -31,7 +31,7 @@ class ManufacturerSpecController(
     }
 
     private fun generateRandomNumber() {
-        commandHandler.generateRandomNumber(device.device.deviceId)
+        commandHandler.generateRandomNumber(device.device)
             .onEach { randomNumber.value = it }
             .launchIn(scope)
     }

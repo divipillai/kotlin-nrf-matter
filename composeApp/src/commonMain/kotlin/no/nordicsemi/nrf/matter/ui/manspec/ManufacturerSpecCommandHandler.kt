@@ -4,11 +4,11 @@ import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceController
-import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.ui.CommandHandler
 
-private const val CLUSTER_ID: Long = 0xFFF1FC01
+private const val BASIC_INFORMATION_CLUSTER_ID: Long = 0x28
+private const val MANUFACTURER_SPECIFIC_CLUSTER_ID: Long = 0xFFF1FC01
 
 class ManufacturerSpecCommandHandler(
     private val devicesStateRepository: DevicesStateRepository,
@@ -20,7 +20,7 @@ class ManufacturerSpecCommandHandler(
         isOn: Boolean
     ) = withUiState {
         val deviceId = device.deviceId
-        val endpoint = resolveEndpoint(device, clusterId = CLUSTER_ID)
+        val endpoint = resolveEndpoint(device, clusterId = MANUFACTURER_SPECIFIC_CLUSTER_ID)
 
         try {
             devicesStateRepository.updateDeviceState(
@@ -48,13 +48,15 @@ class ManufacturerSpecCommandHandler(
         }
     }
 
-    fun subscribeToButtonChanges(deviceId: DeviceId): Flow<UiState<Boolean>> {
-        return deviceController.subscribeToButtonChanges(deviceId, 1).withUiState()
+    fun subscribeToButtonChanges(device: Device): Flow<UiState<Boolean>> {
+        val endpoint = resolveEndpoint(device, MANUFACTURER_SPECIFIC_CLUSTER_ID)
+        return deviceController.subscribeToButtonChanges(device.deviceId, endpoint).withUiState()
     }
 
-    fun generateRandomNumber(deviceId: DeviceId): Flow<UiState<Int>> {
+    fun generateRandomNumber(device: Device): Flow<UiState<Int>> {
         return withUiState {
-            deviceController.generateRandomNumber(deviceId)
+            val endpoint = resolveEndpoint(device, BASIC_INFORMATION_CLUSTER_ID)
+            deviceController.generateRandomNumber(device.deviceId, endpoint)
         }
     }
 }

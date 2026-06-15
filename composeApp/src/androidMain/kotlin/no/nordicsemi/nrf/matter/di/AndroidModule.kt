@@ -86,7 +86,7 @@ val androidModule = module {
     factory { LightCommandHandler(get(), get()) }
     factory { LockCommandHandler(get(), get()) }
     factory { ManufacturerSpecCommandHandler(get(), get()) }
-    factory { SwitchCommandHandler(get(), get(), get()) }
+    factory { SwitchCommandHandler(get(), get()) }
 
     // Binding Viewmodel
     viewModelOf(::HomeViewModel)

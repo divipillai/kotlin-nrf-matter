@@ -29,7 +29,7 @@ class MatterControllerCache(
             DeviceType.DIMMABLE_LIGHT,
             DeviceType.LIGHT_ON_OFF -> LightController(device, get(), scope)
             DeviceType.OUTLET,
-            DeviceType.LIGHT_SWITCH -> SwitchController(device, get(), scope)
+            DeviceType.LIGHT_SWITCH -> SwitchController(device)
             DeviceType.DOOR_LOCK -> LockController(device, get(), scope)
             DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> ManufacturerSpecController(device, get(), scope)
         }.also {

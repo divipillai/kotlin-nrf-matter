@@ -7,9 +7,8 @@ import no.nordicsemi.nrf.matter.MatterBinder
 import no.nordicsemi.nrf.matter.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.MatterDecommissioner
 import no.nordicsemi.nrf.matter.MatterDoorController
-import no.nordicsemi.nrf.matter.MatterManufacturerCustomDataController
 import no.nordicsemi.nrf.matter.MatterLightController
-import no.nordicsemi.nrf.matter.MatterOutletController
+import no.nordicsemi.nrf.matter.MatterManufacturerCustomDataController
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -47,7 +46,6 @@ class IosDeviceController(
     private val matterDecommissioner: MatterDecommissioner,
     private val matterBinder: MatterBinder,
     private val matterDoorController: MatterDoorController,
-    private val matterOutletController: MatterOutletController,
     private val matterManufacturerCustomDataController: MatterManufacturerCustomDataController,
     private val matterClusterExtensionController: MatterClusterExtensionController,
 ): DeviceController {
@@ -79,14 +77,6 @@ class IosDeviceController(
         endpoint: Int
     ) {
         matterDoorController.lockUnlockDoor(deviceId, isLocked, endpoint)
-    }
-
-    override suspend fun handleOutlet(
-        deviceId: DeviceId,
-        isSwitchOn: Boolean,
-        endpoint: Int
-    ) {
-        matterOutletController.handleOutlet(deviceId, isSwitchOn, endpoint)
     }
 
     override suspend fun bind(

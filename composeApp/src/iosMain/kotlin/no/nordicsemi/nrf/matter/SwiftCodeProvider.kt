@@ -17,8 +17,6 @@ interface SwiftCodeProvider {
 
     fun getMatterDoorController(): MatterDoorController
 
-    fun getMatterOutletController(): MatterOutletController
-
     fun getMatterManufacturerCustomDataController(): MatterManufacturerCustomDataController
 
     fun getMatterClusterExtensionController(): MatterClusterExtensionController
@@ -71,15 +69,6 @@ interface MatterDoorController {
     )
 }
 
-interface MatterOutletController {
-
-    suspend fun handleOutlet(
-        deviceId: DeviceId,
-        isSwitchOn: Boolean,
-        endpoint: Int
-    )
-}
-
 interface MatterManufacturerCustomDataController {
 
     suspend fun setLed(
@@ -98,8 +87,6 @@ interface MatterManufacturerCustomDataController {
 }
 
 interface MatterClusterExtensionController {
-
-    suspend fun getRandomNumber(deviceId: DeviceId): Int
 
     suspend fun generateRandomNumber(deviceId: DeviceId): Int
 }

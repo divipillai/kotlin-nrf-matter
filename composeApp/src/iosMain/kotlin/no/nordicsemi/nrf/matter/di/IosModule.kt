@@ -86,7 +86,6 @@ val iosModule = module {
             get<SwiftCodeProvider>().getDecommissioner(),
             get<SwiftCodeProvider>().getMatterBinder(),
             get<SwiftCodeProvider>().getMatterDoorController(),
-            get<SwiftCodeProvider>().getMatterOutletController(),
             get<SwiftCodeProvider>().getMatterManufacturerCustomDataController(),
             get<SwiftCodeProvider>().getMatterClusterExtensionController(),
         )
@@ -102,5 +101,5 @@ val iosModule = module {
     factory { LightCommandHandler(get(), get()) }
     factory { LockCommandHandler(get(), get()) }
     factory { ManufacturerSpecCommandHandler(get(), get()) }
-    factory { SwitchCommandHandler(get(), get(), get()) }
+    factory { SwitchCommandHandler(get(), get()) }
 }

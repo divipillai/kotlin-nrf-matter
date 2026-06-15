@@ -104,8 +104,11 @@ class IosDeviceController(
         }
     }
 
-    override suspend fun generateRandomNumber(deviceId: DeviceId): Int {
-        return matterClusterExtensionController.generateRandomNumber(deviceId)
+    override suspend fun generateRandomNumber(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Int {
+        return matterClusterExtensionController.generateRandomNumber(deviceId, endpoint)
     }
 
     override suspend fun setBrightnessLevel(

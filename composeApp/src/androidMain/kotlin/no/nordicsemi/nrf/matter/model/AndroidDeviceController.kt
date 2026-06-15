@@ -115,10 +115,11 @@ class AndroidDeviceController(
         )
     }
 
-    override suspend fun generateRandomNumber(deviceId: DeviceId): Int {
-        return clustersHelper.generateRandomNumber(
-            deviceId
-        )?.toInt() ?: -1
+    override suspend fun generateRandomNumber(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Int {
+        return clustersHelper.generateRandomNumber(deviceId)?.toInt() ?: -1
     }
 
     override suspend fun setBrightnessLevel(

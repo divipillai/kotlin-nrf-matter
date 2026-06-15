@@ -88,5 +88,5 @@ interface MatterManufacturerCustomDataController {
 
 interface MatterClusterExtensionController {
 
-    suspend fun generateRandomNumber(deviceId: DeviceId): Int
+    suspend fun generateRandomNumber(deviceId: DeviceId, endpoint: Int): Int
 }

@@ -10,6 +10,21 @@ import ComposeApp
 import SharedCode
 import OSLog
 
+enum ManufacturerSpecificCluster {
+    
+    static let id: NSNumber = 0xFFF1FC01
+    
+    enum Attribute {
+        static let name: NSNumber = 0xfff10000
+        static let led: NSNumber = 0xfff10001
+        static let button: NSNumber = 0xfff10002
+    }
+    
+    enum Command {
+        static let setLed: NSNumber = 0xFFF10000
+    }
+}
+
 /**
  * A helper class for communication with a manufacturer specific cluster defined in this example
  * A new cluster provides 2 functionalities:
@@ -17,10 +32,6 @@ import OSLog
  *  2. Observe button state changes.
  */
 class LocalMatterCustomClusterController: MatterManufacturerCustomDataController {
-    
-    private let endpointId: NSNumber = 1 //todo: hardcoded
-    private let clusterId: NSNumber = 0xFFF1FC01 //todo: hardcoded
-    private let commandId: NSNumber = 0xFFF10000 //todo: hardcoded
     
     /**
      * Reads the custom attributes from the Matter device.
@@ -30,10 +41,11 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
         SharedLogger.debug("Getting custom manufacturer data...")
         
         let attributeReader = try AttributeReader(deviceId: deviceId.nsNumber())
+        let endpointId = NSNumber(value: endpoint)
        
-        let name: String = try await attributeReader.readAttribute(endpoint: endpointId, cluster: clusterId, attribute: 0xfff10000)
-        let led: Bool = try await attributeReader.readAttribute(endpoint: endpointId, cluster: clusterId, attribute: 0xfff10001)
-        let button: Bool = try await attributeReader.readAttribute(endpoint: endpointId, cluster: clusterId, attribute: 0xfff10002)
+        let name: String = try await attributeReader.readAttribute(endpoint: endpointId, cluster: ManufacturerSpecificCluster.id, attribute: ManufacturerSpecificCluster.Attribute.name)
+        let led: Bool = try await attributeReader.readAttribute(endpoint: endpointId, cluster: ManufacturerSpecificCluster.id, attribute: ManufacturerSpecificCluster.Attribute.led)
+        let button: Bool = try await attributeReader.readAttribute(endpoint: endpointId, cluster: ManufacturerSpecificCluster.id, attribute: ManufacturerSpecificCluster.Attribute.button)
         
         let data = ManufacturerSpecificData(
             name: name,
@@ -50,13 +62,14 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
     func setLed(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         SharedLogger.debug("invoke setLed")
         let commandExecutor = try CommandExecutor(deviceId: deviceId.nsNumber())
+        let endpointId = NSNumber(value: endpoint)
         
         try await commandExecutor.executeCommand(
             endpoint: endpointId,
-            cluster: clusterId,
-            command: commandId,
+            cluster: ManufacturerSpecificCluster.id,
+            command: ManufacturerSpecificCluster.Command.setLed,
             type: MTRUnsignedIntegerValueType,
-            value: 2 //change current value
+            value: isOn ? 1 : 0,
         )
     }
     
@@ -65,8 +78,9 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
      */
     func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
         let attributeSubscriber = try? AttributeSubscriber(deviceId: deviceId.nsNumber())
+        let endpointId = NSNumber(value: endpoint)
         
-        attributeSubscriber?.subscribe(endpoint: endpointId, cluster: clusterId, attribute: 0xfff10002, onUpdate: { result in
+        attributeSubscriber?.subscribe(endpoint: endpointId, cluster: ManufacturerSpecificCluster.id, attribute: ManufacturerSpecificCluster.Attribute.button, onUpdate: { result in
             onUpdate(KotlinBoolean(bool: result))
         })
     }

@@ -122,15 +122,35 @@ class IosDeviceController(
     override fun observeLightDeviceState(
         deviceId: DeviceId,
         endpoint: Int
-    ): Flow<LightDeviceState> {
-        TODO("Not yet implemented")
+    ): Flow<LightDeviceState> = callbackFlow {
+        var state = LightDeviceState()
+
+        matterLightController.subscribeToLedChanges(deviceId, endpoint) {
+            state = state.copy(isOn = it)
+            trySend(state)
+        }
+
+        matterLightController.subscribeToLightLevelChanges(deviceId, endpoint) {
+            state = state.copy(brightnessPercentage = it)
+            trySend(state)
+        }
+
+        awaitClose {
+
+        }
     }
 
     override fun observeLockDeviceState(
         deviceId: DeviceId,
         endpoint: Int,
         doorLockClusterId: Long,
-    ): Flow<LockDeviceState> {
-        TODO("Not yet implemented")
+    ): Flow<LockDeviceState> = callbackFlow {
+        matterDoorController.subscribeToLockChanges(deviceId, endpoint) {
+            trySend(LockDeviceState(it))
+        }
+
+        awaitClose {
+
+        }
     }
 }

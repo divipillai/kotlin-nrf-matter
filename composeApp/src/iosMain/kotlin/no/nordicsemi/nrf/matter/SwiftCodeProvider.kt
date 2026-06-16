@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter
 
-import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.logger.IOSLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -47,6 +46,18 @@ interface MatterLightController {
         level: Int,
         endpoint: Int,
     )
+
+    suspend fun subscribeToLedChanges(
+        deviceId: DeviceId,
+        endpoint: Int,
+        onUpdate: (Boolean) -> Unit
+    )
+
+    suspend fun subscribeToLightLevelChanges(
+        deviceId: DeviceId,
+        endpoint: Int,
+        onUpdate: (Float) -> Unit
+    )
 }
 
 interface MatterBinder {
@@ -67,6 +78,12 @@ interface MatterDoorController {
         isLocked: Boolean,
         endpoint: Int
     )
+
+    suspend fun subscribeToLockChanges(
+        deviceId: DeviceId,
+        endpoint: Int,
+        onUpdate: (Boolean) -> Unit
+    )
 }
 
 interface MatterManufacturerCustomDataController {
@@ -76,8 +93,6 @@ interface MatterManufacturerCustomDataController {
         isOn: Boolean,
         endpoint: Int,
     )
-
-    suspend fun getData(deviceId: DeviceId, endpoint: Int): ManufacturerSpecificData
 
     suspend fun subscribeToButtonChanges(
         deviceId: DeviceId,

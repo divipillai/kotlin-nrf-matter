@@ -27,7 +27,7 @@ class AttributeSubscriber {
             withEndpointID: endpoint,
             clusterID: cluster,
             attributeID: attribute,
-            params: nil,
+            params: MTRSubscribeParams.defaultParams,
             queue: DispatchQueue.global(),
             reportHandler: { result, error in
                 
@@ -42,5 +42,12 @@ class AttributeSubscriber {
                 }
             }
         )
+    }
+}
+
+extension MTRSubscribeParams {
+    static var defaultParams: MTRSubscribeParams {
+        let params = MTRSubscribeParams(minInterval: 0, maxInterval: 3)
+        return params
     }
 }

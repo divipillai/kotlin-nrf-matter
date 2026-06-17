@@ -41,9 +41,36 @@ class LocalMatterCommissioner : MatterCommissioner {
         storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.local.rawValue)
         storage.storeNumber(key: SharedConsts.nodeIdKey, value: deviceId.nsNumber())
         
-        try await request.perform()
+        do {
+            try await request.perform()
+        } catch {
+            let error = error as NSError
+            throw CommissioningException(
+                deviceId: deviceId,
+                stage: Stage.commissioning,
+                errorCode: KotlinInt(int: Int32(error.code)),
+                displayMessage: error.localizedDescription,
+                fabricId: 1
+            )
+            
+        }
         
-        let device = try await LocalMatterClusterDiscovery(nodeId: deviceId.nsNumber()).discoverClusters()
-        return device
+        let descriptorCluster = try LocalMatterClusterDiscovery(nodeId: deviceId.nsNumber())
+        
+        do {
+            let device = try await descriptorCluster.discoverClusters()
+            return device
+        } catch {
+            let error = error as NSError
+            throw CommissioningException(
+                deviceId: deviceId,
+                stage: descriptorCluster.stage,
+                errorCode: KotlinInt(int: Int32(error.code)),
+                displayMessage: error.localizedDescription,
+                fabricId: 1
+            )
+        }
     }
 }
+
+extension CommissioningException: @retroactive Error {}

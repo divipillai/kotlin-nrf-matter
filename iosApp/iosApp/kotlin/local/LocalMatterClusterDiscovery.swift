@@ -15,6 +15,8 @@ import SharedCode
  */
 class LocalMatterClusterDiscovery {
     
+    var stage: Stage = Stage.rootEndpointDiscovery
+    
     private let nodeId: NSNumber
     private let baseDevice: MTRBaseDevice
 
@@ -56,6 +58,8 @@ class LocalMatterClusterDiscovery {
 
         var deviceMatterInfo: [DeviceMatterInfo] = []
         let endpoints = try await mainDescriptor.readEndpoints()
+        
+        self.stage = Stage.appEndpointDiscovery
         for endpoint in endpoints {
             let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: endpoint, queue: DispatchQueue.global())
             guard let descriptor else { continue }

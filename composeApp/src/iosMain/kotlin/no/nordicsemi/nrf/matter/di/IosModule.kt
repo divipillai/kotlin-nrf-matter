@@ -4,7 +4,7 @@ import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.SwiftCodeProvider
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
-import no.nordicsemi.nrf.matter.commission.CommissioningViewModel
+import no.nordicsemi.nrf.matter.commission.CommissioningViewModelIos
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
@@ -93,7 +93,7 @@ val iosModule = module {
     // View models.
     viewModelOf(::HomeViewModel)
 
-    viewModel { CommissioningViewModel(get(), get()) }
+    viewModel { CommissioningViewModelIos(get(), get()) }
 
     viewModel { LoggerViewModel() }
     viewModel { BindingViewModel(get(), get(), get()) }

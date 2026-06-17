@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter.commission
 
-import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.util.Log
@@ -12,26 +11,32 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.home.matter.Matter
 import com.google.android.gms.home.matter.commissioning.CommissioningRequest
+import com.google.android.gms.home.matter.commissioning.CommissioningResult
+import com.google.android.gms.home.matter.commissioning.MatterCommissioningApiException
 import kotlinx.coroutines.channels.consumeEach
-import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
+import kotlinx.coroutines.flow.first
+import no.nordicsemi.nrf.matter.home.CommissioningViewModelAndroid
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.service.AppCommissioningService
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: () -> Unit) {
-    val homeViewModel: HomeViewModelAndroid = koinViewModel()
+actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: (CommissioningException) -> Unit) {
+    val homeViewModel: CommissioningViewModelAndroid = koinViewModel()
 
     val commissionDeviceLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartIntentSenderForResult()
         ) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                homeViewModel.gpsCommissioningDeviceSucceeded(result)
-            } else {
-                onError()
+            try {
+                val commissioningResult = CommissioningResult.fromIntentSenderResult(result.resultCode, result.data)
+                homeViewModel.gpsCommissioningDeviceSucceeded(commissioningResult)
+            } catch (t: Throwable) {
+                onError(t.toCommissioningException(homeViewModel.nextNodeId.value!!))
             }
         }
 
@@ -44,6 +49,7 @@ actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: () -> Unit) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
+        homeViewModel.nextNodeId.first { it != null }!! // Wait until device id is loaded.
         commissionDevice(context, commissionDeviceLauncher)
     }
 }
@@ -69,4 +75,22 @@ private fun commissionDevice(
         .addOnFailureListener { error ->
             Log.e("AAA", error.message.toString())
         }
+}
+
+private fun Throwable.toCommissioningException(deviceId: DeviceId): CommissioningException {
+    return when (this) {
+        is MatterCommissioningApiException -> CommissioningException(
+            deviceId,
+            Stage.COMMISSIONING,
+            this.errorDetails.googleErrorCode,
+            this.message ?: ""
+        )
+        is ApiException -> CommissioningException(
+            deviceId,
+            Stage.COMMISSIONING,
+            this.status.statusCode,
+            this.message ?: ""
+        )
+        else -> CommissioningException.unknown(Stage.COMMISSIONING)
+    }
 }

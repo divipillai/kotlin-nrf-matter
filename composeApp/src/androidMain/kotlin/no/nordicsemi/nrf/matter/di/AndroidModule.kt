@@ -9,7 +9,7 @@ import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.home.HomeViewModelAndroid
+import no.nordicsemi.nrf.matter.home.CommissioningViewModelAndroid
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.model.AndroidDeviceController
 import no.nordicsemi.nrf.matter.model.DeviceController
@@ -89,7 +89,7 @@ val androidModule = module {
 
     // Binding Viewmodel
     viewModelOf(::HomeViewModel)
-    viewModelOf(::HomeViewModelAndroid)
+    viewModelOf(::CommissioningViewModelAndroid)
     viewModelOf(::BindingViewModel)
     viewModel { LoggerViewModel() }
 }

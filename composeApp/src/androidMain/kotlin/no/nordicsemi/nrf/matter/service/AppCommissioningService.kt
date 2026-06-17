@@ -86,7 +86,7 @@ class AppCommissioningService : Service(), CommissioningService.Callback, KoinCo
 
         // Perform commissioning on custom fabric for the sample app.
         serviceScope.launch {
-            val deviceId = devicesRepository.incrementAndReturnLastDeviceId()
+            val deviceId = devicesRepository.getNextDeviceId()
             try {
                 chipClient.awaitEstablishPaseConnection(
                     deviceId,

@@ -8,7 +8,7 @@ import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 
-class CommissioningViewModel(
+class CommissioningViewModelIos(
     private val swiftCodeProvider: SwiftCodeProvider,
     private val devicesRepository: DevicesRepository,
 ) : ViewModel() {

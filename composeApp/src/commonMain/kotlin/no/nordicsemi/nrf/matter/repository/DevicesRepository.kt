@@ -54,6 +54,10 @@ class DevicesRepository(
         return newId.toDeviceId()
     }
 
+    suspend fun getNextDeviceId(): DeviceId {
+        return dataSource.devicesFlow.first().lastDeviceId
+    }
+
     suspend fun addDevice(device: Device) {
         dataSource.update { devices ->
             devices.copy(devicesList = devices.devicesList + device)

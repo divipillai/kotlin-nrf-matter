@@ -8,7 +8,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: () -> Unit) {
-    val commissioningViewModel: CommissioningViewModel = koinViewModel()
+    val commissioningViewModel: CommissioningViewModelIos = koinViewModel()
 
     LaunchedEffect(Unit) {
         try {

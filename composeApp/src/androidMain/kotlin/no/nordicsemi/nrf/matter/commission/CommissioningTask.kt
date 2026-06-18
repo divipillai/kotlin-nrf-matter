@@ -2,7 +2,6 @@ package no.nordicsemi.nrf.matter.commission
 
 import android.content.ComponentName
 import android.content.Context
-import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -19,6 +18,7 @@ import com.google.android.gms.home.matter.commissioning.MatterCommissioningApiEx
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.first
 import no.nordicsemi.nrf.matter.home.CommissioningViewModelAndroid
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.service.AppCommissioningService
@@ -26,7 +26,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: (CommissioningException) -> Unit) {
-    val homeViewModel: CommissioningViewModelAndroid = koinViewModel()
+    val commissioningModelAndroid: CommissioningViewModelAndroid = koinViewModel()
 
     val commissionDeviceLauncher =
         rememberLauncherForActivityResult(
@@ -34,14 +34,15 @@ actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: (Commissionin
         ) { result ->
             try {
                 val commissioningResult = CommissioningResult.fromIntentSenderResult(result.resultCode, result.data)
-                homeViewModel.gpsCommissioningDeviceSucceeded(commissioningResult)
+                commissioningModelAndroid.gpsCommissioningDeviceSucceeded(commissioningResult)
             } catch (t: Throwable) {
-                onError(t.toCommissioningException(homeViewModel.nextNodeId.value!!))
+                NordicLogger.error("Commissioning failed", t)
+                onError(t.toCommissioningException(commissioningModelAndroid.nextNodeId.value!!))
             }
         }
 
     LaunchedEffect(Unit) {
-        homeViewModel.deviceEvent.consumeEach {
+        commissioningModelAndroid.deviceEvent.consumeEach {
             onSuccess(it)
         }
     }
@@ -49,8 +50,8 @@ actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: (Commissionin
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        homeViewModel.nextNodeId.first { it != null }!! // Wait until device id is loaded.
-        commissionDevice(context, commissionDeviceLauncher)
+        val deviceId = commissioningModelAndroid.nextNodeId.first { it != null }!! // Wait until device id is loaded.
+        commissionDevice(context, deviceId, commissionDeviceLauncher, onError)
     }
 }
 
@@ -59,7 +60,9 @@ actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: (Commissionin
  */
 private fun commissionDevice(
     context: Context,
+    deviceId: DeviceId,
     commissionDeviceLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>,
+    onError: (CommissioningException) -> Unit
 ) {
     val commissionDeviceRequest =
         CommissioningRequest.builder()
@@ -73,7 +76,8 @@ private fun commissionDevice(
             commissionDeviceLauncher.launch(IntentSenderRequest.Builder(result).build())
         }
         .addOnFailureListener { error ->
-            Log.e("AAA", error.message.toString())
+            NordicLogger.error("Commissioning failed", error)
+            onError(error.toCommissioningException(deviceId))
         }
 }
 

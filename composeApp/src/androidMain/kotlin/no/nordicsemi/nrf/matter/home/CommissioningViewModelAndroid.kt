@@ -1,18 +1,25 @@
 package no.nordicsemi.nrf.matter.home
 
-import androidx.activity.result.ActivityResult
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import chip.devicecontroller.ChipDeviceControllerException
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
+import no.nordicsemi.nrf.matter.commission.CommissioningException
+import no.nordicsemi.nrf.matter.commission.Stage
+import no.nordicsemi.nrf.matter.commission.toCommissioningException
+import no.nordicsemi.nrf.matter.device.OperationResult
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.toDeviceId
+import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import kotlin.time.Clock
 
 /*
@@ -46,33 +53,38 @@ import kotlin.time.Clock
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class HomeViewModelAndroid(
+class CommissioningViewModelAndroid(
     private val basicInfoProvider: MatterBasicInfoProvider,
     private val clustersHelper: ClustersHelper,
+    private val devicesRepository: DevicesRepository,
 ) : ViewModel() {
-    private var gpsCommissioningResult: CommissioningResult? = null
 
-    val deviceEvent = Channel<Device>()
+    val nextNodeId = MutableStateFlow<DeviceId?>(null)
+    val deviceEvent = Channel<OperationResult<Device>>()
 
-    fun gpsCommissioningDeviceSucceeded(activityResult: ActivityResult) {
-        gpsCommissioningResult =
-            CommissioningResult.fromIntentSenderResult(
-                activityResult.resultCode,
-                activityResult.data
-            )
-        // TODO: Now we need to capture the device name.
-        onCommissionedDeviceNameCaptured("Device-Test")
+    init {
+        viewModelScope.launch {
+            nextNodeId.value = devicesRepository.incrementAndReturnLastDeviceId()
+        }
     }
 
-    fun onCommissionedDeviceNameCaptured(deviceName: String) {
+    fun gpsCommissioningDeviceSucceeded(gpsCommissioningResult: CommissioningResult) {
         viewModelScope.launch {
-            val deviceId = gpsCommissioningResult?.token!!.toDeviceId()
-            val basicInfo = basicInfoProvider.fetchBasicInfo(deviceId)
-
-            val deviceMatterInfoList = clustersHelper.fetchDeviceMatterInfo(deviceId)
-            NordicLogger.debug("device matter info list: $deviceMatterInfoList", tag = "AAA")
-            val deviceType = mutableStateListOf<DeviceType>()
+            val deviceId = gpsCommissioningResult.token?.toDeviceId() ?: run {
+                deviceEvent.send(OperationResult.Error(Exception("Token is missing.")))
+                return@launch
+            }
             try {
+                val basicInfo = catchAndThrow(Stage.READ_BASIC_INFORMATION) {
+                    basicInfoProvider.fetchBasicInfo(deviceId)
+                }
+
+                val deviceMatterInfoList = catchAndThrow(Stage.READ_DESCRIPTOR_CLUSTER) {
+                    clustersHelper.fetchDeviceMatterInfo(deviceId)
+                }
+                NordicLogger.debug("device matter info list: $deviceMatterInfoList", tag = "AAA")
+
+                val deviceType = mutableStateListOf<DeviceType>()
                 deviceMatterInfoList.forEach {
                     // Ignore the first endpoint because this is the root node.
                     if (it.endpoint != 0) {
@@ -90,9 +102,9 @@ class HomeViewModelAndroid(
                         .toEpochMilliseconds(), // Date when the device was commissioned.
                     vendorId = basicInfo.vendorId.toString(),
                     productId = basicInfo.productId.toString(),
-                    deviceType = deviceType.first(), // TODO: Change it to take list of device types.
+                    deviceType = deviceType.firstOrNull() ?: DeviceType.UNKNOWN,
                     deviceId = deviceId,
-                    name = gpsCommissioningResult?.deviceName,
+                    name = gpsCommissioningResult.deviceName,
                     uniqueId = basicInfo.uniqueId.toString(),
                     softwareVersion = basicInfo.softwareVersion,
                     serialNumer = basicInfo.serialNumber,
@@ -100,11 +112,31 @@ class HomeViewModelAndroid(
                     deviceMatterInfo = deviceMatterInfoList,
                 )
 
-                deviceEvent.send(device)
-            } catch (e: Exception) {
-                val msg = "Adding device [${deviceId}] [${deviceName}] to app's repository failed."
-                NordicLogger.error("BBB, onCommissionedDeviceNameCaptured: $msg", e)
+                deviceEvent.send(OperationResult.Success(device))
+            } catch (t: Throwable) {
+                NordicLogger.error("Commissioning failed", t)
+                deviceEvent.send(OperationResult.Error(t.toCommissioningException(deviceId)))
             }
+        }
+    }
+
+    private suspend fun <T> catchAndThrow(stage: Stage, block: suspend () -> T): T {
+        try {
+            return block()
+        } catch (t: ChipDeviceControllerException) {
+            throw CommissioningException(
+                nextNodeId.value,
+                stage,
+                t.errorCode.toInt(),
+                t.message ?: ""
+            )
+        } catch (t: Throwable) {
+            throw CommissioningException(
+                nextNodeId.value,
+                stage,
+                null,
+                t.message ?: ""
+            )
         }
     }
 

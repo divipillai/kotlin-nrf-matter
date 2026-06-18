@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.commission
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import no.nordicsemi.nrf.matter.model.DeviceId
 
 private val SlatePrimary = Color(0xFF556791)
 private val CardLight = Color.White
@@ -51,8 +53,49 @@ private val BorderDark = Color(0xFF334155)
 private val PillBgLight = Color(0xFFF1F5F9)
 private val PillBgDark = Color(0xFF334155)
 
+data class CommissioningException(
+    val deviceId: DeviceId?,
+    val stage: Stage,
+    val errorCode: Int?,
+    val displayMessage: String,
+    val fabricId: Int = 1,
+) : Throwable(displayMessage) {
+
+    val displayFabricId = fabricId.toHexString(ShortHexFormat)
+    val displayDeviceId = deviceId?.longValue?.toHexString(ShortHexFormat) ?: "unknown"
+    val displayErrorCode = errorCode?.toHexString(ShortHexFormat) ?: "unknown"
+
+    companion object {
+
+        private val ShortHexFormat = HexFormat {
+            upperCase = true
+            number {
+                removeLeadingZeros = true
+                prefix = "0x"
+            }
+        }
+
+        fun unknown(stage: Stage) = CommissioningException(
+            deviceId = null,
+            stage = stage,
+            errorCode = null,
+            displayMessage = "Unknown error"
+        )
+    }
+}
+
+enum class Stage {
+    COMMISSIONING,
+    READ_BASIC_INFORMATION,
+    READ_DESCRIPTOR_CLUSTER
+}
+
 @Composable
-fun CommissioningErrorScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
+fun CommissioningErrorScreen(
+    error: CommissioningException,
+    onBack: () -> Unit,
+    navigateToLogs: () -> Unit
+) {
     Box(Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -85,7 +128,7 @@ fun CommissioningErrorScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            DetailsCard(isSystemInDarkTheme())
+            DetailsCard(error, isSystemInDarkTheme())
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -107,7 +150,7 @@ fun CommissioningErrorScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 TroubleshootItem(
-                    text = "Verify that the Fabric ID 0x000001 is correctly configured.",
+                    text = "Verify that the Fabric ID ${error.displayFabricId} is correctly configured.",
                     isDark = isSystemInDarkTheme()
                 )
             }
@@ -162,7 +205,10 @@ fun CommissioningErrorScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
 }
 
 @Composable
-fun DetailsCard(isDark: Boolean) {
+fun DetailsCard(
+    error: CommissioningException,
+    isDark: Boolean
+) {
     Surface(
         color = if (isDark) CardDark else CardLight,
         shape = RoundedCornerShape(20.dp),
@@ -173,19 +219,23 @@ fun DetailsCard(isDark: Boolean) {
             modifier = Modifier.padding(vertical = 20.dp, horizontal = 20.dp)
         ) {
             DetailRow(
-                label = "Error Code",
+                label = "Commissioning id",
                 value = {
                     Surface(
                         color = if (isDark) PillBgDark else PillBgLight,
                         shape = RoundedCornerShape(6.dp)
                     ) {
                         Text(
-                            text = "0x0000001", //TODO
+                            text = error.displayDeviceId,
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
                             color = if (isDark) TextTitleDark else TextTitleLight,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            maxLines = 1,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
+                                iterations = Int.MAX_VALUE,
+                                repeatDelayMillis = 1000
+                            )
                         )
                     }
                 },
@@ -193,24 +243,58 @@ fun DetailsCard(isDark: Boolean) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             DetailRow(
-                label = "Reason",
+                label = "Error Code",
+                value = {
+                    Surface(
+                        color = if (isDark) PillBgDark else PillBgLight,
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Text(
+                            text = error.displayErrorCode,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = if (isDark) TextTitleDark else TextTitleLight,
+                            maxLines = 1,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
+                                iterations = Int.MAX_VALUE,
+                                repeatDelayMillis = 1000
+                            )
+                        )
+                    }
+                },
+                isDark = isDark
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            DetailRow(
+                label = "Stage",
                 value = {
                     Text(
-                        text = "Timeout",
+                        text = error.stage.toString(),
                         fontSize = 14.sp,
-                        color = if (isDark) TextTitleDark else TextTitleLight
+                        color = if (isDark) TextTitleDark else TextTitleLight,
+                        maxLines = 1,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
+                            iterations = Int.MAX_VALUE,
+                            repeatDelayMillis = 1000
+                        )
                     )
                 },
                 isDark = isDark
             )
             Spacer(modifier = Modifier.height(16.dp))
             DetailRow(
-                label = "Protocol",
+                label = "Message",
                 value = {
                     Text(
-                        text = "Matter",
+                        text = error.displayMessage,
                         fontSize = 14.sp,
-                        color = if (isDark) TextTitleDark else TextTitleLight
+                        color = if (isDark) TextTitleDark else TextTitleLight,
+                        maxLines = 1,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
+                            iterations = Int.MAX_VALUE,
+                            repeatDelayMillis = 1000
+                        )
                     )
                 },
                 isDark = isDark

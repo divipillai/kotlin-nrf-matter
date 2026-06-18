@@ -9,7 +9,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 sealed interface CommissioningScreenState {
     data object InProgress : CommissioningScreenState
-    data object Error : CommissioningScreenState
+    data class Error(val error: CommissioningException) : CommissioningScreenState
 }
 
 @Composable
@@ -24,14 +24,14 @@ fun CommissioningScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
         },
         onError = {
             homeViewModel.commissioningFailed(1) //TODO result code
-            state.value = CommissioningScreenState.Error
+            state.value = CommissioningScreenState.Error(it)
         },
     )
 
     NordicLogger.info("State: ${state.value}")
 
-    when (state.value) {
+    when (val state = state.value) {
         CommissioningScreenState.InProgress -> CommissioningInProgressScreen()
-        CommissioningScreenState.Error -> CommissioningErrorScreen(onBack, navigateToLogs)
+        is CommissioningScreenState.Error -> CommissioningErrorScreen(state.error, onBack, navigateToLogs)
     }
 }

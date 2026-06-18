@@ -31,7 +31,7 @@ class LocalMatterCommissioner : MatterCommissioner {
      * After successful commissioning, descriptor clusters for all available endpoint are read and
      * all the meta data is returned.
      */
-    func startIosCommissioning(deviceId: DeviceId) async throws -> Device {
+    func startIosCommissioning(deviceId: DeviceId) async throws -> any OperationResult {
         let homes = [MatterAddDeviceRequest.Home(displayName: "Nordic Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "Nordic Ecosystem", homes: homes)
         
@@ -45,32 +45,29 @@ class LocalMatterCommissioner : MatterCommissioner {
             try await request.perform()
         } catch {
             let error = error as NSError
-            throw CommissioningException(
+            return OperationResultError(t: CommissioningException(
                 deviceId: deviceId,
                 stage: Stage.commissioning,
                 errorCode: KotlinInt(int: Int32(error.code)),
                 displayMessage: error.localizedDescription,
                 fabricId: 1
-            )
-            
+            ))
         }
         
         let descriptorCluster = try LocalMatterClusterDiscovery(nodeId: deviceId.nsNumber())
         
         do {
             let device = try await descriptorCluster.discoverClusters()
-            return device
+            return OperationResultSuccess(data: device)
         } catch {
             let error = error as NSError
-            throw CommissioningException(
+            return OperationResultError(t: CommissioningException(
                 deviceId: deviceId,
                 stage: descriptorCluster.stage,
                 errorCode: KotlinInt(int: Int32(error.code)),
                 displayMessage: error.localizedDescription,
                 fabricId: 1
-            )
+            ))
         }
     }
 }
-
-extension CommissioningException: @retroactive Error {}

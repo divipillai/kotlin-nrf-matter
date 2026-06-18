@@ -29,8 +29,19 @@ enum PairingError: Error {
 @MainActor
 class GoogleHomeCommissioner : @MainActor MatterCommissioner {
 
-    func startIosCommissioning(deviceId: DeviceId) async throws -> Device { // TODO: use deviceId
-        return try await commission()
+    func startIosCommissioning(deviceId: DeviceId) async -> OperationResult {
+        do {
+            return OperationResultSuccess(data: try await commission())
+        } catch {
+            let error = error as NSError
+            return OperationResultError(t: CommissioningException( // TODO: add stages
+                deviceId: deviceId,
+                stage: Stage.commissioning,
+                errorCode: KotlinInt(int: Int32(error.code)),
+                displayMessage: error.localizedDescription,
+                fabricId: 1
+            ))
+        }
     }
     
     func commission() async throws -> Device {

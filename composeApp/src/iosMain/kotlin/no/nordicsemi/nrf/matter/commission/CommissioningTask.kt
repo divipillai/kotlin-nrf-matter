@@ -2,7 +2,7 @@ package no.nordicsemi.nrf.matter.commission
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import no.nordicsemi.nrf.matter.logger.NordicLogger
+import no.nordicsemi.nrf.matter.device.OperationResult
 import no.nordicsemi.nrf.matter.model.Device
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -11,12 +11,11 @@ actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: (Commissionin
     val commissioningViewModel: CommissioningViewModelIos = koinViewModel()
 
     LaunchedEffect(Unit) {
-        try {
-            val device = commissioningViewModel.startIosCommissioning()
-            onSuccess(device)
-        } catch (e: CommissioningException) {
-            NordicLogger.error("Unable to commission device", e)
-            onError(e)
+        when (val result = commissioningViewModel.startIosCommissioning()) {
+            is OperationResult.Success -> onSuccess(result.data)
+            is OperationResult.Error -> (result.t as? CommissioningException)?.let {
+                onError(it)
+            }
         }
     }
 }

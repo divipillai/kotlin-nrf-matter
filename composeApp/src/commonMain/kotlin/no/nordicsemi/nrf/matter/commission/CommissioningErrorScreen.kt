@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.commission
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import no.nordicsemi.nrf.matter.model.DeviceId
 
@@ -59,11 +61,20 @@ data class CommissioningException(
     val displayMessage: String,
     val fabricId: Int = 1,
 ) : Throwable(displayMessage) {
-    val displayFabricId = fabricId.toHexString(HexFormat.UpperCase)
-    val displayDeviceId = deviceId?.longValue?.toHexString(HexFormat.UpperCase) ?: "unknown"
-    val displayErrorCode = errorCode?.toHexString(HexFormat.UpperCase) ?: "unknown"
+
+    val displayFabricId = fabricId.toHexString(ShortHexFormat)
+    val displayDeviceId = deviceId?.longValue?.toHexString(ShortHexFormat) ?: "unknown"
+    val displayErrorCode = errorCode?.toHexString(ShortHexFormat) ?: "unknown"
 
     companion object {
+
+        private val ShortHexFormat = HexFormat {
+            upperCase = true
+            number {
+                removeLeadingZeros = true
+                prefix = "0x"
+            }
+        }
 
         fun unknown(stage: Stage) = CommissioningException(
             deviceId = null,
@@ -221,7 +232,11 @@ fun DetailsCard(
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
                             color = if (isDark) TextTitleDark else TextTitleLight,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            maxLines = 1,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
+                                iterations = Int.MAX_VALUE,
+                                repeatDelayMillis = 1000
+                            )
                         )
                     }
                 },
@@ -241,7 +256,11 @@ fun DetailsCard(
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
                             color = if (isDark) TextTitleDark else TextTitleLight,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            maxLines = 1,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
+                                iterations = Int.MAX_VALUE,
+                                repeatDelayMillis = 1000
+                            )
                         )
                     }
                 },
@@ -254,7 +273,12 @@ fun DetailsCard(
                     Text(
                         text = error.stage.toString(),
                         fontSize = 14.sp,
-                        color = if (isDark) TextTitleDark else TextTitleLight
+                        color = if (isDark) TextTitleDark else TextTitleLight,
+                        maxLines = 1,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
+                            iterations = Int.MAX_VALUE,
+                            repeatDelayMillis = 1000
+                        )
                     )
                 },
                 isDark = isDark
@@ -266,7 +290,12 @@ fun DetailsCard(
                     Text(
                         text = error.displayMessage,
                         fontSize = 14.sp,
-                        color = if (isDark) TextTitleDark else TextTitleLight
+                        color = if (isDark) TextTitleDark else TextTitleLight,
+                        maxLines = 1,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
+                            iterations = Int.MAX_VALUE,
+                            repeatDelayMillis = 1000
+                        )
                     )
                 },
                 isDark = isDark

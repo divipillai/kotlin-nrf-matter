@@ -86,8 +86,8 @@ data class CommissioningException(
 
 enum class Stage {
     COMMISSIONING,
-    ROOT_ENDPOINT_DISCOVERY,
-    APP_ENDPOINT_DISCOVERY
+    READ_BASIC_INFORMATION,
+    READ_DESCRIPTOR_CLUSTER
 }
 
 @Composable

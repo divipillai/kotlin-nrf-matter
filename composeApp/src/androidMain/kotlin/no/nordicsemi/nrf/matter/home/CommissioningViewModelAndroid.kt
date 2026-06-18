@@ -69,9 +69,9 @@ class CommissioningViewModelAndroid(
     fun gpsCommissioningDeviceSucceeded(gpsCommissioningResult: CommissioningResult) {
         viewModelScope.launch {
             val deviceId = gpsCommissioningResult.token!!.toDeviceId()
-            val basicInfo = catchAndThrow { basicInfoProvider.fetchBasicInfo(deviceId) }
+            val basicInfo = catchAndThrow(Stage.READ_BASIC_INFORMATION) { basicInfoProvider.fetchBasicInfo(deviceId) }
 
-            val deviceMatterInfoList = catchAndThrow { clustersHelper.fetchDeviceMatterInfo(deviceId) }
+            val deviceMatterInfoList = catchAndThrow(Stage.READ_DESCRIPTOR_CLUSTER) { clustersHelper.fetchDeviceMatterInfo(deviceId) }
             NordicLogger.debug("device matter info list: $deviceMatterInfoList", tag = "AAA")
 
             val deviceType = mutableStateListOf<DeviceType>()
@@ -106,20 +106,20 @@ class CommissioningViewModelAndroid(
         }
     }
 
-    private suspend fun <T> catchAndThrow(block: suspend () -> T): T {
+    private suspend fun <T> catchAndThrow(stage: Stage, block: suspend () -> T): T {
         try {
             return block()
         } catch (t: ChipDeviceControllerException) {
             throw CommissioningException(
                 nextNodeId.value,
-                Stage.ROOT_ENDPOINT_DISCOVERY,
+                stage,
                 t.errorCode.toInt(),
                 t.message ?: ""
             )
         } catch (t: Throwable) {
             throw CommissioningException(
                 nextNodeId.value,
-                Stage.ROOT_ENDPOINT_DISCOVERY,
+                stage,
                 null,
                 t.message ?: ""
             )

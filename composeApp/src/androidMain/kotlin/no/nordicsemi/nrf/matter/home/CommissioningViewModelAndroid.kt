@@ -12,6 +12,8 @@ import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
 import no.nordicsemi.nrf.matter.commission.CommissioningException
 import no.nordicsemi.nrf.matter.commission.Stage
+import no.nordicsemi.nrf.matter.commission.toCommissioningException
+import no.nordicsemi.nrf.matter.device.OperationResult
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -58,7 +60,7 @@ class CommissioningViewModelAndroid(
 ) : ViewModel() {
 
     val nextNodeId = MutableStateFlow<DeviceId?>(null)
-    val deviceEvent = Channel<Device>()
+    val deviceEvent = Channel<OperationResult<Device>>()
 
     init {
         viewModelScope.launch {
@@ -68,41 +70,53 @@ class CommissioningViewModelAndroid(
 
     fun gpsCommissioningDeviceSucceeded(gpsCommissioningResult: CommissioningResult) {
         viewModelScope.launch {
-            val deviceId = gpsCommissioningResult.token!!.toDeviceId()
-            val basicInfo = catchAndThrow(Stage.READ_BASIC_INFORMATION) { basicInfoProvider.fetchBasicInfo(deviceId) }
+            val deviceId = gpsCommissioningResult.token?.toDeviceId() ?: run {
+                deviceEvent.send(OperationResult.Error(Exception("Token is missing.")))
+                return@launch
+            }
+            try {
+                val basicInfo = catchAndThrow(Stage.READ_BASIC_INFORMATION) {
+                    basicInfoProvider.fetchBasicInfo(deviceId)
+                }
 
-            val deviceMatterInfoList = catchAndThrow(Stage.READ_DESCRIPTOR_CLUSTER) { clustersHelper.fetchDeviceMatterInfo(deviceId) }
-            NordicLogger.debug("device matter info list: $deviceMatterInfoList", tag = "AAA")
+                val deviceMatterInfoList = catchAndThrow(Stage.READ_DESCRIPTOR_CLUSTER) {
+                    clustersHelper.fetchDeviceMatterInfo(deviceId)
+                }
+                NordicLogger.debug("device matter info list: $deviceMatterInfoList", tag = "AAA")
 
-            val deviceType = mutableStateListOf<DeviceType>()
-            deviceMatterInfoList.forEach {
-                // Ignore the first endpoint because this is the root node.
-                if (it.endpoint != 0) {
-                    // Get the device type from the rest of the endpoint.
-                    it.types.forEach { type ->
-                        val type = convertToAppDeviceType(type)
-                        deviceType.add(type)
+                val deviceType = mutableStateListOf<DeviceType>()
+                deviceMatterInfoList.forEach {
+                    // Ignore the first endpoint because this is the root node.
+                    if (it.endpoint != 0) {
+                        // Get the device type from the rest of the endpoint.
+                        it.types.forEach { type ->
+                            val type = convertToAppDeviceType(type)
+                            deviceType.add(type)
+                        }
                     }
                 }
-            }
-            val device = Device(
-                vendorName = basicInfo.vendorName,
-                productName = basicInfo.productName,
-                dateCommissioned = Clock.System.now()
-                    .toEpochMilliseconds(), // Date when the device was commissioned.
-                vendorId = basicInfo.vendorId.toString(),
-                productId = basicInfo.productId.toString(),
-                deviceType = deviceType.firstOrNull() ?: DeviceType.UNKNOWN,
-                deviceId = deviceId,
-                name = gpsCommissioningResult.deviceName,
-                uniqueId = basicInfo.uniqueId.toString(),
-                softwareVersion = basicInfo.softwareVersion,
-                serialNumer = basicInfo.serialNumber,
-                specificationVersion = basicInfo.specificationVersion,
-                deviceMatterInfo = deviceMatterInfoList,
-            )
+                val device = Device(
+                    vendorName = basicInfo.vendorName,
+                    productName = basicInfo.productName,
+                    dateCommissioned = Clock.System.now()
+                        .toEpochMilliseconds(), // Date when the device was commissioned.
+                    vendorId = basicInfo.vendorId.toString(),
+                    productId = basicInfo.productId.toString(),
+                    deviceType = deviceType.firstOrNull() ?: DeviceType.UNKNOWN,
+                    deviceId = deviceId,
+                    name = gpsCommissioningResult.deviceName,
+                    uniqueId = basicInfo.uniqueId.toString(),
+                    softwareVersion = basicInfo.softwareVersion,
+                    serialNumer = basicInfo.serialNumber,
+                    specificationVersion = basicInfo.specificationVersion,
+                    deviceMatterInfo = deviceMatterInfoList,
+                )
 
-            deviceEvent.send(device)
+                deviceEvent.send(OperationResult.Success(device))
+            } catch (t: Throwable) {
+                NordicLogger.error("Commissioning failed", t)
+                deviceEvent.send(OperationResult.Error(t.toCommissioningException(deviceId)))
+            }
         }
     }
 

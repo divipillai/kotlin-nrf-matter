@@ -17,6 +17,7 @@ import com.google.android.gms.home.matter.commissioning.CommissioningResult
 import com.google.android.gms.home.matter.commissioning.MatterCommissioningApiException
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.first
+import no.nordicsemi.nrf.matter.device.OperationResult
 import no.nordicsemi.nrf.matter.home.CommissioningViewModelAndroid
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
@@ -43,7 +44,10 @@ actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: (Commissionin
 
     LaunchedEffect(Unit) {
         commissioningModelAndroid.deviceEvent.consumeEach {
-            onSuccess(it)
+            when (it) {
+                is OperationResult.Error -> onError(it.t.toCommissioningException(commissioningModelAndroid.nextNodeId.value!!))
+                is OperationResult.Success ->  onSuccess(it.data)
+            }
         }
     }
 
@@ -81,8 +85,9 @@ private fun commissionDevice(
         }
 }
 
-private fun Throwable.toCommissioningException(deviceId: DeviceId): CommissioningException {
+fun Throwable.toCommissioningException(deviceId: DeviceId): CommissioningException {
     return when (this) {
+        is CommissioningException -> this
         is MatterCommissioningApiException -> CommissioningException(
             deviceId,
             Stage.COMMISSIONING,

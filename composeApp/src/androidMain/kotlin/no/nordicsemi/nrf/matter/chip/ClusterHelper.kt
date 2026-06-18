@@ -555,7 +555,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                             "Received Brightness report: brightnessPercentage=$percent",
                             tag = "ClustersHelper"
                         )
-                        currentState = currentState.copy(brightnessPercentage = percent)
+                        currentState = currentState.copy(brightness = percent)
                     }
 
                     trySend(currentState)

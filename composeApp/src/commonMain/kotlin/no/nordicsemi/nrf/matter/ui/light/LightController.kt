@@ -7,7 +7,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.device.mapType
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -16,7 +18,7 @@ import no.nordicsemi.nrf.matter.ui.MatterController
 
 data class LightDeviceState(
     val isOn: Boolean = false,
-    val brightnessPercentage: Float = 0.0f
+    val brightness: Float = 0.0f
 )
 
 class LightController(
@@ -24,7 +26,10 @@ class LightController(
     private val commandHandler: LightCommandHandler,
     private val scope: CoroutineScope,
 ) : MatterController {
-    val lightDeviceState = MutableStateFlow<UiState<LightDeviceState>>(UiState.Idle())
+    val lightDeviceState = MutableStateFlow(LightDeviceState())
+
+    val ledState = MutableStateFlow<UiState<Boolean>>(UiState.Idle())
+    val brightnessLevelState = MutableStateFlow<UiState<Float>>(UiState.Idle())
 
     init {
         observeDeviceRealtimeState()
@@ -33,7 +38,10 @@ class LightController(
     private fun observeDeviceRealtimeState() {
         commandHandler.observeLightDeviceState(device.device)
             .onEach { state ->
-                lightDeviceState.value = state
+                (state as? UiState.Success)?.let {
+                    ledState.value = UiState.Success(state.data.isOn)
+                    brightnessLevelState.value = UiState.Success(state.data.brightness)
+                }
             }
             .launchIn(scope)
     }
@@ -47,10 +55,19 @@ class LightController(
                     tag = "LightController"
                 )
             }
+            .onEach {
+                NordicLogger.info("Led state $it")
+                ledState.value = it.mapType { isOn }
+                (it.mapType { isOn } as? UiState.Success)?.data?.let { newState ->
+                    lightDeviceState.update {
+                        it.copy(isOn = newState)
+                    }
+                }
+            }
             .launchIn(scope)
     }
 
-    fun setBrightness(device: Device, brightnessLevel: Int) {
+    fun setBrightness(device: Device, brightnessLevel: Float) {
         commandHandler.handleBrightness(device, brightnessLevel)
             .catch {
                 NordicLogger.error(
@@ -58,6 +75,16 @@ class LightController(
                     it,
                     tag = "LightController"
                 )
+            }
+            .onEach {
+                NordicLogger.info("Brightness state $it")
+                brightnessLevelState.value = it.mapType { brightnessLevel }
+
+                (it.mapType { brightnessLevel } as? UiState.Success)?.data?.let { newState ->
+                    lightDeviceState.update {
+                        it.copy(brightness = newState)
+                    }
+                }
             }
             .launchIn(scope)
     }

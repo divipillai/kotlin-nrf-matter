@@ -47,7 +47,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
-import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
@@ -62,12 +61,11 @@ import kotlin.math.roundToInt
 @Composable
 fun LightItem(
     device: DeviceUiModel,
-    lightDeviceState: UiState<LightDeviceState>,
-    onBrightnessChange: (deviceId: DeviceId, brightnessLevel: Int) -> Unit,
+    lightDeviceState: LightDeviceState,
+    onBrightnessChange: (deviceId: DeviceId, brightnessLevel: Float) -> Unit,
     updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
-    val successData = (lightDeviceState as? UiState.Success)?.data // todo: handle other states
 
     LightItemContainer(
         device = device,
@@ -75,8 +73,8 @@ fun LightItem(
         title = device.device.productName ?: "Light",
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
-        enabled = successData?.isOn ?: false,
-        brightnessLevel = successData?.brightnessPercentage ?: 0.0f,
+        enabled = lightDeviceState.isOn,
+        brightnessLevel = lightDeviceState.brightness,
         updateDeviceState = updateDeviceState,
         onBrightnessChange = onBrightnessChange,
         onDecommission = onDecommission
@@ -92,7 +90,7 @@ internal fun LightItemContainer(
     icon: Painter,
     enabled: Boolean,
     brightnessLevel: Float,
-    onBrightnessChange: (DeviceId, Int) -> Unit,
+    onBrightnessChange: (DeviceId, Float) -> Unit,
     updateDeviceState: (DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
@@ -285,7 +283,7 @@ fun BrightnessControlCard(
     modifier: Modifier = Modifier,
     deviceId: DeviceId,
     brightnessLevel: Float,
-    onBrightnessChange: (DeviceId, Int) -> Unit,
+    onBrightnessChange: (DeviceId, Float) -> Unit,
 ) {
     var brightness by remember { mutableFloatStateOf(brightnessLevel) }
 
@@ -320,7 +318,7 @@ fun BrightnessControlCard(
             value = brightness,
             onValueChange = { brightness = it },
             onValueChangeFinished = {
-                onBrightnessChange(deviceId, brightness.toMatterBrightness())
+                onBrightnessChange(deviceId, brightness)
             },
             valueRange = 0f..1f,
             colors = SliderDefaults.colors(

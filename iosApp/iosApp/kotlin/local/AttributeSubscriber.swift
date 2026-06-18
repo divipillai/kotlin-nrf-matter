@@ -47,7 +47,7 @@ class AttributeSubscriber {
 
 extension MTRSubscribeParams {
     static var defaultParams: MTRSubscribeParams {
-        let params = MTRSubscribeParams(minInterval: 0, maxInterval: 3)
+        let params = MTRSubscribeParams(minInterval: 0, maxInterval: 0)
         return params
     }
 }

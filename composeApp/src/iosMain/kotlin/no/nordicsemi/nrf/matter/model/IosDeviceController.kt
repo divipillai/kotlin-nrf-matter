@@ -131,7 +131,7 @@ class IosDeviceController(
         }
 
         matterLightController.subscribeToLightLevelChanges(deviceId, endpoint) {
-            state = state.copy(brightnessPercentage = it)
+            state = state.copy(brightness = it)
             trySend(state)
         }
 

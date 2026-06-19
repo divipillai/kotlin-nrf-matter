@@ -61,7 +61,7 @@ data class Device(
     val dateCommissioned: Long? = null,
     val vendorId: String? = null,
     val productId: String? = null,
-    val deviceType: DeviceType = DeviceType.UNKNOWN, // TODO: device type is no longer provided by the DeviceDescriptor.
+    val deviceType: DeviceType = DeviceType.UNSUPPORTED, // TODO: device type is no longer provided by the DeviceDescriptor.
     val name: String? = null,
 //    val room: String? = null, todo: Removed since it is deprecated in the Matter API.
     val productName: String? = null,
@@ -75,7 +75,7 @@ data class Device(
 
 @Serializable
 enum class DeviceType {
-    UNKNOWN,
+    UNSUPPORTED,
     LIGHT_ON_OFF,
     DIMMABLE_LIGHT,
     LIGHT_SWITCH,
@@ -88,7 +88,7 @@ enum class DeviceType {
 
     override fun toString(): String {
         return when (this) {
-            UNKNOWN -> "Unknown"
+            UNSUPPORTED -> "Not Supported"
             LIGHT_ON_OFF -> "Light On/Off"
             DIMMABLE_LIGHT -> "Dimmable Light"
             LIGHT_SWITCH -> "Light Switch"

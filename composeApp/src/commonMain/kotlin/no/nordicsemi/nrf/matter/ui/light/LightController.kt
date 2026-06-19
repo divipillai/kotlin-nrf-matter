@@ -111,6 +111,7 @@ class LightController(
             .launchIn(scope)
     }
 
+    // A dk can go to a strange state when there are too many requests at once.
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun <T> Flow<UiState<T>>.delaySuccess(): Flow<UiState<T>> {
         return flatMapConcat { state ->

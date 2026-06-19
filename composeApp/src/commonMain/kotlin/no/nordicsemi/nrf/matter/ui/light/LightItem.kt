@@ -47,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
+import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
@@ -62,6 +63,8 @@ import kotlin.math.roundToInt
 fun LightItem(
     device: DeviceUiModel,
     lightDeviceState: LightDeviceState,
+    changeLightOperationState: UiState<Boolean>,
+    changeBrightnessOperationState: UiState<Float>,
     onBrightnessChange: (deviceId: DeviceId, brightnessLevel: Float) -> Unit,
     updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
@@ -73,11 +76,13 @@ fun LightItem(
         title = device.device.productName ?: "Light",
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
-        enabled = lightDeviceState.isOn,
+        isLightOn = lightDeviceState.isOn,
         brightnessLevel = lightDeviceState.brightness,
         updateDeviceState = updateDeviceState,
         onBrightnessChange = onBrightnessChange,
-        onDecommission = onDecommission
+        onDecommission = onDecommission,
+        changeLightOperationState = changeLightOperationState,
+        changeBrightnessOperationState = changeBrightnessOperationState,
     )
 }
 
@@ -88,8 +93,10 @@ internal fun LightItemContainer(
     title: String,
     subtitle: String,
     icon: Painter,
-    enabled: Boolean,
+    isLightOn: Boolean,
     brightnessLevel: Float,
+    changeLightOperationState: UiState<Boolean>,
+    changeBrightnessOperationState: UiState<Float>,
     onBrightnessChange: (DeviceId, Float) -> Unit,
     updateDeviceState: (DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
@@ -99,7 +106,7 @@ internal fun LightItemContainer(
 
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
-        border = if (enabled) BorderStroke(
+        border = if (isLightOn) BorderStroke(
             width = 1.dp,
             color = MaterialTheme.colorScheme.primary.copy(0.3f)
         ) else CardDefaults.outlinedCardBorder(),
@@ -119,7 +126,7 @@ internal fun LightItemContainer(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val boxColor = if (enabled)
+            val boxColor = if (isLightOn)
                 NordicSun
             else MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f)
             Box(
@@ -134,7 +141,7 @@ internal fun LightItemContainer(
                 Icon(
                     icon,
                     contentDescription = null,
-                    tint = if (enabled)
+                    tint = if (isLightOn)
                         MaterialTheme.colorScheme.primary else
                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     modifier = Modifier.size(28.dp)
@@ -168,10 +175,11 @@ internal fun LightItemContainer(
 
             }
             Switch(
-                checked = enabled,
+                checked = isLightOn,
                 onCheckedChange = {
                     updateDeviceState(deviceId, it)
-                }
+                },
+                enabled = changeLightOperationState !is UiState.Loading
             )
         }
         AnimatedVisibility(isExpanded) {
@@ -183,6 +191,7 @@ internal fun LightItemContainer(
                     deviceId = deviceId,
                     brightnessLevel = brightnessLevel,
                     modifier = Modifier.padding(16.dp),
+                    changeBrightnessOperationState = changeBrightnessOperationState,
                     onBrightnessChange = { deviceId, brightnessLevel ->
                         onBrightnessChange(deviceId, brightnessLevel)
                     }
@@ -283,6 +292,7 @@ fun BrightnessControlCard(
     modifier: Modifier = Modifier,
     deviceId: DeviceId,
     brightnessLevel: Float,
+    changeBrightnessOperationState: UiState<Float>,
     onBrightnessChange: (DeviceId, Float) -> Unit,
 ) {
     var brightness by remember { mutableFloatStateOf(brightnessLevel) }
@@ -333,7 +343,8 @@ fun BrightnessControlCard(
                     modifier = Modifier.size(20.dp)
                 )
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = changeBrightnessOperationState !is UiState.Loading,
         )
 
         Row(
@@ -366,10 +377,12 @@ private fun LightItemContainerPreview() {
         title = "Light",
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
-        enabled = true,
+        isLightOn = true,
         brightnessLevel = 60f,
         onBrightnessChange = { _, _ -> },
         updateDeviceState = { _, _ -> },
-        {},
+        changeLightOperationState = UiState.Loading(),
+        changeBrightnessOperationState = UiState.Loading(),
+        onDecommission = {  },
     )
 }

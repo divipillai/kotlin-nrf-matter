@@ -50,7 +50,7 @@ class ManufacturerSpecCommandHandler(
 
     fun subscribeToButtonChanges(device: Device): Flow<UiState<Boolean>> {
         val endpoint = resolveEndpoint(device, MANUFACTURER_SPECIFIC_CLUSTER_ID)
-        return deviceController.subscribeToButtonChanges(device.deviceId, endpoint).withUiState()
+        return deviceController.observeButtonChanges(device.deviceId, endpoint).withUiState()
     }
 
     fun generateRandomNumber(device: Device): Flow<UiState<Int>> {

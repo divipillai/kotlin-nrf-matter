@@ -38,9 +38,22 @@ class LightController(
     private fun observeDeviceRealtimeState() {
         commandHandler.observeLightDeviceState(device.device)
             .onEach { state ->
+                NordicLogger.info("New light device state: $state")
                 (state as? UiState.Success)?.let {
-                    ledState.value = UiState.Success(state.data.isOn)
-                    brightnessLevelState.value = UiState.Success(state.data.brightness)
+                    lightDeviceState.update {
+                        it.copy(isOn = state.data)
+                    }
+                }
+            }
+            .launchIn(scope)
+
+        commandHandler.observeBrightnessState(device.device)
+            .onEach { state ->
+                NordicLogger.info("New brightness state: $state")
+                (state as? UiState.Success)?.let {
+                    lightDeviceState.update {
+                        it.copy(brightness = state.data)
+                    }
                 }
             }
             .launchIn(scope)
@@ -94,6 +107,8 @@ class LightController(
         LightItem(
             device = device,
             lightDeviceState = lightDeviceState.collectAsStateWithLifecycle().value,
+            changeLightOperationState = ledState.collectAsStateWithLifecycle().value,
+            changeBrightnessOperationState = brightnessLevelState.collectAsStateWithLifecycle().value,
             onBrightnessChange = { _, brightnessLevel ->
                 setBrightness(device.device, brightnessLevel)
             },

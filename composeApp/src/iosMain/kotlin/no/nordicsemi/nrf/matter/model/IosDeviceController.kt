@@ -91,7 +91,7 @@ class IosDeviceController(
         matterBinder.bind(sourceNodeId, sourceEndpoint, targetNodeId, targetEndpoint, clusterId)
     }
 
-    override fun subscribeToButtonChanges(
+    override fun observeButtonChanges(
         deviceId: DeviceId,
         endpoint: Int
     ): Flow<Boolean> = callbackFlow {
@@ -122,17 +122,22 @@ class IosDeviceController(
     override fun observeLightDeviceState(
         deviceId: DeviceId,
         endpoint: Int
-    ): Flow<LightDeviceState> = callbackFlow {
-        var state = LightDeviceState()
-
+    ): Flow<Boolean> = callbackFlow {
         matterLightController.subscribeToLedChanges(deviceId, endpoint) {
-            state = state.copy(isOn = it)
-            trySend(state)
+            trySend(it)
         }
 
+        awaitClose {
+
+        }
+    }
+
+    override fun observeBrightnessState(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Flow<Float> = callbackFlow {
         matterLightController.subscribeToLightLevelChanges(deviceId, endpoint) {
-            state = state.copy(brightness = it)
-            trySend(state)
+            trySend(it)
         }
 
         awaitClose {

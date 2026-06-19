@@ -48,14 +48,19 @@ class LightCommandHandler(
             endpoint = endpoint,
         )
     }
-
-    /**
-     * Observes the real-time state of the light device, including its On/Off status and brightness level.
-     */
+    
     fun observeLightDeviceState(
         device: Device
-    ): Flow<UiState<LightDeviceState>> =
+    ): Flow<UiState<Boolean>> =
         deviceController.observeLightDeviceState(
+            deviceId = device.deviceId,
+            endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
+        ).withUiState()
+
+    fun observeBrightnessState(
+        device: Device
+    ): Flow<UiState<Float>> =
+        deviceController.observeBrightnessState(
             deviceId = device.deviceId,
             endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
         ).withUiState()

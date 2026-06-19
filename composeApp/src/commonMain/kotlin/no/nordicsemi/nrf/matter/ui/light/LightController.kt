@@ -3,8 +3,14 @@ package no.nordicsemi.nrf.matter.ui.light
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -15,6 +21,7 @@ import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.ui.MatterController
+import kotlin.time.Duration.Companion.milliseconds
 
 data class LightDeviceState(
     val isOn: Boolean = false,
@@ -61,6 +68,7 @@ class LightController(
 
     fun setLet(device: Device, isOn: Boolean) {
         commandHandler.handleLed(device, isOn)
+            .delaySuccess()
             .catch {
                 NordicLogger.error(
                     "Failed to send Brightness level adjustment",
@@ -82,6 +90,7 @@ class LightController(
 
     fun setBrightness(device: Device, brightnessLevel: Float) {
         commandHandler.handleBrightness(device, brightnessLevel)
+            .delaySuccess()
             .catch {
                 NordicLogger.error(
                     "Failed to send Brightness level adjustment",
@@ -100,6 +109,19 @@ class LightController(
                 }
             }
             .launchIn(scope)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun <T> Flow<UiState<T>>.delaySuccess(): Flow<UiState<T>> {
+        return flatMapConcat { state ->
+            when (state) {
+                is UiState.Success -> flow {
+                    delay(300.milliseconds)
+                    emit(state)
+                }
+                else -> flowOf(state)
+            }
+        }
     }
 
     @Composable

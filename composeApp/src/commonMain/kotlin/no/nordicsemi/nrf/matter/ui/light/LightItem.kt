@@ -63,8 +63,7 @@ import kotlin.math.roundToInt
 fun LightItem(
     device: DeviceUiModel,
     lightDeviceState: LightDeviceState,
-    changeLightOperationState: UiState<Boolean>,
-    changeBrightnessOperationState: UiState<Float>,
+    isEnabled: Boolean,
     onBrightnessChange: (deviceId: DeviceId, brightnessLevel: Float) -> Unit,
     updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
@@ -79,10 +78,9 @@ fun LightItem(
         isLightOn = lightDeviceState.isOn,
         brightnessLevel = lightDeviceState.brightness,
         updateDeviceState = updateDeviceState,
+        isEnabled = isEnabled,
         onBrightnessChange = onBrightnessChange,
         onDecommission = onDecommission,
-        changeLightOperationState = changeLightOperationState,
-        changeBrightnessOperationState = changeBrightnessOperationState,
     )
 }
 
@@ -95,8 +93,7 @@ internal fun LightItemContainer(
     icon: Painter,
     isLightOn: Boolean,
     brightnessLevel: Float,
-    changeLightOperationState: UiState<Boolean>,
-    changeBrightnessOperationState: UiState<Float>,
+    isEnabled: Boolean,
     onBrightnessChange: (DeviceId, Float) -> Unit,
     updateDeviceState: (DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
@@ -179,7 +176,7 @@ internal fun LightItemContainer(
                 onCheckedChange = {
                     updateDeviceState(deviceId, it)
                 },
-                enabled = changeLightOperationState !is UiState.Loading
+                enabled = isEnabled
             )
         }
         AnimatedVisibility(isExpanded) {
@@ -191,7 +188,7 @@ internal fun LightItemContainer(
                     deviceId = deviceId,
                     brightnessLevel = brightnessLevel,
                     modifier = Modifier.padding(16.dp),
-                    changeBrightnessOperationState = changeBrightnessOperationState,
+                    isEnabled = isEnabled,
                     onBrightnessChange = { deviceId, brightnessLevel ->
                         onBrightnessChange(deviceId, brightnessLevel)
                     }
@@ -292,7 +289,7 @@ fun BrightnessControlCard(
     modifier: Modifier = Modifier,
     deviceId: DeviceId,
     brightnessLevel: Float,
-    changeBrightnessOperationState: UiState<Float>,
+    isEnabled: Boolean,
     onBrightnessChange: (DeviceId, Float) -> Unit,
 ) {
     var brightness by remember { mutableFloatStateOf(brightnessLevel) }
@@ -344,7 +341,7 @@ fun BrightnessControlCard(
                 )
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = changeBrightnessOperationState !is UiState.Loading,
+            enabled = isEnabled,
         )
 
         Row(
@@ -381,8 +378,7 @@ private fun LightItemContainerPreview() {
         brightnessLevel = 60f,
         onBrightnessChange = { _, _ -> },
         updateDeviceState = { _, _ -> },
-        changeLightOperationState = UiState.Loading(),
-        changeBrightnessOperationState = UiState.Loading(),
+        isEnabled = true,
         onDecommission = {  },
     )
 }

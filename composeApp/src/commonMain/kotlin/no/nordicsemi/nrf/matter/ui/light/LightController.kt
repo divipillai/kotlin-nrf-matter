@@ -126,11 +126,14 @@ class LightController(
 
     @Composable
     override fun Item(onDecommission: (DeviceId) -> Unit) {
+        val ledRequestState = ledState.collectAsStateWithLifecycle().value
+        val brightnessRequestState = brightnessLevelState.collectAsStateWithLifecycle().value
+        val isEnabled = ledRequestState !is UiState.Loading && brightnessRequestState !is UiState.Loading
+
         LightItem(
             device = device,
             lightDeviceState = lightDeviceState.collectAsStateWithLifecycle().value,
-            changeLightOperationState = ledState.collectAsStateWithLifecycle().value,
-            changeBrightnessOperationState = brightnessLevelState.collectAsStateWithLifecycle().value,
+            isEnabled = isEnabled,
             onBrightnessChange = { _, brightnessLevel ->
                 setBrightness(device.device, brightnessLevel)
             },

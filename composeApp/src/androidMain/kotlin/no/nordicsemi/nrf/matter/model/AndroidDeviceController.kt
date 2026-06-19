@@ -103,7 +103,7 @@ class AndroidDeviceController(
 
     }
 
-    override fun subscribeToButtonChanges(
+    override fun observeButtonChanges(
         deviceId: DeviceId,
         endpoint: Int
     ): Flow<Boolean> {
@@ -137,8 +137,18 @@ class AndroidDeviceController(
     override fun observeLightDeviceState(
         deviceId: DeviceId,
         endpoint: Int
-    ): Flow<LightDeviceState> {
+    ): Flow<Boolean> {
         return clustersHelper.observeLightState(
+            deviceId = deviceId,
+            endpoint = endpoint
+        )
+    }
+
+    override fun observeBrightnessState(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Flow<Float> {
+        return clustersHelper.observeBrightnessState(
             deviceId = deviceId,
             endpoint = endpoint
         )

@@ -503,16 +503,8 @@ class ClustersHelper(private val chipClient: ChipClient) {
         return ChipClusters.LevelControlCluster(devicePtr, endpoint)
     }
 
-    /**
-     * Observes the On/Off state and brightness level of a light device by subscribing to the
-     * respective attributes in the On/Off and Level Control clusters. Emits a LightDeviceState
-     * object whenever a change is reported by the Nordic DK. The subscription is set up to
-     * report changes instantly (minIntervalS = 0) with a heartbeat check every 10 seconds
-     * (maxIntervalS = 10) and a network timeout of 10 seconds for establishing the session.
-     */
-    fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<LightDeviceState> =
+    fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<Boolean> =
         callbackFlow {
-            var currentState = LightDeviceState()
 
             val reportCallback = object : ReportCallback {
 
@@ -536,29 +528,13 @@ class ClustersHelper(private val chipClient: ChipClient) {
                     val onOffAttr = onOffCluster?.getAttributeState(0)
                     val isOn = onOffAttr?.value as? Boolean
 
-                    // Brightness Level (Cluster 8, Attribute 0)
-                    val levelCluster = endpointState.getClusterState(8)
-                    val levelAttr = levelCluster?.getAttributeState(0)
-                    val rawValue = levelAttr?.value as? Number
-
                     if (isOn != null) {
-                        currentState = currentState.copy(isOn = isOn)
                         NordicLogger.info(
                             "Received On/Off report: isLedOn=$isOn",
                             tag = "ClustersHelper"
                         )
+                        trySend(isOn)
                     }
-                    if (rawValue != null) {
-                        val rawLevel = rawValue.toLong()
-                        val percent = ((rawLevel.toFloat() - 1f) / 253f).coerceIn(0f, 1f)
-                        NordicLogger.info(
-                            "Received Brightness report: brightnessPercentage=$percent",
-                            tag = "ClustersHelper"
-                        )
-                        currentState = currentState.copy(brightnessPercentage = percent)
-                    }
-
-                    trySend(currentState)
                 }
             }
 
@@ -566,6 +542,69 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 val devicePtr = chipClient.getConnectedDevicePointer(deviceId.longValue)
                 val attributePaths = listOf(
                     ChipAttributePath.newInstance(endpoint, 6, 0), // OnOff
+                )
+
+                chipClient.subscribeAttribute(
+                    reportCallback = reportCallback,
+                    devicePtr = devicePtr,
+                    attributePaths = attributePaths,
+                    minIntervalS = 0,    // Report changes instantly
+                    maxIntervalS = 10,   // Heartbeat check every 10 seconds
+                    timeoutMs = 10000    // 10 second network timeout for establishing the session
+                )
+            } catch (e: Exception) {
+                NordicLogger.error(
+                    "Failed to setup wrapper subscription", e,
+                    tag = "ClustersHelper"
+                )
+
+                close(e)
+            }
+
+            awaitClose {
+                // Handle stream cleanup
+            }
+        }
+
+    fun observeBrightnessState(deviceId: DeviceId, endpoint: Int): Flow<Float> =
+        callbackFlow {
+            val reportCallback = object : ReportCallback {
+
+                override fun onError(
+                    attributePath: ChipAttributePath?,
+                    eventPath: ChipEventPath?,
+                    e: java.lang.Exception
+                ) {
+                    NordicLogger.error(
+                        "Error receiving report from DK for path: $attributePath",
+                        e,
+                        tag = "ClustersHelper"
+                    )
+                }
+
+                override fun onReport(nodeState: NodeState) {
+                    val endpointState = nodeState.getEndpointState(endpoint) ?: return
+
+                    // Brightness Level (Cluster 8, Attribute 0)
+                    val levelCluster = endpointState.getClusterState(8)
+                    val levelAttr = levelCluster?.getAttributeState(0)
+                    val rawValue = levelAttr?.value as? Number
+
+                    if (rawValue != null) {
+                        val rawLevel = rawValue.toLong()
+                        val percent = ((rawLevel.toFloat() - 1f) / 253f).coerceIn(0f, 1f)
+                        NordicLogger.info(
+                            "Received Brightness report: brightnessPercentage=$percent",
+                            tag = "ClustersHelper"
+                        )
+                        trySend(percent)
+                    }
+                }
+            }
+
+            try {
+                val devicePtr = chipClient.getConnectedDevicePointer(deviceId.longValue)
+                val attributePaths = listOf(
                     ChipAttributePath.newInstance(endpoint, 8, 0)  // CurrentLevel
                 )
 

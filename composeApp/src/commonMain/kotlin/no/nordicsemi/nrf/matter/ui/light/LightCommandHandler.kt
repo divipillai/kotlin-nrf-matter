@@ -37,33 +37,32 @@ class LightCommandHandler(
      */
     fun handleBrightness(
         device: Device,
-        brightnessLevel: Int
+        brightnessLevel: Float
     ) = withUiState {
         val deviceId = device.deviceId
         val endpoint = resolveEndpoint(device, clusterId = LEVEL_CONTROL_CLUSTER_ID)
 
         deviceController.setBrightnessLevel(
             deviceId = deviceId,
-            brightnessLevel = brightnessLevel,
+            brightnessLevel = (1 + (brightnessLevel * 253)).roundToInt(),
             endpoint = endpoint,
         )
     }
-
-    /**
-     * Observes the real-time state of the light device, including its On/Off status and brightness level.
-     */
+    
     fun observeLightDeviceState(
         device: Device
-    ): Flow<UiState<LightDeviceState>> =
+    ): Flow<UiState<Boolean>> =
         deviceController.observeLightDeviceState(
             deviceId = device.deviceId,
             endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
         ).withUiState()
 
-}
+    fun observeBrightnessState(
+        device: Device
+    ): Flow<UiState<Float>> =
+        deviceController.observeBrightnessState(
+            deviceId = device.deviceId,
+            endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
+        ).withUiState()
 
-
-fun Float.toMatterBrightness(): Int {
-    // Maps 0.0f..1.0f directly to 1..254
-    return (1 + (this * 253)).roundToInt()
 }

@@ -65,7 +65,7 @@ interface DeviceController {
         clusterId: Long,
     )
 
-    fun subscribeToButtonChanges(
+    fun observeButtonChanges(
         deviceId: DeviceId,
         endpoint: Int,
     ): Flow<Boolean>
@@ -78,11 +78,15 @@ interface DeviceController {
         endpoint: Int,
     )
 
-    // Observe the real-time state of the light device, including its On/Off status and brightness level.
     fun observeLightDeviceState(
         deviceId: DeviceId,
         endpoint: Int,
-    ): Flow<LightDeviceState>
+    ): Flow<Boolean>
+
+    fun observeBrightnessState(
+        deviceId: DeviceId,
+        endpoint: Int,
+    ): Flow<Float>
 
     // Observe the real-time state of the door lock device, including its locked/unlocked status.
     fun observeLockDeviceState(

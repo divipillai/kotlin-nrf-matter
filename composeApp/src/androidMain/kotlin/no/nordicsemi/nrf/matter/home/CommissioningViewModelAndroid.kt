@@ -102,7 +102,7 @@ class CommissioningViewModelAndroid(
                         .toEpochMilliseconds(), // Date when the device was commissioned.
                     vendorId = basicInfo.vendorId.toString(),
                     productId = basicInfo.productId.toString(),
-                    deviceType = deviceType.firstOrNull() ?: DeviceType.UNKNOWN,
+                    deviceType = deviceType.firstOrNull() ?: DeviceType.UNSUPPORTED,
                     deviceId = deviceId,
                     name = gpsCommissioningResult.deviceName,
                     uniqueId = basicInfo.uniqueId.toString(),
@@ -153,7 +153,7 @@ class CommissioningViewModelAndroid(
             10L -> DeviceType.DOOR_LOCK // 0x000A door lock // todo need to review the hex value
 //            11L ->   Door Lock Controller // (0x000B)
             0xFFF10001 -> DeviceType.MANUFACTURER_SPECIFIC_DEVICE
-            else -> DeviceType.UNKNOWN
+            else -> DeviceType.UNSUPPORTED
         }
     }
 }

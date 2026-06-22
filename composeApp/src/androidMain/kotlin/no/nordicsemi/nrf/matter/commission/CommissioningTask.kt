@@ -26,7 +26,10 @@ import no.nordicsemi.nrf.matter.service.AppCommissioningService
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: (CommissioningException) -> Unit) {
+actual fun CommissioningTask(
+    onSuccess: (Device) -> Unit,
+    onError: (CommissioningException) -> Unit
+) {
     val commissioningModelAndroid: CommissioningViewModelAndroid = koinViewModel()
 
     val commissionDeviceLauncher =
@@ -34,7 +37,8 @@ actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: (Commissionin
             contract = ActivityResultContracts.StartIntentSenderForResult()
         ) { result ->
             try {
-                val commissioningResult = CommissioningResult.fromIntentSenderResult(result.resultCode, result.data)
+                val commissioningResult =
+                    CommissioningResult.fromIntentSenderResult(result.resultCode, result.data)
                 commissioningModelAndroid.gpsCommissioningDeviceSucceeded(commissioningResult)
             } catch (t: Throwable) {
                 NordicLogger.error("Commissioning failed", t)
@@ -45,8 +49,13 @@ actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: (Commissionin
     LaunchedEffect(Unit) {
         commissioningModelAndroid.deviceEvent.consumeEach {
             when (it) {
-                is OperationResult.Error -> onError(it.t.toCommissioningException(commissioningModelAndroid.nextNodeId.value!!))
-                is OperationResult.Success ->  onSuccess(it.data)
+                is OperationResult.Error -> onError(
+                    it.t.toCommissioningException(
+                        commissioningModelAndroid.nextNodeId.value!!
+                    )
+                )
+
+                is OperationResult.Success -> onSuccess(it.data)
             }
         }
     }
@@ -54,7 +63,8 @@ actual fun CommissioningTask(onSuccess: (Device) -> Unit, onError: (Commissionin
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        val deviceId = commissioningModelAndroid.nextNodeId.first { it != null }!! // Wait until device id is loaded.
+        val deviceId =
+            commissioningModelAndroid.nextNodeId.first { it != null }!! // Wait until device id is loaded.
         commissionDevice(context, deviceId, commissionDeviceLauncher, onError)
     }
 }
@@ -94,12 +104,14 @@ fun Throwable.toCommissioningException(deviceId: DeviceId): CommissioningExcepti
             this.errorDetails.googleErrorCode,
             this.message ?: ""
         )
+
         is ApiException -> CommissioningException(
             deviceId,
             Stage.COMMISSIONING,
             this.status.statusCode,
             this.message ?: ""
         )
+
         else -> CommissioningException.unknown(Stage.COMMISSIONING)
     }
 }

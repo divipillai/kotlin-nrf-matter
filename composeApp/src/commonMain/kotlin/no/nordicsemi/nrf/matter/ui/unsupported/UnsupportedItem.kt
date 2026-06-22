@@ -129,6 +129,7 @@ internal fun UnsupportedItem(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(

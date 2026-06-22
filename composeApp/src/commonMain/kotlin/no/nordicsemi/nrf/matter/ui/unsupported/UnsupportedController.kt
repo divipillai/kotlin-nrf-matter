@@ -44,8 +44,8 @@ class UnsupportedController(
     override fun Item(onDecommission: (DeviceId) -> Unit) {
         UnsupportedItem(
             device = device,
-            title = "Light Switch",
-            subtitle = "Bind the switch with other devices",
+            title = device.device.productName ?: "Unsupported device",
+            subtitle = "Device not supported in this version of the app.",
             onDecommission = onDecommission,
         )
     }

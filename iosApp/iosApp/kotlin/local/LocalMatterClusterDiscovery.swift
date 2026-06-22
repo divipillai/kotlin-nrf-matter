@@ -119,7 +119,7 @@ class LocalMatterClusterDiscovery {
         case 260: return .lightSwitch
         case 257: return .lightOnOff
         case 0xFFF10001: return .manufacturerSpecificDevice
-        default: return .unknown
+        default: return .unsupported
         }
     }
 

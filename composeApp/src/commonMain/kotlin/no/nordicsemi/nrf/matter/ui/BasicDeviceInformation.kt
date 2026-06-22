@@ -33,20 +33,21 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 @Composable
 internal fun BasicInformationBottomSheet(
     device: DeviceUiModel,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ) {
-        BasicDeviceInformation(device = device)
+        BasicDeviceInformation(device = device, onDismiss = onDismiss)
     }
 }
 
 @Composable
 internal fun BasicDeviceInformation(
     modifier: Modifier = Modifier,
-    device: DeviceUiModel
+    device: DeviceUiModel,
+    onDismiss: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -163,11 +164,11 @@ internal fun BasicDeviceInformation(
             }
         }
         Button(
-            onClick = {},
+            onClick = onDismiss,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Placeholder for others")
+            Text("Close")
         }
     }
 

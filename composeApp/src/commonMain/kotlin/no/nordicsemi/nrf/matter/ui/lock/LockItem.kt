@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,8 +25,10 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -59,29 +62,15 @@ internal fun LockItem(
     onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
-    val lockSuccessData = (lockState as? UiState.Success)?.data ?: LockDeviceState()
     LockItemContainer(
         deviceUiModel = device,
         title = "Front Door",
         subtitle = "Smart Lock",
-        lockDeviceState = lockSuccessData,
+        lockState = lockState,
         onLockUnlockDoor = onLockUnlockDoor,
         onDecommission = onDecommission
     )
 
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun LockItemPreview() {
-    NordicTheme {
-        LockItem(
-            device = TestDeviceLockDoor,
-            lockState = UiState.Success(LockDeviceState(isLocked = true)),
-            onLockUnlockDoor = { _, _ -> },
-            onDecommission = { },
-        )
-    }
 }
 
 @Composable
@@ -89,11 +78,18 @@ fun LockItemContainer(
     deviceUiModel: DeviceUiModel,
     title: String,
     subtitle: String,
-    lockDeviceState: LockDeviceState,
+    lockState: UiState<LockDeviceState>,
     onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
-    val isLocked = lockDeviceState.isLocked
+    var isLocked by remember { mutableStateOf(false) }
+
+    LaunchedEffect(lockState) {
+        (lockState as? UiState.Success)?.let {
+            isLocked = it.data == LockDeviceState.LOCKED
+        }
+    }
+
     val icon = if (isLocked)
         painterResource(Res.drawable.door_lock)
     else painterResource(Res.drawable.door_lock_open_right)
@@ -164,22 +160,34 @@ fun LockItemContainer(
 
             }
 
-            Surface(
-                color = Color.LightGray.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable {
-                        onLockUnlockDoor(deviceUiModel.device.deviceId, !isLocked)
-                    }
+            Box(
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = if (isLocked) "Locked" else "Unlocked",
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFE11D48)
+                Surface(
+                    color = Color.LightGray.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            onLockUnlockDoor(deviceUiModel.device.deviceId, !isLocked)
+                        }.alpha(
+                            if (lockState is UiState.Success) 1f else 0f
+                        )
+                ) {
+                    Text(
+                        text = if (isLocked) "Locked" else "Unlocked",
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFE11D48)
+                    )
+                }
+
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .alpha(if (lockState is UiState.Success) 0f else 1f)
                 )
             }
         }
@@ -253,13 +261,26 @@ fun LockItemContainer(
 
 @Preview(showBackground = true)
 @Composable
-private fun LockItemContainerPreview() {
-    LockItemContainer(
-        deviceUiModel = TestDeviceLockDoor,
-        title = "Front Door",
-        subtitle = "Smart Lock",
-        lockDeviceState = LockDeviceState(isLocked = true),
-        { _, _ -> },
-        { },
-    )
+private fun LockItemPreview() {
+    NordicTheme {
+        LockItem(
+            device = TestDeviceLockDoor,
+            lockState = UiState.Success(LockDeviceState.LOCKED),
+            onLockUnlockDoor = { _, _ -> },
+            onDecommission = { },
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LockItemLoadingPreview() {
+    NordicTheme {
+        LockItem(
+            device = TestDeviceLockDoor,
+            lockState = UiState.Loading(),
+            onLockUnlockDoor = { _, _ -> },
+            onDecommission = { },
+        )
+    }
 }

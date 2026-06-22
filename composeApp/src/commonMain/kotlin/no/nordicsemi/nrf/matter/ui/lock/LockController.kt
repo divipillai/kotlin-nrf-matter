@@ -4,19 +4,32 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.ui.MatterController
+import kotlin.time.Duration.Companion.milliseconds
 
-data class LockDeviceState(
-    val isLocked: Boolean = false
-)
+enum class LockDeviceState(val value: Int) {
+    NOT_FULLY_LOCKED(0),
+    LOCKED(1),
+    UNLOCKED(2);
+
+    companion object {
+        fun create(value: Int): LockDeviceState {
+            return LockDeviceState.entries.first { it.value == value }
+        }
+    }
+}
 
 class LockController(
     private val device: DeviceUiModel,
@@ -24,7 +37,22 @@ class LockController(
     private val scope: CoroutineScope,
 ) : MatterController {
 
-    val lockState = MutableStateFlow<UiState<LockDeviceState>>(UiState.Idle())
+    val lockState = MutableStateFlow(LockDeviceState.UNLOCKED)
+    val lockingState = MutableStateFlow<UiState<Unit>>(UiState.Success(Unit))
+    val finalState = lockState.combine(lockingState) { lockState, operationState ->
+        when (operationState) {
+            is UiState.Error -> UiState.Error(operationState.message, operationState.cause)
+            is UiState.Loading -> UiState.Loading()
+            is UiState.Idle,
+            is UiState.Success -> when (lockState) {
+                LockDeviceState.NOT_FULLY_LOCKED -> UiState.Loading()
+                LockDeviceState.LOCKED,
+                LockDeviceState.UNLOCKED -> UiState.Success(lockState)
+            }
+        }
+    }
+        .debounce(300.milliseconds)
+        .stateIn(scope, SharingStarted.Eagerly, UiState.Loading())
 
     init {
         observeDeviceRealtimeState()
@@ -47,6 +75,9 @@ class LockController(
                     tag = "LockController"
                 )
             }
+            .onEach {
+                lockingState.value = it
+            }
             .launchIn(scope)
     }
 
@@ -54,7 +85,7 @@ class LockController(
     override fun Item(onDecommission: (DeviceId) -> Unit) {
         LockItem(
             device = device,
-            lockState = lockState.collectAsStateWithLifecycle().value,
+            lockState = finalState.collectAsStateWithLifecycle().value,
             onLockUnlockDoor = { _, state ->
                 setLock(device.device, state)
             },

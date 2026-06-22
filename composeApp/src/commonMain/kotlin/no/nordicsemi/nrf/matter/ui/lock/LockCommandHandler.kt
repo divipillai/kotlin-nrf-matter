@@ -42,5 +42,5 @@ class LockCommandHandler(
             deviceId = device.deviceId,
             endpoint = resolveEndpoint(device, clusterId = LOCK_UNLOCK_CLUSTER_ID),
             doorLockClusterId = LOCK_UNLOCK_CLUSTER_ID
-        ).withUiState()
+        )
 }

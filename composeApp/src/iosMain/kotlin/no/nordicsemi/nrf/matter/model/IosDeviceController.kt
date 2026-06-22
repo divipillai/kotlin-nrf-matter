@@ -9,7 +9,6 @@ import no.nordicsemi.nrf.matter.MatterDecommissioner
 import no.nordicsemi.nrf.matter.MatterDoorController
 import no.nordicsemi.nrf.matter.MatterLightController
 import no.nordicsemi.nrf.matter.MatterManufacturerCustomDataController
-import no.nordicsemi.nrf.matter.ui.light.LightDeviceState
 import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
 
 /*
@@ -151,7 +150,7 @@ class IosDeviceController(
         doorLockClusterId: Long,
     ): Flow<LockDeviceState> = callbackFlow {
         matterDoorController.subscribeToLockChanges(deviceId, endpoint) {
-            trySend(LockDeviceState(it))
+            trySend(it)
         }
 
         awaitClose {

@@ -632,8 +632,6 @@ class ClustersHelper(private val chipClient: ChipClient) {
 
     fun observeLockState(deviceId: DeviceId, endpoint: Int, doorLockClusterId: Long) =
         callbackFlow {
-            var currentState = LockDeviceState()
-
             val reportCallback = object : ReportCallback {
                 override fun onError(
                     attributePath: ChipAttributePath?,
@@ -663,8 +661,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                             tag = "ClustersHelper"
                         )
 
-                        currentState = currentState.copy(isLocked = isLocked)
-                        trySend(currentState)
+                        trySend(LockDeviceState.create(lockStateEnum))
                     }
                 }
             }

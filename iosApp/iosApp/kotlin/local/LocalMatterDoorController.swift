@@ -34,7 +34,7 @@ class LocalMatterDoorController : MatterDoorController {
     /**
      * Observe door lock state changes on a remote Matter device.
      */
-    func subscribeToLockChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
+    func subscribeToLockChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (LockDeviceState) -> Void) async throws {
         SharedLogger.debug(#function)
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
@@ -44,7 +44,7 @@ class LocalMatterDoorController : MatterDoorController {
         cluster!.subscribeAttributeLockState(with: MTRSubscribeParams.defaultParams, subscriptionEstablished: { }, reportHandler: { result, error in
             if let result {
                 SharedLogger.debug("Received door lock state: \(result)")
-                onUpdate(KotlinBoolean(bool: result == 1 ? true : false)) // 1 = Locked, 2 = Unlocked
+                onUpdate(LockDeviceState.companion.create(value: result.int32Value))
             }
             if let error {
                 SharedLogger.debug("Received door lock error: \(error)")

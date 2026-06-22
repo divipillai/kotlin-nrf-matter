@@ -39,15 +39,15 @@ class LockController(
 
     val lockState = MutableStateFlow(LockDeviceState.UNLOCKED)
     val lockingState = MutableStateFlow<UiState<Unit>>(UiState.Success(Unit))
-    val finalState = lockState.combine(lockingState) { a, b ->
-        when (b) {
-            is UiState.Error -> UiState.Error(b.message, b.cause)
+    val finalState = lockState.combine(lockingState) { lockState, operationState ->
+        when (operationState) {
+            is UiState.Error -> UiState.Error(operationState.message, operationState.cause)
             is UiState.Loading -> UiState.Loading()
             is UiState.Idle,
-            is UiState.Success -> when (a) {
+            is UiState.Success -> when (lockState) {
                 LockDeviceState.NOT_FULLY_LOCKED -> UiState.Loading()
                 LockDeviceState.LOCKED,
-                LockDeviceState.UNLOCKED -> UiState.Success(a)
+                LockDeviceState.UNLOCKED -> UiState.Success(lockState)
             }
         }
     }

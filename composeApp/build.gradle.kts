@@ -28,6 +28,7 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
+            implementation(project(":androidDeps"))
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.splashscreen)
@@ -106,9 +107,6 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-        jniLibs {
-            pickFirsts += setOf("lib/**/libc++_shared.so")
-        }
     }
     buildTypes {
         getByName("release") {
@@ -118,12 +116,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    sourceSets {
-        getByName("main") {
-            jniLibs.srcDirs("libs/jniLibs")
-        }
     }
 }
 

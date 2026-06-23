@@ -2,9 +2,14 @@ package no.nordicsemi.nrf.matter.binding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.device.BindingState
@@ -63,9 +68,24 @@ class BindingViewModel(
     private val _bindingUiState = MutableStateFlow(BindingUiState())
     val bindingUiState: StateFlow<BindingUiState> = _bindingUiState.asStateFlow()
 
+    private val _bindingLogs = MutableStateFlow<PersistentList<String>>(persistentListOf())
+    val bindingLogs = _bindingLogs.asStateFlow()
+
     init {
         loadSourceDevices()
         getActiveBindings()
+        viewModelScope.launch {
+            bindingUiState
+                .map { it.bindingState is UiState.Loading } // Only collect logs when binding is in progress
+                .distinctUntilChanged()
+                .collectLatest { inProgress ->
+                    if (inProgress) {
+                        bindDevicesUseCase.bindingLogs.collect { log ->
+                            _bindingLogs.update { it.adding(log) }
+                        }
+                    }
+                }
+        }
     }
 
     fun updateBindingState(state: BindingState) =

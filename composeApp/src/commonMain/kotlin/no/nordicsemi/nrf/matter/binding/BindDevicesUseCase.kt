@@ -75,4 +75,7 @@ class BindDevicesUseCase(
             emit(UiState.Error(e.message ?: "Unknown error"))
         }
     }.flowOn(Dispatchers.IO)
+
+    val bindingLogs: Flow<String>
+        get() = deviceController.bindingLogs
 }

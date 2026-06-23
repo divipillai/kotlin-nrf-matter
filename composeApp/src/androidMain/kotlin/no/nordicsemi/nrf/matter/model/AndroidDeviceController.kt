@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
-import no.nordicsemi.nrf.matter.ui.light.LightDeviceState
 import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
 
 /*
@@ -43,6 +42,9 @@ class AndroidDeviceController(
     private val chipClient: ChipClient,
     private val bindingManager: BindingManager,
 ) : DeviceController {
+
+    override val bindingLogs: Flow<String>
+        get() = chipClient.chipLogFlow
 
     override suspend fun setDeviceOnOff(
         deviceId: DeviceId,

@@ -35,6 +35,9 @@ import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 interface DeviceController {
+
+    val bindingLogs : Flow<String>
+
     suspend fun setDeviceOnOff(
         deviceId: DeviceId,
         isDeviceOnline: Boolean,

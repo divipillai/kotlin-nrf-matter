@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter.binding
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -29,8 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Matrix
@@ -42,7 +39,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import kotlinx.coroutines.delay
 import no.nordicsemi.nrf.matter.theme.NordicBlue
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import nrfmatterformobile.composeapp.generated.resources.Res
@@ -114,8 +110,10 @@ internal fun BindingLoader() {
     val viewportWidth = 330f
     val viewportHeight = 205f
 
-    Box(contentAlignment = Alignment.Center,
-        modifier = Modifier.size(120.dp) ) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(120.dp)
+    ) {
         Image(
             painter = painterResource(Res.drawable.binding_links_only),
             contentDescription = null,
@@ -159,32 +157,12 @@ internal fun BindingLoaderDialog(
     loadingText: @Composable (() -> Unit) = {}
 ) {
     val lazyListState = rememberLazyListState()
-
-    // TODO: This loop acts as the pacing regulator for showing the dummy logs with some delays.
-    // TODO: This block of code  should be removed once the logger is integrated.
-    val visibleLogs = remember { mutableStateListOf<String>() }
-    LaunchedEffect(logs) {
-        // Clear old visual logs if the incoming list gets reset
-        if (logs.isEmpty()) {
-            visibleLogs.clear()
-            return@LaunchedEffect
-        }
-
-        for (i in logs.indices) {
-            if (i >= visibleLogs.size) {
-                delay(1200)
-                visibleLogs.add(logs[i])
-            }
+    LaunchedEffect(logs.size) {
+        if (logs.isNotEmpty()) {
+            lazyListState.animateScrollToItem(logs.lastIndex)
         }
     }
 
-    LaunchedEffect(visibleLogs.size) {
-        if (visibleLogs.isNotEmpty()) {
-            lazyListState.animateScrollToItem(visibleLogs.lastIndex)
-        }
-    }
-
-    // TODO: The dialog is currently non-dismissible and has a dark background to match the console design, but this can be adjusted as needed.
     Dialog(
         onDismissRequest = { /* Do nothing */ },
         properties = DialogProperties(
@@ -237,13 +215,14 @@ internal fun BindingLoaderDialog(
                             .padding(top = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        items(visibleLogs) { log ->
+                        items(
+                            items = logs
+                        ) { log ->
                             Text(
                                 text = log,
                                 style = MaterialTheme.typography.bodySmall,
                                 fontFamily = FontFamily.Monospace,
                                 color = NordicBlue,
-                                modifier = Modifier.animateContentSize()
                             )
                         }
                     }

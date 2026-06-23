@@ -97,6 +97,7 @@ internal fun BindingsScreen(
 ) {
     val bindingViewModel: BindingViewModel = koinViewModel()
     val bindingUiState by bindingViewModel.bindingUiState.collectAsStateWithLifecycle()
+    val bindingLogs by bindingViewModel.bindingLogs.collectAsStateWithLifecycle()
 
     when (val bindingState = bindingUiState.bindingState) {
         is UiState.Error -> {
@@ -119,7 +120,7 @@ internal fun BindingsScreen(
         }
 
         is UiState.Loading -> {
-            BindingLoaderDialog(dummyLogsForBinding) {
+            BindingLoaderDialog(bindingLogs) {
                 // Text Content
                 Text(
                     text = "Binding...",

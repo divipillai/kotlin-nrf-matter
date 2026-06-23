@@ -16,6 +16,7 @@ import chip.devicecontroller.model.ChipEventPath
 import chip.devicecontroller.model.InvokeElement
 import chip.devicecontroller.model.NodeState
 import chip.platform.AndroidBleManager
+import chip.platform.AndroidChipLogging
 import chip.platform.AndroidChipPlatform
 import chip.platform.AndroidNfcCommissioningManager
 import chip.platform.ChipMdnsCallbackImpl
@@ -24,8 +25,10 @@ import chip.platform.NsdManagerServiceBrowser
 import chip.platform.NsdManagerServiceResolver
 import chip.platform.PreferencesConfigurationManager
 import chip.platform.PreferencesKeyValueStoreManager
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import matter.tlv.AnonymousTag
@@ -75,9 +78,19 @@ private const val DEFAULT_TIMEOUT = 1000
 class ChipClient(
     private val context: Context,
 ) {
+    val chipLogFlow = MutableSharedFlow<String>(
+        extraBufferCapacity = 200,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     // Lazily instantiate [ChipDeviceController] and hold a reference to it.
     val chipDeviceController: ChipDeviceController by lazy {
         ChipDeviceController.loadJni()
+
+        AndroidChipLogging.setLogCallback { module, _, message ->
+
+            chipLogFlow.tryEmit("[$module] $message")
+        }
+
         AndroidChipPlatform(
             AndroidBleManager(),
             AndroidNfcCommissioningManager(),

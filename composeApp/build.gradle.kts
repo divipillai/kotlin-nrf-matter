@@ -41,14 +41,6 @@ kotlin {
             implementation(libs.androidx.runtime.livedata)
             implementation(libs.room.core)
             implementation(libs.room.ktx)
-            // Home API SDK dependency
-            implementation(libs.play.services.types)
-            implementation(libs.play.services.home)
-            // Matter Android sdk from the local
-            implementation(fileTree(mapOf(
-                "dir" to "libs",
-                "include" to listOf("*.jar", "*.so")
-            )))
         }
         commonMain.dependencies {
             implementation(libs.jetbrains.compose.runtime)

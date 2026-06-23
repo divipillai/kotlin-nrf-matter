@@ -61,7 +61,7 @@ class BindDevicesUseCase(
                 clusterId = 0x006L,
             )
             val bindingDevice = DeviceBinding(
-                id = "${switchNodeId}_${lightNodeId}",
+                id = "${switchNodeId.longValue}_${lightNodeId.longValue}",
                 sourceNodeId = switchNodeId,
                 targetNodeId = lightNodeId,
                 sourceEndpoint = 1,

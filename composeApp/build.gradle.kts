@@ -9,10 +9,12 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+group = "no.nordicsemi.nrf.matter"
+
 kotlin {
     android {
         namespace = "no.nordicsemi.nrf.matter"
-        compileSdk = 33
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
 

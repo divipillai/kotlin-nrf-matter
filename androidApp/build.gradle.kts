@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "no.nordicsemi.nrf.matter"
+    namespace = "no.nordicsemi.nrf.matter.app"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
@@ -46,5 +46,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.room.core)
     implementation(libs.room.ktx)
+    implementation(libs.koin.core)
+    implementation(libs.koin.androidx.compose)
     ksp(libs.room.ksp)
 }

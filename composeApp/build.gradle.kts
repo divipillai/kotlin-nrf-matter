@@ -10,13 +10,8 @@ plugins {
 }
 
 kotlin {
-//    androidTarget {
-//        compilerOptions {
-//            jvmTarget.set(JvmTarget.JVM_11)
-//        }
-//    }
     android {
-        namespace = "com.example.kmpfirstlib"
+        namespace = "no.nordicsemi.nrf.matter"
         compileSdk = 33
         minSdk = libs.versions.android.minSdk.get().toInt()
     }

@@ -1,15 +1,13 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinAndroid)
+//    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.nordic.android.library)
+//    alias(libs.plugins.nordic.kotlin)
 }
+
+group = "no.nordicsemi.nrf.matter.android"
 
 android {
     namespace = "no.nordicsemi.nrf.matter.android"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
 
     sourceSets {
         getByName("main") {

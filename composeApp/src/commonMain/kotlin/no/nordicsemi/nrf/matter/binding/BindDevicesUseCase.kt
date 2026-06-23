@@ -61,7 +61,7 @@ class BindDevicesUseCase(
                 clusterId = 0x006L,
             )
             val bindingDevice = DeviceBinding(
-                id = "${switchNodeId}_${lightNodeId}",
+                id = "${switchNodeId.longValue}_${lightNodeId.longValue}",
                 sourceNodeId = switchNodeId,
                 targetNodeId = lightNodeId,
                 sourceEndpoint = 1,
@@ -75,4 +75,7 @@ class BindDevicesUseCase(
             emit(UiState.Error(e.message ?: "Unknown error"))
         }
     }.flowOn(Dispatchers.IO)
+
+    val bindingLogs: Flow<String>
+        get() = deviceController.bindingLogs
 }

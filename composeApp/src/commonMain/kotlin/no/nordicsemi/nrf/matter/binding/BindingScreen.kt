@@ -97,6 +97,7 @@ internal fun BindingsScreen(
 ) {
     val bindingViewModel: BindingViewModel = koinViewModel()
     val bindingUiState by bindingViewModel.bindingUiState.collectAsStateWithLifecycle()
+    val bindingLogs by bindingViewModel.bindingLogs.collectAsStateWithLifecycle()
 
     when (val bindingState = bindingUiState.bindingState) {
         is UiState.Error -> {
@@ -119,7 +120,7 @@ internal fun BindingsScreen(
         }
 
         is UiState.Loading -> {
-            BindingLoaderDialog(dummyLogsForBinding) {
+            BindingLoaderDialog(bindingLogs) {
                 // Text Content
                 Text(
                     text = "Binding...",
@@ -561,28 +562,3 @@ private fun BindingCardRowPreview() {
         binding = DeviceBindingTest
     )
 }
-
-
-internal val dummyLogsForBinding = listOf(
-    "Initializing secure handshake.",
-    "Fetching remote server configuration.",
-    "Resolving DNS for api.connection.service.",
-    "Establishing TCP connection on port 443.",
-    "TLS 1.3 encryption handshake successful.",
-    "Authenticating user credentials.",
-    "Session token generated successfully.",
-    "Fetching  client configuration.",
-    "Establishing the connection with local thread.",
-    "TLS 1.3 encryption handshake successful.",
-    "Authenticating user credentials.",
-    "Session token generated successfully.",
-    "Syncing fabric index of both source and target devices.",
-    "Sending ACL to target device",
-    "Waiting for ACL signal back from target device.",
-    "Creating Binding table...",
-    "Writing binding table to target device...",
-    "Writing binding table to source device...",
-    "Verifying the binding on both devices...",
-    "Verifying data integrity checks...",
-    "Connection fully established. Wrapping up..."
-)

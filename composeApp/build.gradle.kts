@@ -67,6 +67,8 @@ kotlin {
             // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.androidx.compose)
+            // collections
+            implementation(libs.kotlinx.collections.immutable)
             // Nav 3
             implementation(libs.jetbrains.navigation3.ui)
             implementation(libs.jetbrains.material3.adaptiveNavigation3)

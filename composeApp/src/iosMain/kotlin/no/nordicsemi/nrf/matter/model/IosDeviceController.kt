@@ -51,6 +51,9 @@ class IosDeviceController(
     private val matterClusterExtensionController: MatterClusterExtensionController,
 ) : DeviceController {
 
+    override val bindingLogs: Flow<String>
+        get() = TODO("Not yet implemented")
+
     override suspend fun setDeviceOnOff(
         deviceId: DeviceId,
         isDeviceOnline: Boolean,
@@ -99,7 +102,7 @@ class IosDeviceController(
         }
 
         awaitClose {
-            
+
         }
     }
 

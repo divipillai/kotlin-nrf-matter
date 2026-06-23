@@ -82,6 +82,7 @@ class ChipClient(
         extraBufferCapacity = 200,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
+
     // Lazily instantiate [ChipDeviceController] and hold a reference to it.
     val chipDeviceController: ChipDeviceController by lazy {
         ChipDeviceController.loadJni()
@@ -121,7 +122,7 @@ class ChipClient(
 
                     override fun onConnectionFailure(nodeId: Long, error: Exception) {
                         val errorMessage = "Unable to get connected device with nodeId $nodeId."
-                        NordicLogger.error(errorMessage, error)
+                        NordicLogger.error(errorMessage, error, tag = TAG)
                         continuation.resumeWithException(IllegalStateException(errorMessage))
                     }
                 })
@@ -149,14 +150,17 @@ class ChipClient(
 
                     override fun onSuccess(nodeId: Long) {
                         if (continuation.isActive) {
-                            NordicLogger.info("awaitUnpairDevice.onSuccess: deviceId [$nodeId]")
+                            NordicLogger.info(
+                                "awaitUnpairDevice.onSuccess: deviceId [$nodeId]",
+                                tag = TAG
+                            )
                             continuation.resume(Unit)
                         }
                     }
                 }
             chipDeviceController.unpairDeviceCallback(nodeId, callback)
             continuation.invokeOnCancellation {
-                NordicLogger.info("Unpair coroutine cancelled")
+                NordicLogger.info("Unpair coroutine cancelled", tag = TAG)
             }
         }
     }
@@ -272,7 +276,7 @@ class ChipClient(
                         eventPath: ChipEventPath?,
                         e: Exception
                     ) {
-                        NordicLogger.info("Oh no!")
+                        NordicLogger.error("Error on readAttributes Callback!", e, tag = TAG)
                         continuation.resumeWithException(
                             IllegalStateException(
                                 "readAttributes failed",
@@ -301,7 +305,7 @@ class ChipClient(
             continuation.invokeOnCancellation {
                 // Optional: abort the interaction if the coroutine is canceled
                 // chipDeviceController.shutdownSubscriptions() or similar, if available
-                NordicLogger.debug("Read attribute coroutine cancelled")
+                NordicLogger.debug("Read attribute coroutine cancelled", tag = TAG)
             }
         }
     }
@@ -331,7 +335,7 @@ class ChipClient(
             val customInvokeCallback = object : InvokeCallback {
 
                 override fun onError(e: Exception) {
-                    NordicLogger.info("Error on invoke Callback!, ${e.printStackTrace()}")
+                    NordicLogger.error("Error on invoke Callback!", e, tag = TAG)
                     continuation.resume(Unit)
                 }
 
@@ -376,7 +380,7 @@ class ChipClient(
             val customInvokeCallback = object : InvokeCallback {
 
                 override fun onError(e: Exception) {
-                    NordicLogger.info("Error on invoke Callback!, ${e.printStackTrace()}")
+                    NordicLogger.error("Error on invoke Callback!", e, tag = TAG)
                     continuation.resumeWithException(e)
                 }
 
@@ -524,8 +528,8 @@ class ChipClient(
         devicePtr: Long,
         attributePaths: List<ChipAttributePath>,
         minIntervalS: Int,
-         maxIntervalS: Int,
-         timeoutMs: Int,
+        maxIntervalS: Int,
+        timeoutMs: Int,
     ) {
         chipDeviceController.subscribeToAttributePath(
             object : SubscriptionEstablishedCallback {
@@ -543,6 +547,11 @@ class ChipClient(
             maxIntervalS,
             timeoutMs,
         )
+    }
+
+    companion object {
+        private val TAG: String
+            get() = ChipClient::class.java.simpleName
     }
 
 }

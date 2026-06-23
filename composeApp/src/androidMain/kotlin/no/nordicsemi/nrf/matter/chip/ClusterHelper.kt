@@ -15,7 +15,6 @@ import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
-import no.nordicsemi.nrf.matter.ui.light.LightDeviceState
 import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
 import java.util.Optional
 import kotlin.coroutines.resume
@@ -61,7 +60,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId.longValue)
             } catch (e: IllegalStateException) {
-                NordicLogger.error("AAA, Can't get connectedDevicePointer.", e)
+                NordicLogger.error("Can't get connectedDevicePointer.", e, tag = TAG)
                 return emptyList()
             }
         fetchDeviceMatterInfo(deviceId.longValue, connectedDevicePtr, 0, matterDeviceInfoList)
@@ -101,7 +100,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         val manufacturerSpecificData = if (serverListAttribute.contains(0xFFF1FC01)) {
             getManufacturerSpecificData(endpointInt.toLong(), connectedDevicePtr)
         } else {
-            NordicLogger.info("No manufacturer specific cluster")
+            NordicLogger.info("No manufacturer specific cluster", tag = TAG)
             null
         }
 
@@ -122,7 +121,10 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val childServerList = try {
                 readDescriptorClusterServerListAttribute(connectedDevicePtr, childEndpoint)
             } catch (_: Throwable) {
-                NordicLogger.error("Endpoint $childEndpoint has no Descriptor cluster, skipping...")
+                NordicLogger.error(
+                    "Endpoint $childEndpoint has no Descriptor cluster, skipping...",
+                    tag = TAG
+                )
                 return@forEach
             }
 
@@ -229,7 +231,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             val nameAttr = chipClient.readAttribute(connectedDevicePtr, namePath)
             nameAttr?.value as? Long
         } catch (t: Throwable) {
-            NordicLogger.error("Random number generation failed: ${t.message}", t)
+            NordicLogger.error("Random number generation failed: ${t.message}", t, tag = TAG)
             t.printStackTrace()
             null
         }
@@ -340,7 +342,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId.longValue)
             } catch (e: IllegalStateException) {
-                NordicLogger.error("AAA, Can't get connectedDevicePointer.", e)
+                NordicLogger.error("Can't get connectedDevicePointer.", e, tag = TAG)
                 return
             }
 
@@ -366,7 +368,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId)
             } catch (e: IllegalStateException) {
-                NordicLogger.error("AAA, Can't get connectedDevicePointer.", e)
+                NordicLogger.error("Can't get connectedDevicePointer.", e, tag = TAG)
                 return
             }
         if (isOn) {
@@ -473,7 +475,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             try {
                 chipClient.getConnectedDevicePointer(deviceId.longValue)
             } catch (e: IllegalStateException) {
-                NordicLogger.error("Can't get connectedDevicePointer.", e, tag = "ClustersHelper")
+                NordicLogger.error("Can't get connectedDevicePointer.", e, tag = TAG)
                 return
             }
         return suspendCancellableCoroutine { continuation ->
@@ -515,8 +517,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 ) {
                     NordicLogger.error(
                         "Error receiving report from DK for path: $attributePath",
-                        e,
-                        tag = "ClustersHelper"
+                        e, tag = TAG
                     )
                 }
 
@@ -530,8 +531,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
 
                     if (isOn != null) {
                         NordicLogger.info(
-                            "Received On/Off report: isLedOn=$isOn",
-                            tag = "ClustersHelper"
+                            "Received On/Off report: isLedOn=$isOn", tag = TAG
                         )
                         trySend(isOn)
                     }
@@ -554,8 +554,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 )
             } catch (e: Exception) {
                 NordicLogger.error(
-                    "Failed to setup wrapper subscription", e,
-                    tag = "ClustersHelper"
+                    "Failed to setup wrapper subscription", e, tag = TAG
                 )
 
                 close(e)
@@ -576,9 +575,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                     e: java.lang.Exception
                 ) {
                     NordicLogger.error(
-                        "Error receiving report from DK for path: $attributePath",
-                        e,
-                        tag = "ClustersHelper"
+                        "Error receiving report from DK for path: $attributePath", e, tag = TAG
                     )
                 }
 
@@ -594,8 +591,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                         val rawLevel = rawValue.toLong()
                         val percent = ((rawLevel.toFloat() - 1f) / 253f).coerceIn(0f, 1f)
                         NordicLogger.info(
-                            "Received Brightness report: brightnessPercentage=$percent",
-                            tag = "ClustersHelper"
+                            "Received Brightness report: brightnessPercentage=$percent", tag = TAG
                         )
                         trySend(percent)
                     }
@@ -618,8 +614,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 )
             } catch (e: Exception) {
                 NordicLogger.error(
-                    "Failed to setup wrapper subscription", e,
-                    tag = "ClustersHelper"
+                    "Failed to setup wrapper subscription", e, tag = TAG
                 )
 
                 close(e)
@@ -638,7 +633,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                     eventPath: ChipEventPath?,
                     e: Exception
                 ) {
-                    NordicLogger.error("Subscription error on lock: $attributePath", e)
+                    NordicLogger.error("Subscription error on lock: $attributePath", e, tag = TAG)
                 }
 
                 override fun onReport(nodeState: NodeState) {
@@ -657,8 +652,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                         val isLocked = lockStateEnum == 1
 
                         NordicLogger.info(
-                            "Received LockState report: isLocked=$isLocked",
-                            tag = "ClustersHelper"
+                            "Received LockState report: isLocked=$isLocked", tag = TAG
                         )
 
                         trySend(LockDeviceState.create(lockStateEnum))
@@ -686,5 +680,10 @@ class ClustersHelper(private val chipClient: ChipClient) {
 
             awaitClose { /* Cleanup */ }
         }
+
+    companion object {
+        private val TAG: String
+            get() = ClustersHelper::class.java.simpleName
+    }
 
 }

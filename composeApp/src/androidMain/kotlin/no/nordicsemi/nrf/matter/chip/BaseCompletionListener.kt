@@ -40,43 +40,41 @@ import no.nordicsemi.nrf.matter.logger.NordicLogger
  */
 abstract class BaseCompletionListener : ChipDeviceController.CompletionListener {
     override fun onConnectDeviceComplete() {
-        NordicLogger.debug("AAA, BaseCompletionListener onConnectDeviceComplete()")
+        NordicLogger.info("Connect Device Complete!", tag = TAG)
     }
 
     override fun onStatusUpdate(status: Int) {
-        NordicLogger.debug("AAA, BaseCompletionListener onStatusUpdate(): status [${status}]")
+        NordicLogger.info("Status Updated, status [${status}]", tag = TAG)
     }
 
     override fun onPairingComplete(errorCode: Long) {
-        NordicLogger.debug(
-            "AAA, BaseCompletionListener onCommissioningComplete (): errorCode [${errorCode}]"
-        )
+        NordicLogger.info("Pairing Completed!", tag = TAG)
     }
 
     override fun onPairingDeleted(errorCode: Long) {
-        NordicLogger.debug("AAA, BaseCompletionListener onPairingDeleted(): errorCode [${errorCode}]")
+        NordicLogger.info("AAA, BaseCompletionListener onPairingDeleted(): errorCode [${errorCode}]")
     }
 
     override fun onCommissioningComplete(nodeId: Long, errorCode: Long) {
         NordicLogger.debug(
-            "AAA, BaseCompletionListener onCommissioningComplete (): nodeId [${nodeId}] errorCode [${errorCode}]"
+            "Commissioning Complete! nodeId [${nodeId}], errorCode [${errorCode}]", tag = TAG
         )
     }
 
     override fun onNotifyChipConnectionClosed() {
-        NordicLogger.debug( "AAA, BaseCompletionListener onNotifyChipConnectionClosed()" )
+        NordicLogger.debug("Notify Chip Connection Closed!", tag = TAG)
     }
 
     override fun onCloseBleComplete() {
-        NordicLogger.debug( "AAA, BaseCompletionListener onCloseBleComplete()" )
+        NordicLogger.debug("Close Ble Completed!", tag = TAG)
     }
 
     override fun onError(error: Throwable) {
-        NordicLogger.error("AAA, BaseCompletionListener onError()")
+        NordicLogger.error("Commission Error", error, tag = TAG)
     }
 
     override fun onOpCSRGenerationComplete(csr: ByteArray) {
-        NordicLogger.debug("AAA, BaseCompletionListener onOpCSRGenerationComplete() csr [${csr}]")
+        NordicLogger.debug("Op CSR GenerationCompleted! CSR: ${csr.toHexString()}", tag = TAG)
     }
 
     override fun onReadCommissioningInfo(
@@ -85,26 +83,38 @@ abstract class BaseCompletionListener : ChipDeviceController.CompletionListener 
         wifiEndpointId: Int,
         threadEndpointId: Int
     ) {
-        NordicLogger.debug(
-            "AAA, onReadCommissioningInfo: vendorId [${vendorId}]  productId [${productId}]  wifiEndpointId [${wifiEndpointId}] threadEndpointId [${threadEndpointId}]"
+        NordicLogger.info(
+            "Read Commissioning Info \nvendorId [${vendorId}],\tproductId [${productId}],\twifiEndpointId [${wifiEndpointId}],\tthreadEndpointId [${threadEndpointId}]",
+            tag = TAG
         )
     }
 
     override fun onCommissioningStatusUpdate(nodeId: Long, stage: String?, errorCode: Long) {
         NordicLogger.debug(
-            "AAA, onCommissioningStatusUpdate nodeId [${nodeId}]  stage [${stage}]  errorCode [${errorCode}]"
+            "Commissioning Status Updated! \tnodeId [${nodeId}]\tstage [${stage}]\terrorCode [${errorCode}]",
+            tag = TAG
         )
     }
 
     override fun onCommissioningStageStart(nodeId: Long, stage: String?) {
-        NordicLogger.debug("AAA, onCommissioningStageStart onError()")
+        NordicLogger.debug(
+            "Commissioning Stage Started! \tnodeId [${nodeId}]\tstage [${stage}]",
+            tag = TAG
+        )
     }
 
     override fun onICDRegistrationComplete(errorCode: Long, icdDeviceInfo: ICDDeviceInfo?) {
-        NordicLogger.debug("AAA, onICDRegistrationComplete onError()")
+        NordicLogger.debug(
+            "ICD Registration Completed! \terrorCode [${errorCode}]\ticdDeviceInfo [${icdDeviceInfo}]",
+            tag = TAG
+        )
     }
 
     override fun onICDRegistrationInfoRequired() {
-        NordicLogger.debug("AAA, onICDRegistrationInfoRequired onError()")
+        NordicLogger.debug("ICD Registration Info Required!", tag = TAG)
+    }
+
+    companion object {
+        private val TAG = BaseCompletionListener::class.java.simpleName
     }
 }

@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter
 
-
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -12,7 +11,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import no.nordicsemi.nrf.matter.app.R
 import org.koin.androidx.compose.koinViewModel
 
-abstract class NordicActivity : ComponentActivity() {
+class NordicActivity : ComponentActivity() {
 
     companion object {
         private var coldStart = true
@@ -21,10 +20,6 @@ abstract class NordicActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.NordicTheme)
         super.onCreate(savedInstanceState)
-
-        setContent {
-            App(homeViewModel = koinViewModel())
-        }
 
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
@@ -44,6 +39,10 @@ abstract class NordicActivity : ComponentActivity() {
             }
         } else {
             splashScreen.setKeepOnScreenCondition { true }
+        }
+
+        setContent {
+            App(homeViewModel = koinViewModel())
         }
     }
 }

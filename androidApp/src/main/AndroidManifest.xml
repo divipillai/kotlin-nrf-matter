@@ -24,7 +24,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
     <application
-        android:name=".KoinApplication"
+        android:name="no.nordicsemi.nrf.matter.KoinApplication"
         tools:replace="android:name"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -34,7 +34,7 @@
         android:theme="@style/NordicTheme">
 
         <activity
-            android:name=".NordicActivity"
+            android:name="no.nordicsemi.nrf.matter.NordicActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/NordicTheme.SplashScreen">

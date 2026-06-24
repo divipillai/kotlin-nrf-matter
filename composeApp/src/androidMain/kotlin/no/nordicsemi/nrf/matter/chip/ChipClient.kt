@@ -1,7 +1,9 @@
 package no.nordicsemi.nrf.matter.chip
 
 import android.content.Context
+import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipDeviceController
+import chip.devicecontroller.ChipStructs
 import chip.devicecontroller.CommissionParameters
 import chip.devicecontroller.ControllerParams
 import chip.devicecontroller.GetConnectedDeviceCallbackJni
@@ -9,7 +11,6 @@ import chip.devicecontroller.InvokeCallback
 import chip.devicecontroller.NetworkCredentials
 import chip.devicecontroller.ReportCallback
 import chip.devicecontroller.SubscriptionEstablishedCallback
-import chip.devicecontroller.UnpairDeviceCallback
 import chip.devicecontroller.model.AttributeState
 import chip.devicecontroller.model.ChipAttributePath
 import chip.devicecontroller.model.ChipEventPath
@@ -36,6 +37,7 @@ import matter.tlv.ContextSpecificTag
 import matter.tlv.TlvWriter
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
+import java.util.Optional
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -130,39 +132,127 @@ class ChipClient(
     }
 
     /**
-     * Removes the app's fabric from the device.
+     * Fully decommissions a device by removing all fabrics, including foreign fabrics and the device's own fabric.
      *
-     * @param nodeId node identifier
+     * @param deviceId The ID of the device to decommission.
      */
-    suspend fun awaitUnpairDevice(nodeId: Long) {
-        return suspendCancellableCoroutine { continuation ->
-            val callback: UnpairDeviceCallback =
-                object : UnpairDeviceCallback {
-                    override fun onError(status: Int, nodeId: Long) {
-                        if (continuation.isActive) {
-                            continuation.resumeWithException(
-                                IllegalStateException(
-                                    "Failed unpairing device [$nodeId] with status [$status]"
-                                )
-                            )
-                        }
-                    }
+    suspend fun decommissionDevice(deviceId: Long) {
+        NordicLogger.info("Decommission device: $deviceId", tag = TAG)
 
-                    override fun onSuccess(nodeId: Long) {
-                        if (continuation.isActive) {
-                            NordicLogger.info(
-                                "awaitUnpairDevice.onSuccess: deviceId [$nodeId]",
-                                tag = TAG
-                            )
-                            continuation.resume(Unit)
+        val connectedDevicePtr = getConnectedDevicePointer(deviceId)
+
+        // Read ALL fabrics (fabric-filtered = false)
+        val fabrics = suspendCancellableCoroutine { continuation ->
+            ChipClusters.OperationalCredentialsCluster(connectedDevicePtr, 0)
+                .readFabricsAttributeWithFabricFilter(
+                    object : ChipClusters.OperationalCredentialsCluster.FabricsAttributeCallback {
+                        override fun onSuccess(
+                            values: List<ChipStructs.OperationalCredentialsClusterFabricDescriptorStruct>
+                        ) {
+                            continuation.resume(values)
+                        }
+
+                        override fun onError(error: Exception) {
+                            continuation.resumeWithException(error)
+                        }
+                    },
+                    false
+                )
+        }
+        // Read our own fabric index (fabric-filtered = true)
+        val ownFabricIndex = suspendCancellableCoroutine { continuation ->
+            ChipClusters.OperationalCredentialsCluster(connectedDevicePtr, 0)
+                .readFabricsAttribute(
+                    object : ChipClusters.OperationalCredentialsCluster.FabricsAttributeCallback {
+                        override fun onSuccess(
+                            values: List<ChipStructs.OperationalCredentialsClusterFabricDescriptorStruct>
+                        ) {
+                            continuation.resume(values)
+                        }
+
+                        override fun onError(error: Exception) {
+                            continuation.resumeWithException(error)
                         }
                     }
-                }
-            chipDeviceController.unpairDeviceCallback(nodeId, callback)
-            continuation.invokeOnCancellation {
-                NordicLogger.info("Unpair coroutine cancelled", tag = TAG)
+                )
+        }
+
+        if (fabrics.isEmpty()) {
+            NordicLogger.info("No fabrics — already decommissioned", tag = TAG)
+            chipDeviceController.releaseConnectedDevicePointer(connectedDevicePtr)
+            return
+        }
+
+        // Filter out our own fabric from the list of fabrics to remove.
+        val foreignFabrics = fabrics.filterNot { fabric ->
+            ownFabricIndex.any { it.fabricIndex == fabric.fabricIndex }
+        }
+
+        // Since we commissioned the device using the Google Home app,
+        // it will have a foreign fabric that we need to remove first.
+        // Then we can remove our own fabric last.
+        for (fabric in foreignFabrics) {
+            suspendCancellableCoroutine { continuation ->
+                ChipClusters.OperationalCredentialsCluster(connectedDevicePtr, 0)
+                    .removeFabric(
+                        object : ChipClusters.OperationalCredentialsCluster.NOCResponseCallback {
+                            override fun onSuccess(
+                                statusCode: Int?,
+                                fabricIndex: Optional<Int?>?,
+                                debugText: Optional<String?>?
+                            ) {
+                                NordicLogger.info(
+                                    "Foreign fabric ${fabric.fabricIndex} removed — statusCode=$statusCode",
+                                    tag = TAG
+                                )
+                                continuation.resume(Unit)
+                            }
+
+                            override fun onError(error: Exception) {
+                                NordicLogger.info(
+                                    "Error removing foreign fabric ${fabric.fabricIndex}: $error",
+                                    tag = TAG
+                                )
+                                continuation.resumeWithException(error)
+                            }
+                        },
+                        fabric.fabricIndex
+                    )
+            }
+
+        }
+
+        // Remove own fabric
+        ownFabricIndex.first().let { fabric ->
+            NordicLogger.info("Removing own fabric index=${fabric}... ", TAG)
+
+            suspendCancellableCoroutine { continuation ->
+                ChipClusters.OperationalCredentialsCluster(connectedDevicePtr, 0)
+                    .removeFabric(
+                        object : ChipClusters.OperationalCredentialsCluster.NOCResponseCallback {
+                            override fun onSuccess(
+                                statusCode: Int?,
+                                fabricIndex: Optional<Int?>?,
+                                debugText: Optional<String?>?
+                            ) {
+                                NordicLogger.info(
+                                    "Own fabric removed — statusCode=$statusCode",
+                                    TAG
+                                )
+                                continuation.resume(Unit)
+                            }
+
+                            override fun onError(error: Exception) {
+                                continuation.resume(Unit)
+                            }
+                        },
+                        fabric.fabricIndex
+                    )
             }
         }
+
+        chipDeviceController.releaseConnectedDevicePointer(connectedDevicePtr)
+        NordicLogger.info("Device $deviceId fully decommissioned.", tag = TAG)
     }
 
     suspend fun awaitEstablishPaseConnection(

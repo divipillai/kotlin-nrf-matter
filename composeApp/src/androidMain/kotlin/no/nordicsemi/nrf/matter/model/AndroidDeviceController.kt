@@ -73,7 +73,7 @@ class AndroidDeviceController(
     }
 
     override suspend fun unlinkDevice(deviceId: DeviceId) {
-        chipClient.awaitUnpairDevice(deviceId.longValue)
+        chipClient.decommissionDevice(deviceId.longValue)
     }
 
     override suspend fun lockUnlockDoor(

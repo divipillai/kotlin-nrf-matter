@@ -44,14 +44,14 @@ import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.Res
+import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.door_lock
+import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.door_lock_open_right
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.TestDeviceLockDoor
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
-import nrfmatterformobile.composeapp.generated.resources.Res
-import nrfmatterformobile.composeapp.generated.resources.door_lock
-import nrfmatterformobile.composeapp.generated.resources.door_lock_open_right
 import org.jetbrains.compose.resources.painterResource
 
 // Lock Item

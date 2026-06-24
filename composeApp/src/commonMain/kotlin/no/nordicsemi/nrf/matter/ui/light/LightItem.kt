@@ -47,15 +47,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
-import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.Res
+import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.light_bulb
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.TestDeviceLight
 import no.nordicsemi.nrf.matter.ui.manspec.ControlCardContainer
-import nrfmatterformobile.composeapp.generated.resources.Res
-import nrfmatterformobile.composeapp.generated.resources.light_bulb
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
 

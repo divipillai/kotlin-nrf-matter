@@ -9,11 +9,11 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-group = "no.nordicsemi.nrf.matter"
+group = "no.nordicsemi.nrf.matter.shared"
 
 kotlin {
     android {
-        namespace = "no.nordicsemi.nrf.matter"
+        namespace = "no.nordicsemi.nrf.matter.shared"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
         androidResources.enable = true

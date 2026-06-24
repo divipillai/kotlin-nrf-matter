@@ -50,4 +50,5 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.androidx.compose)
     ksp(libs.room.ksp)
+    implementation(libs.components.resources)
 }

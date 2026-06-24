@@ -1,7 +1,5 @@
 plugins {
-//    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.nordic.android.library)
-//    alias(libs.plugins.nordic.kotlin)
 }
 
 group = "no.nordicsemi.nrf.matter.android"

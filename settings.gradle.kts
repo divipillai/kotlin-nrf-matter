@@ -17,6 +17,11 @@ dependencyResolutionManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+    versionCatalogs {
+        create("libs") {
+            from("no.nordicsemi.gradle:version-catalog:3.1.2")
+        }
+    }
 }
 
 include(":composeApp")

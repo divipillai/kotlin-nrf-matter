@@ -144,136 +144,104 @@ class ChipClient(
         try {
 
             // Read ALL fabrics (fabric-filtered = false)
-            val fabrics = suspendCancellableCoroutine { continuation ->
-                ChipClusters.OperationalCredentialsCluster(connectedDevicePtr, 0)
-                    .readFabricsAttributeWithFabricFilter(
-                        object :
-                            ChipClusters.OperationalCredentialsCluster.FabricsAttributeCallback {
-                            override fun onSuccess(
-                                values: List<ChipStructs.OperationalCredentialsClusterFabricDescriptorStruct>
-                            ) {
-                                continuation.resume(values)
-                            }
-
-                            override fun onError(error: Exception) {
-                                continuation.resumeWithException(error)
-                            }
-                        },
-                        false
-                    )
-            }
-            // Read our own fabric index (fabric-filtered = true)
-            val ownFabricIndex = suspendCancellableCoroutine { continuation ->
-                ChipClusters.OperationalCredentialsCluster(connectedDevicePtr, 0)
-                    .readFabricsAttribute(
-                        object :
-                            ChipClusters.OperationalCredentialsCluster.FabricsAttributeCallback {
-                            override fun onSuccess(
-                                values: List<ChipStructs.OperationalCredentialsClusterFabricDescriptorStruct>
-                            ) {
-                                continuation.resume(values)
-                            }
-
-                            override fun onError(error: Exception) {
-                                continuation.resumeWithException(error)
-                            }
-                        }
-                    )
-            }
+            val fabrics = readFabrics(connectedDevicePtr, fabricFiltered = false)
+            val ownFabrics = readFabrics(connectedDevicePtr, fabricFiltered = true)
 
             if (fabrics.isEmpty()) {
                 NordicLogger.info("No fabrics — already decommissioned", tag = TAG)
-                chipDeviceController.releaseConnectedDevicePointer(connectedDevicePtr)
                 return
             }
 
             // Filter out our own fabric from the list of fabrics to remove.
             val foreignFabrics = fabrics.filterNot { fabric ->
-                ownFabricIndex.any { it.fabricIndex == fabric.fabricIndex }
+                ownFabrics.any { it.fabricIndex == fabric.fabricIndex }
             }
 
             // Since we commissioned the device using the Google Home app,
             // it will have a foreign fabric that we need to remove first.
             // Then we can remove our own fabric last.
             for (fabric in foreignFabrics) {
-                try {
-                    suspendCancellableCoroutine { continuation ->
-                        ChipClusters.OperationalCredentialsCluster(connectedDevicePtr, 0)
-                            .removeFabric(
-                                object :
-                                    ChipClusters.OperationalCredentialsCluster.NOCResponseCallback {
-                                    override fun onSuccess(
-                                        statusCode: Int?,
-                                        fabricIndex: Optional<Int?>?,
-                                        debugText: Optional<String?>?
-                                    ) {
-                                        NordicLogger.info(
-                                            "Foreign fabric ${fabric.fabricIndex} removed — statusCode=$statusCode",
-                                            tag = TAG
-                                        )
-                                        continuation.resume(Unit)
-                                    }
-
-                                    override fun onError(error: Exception) {
-                                        NordicLogger.info(
-                                            "Error removing foreign fabric ${fabric.fabricIndex}: $error",
-                                            tag = TAG
-                                        )
-                                        continuation.resumeWithException(error)
-                                    }
-                                },
-                                fabric.fabricIndex
-                            )
-                    }
-                } catch (e: Exception) {
+                runCatching {
+                    removeFabric(connectedDevicePtr, fabric.fabricIndex)
+                }.onSuccess {
+                    NordicLogger.info(
+                        "Foreign fabric ${fabric.fabricIndex} removed",
+                        tag = TAG
+                    )
+                }.onFailure {
                     NordicLogger.error(
-                        "Error removing foreign fabric ${fabric.fabricIndex}: $e",
-                        e,
+                        "Error removing foreign fabric ${fabric.fabricIndex}: $it",
+                        it as? Exception,
                         tag = TAG
                     )
                 }
-
             }
 
             // Remove own fabric
-            ownFabricIndex.firstOrNull()?.let { fabric ->
+            ownFabrics.firstOrNull()?.let { fabric ->
                 NordicLogger.info("Removing own fabric index=${fabric}... ", TAG)
-                try {
-                    suspendCancellableCoroutine { continuation ->
-                        ChipClusters.OperationalCredentialsCluster(connectedDevicePtr, 0)
-                            .removeFabric(
-                                object :
-                                    ChipClusters.OperationalCredentialsCluster.NOCResponseCallback {
-                                    override fun onSuccess(
-                                        statusCode: Int?,
-                                        fabricIndex: Optional<Int?>?,
-                                        debugText: Optional<String?>?
-                                    ) {
-                                        NordicLogger.info(
-                                            "Own fabric removed — statusCode=$statusCode",
-                                            TAG
-                                        )
-                                        continuation.resume(Unit)
-                                    }
-
-                                    override fun onError(error: Exception) {
-                                        continuation.resume(Unit)
-                                    }
-                                },
-                                fabric.fabricIndex
-                            )
-                    }
-                } catch (e: Exception) {
-                    NordicLogger.error("Error removing own fabric: $e", e, tag = TAG)
+                runCatching {
+                    removeFabric(connectedDevicePtr, fabric.fabricIndex)
+                }.onFailure {
+                    NordicLogger.error(
+                        "Failed removing own fabric ${fabric.fabricIndex}",
+                        it as? Exception,
+                        tag = TAG
+                    )
                 }
             }
             NordicLogger.info("Device $deviceId fully decommissioned.", tag = TAG)
-        } catch (e: Exception) {
-            NordicLogger.error("Error during decommissioning: $e", e, tag = TAG)
         } finally {
             chipDeviceController.releaseConnectedDevicePointer(connectedDevicePtr)
             NordicLogger.info("Released connected device pointer for device $deviceId", tag = TAG)
         }
+    }
+
+    private suspend fun readFabrics(
+        connectedDevicePtr: Long,
+        fabricFiltered: Boolean
+    ): List<ChipStructs.OperationalCredentialsClusterFabricDescriptorStruct> =
+        suspendCancellableCoroutine { continuation ->
+            val cluster =
+                ChipClusters.OperationalCredentialsCluster(connectedDevicePtr, 0)
+
+            val callback =
+                object : ChipClusters.OperationalCredentialsCluster.FabricsAttributeCallback {
+                    override fun onSuccess(
+                        values: List<ChipStructs.OperationalCredentialsClusterFabricDescriptorStruct>
+                    ) {
+                        continuation.resume(values)
+                    }
+
+                    override fun onError(error: Exception) {
+                        continuation.resumeWithException(error)
+                    }
+                }
+
+            cluster.readFabricsAttributeWithFabricFilter(callback, fabricFiltered)
+        }
+
+    private suspend fun removeFabric(
+        connectedDevicePtr: Long,
+        fabricIndex: Int
+    ) = suspendCancellableCoroutine { continuation ->
+        ChipClusters.OperationalCredentialsCluster(connectedDevicePtr, 0)
+            .removeFabric(
+                object : ChipClusters.OperationalCredentialsCluster.NOCResponseCallback {
+                    override fun onSuccess(
+                        statusCode: Int?,
+                        fabricIndex: Optional<Int?>?,
+                        debugText: Optional<String?>?
+                    ) {
+                        continuation.resume(Unit)
+                    }
+
+                    override fun onError(error: Exception) {
+                        continuation.resumeWithException(error)
+                    }
+                },
+                fabricIndex
+            )
     }
 
     suspend fun awaitEstablishPaseConnection(

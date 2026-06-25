@@ -267,12 +267,12 @@ class ChipClient(
                     NordicLogger.error("Error removing own fabric: $e", e, tag = TAG)
                 }
             }
-
-            chipDeviceController.releaseConnectedDevicePointer(connectedDevicePtr)
             NordicLogger.info("Device $deviceId fully decommissioned.", tag = TAG)
         } catch (e: Exception) {
             NordicLogger.error("Error during decommissioning: $e", e, tag = TAG)
+        } finally {
             chipDeviceController.releaseConnectedDevicePointer(connectedDevicePtr)
+            NordicLogger.info("Released connected device pointer for device $deviceId", tag = TAG)
         }
     }
 

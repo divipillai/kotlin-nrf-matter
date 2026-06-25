@@ -139,10 +139,10 @@ class ChipClient(
     suspend fun decommissionDevice(deviceId: Long) {
         NordicLogger.info("Decommission device: $deviceId", tag = TAG)
 
-        val connectedDevicePtr = getConnectedDevicePointer(deviceId)
+        var connectedDevicePtr: Long? = null
 
         try {
-
+            connectedDevicePtr = getConnectedDevicePointer(deviceId)
             // Read ALL fabrics (fabric-filtered = false)
             val fabrics = readFabrics(connectedDevicePtr, fabricFiltered = false)
             val ownFabrics = readFabrics(connectedDevicePtr, fabricFiltered = true)
@@ -179,7 +179,7 @@ class ChipClient(
 
             // Remove own fabric
             ownFabrics.firstOrNull()?.let { fabric ->
-                NordicLogger.info("Removing own fabric index=${fabric}... ", TAG)
+                NordicLogger.info("Removing own fabric index=${fabric.fabricIndex}... ", TAG)
                 runCatching {
                     removeFabric(connectedDevicePtr, fabric.fabricIndex)
                 }.onFailure {
@@ -192,7 +192,9 @@ class ChipClient(
             }
             NordicLogger.info("Device $deviceId fully decommissioned.", tag = TAG)
         } finally {
-            chipDeviceController.releaseConnectedDevicePointer(connectedDevicePtr)
+            connectedDevicePtr?.let {
+                chipDeviceController.releaseConnectedDevicePointer(it)
+            }
             NordicLogger.info("Released connected device pointer for device $deviceId", tag = TAG)
         }
     }

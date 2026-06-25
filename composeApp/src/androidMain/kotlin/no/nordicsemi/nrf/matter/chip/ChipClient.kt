@@ -223,7 +223,7 @@ class ChipClient(
         }
 
         // Remove own fabric
-        ownFabricIndex.first().let { fabric ->
+        ownFabricIndex.firstOrNull()?.let { fabric ->
             NordicLogger.info("Removing own fabric index=${fabric}... ", TAG)
 
             suspendCancellableCoroutine { continuation ->

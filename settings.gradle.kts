@@ -3,6 +3,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
+        mavenLocal()
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -17,6 +18,10 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
+        maven {
+            url = uri("$rootDir/mavenLocal")
+        }
+        mavenLocal()
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -25,11 +30,15 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
-        mavenLocal()
-        maven {
-            url = uri("$rootDir/mavenLocal")
+    }
+    versionCatalogs {
+        create("libs") {
+            from("no.nordicsemi.gradle:version-catalog:3.1.2-2")
         }
     }
 }
 
 include(":composeApp")
+include(":androidDeps")
+include(":androidApp")
+include(":core")

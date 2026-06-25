@@ -4,7 +4,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.map
 import no.nordicsemi.nrf.matter.MatterBinder
 import no.nordicsemi.nrf.matter.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.MatterDecommissioner
@@ -12,7 +11,6 @@ import no.nordicsemi.nrf.matter.MatterDoorController
 import no.nordicsemi.nrf.matter.MatterLightController
 import no.nordicsemi.nrf.matter.MatterManufacturerCustomDataController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
-import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor

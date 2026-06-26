@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.nordic.android.kmp.library)
     alias(libs.plugins.nordic.kotlin)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.ksp)
 }
 
@@ -36,6 +37,8 @@ kotlin {
 //            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.splashscreen)
+            implementation(libs.koin.android)
+            implementation(libs.koin.android.compose)
             implementation(libs.accompanist.permissions)
             implementation(libs.jetbrains.compose.viewmodel)
             implementation(libs.jetbrains.compose.runtime)
@@ -57,9 +60,8 @@ kotlin {
             // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
             // collections
-            implementation(libs.kotlinx.collections.immutable)
+            implementation(libs.jetbrains.collections.immutable)
             // Nav 3
             implementation(libs.jetbrains.navigation)
             implementation(libs.jetbrains.adaptive.navigation)

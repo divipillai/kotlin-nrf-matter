@@ -24,8 +24,8 @@ import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import no.nordicsemi.nrf.matter.platform.PlatformType
 import no.nordicsemi.nrf.matter.platform.currentType
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.Res
 import no.nordicsemi.nrf.matter.theme.NordicDarkGray
+import nrfmatterformobile.composeapp.generated.resources.Res
 
 @OptIn(ExperimentalCompottieApi::class)
 @Composable

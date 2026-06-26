@@ -57,13 +57,13 @@ import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.toDeviceId
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.Res
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.light_bulb
 import no.nordicsemi.nrf.matter.theme.NordicRed
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
+import nrfmatterformobile.composeapp.generated.resources.Res
+import nrfmatterformobile.composeapp.generated.resources.light_bulb
 import org.jetbrains.compose.resources.painterResource
 
 @Composable

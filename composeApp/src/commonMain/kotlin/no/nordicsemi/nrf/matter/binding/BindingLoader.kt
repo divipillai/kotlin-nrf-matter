@@ -39,10 +39,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.Res
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.binding_links_only
 import no.nordicsemi.nrf.matter.theme.NordicBlue
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import nrfmatterformobile.composeapp.generated.resources.Res
+import nrfmatterformobile.composeapp.generated.resources.binding_links_only
 import org.jetbrains.compose.resources.painterResource
 
 /*

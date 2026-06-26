@@ -3,8 +3,13 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
-        mavenLocal()
-        google()
+        google {
+            mavenContent {
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroupAndSubgroups("com.google")
+            }
+        }
         mavenCentral()
         gradlePluginPortal()
     }
@@ -12,18 +17,16 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-    versionCatalogs {
-        create("libs") {
-            from("no.nordicsemi.gradle:version-catalog-min-sdk-21:3.1.2-1")
+        google {
+            mavenContent {
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroupAndSubgroups("com.google")
+            }
         }
+        mavenCentral()
+        mavenLocal()
     }
 }
 
 include(":composeApp")
-include(":androidDeps")
-include(":androidApp")

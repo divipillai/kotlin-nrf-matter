@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.device.BindingState
@@ -23,6 +25,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /*
@@ -125,6 +128,7 @@ class BindingViewModel(
         )
             .onStart { updateBindingState(UiState.Loading()) }
             .onCompletion { collectLogsJob.cancel() }
+            .delayIf(1.seconds) { it is UiState.Success } // Fake delay to display success log.
             .onEach { updateBindingState(it) }
             .launchIn(viewModelScope)
     }
@@ -161,6 +165,15 @@ class BindingViewModel(
 
         _bindingUiState.update {
             it.copy(activeBindings = activeBindings)
+        }
+    }
+
+    private fun <T> Flow<T>.delayIf(time: Duration, predicate: (T) -> Boolean): Flow<T> {
+        return this.transform { value ->
+            if (predicate(value)) {
+                delay(time)
+            }
+            emit(value)
         }
     }
 }

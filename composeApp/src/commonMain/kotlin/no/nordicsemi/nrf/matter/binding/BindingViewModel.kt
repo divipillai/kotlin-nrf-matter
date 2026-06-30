@@ -124,13 +124,9 @@ class BindingViewModel(
             lightNodeId = targetDeviceId
         )
             .onStart { updateBindingState(UiState.Loading()) }
-            .onCompletion {
-                NordicLogger.info("Finished collecting logs.")
-                collectLogsJob.cancel()
-            }.onEach { state ->
-                delay(10.seconds)
-                updateBindingState(state)
-            }.launchIn(viewModelScope)
+            .onCompletion { collectLogsJob.cancel() }
+            .onEach { updateBindingState(it) }
+            .launchIn(viewModelScope)
     }
 
     fun updateEligibleTargetDevices(sourceDeviceId: DeviceId) = viewModelScope.launch {

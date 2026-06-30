@@ -338,11 +338,6 @@ private fun BindingTableDetails(
                 }
             }
 
-            // Selector for Target Server Node ID
-            NordicLogger.debug(
-                "Eligible target devices for selected source (${bindingScreenState.selectedSourceDeviceId}): ${bindingScreenState.eligibleTargetDevices.map { it.deviceId }}",
-                tag = "BindingScreen"
-            )
             if (bindingScreenState.selectedSourceDeviceId == null) {
                 Box(
                     modifier = Modifier

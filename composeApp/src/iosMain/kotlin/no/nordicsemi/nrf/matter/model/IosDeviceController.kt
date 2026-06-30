@@ -3,12 +3,15 @@ package no.nordicsemi.nrf.matter.model
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.map
 import no.nordicsemi.nrf.matter.MatterBinder
 import no.nordicsemi.nrf.matter.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.MatterDecommissioner
 import no.nordicsemi.nrf.matter.MatterDoorController
 import no.nordicsemi.nrf.matter.MatterLightController
 import no.nordicsemi.nrf.matter.MatterManufacturerCustomDataController
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
 
 /*
@@ -52,7 +55,7 @@ class IosDeviceController(
 ) : DeviceController {
 
     override val bindingLogs: Flow<String>
-        get() = TODO("Not yet implemented")
+        get() = NordicLogger.logsChannel.consumeAsFlow()
 
     override suspend fun setDeviceOnOff(
         deviceId: DeviceId,

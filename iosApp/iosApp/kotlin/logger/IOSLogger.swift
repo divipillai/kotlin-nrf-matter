@@ -7,8 +7,20 @@
 
 import ComposeApp
 import SharedCode
+import Combine
 
 class IOSLoggerImpl : IOSLogger {
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    override init() {
+        super.init()
+        SharedLogger.logPublisher
+            .sink { [weak self] log in
+                self?.logsChannel.trySend(element: log.message)
+            }
+            .store(in: &cancellables)
+    }
     
     override func info(tag: String, message: String) {
         SharedLogger.info(tag: tag, message)

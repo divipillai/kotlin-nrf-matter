@@ -14,20 +14,14 @@ class SwiftCodeProviderImpl : @MainActor SwiftCodeProvider {
     
     func getMatterCommissioner() -> any MatterCommissioner {
         return LocalMatterCommissioner()
-//        return HomeKitCommissioner()
-//        return GoogleHomeCommissioner()
     }
     
     func getMatterOnOffController() -> any MatterLightController {
         return LocalMatterLightController()
-//        return HomeKitMatterOnOffController()
-//        return GoogleHomeOnOffController()
     }
     
     func getDecommissioner() -> any MatterDecommissioner {
         return LocalMatterDecommissioner()
-//        return HomeKitDecommissioner()
-//        return GoogleHomeDecommissioner()
     }
     
     func getMatterBinder() -> any MatterBinder {
@@ -40,7 +34,6 @@ class SwiftCodeProviderImpl : @MainActor SwiftCodeProvider {
     
     func getMatterManufacturerCustomDataController() -> any MatterManufacturerCustomDataController {
         return LocalMatterCustomClusterController()
-//        return GoogleHomeCustomClusterController()
     }
     
     func getMatterClusterExtensionController() -> any MatterClusterExtensionController {

@@ -7,6 +7,4 @@
 
 public enum MatterEnv: String {
     case local
-    case google
-    case apple
 }

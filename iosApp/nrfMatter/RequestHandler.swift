@@ -32,8 +32,6 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
         return switch env {
         case .local:
             LocalRequestHandler()
-        case .google:
-            GoogleRequestHandler()
         default:
             fatalError("Invalid environment")
         }

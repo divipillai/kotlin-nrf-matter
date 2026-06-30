@@ -4,7 +4,7 @@ import kotlinx.coroutines.channels.Channel
 
 abstract class IOSLogger {
 
-    val logsChannel: Channel<String> = Channel(Channel.BUFFERED)
+    val logsChannel: Channel<String> = Channel(Channel.RENDEZVOUS)
 
     abstract fun getLogs(onReady: (List<LogEntity>) -> Unit)
 

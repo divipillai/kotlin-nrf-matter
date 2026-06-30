@@ -40,7 +40,7 @@ class SwiftCodeProviderImpl : @MainActor SwiftCodeProvider {
         return LocalMatterClusterExtController()
     }
     
-    func getLogger() -> any IOSLogger {
+    func getLogger() -> IOSLogger {
         return IOSLoggerImpl()
     }
 }

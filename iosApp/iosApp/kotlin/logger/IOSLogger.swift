@@ -7,22 +7,37 @@
 
 import ComposeApp
 import SharedCode
+import Combine
 
 class IOSLoggerImpl : IOSLogger {
     
-    func info(tag: String, message: String) {
+    private var cancellables = Set<AnyCancellable>()
+    
+    override init() {
+        super.init()
+        SharedLogger.logPublisher
+            .sink { [weak self] log in
+                self?.logsChannel.trySend(element: log.message)
+            }
+            .store(in: &cancellables)
+    }
+    
+    override func info(tag: String, message: String) {
         SharedLogger.info(tag: tag, message)
+        logsChannel.trySend(element: message)
     }
     
-    func debug(tag: String, message: String) {
+    override func debug(tag: String, message: String) {
         SharedLogger.debug(tag: tag, message)
+        logsChannel.trySend(element: message)
     }
     
-    func error(tag: String, message: String) {
+    override func error(tag: String, message: String) {
         SharedLogger.error(tag: tag, message)
+        logsChannel.trySend(element: message)
     }
     
-    func getLogs(onReady: @escaping ([LogEntity]) -> Void) {
+    override func getLogs(onReady: @escaping ([LogEntity]) -> Void) {
         let logs = try? SharedLogger.logs()
         
         let result: [LogEntity] = logs?.compactMap { item in

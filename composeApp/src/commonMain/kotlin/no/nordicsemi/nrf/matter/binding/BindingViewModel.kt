@@ -4,22 +4,29 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.device.BindingState
 import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -74,18 +81,6 @@ class BindingViewModel(
     init {
         loadSourceDevices()
         getActiveBindings()
-        viewModelScope.launch {
-            bindingUiState
-                .map { it.bindingState is UiState.Loading } // Only collect logs when binding is in progress
-                .distinctUntilChanged()
-                .collectLatest { inProgress ->
-                    if (inProgress) {
-                        bindDevicesUseCase.bindingLogs.collect { log ->
-                            _bindingLogs.update { it.adding(log) }
-                        }
-                    }
-                }
-        }
     }
 
     fun updateBindingState(state: BindingState) =
@@ -120,16 +115,23 @@ class BindingViewModel(
         updateEligibleTargetDevices(sourceDeviceId)
     }
 
-    fun initiateBinding(sourceDeviceId: DeviceId, targetDeviceId: DeviceId) =
-        viewModelScope.launch {
-            updateBindingState(UiState.Loading())
-            bindDevicesUseCase.invoke(
-                switchNodeId = sourceDeviceId,
-                lightNodeId = targetDeviceId
-            ).collect { state ->
-                updateBindingState(state)
-            }
-        }
+    fun initiateBinding(sourceDeviceId: DeviceId, targetDeviceId: DeviceId) {
+        val collectLogsJob = bindDevicesUseCase.bindingLogs
+            .onStart { _bindingLogs.update { it.cleared() } }
+            .onEach { log ->
+                _bindingLogs.update { it.adding(log) }
+            }.launchIn(viewModelScope)
+
+        bindDevicesUseCase.invoke(
+            switchNodeId = sourceDeviceId,
+            lightNodeId = targetDeviceId
+        )
+            .onStart { updateBindingState(UiState.Loading()) }
+            .onCompletion { collectLogsJob.cancel() }
+            .delayIf(1.seconds) { it is UiState.Success } // Fake delay to display success log.
+            .onEach { updateBindingState(it) }
+            .launchIn(viewModelScope)
+    }
 
     fun updateEligibleTargetDevices(sourceDeviceId: DeviceId) = viewModelScope.launch {
         bindingRepository.getTargetsForDevice(sourceDeviceId)
@@ -163,6 +165,15 @@ class BindingViewModel(
 
         _bindingUiState.update {
             it.copy(activeBindings = activeBindings)
+        }
+    }
+
+    private fun <T> Flow<T>.delayIf(time: Duration, predicate: (T) -> Boolean): Flow<T> {
+        return this.transform { value ->
+            if (predicate(value)) {
+                delay(time)
+            }
+            emit(value)
         }
     }
 }

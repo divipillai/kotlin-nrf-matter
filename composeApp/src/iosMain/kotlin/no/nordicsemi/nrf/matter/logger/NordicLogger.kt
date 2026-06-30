@@ -6,7 +6,10 @@ import kotlinx.coroutines.flow.callbackFlow
 
 actual object NordicLogger {
 
-    private lateinit var logger: IOSLogger
+    private var logger: IOSLogger? = null
+
+    val logsChannel
+        get() = logger!!.logsChannel
 
     internal fun setLogger(logger: IOSLogger) {
         this.logger = logger
@@ -14,7 +17,7 @@ actual object NordicLogger {
 
     actual fun getLogs(): Flow<List<LogEntity>> {
         return callbackFlow {
-            logger.getLogs { trySend(it) }
+            logger?.getLogs { trySend(it) }
 
             awaitClose {
                 
@@ -23,14 +26,14 @@ actual object NordicLogger {
     }
 
     actual fun info(message: String, tag: String) {
-        logger.info(tag, message)
+        logger?.info(tag, message)
     }
 
     actual fun debug(message: String, tag: String) {
-        logger.debug(tag, message)
+        logger?.debug(tag, message)
     }
 
     actual fun error(message: String, t: Throwable?, tag: String) {
-        logger.error(tag, message)
+        logger?.error(tag, message)
     }
 }

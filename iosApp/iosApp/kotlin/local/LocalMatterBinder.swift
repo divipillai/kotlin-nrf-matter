@@ -67,12 +67,15 @@ class LocalMatterBinder : MatterBinder {
         newEntry.targets = [target]
         
         do {
+            SharedLogger.info("Reading attribute ACL...")
             var currentACLs = try await aclCluster.readAttributeACL(with: nil) as? [MTRAccessControlClusterAccessControlEntryStruct] ?? []
+            SharedLogger.info("Amending ACL records...")
             let entryExists = currentACLs.contains { entry in
                 (entry.subjects as? [NSNumber])?.contains(sourceNodeID) == true && entry.privilege == newEntry.privilege
             }
             
             if !entryExists {
+                SharedLogger.info("Storing new ACL record on the target device...")
                 currentACLs.append(newEntry)
                 try await aclCluster.writeAttributeACL(withValue: currentACLs)
                 SharedLogger.debug("Access granted successfully to node \(sourceNodeID)")
@@ -102,12 +105,14 @@ class LocalMatterBinder : MatterBinder {
         let sourceDevice = MTRBaseDevice(nodeID: sourceDeviceID, controller: controller)
         guard let bindingCluster = MTRBaseClusterBinding(device: sourceDevice, endpointID: sourceEndpoint, queue: .main) else { return }
         
+        SharedLogger.debug("Preparing a new binding record.")
         let bindingEntry = MTRBindingClusterTargetStruct()
         bindingEntry.node = targetNodeID
         bindingEntry.endpoint = targetEndpoint
         bindingEntry.cluster = clusterID
         
         do {
+            SharedLogger.debug("Storing record on a source device.")
             var bindings = try await bindingCluster.readAttributeBinding(with: nil)
             bindings.append(bindingEntry)
             try await bindingCluster.writeAttributeBinding(withValue: bindings)

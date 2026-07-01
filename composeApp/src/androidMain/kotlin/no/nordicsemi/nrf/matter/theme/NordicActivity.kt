@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import no.nordicsemi.nrf.matter.R
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -49,7 +48,7 @@ abstract class NordicActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.NordicTheme)
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge(
@@ -57,19 +56,13 @@ abstract class NordicActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
         )
 
-        val splashScreen = installSplashScreen()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (coldStart) {
-                coldStart = false
-                val then = System.currentTimeMillis()
-                splashScreen.setKeepOnScreenCondition {
-                    val now = System.currentTimeMillis()
-                    now < then + 900
-                }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && coldStart) {
+            coldStart = false
+            val then = System.currentTimeMillis()
+            splashScreen.setKeepOnScreenCondition {
+                val now = System.currentTimeMillis()
+                now < then + 900
             }
-        } else {
-            splashScreen.setKeepOnScreenCondition { true }
         }
     }
 }

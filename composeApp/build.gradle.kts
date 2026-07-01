@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -110,11 +112,6 @@ android {
             pickFirsts += setOf("lib/**/libc++_shared.so")
         }
     }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -125,6 +122,32 @@ android {
             jniLibs.srcDirs("libs/jniLibs")
         }
     }
+
+    val keystorePropertiesFile = rootProject.file("../key/keystore.properties")
+    val keystoreProperties = Properties()
+
+    if (keystorePropertiesFile.exists()) {
+        FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
+    }
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file("../key/keystore")
+
+            storePassword = keystoreProperties.getProperty("KEYSTORE_PASSWORD")
+            keyAlias = keystoreProperties.getProperty("KEY_ALIAS")
+            keyPassword = keystoreProperties.getProperty("KEY_PASSWORD")
+
+        }
+    }
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isDebuggable = true
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
 }
 
 dependencies {

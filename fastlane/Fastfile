@@ -1,0 +1,40 @@
+default_platform(:android)
+
+platform :android do
+
+  desc "Build release bundle"
+  lane :buildRelease do
+    gradle(
+      task: "composeApp:bundle",
+      build_type: "Release"
+    )
+  end
+
+  desc "Deploy to Google Play Internal track"
+  lane :deployInternal do
+
+    gradle(
+      task: "clean composeApp:bundle",
+      build_type: "Release"
+    )
+
+    upload_to_play_store(
+      track: "internal",
+      aab: "composeApp/build/outputs/bundle/release/composeApp-release.aab",
+    )
+  end
+
+  desc "Deploy to production"
+  lane :deploy do
+    gradle(
+      task: "clean composeApp:bundle",
+      build_type: "Release"
+    )
+
+    upload_to_play_store(
+      track: "production",
+      aab: "composeApp/build/outputs/bundle/release/composeApp-release.aab",
+    )
+  end
+
+end

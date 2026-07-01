@@ -133,17 +133,15 @@ android {
         create("release") {
             storeFile = rootProject.file("../key/keystore")
 
-            storePassword = keystoreProperties.getProperty("KEYSTORE_PASSWORD")
+            storePassword = keystoreProperties.getProperty("KEY_STORE_PASSWORD")
             keyAlias = keystoreProperties.getProperty("KEY_ALIAS")
-            keyPassword = keystoreProperties.getProperty("KEY_PASSWORD")
+            keyPassword = keystoreProperties.getProperty("KEY_ALIAS_PASSWORD")
 
         }
     }
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
-            isShrinkResources = true
-            isDebuggable = true
             signingConfig = signingConfigs.getByName("release")
         }
     }

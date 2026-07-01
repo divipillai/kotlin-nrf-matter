@@ -495,6 +495,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "nRF Matter";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHomeKitUsageDescription = "App needs access to HomeKit to commission and control Matter devices.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "App needs access to local network to discover Matter devices.";
@@ -532,6 +533,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "nRF Matter";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHomeKitUsageDescription = "App needs access to HomeKit to commission and control Matter devices.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "App needs access to local network to discover Matter devices.";

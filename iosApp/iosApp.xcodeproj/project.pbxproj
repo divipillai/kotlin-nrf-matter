@@ -203,6 +203,7 @@
 				A725F1C62F4DAACB005BC977 /* Embed Foundation Extensions */,
 				A75B95392F5883B500902BE8 /* Embed Frameworks */,
 				A7B6EDB52F697C4D00E65235 /* ShellScript */,
+				899AFCC0CFB775A3E9481780 /* Set Version From Git Tag */,
 			);
 			buildRules = (
 			);
@@ -338,6 +339,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		899AFCC0CFB775A3E9481780 /* Set Version From Git Tag */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Set Version From Git Tag";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Configuration/set_version_from_git.sh\"\n";
+		};
 		A7B6EDB52F697C4D00E65235 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;

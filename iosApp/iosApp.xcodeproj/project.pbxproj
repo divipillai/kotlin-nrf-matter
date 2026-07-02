@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		A725F1C12F4DAACB005BC977 /* nrfMatter.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A75B954D2F58845E00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
-		A75B954E2F58845E00902BE8 /* SharedCode.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A75B95522F58846C00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
 		A7DEDDC12FA8A80D00196D69 /* Pulse in Frameworks */ = {isa = PBXBuildFile; productRef = A7DEDDC02FA8A80D00196D69 /* Pulse */; };
 /* End PBXBuildFile section */
@@ -48,17 +47,6 @@
 				A725F1C12F4DAACB005BC977 /* nrfMatter.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A75B95392F5883B500902BE8 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				A75B954E2F58845E00902BE8 /* SharedCode.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -201,7 +189,6 @@
 				2C13C12BF37A24BB21B136C1 /* Frameworks */,
 				FE4039EABDDF65A40A74A283 /* Resources */,
 				A725F1C62F4DAACB005BC977 /* Embed Foundation Extensions */,
-				A75B95392F5883B500902BE8 /* Embed Frameworks */,
 				A7B6EDB52F697C4D00E65235 /* ShellScript */,
 				899AFCC0CFB775A3E9481780 /* Set Version From Git Tag */,
 			);

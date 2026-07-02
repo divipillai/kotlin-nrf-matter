@@ -350,6 +350,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/Configuration/set_version_from_git.sh",
 			);
 			name = "Set Version From Git Tag";
 			outputFileListPaths = (
@@ -369,6 +370,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/Configuration/set_version_from_git.sh",
 			);
 			name = "Set Version From Git Tag";
 			outputFileListPaths = (
@@ -388,6 +390,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/Configuration/set_version_from_git.sh",
 			);
 			name = "Set Version From Git Tag";
 			outputFileListPaths = (

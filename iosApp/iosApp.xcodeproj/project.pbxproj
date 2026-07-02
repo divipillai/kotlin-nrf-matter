@@ -228,6 +228,7 @@
 				A725F1B62F4DAACB005BC977 /* Sources */,
 				A725F1B72F4DAACB005BC977 /* Frameworks */,
 				A725F1B82F4DAACB005BC977 /* Resources */,
+				611BC51B9CF47FD1B9853A11 /* Set Version From Git Tag */,
 			);
 			buildRules = (
 			);
@@ -252,6 +253,7 @@
 				A75B95432F58845E00902BE8 /* Sources */,
 				A75B95442F58845E00902BE8 /* Frameworks */,
 				A75B95452F58845E00902BE8 /* Resources */,
+				C5193C74100BF84A95EF5902 /* Set Version From Git Tag */,
 			);
 			buildRules = (
 			);
@@ -340,6 +342,44 @@
 
 /* Begin PBXShellScriptBuildPhase section */
 		899AFCC0CFB775A3E9481780 /* Set Version From Git Tag */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Set Version From Git Tag";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Configuration/set_version_from_git.sh\"\n";
+		};
+		611BC51B9CF47FD1B9853A11 /* Set Version From Git Tag */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Set Version From Git Tag";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Configuration/set_version_from_git.sh\"\n";
+		};
+		C5193C74100BF84A95EF5902 /* Set Version From Git Tag */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;

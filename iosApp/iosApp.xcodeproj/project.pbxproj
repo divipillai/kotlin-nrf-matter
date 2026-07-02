@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		A725F1C12F4DAACB005BC977 /* nrfMatter.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A75B954D2F58845E00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
-		A75B954E2F58845E00902BE8 /* SharedCode.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A75B95522F58846C00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
 		A7DEDDC12FA8A80D00196D69 /* Pulse in Frameworks */ = {isa = PBXBuildFile; productRef = A7DEDDC02FA8A80D00196D69 /* Pulse */; };
 /* End PBXBuildFile section */
@@ -48,17 +47,6 @@
 				A725F1C12F4DAACB005BC977 /* nrfMatter.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A75B95392F5883B500902BE8 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				A75B954E2F58845E00902BE8 /* SharedCode.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -201,8 +189,8 @@
 				2C13C12BF37A24BB21B136C1 /* Frameworks */,
 				FE4039EABDDF65A40A74A283 /* Resources */,
 				A725F1C62F4DAACB005BC977 /* Embed Foundation Extensions */,
-				A75B95392F5883B500902BE8 /* Embed Frameworks */,
 				A7B6EDB52F697C4D00E65235 /* ShellScript */,
+				899AFCC0CFB775A3E9481780 /* Set Version From Git Tag */,
 			);
 			buildRules = (
 			);
@@ -227,6 +215,7 @@
 				A725F1B62F4DAACB005BC977 /* Sources */,
 				A725F1B72F4DAACB005BC977 /* Frameworks */,
 				A725F1B82F4DAACB005BC977 /* Resources */,
+				611BC51B9CF47FD1B9853A11 /* Set Version From Git Tag */,
 			);
 			buildRules = (
 			);
@@ -338,6 +327,46 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		611BC51B9CF47FD1B9853A11 /* Set Version From Git Tag */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Configuration/set_version_from_git.sh",
+			);
+			name = "Set Version From Git Tag";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Configuration/set_version_from_git.sh\"\n";
+		};
+		899AFCC0CFB775A3E9481780 /* Set Version From Git Tag */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Configuration/set_version_from_git.sh",
+			);
+			name = "Set Version From Git Tag";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Configuration/set_version_from_git.sh\"\n";
+		};
 		A7B6EDB52F697C4D00E65235 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -631,7 +660,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = P3R8YQEV4L;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = nrfMatter/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = nrfMatter;
@@ -664,7 +693,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = P3R8YQEV4L;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = nrfMatter/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = nrfMatter;
@@ -697,13 +726,14 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = P3R8YQEV4L;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = NO;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -750,7 +780,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = NO;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";

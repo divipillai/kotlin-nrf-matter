@@ -14,10 +14,21 @@ final class iosAppUITests: XCTestCase {
 
         snapshot("Dashboard")
 
-        app.buttons["Bindings"].tap()
+        tapTab(app, "Bindings")
         snapshot("Bindings")
-        
-        app.buttons["Logs panel"].tap()
-        snapshot("Logs panel")
+
+        tapTab(app, "Logs Panel")
+        snapshot("Logs Panel")
+    }
+
+    // Compose Multiplatform tabs aren't native UIKit buttons, so their UIAccessibility
+    // trait isn't guaranteed to be `.button`. `Modifier.testTag(...)` on the Kotlin side
+    // maps to `accessibilityIdentifier` on iOS, so match on identifier across any element
+    // type instead of assuming `app.buttons[...]`.
+    @MainActor
+    private func tapTab(_ app: XCUIApplication, _ identifier: String) {
+        let tab = app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+        XCTAssertTrue(tab.waitForExistence(timeout: 5), "Tab '\(identifier)' not found")
+        tab.tap()
     }
 }

@@ -1,0 +1,19 @@
+devices([
+  "iPhone 17 Pro Max",
+  "iPhone 17",
+  "iPad Pro 13-inch (M5)"
+])
+
+languages([
+  "en-US"
+])
+
+# The name of the scheme which contains the UI Tests
+scheme("Screenshots")
+
+# Screenshots go into their own directory, separate from source and app store metadata,
+# so they're easy to hand off to `deliver`/upload_to_app_store for App Store Connect.
+output_directory("./screenshots")
+
+clear_previous_screenshots(true)
+override_status_bar(true)

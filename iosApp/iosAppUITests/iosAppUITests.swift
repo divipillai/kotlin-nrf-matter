@@ -12,11 +12,12 @@ final class iosAppUITests: XCTestCase {
         setupSnapshot(app)
         app.launch()
 
-        snapshot("01Launch")
+        snapshot("Dashboard")
 
-        // Add more `snapshot("name")` calls here as you navigate to other
-        // screens you want captured, e.g.:
-        // app.buttons["Devices"].tap()
-        // snapshot("02Devices")
+        app.buttons["Bindings"].tap()
+        snapshot("Bindings")
+        
+        app.buttons["Logs panel"].tap()
+        snapshot("Logs panel")
     }
 }

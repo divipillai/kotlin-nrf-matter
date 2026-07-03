@@ -120,6 +120,16 @@
 			path = iosAppUITests;
 			sourceTree = "<group>";
 		};
+		A7B81D7B2FF7F45D000AF7E4 /* fastlane */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = fastlane;
+			sourceTree = "<group>";
+		};
+		A7B81D812FF7F490000AF7E4 /* screenshots */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = screenshots;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -171,6 +181,8 @@
 		7A153F9AB70F98838999796F = {
 			isa = PBXGroup;
 			children = (
+				A7B81D812FF7F490000AF7E4 /* screenshots */,
+				A7B81D7B2FF7F45D000AF7E4 /* fastlane */,
 				A7228F212FD844A4009CC829 /* src */,
 				924494A307E640B6954B6B71 /* Configuration */,
 				208BF3748A4E27EC7D0D131C /* iosApp */,

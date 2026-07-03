@@ -4,7 +4,7 @@ import no.nordicsemi.nrf.matter.device.OperationResult
 import no.nordicsemi.nrf.matter.logger.IOSLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
+import no.nordicsemi.nrf.matter.model.LockDeviceState
 
 interface SwiftCodeProvider {
 

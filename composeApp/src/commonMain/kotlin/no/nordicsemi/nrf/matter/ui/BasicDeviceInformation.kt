@@ -45,7 +45,6 @@ internal fun BasicInformationBottomSheet(
 
 @Composable
 internal fun BasicDeviceInformation(
-    modifier: Modifier = Modifier,
     device: DeviceUiModel,
     onDismiss: () -> Unit,
 ) {

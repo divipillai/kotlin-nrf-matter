@@ -5,3 +5,7 @@ PRODUCT_BUNDLE_IDENTIFIER=no.nordicsemi.nrf.matter.NRFMatterforMobile$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0.0
+
+// composeApp only builds iosSimulatorArm64 (no iosX64); Xcode's ARCHS_STANDARD for
+// the simulator SDK still includes x86_64, which breaks syncComposeResourcesForIos.
+EXCLUDED_ARCHS[sdk=iphonesimulator*]=x86_64

@@ -1,0 +1,20 @@
+default_platform(:ios)
+
+platform :ios do
+
+  desc "Capture App Store screenshots by running the Screenshots UI test target"
+  lane :screenshots do
+    capture_screenshots
+  end
+
+  desc "Upload captured screenshots to App Store Connect"
+  lane :upload_screenshots do
+    upload_to_app_store(
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_app_version_update: true,
+      force: true
+    )
+  end
+
+end

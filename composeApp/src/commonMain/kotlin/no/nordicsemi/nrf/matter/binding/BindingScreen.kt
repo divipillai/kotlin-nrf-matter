@@ -231,7 +231,6 @@ internal fun BindingsScreen(
             Text(
                 text = "Active Binding Table Entries (${bindingUiState.activeBindings.size})",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
         }

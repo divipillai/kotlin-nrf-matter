@@ -263,10 +263,7 @@ private fun rememberTopBarTitle(
     return remember {
         derivedStateOf {
             when (backStack.lastOrNull()) {
-                HomeRoute ->
-                    if (devicesUiModel.devices.isEmpty()) "nRF Matter"
-                    else "Home"
-
+                HomeRoute -> if (devicesUiModel.devices.isEmpty()) "nRF Matter" else "Dashboard"
                 is CommissioningRoute -> "Commissioning"
                 is BindingRoute -> "Bindings"
                 is LoggerRoute -> "Logs"

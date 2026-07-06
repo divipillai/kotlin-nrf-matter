@@ -1,5 +1,8 @@
 package no.nordicsemi.nrf.matter
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
@@ -180,6 +183,12 @@ fun App(homeViewModel: HomeViewModel) {
                         rememberSaveableStateHolderNavEntryDecorator(),
                         rememberViewModelStoreNavEntryDecorator(),
                     ),
+                    transitionSpec = {
+                        EnterTransition.None togetherWith ExitTransition.None
+                    },
+                    popTransitionSpec = {
+                        EnterTransition.None togetherWith ExitTransition.None
+                    },
                     modifier = Modifier.padding(padding)
                 )
             }

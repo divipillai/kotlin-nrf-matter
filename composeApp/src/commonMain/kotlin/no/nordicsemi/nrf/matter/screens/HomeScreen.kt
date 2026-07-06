@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalUriHandler
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.ui.DeviceList
 
@@ -43,12 +44,16 @@ fun HomeScreen(
     homeViewModel: HomeViewModel,
     onCommissionClick: () -> Unit,
 ) {
+    val uriHandler = LocalUriHandler.current
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
 
     Box {
         if (devicesUiModel.devices.isEmpty()) {
             NoDevicesScreen(
-                onAddDeviceClick = onCommissionClick
+                onAddDeviceClick = onCommissionClick,
+                onMatterUrlClick = {
+                    uriHandler.openUri(MATTER_OVERVIEW_URL)
+                }
             )
         } else {
             DeviceList(
@@ -57,3 +62,6 @@ fun HomeScreen(
         }
     }
 }
+
+private const val MATTER_OVERVIEW_URL = "https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/overview/index.html"
+

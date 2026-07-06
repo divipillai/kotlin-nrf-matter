@@ -4,19 +4,10 @@
 <dict>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>GIDTeamID</key>
-	<string>P3R8YQEV4L</string>
-	<key>GIDClientID</key>
-	<string>24901298591-d7j7m6qkfvebl4bj1974cf9elrufns4o.apps.googleusercontent.com</string>
-	<key>Cloud Project Number</key>
-	<string>24901298591</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>NSBonjourServices</key>
 	<array>
-		<string>_ghp._tcp</string>
-		<string>_googlecrossdevice._tcp</string>
-		<string>_googcrossdevice._tcp</string>
 		<string>_matter._tcp.local</string>
 		<string>_matter._tcp</string>
 		<string>_matterc._udp</string>

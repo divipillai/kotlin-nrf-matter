@@ -86,9 +86,16 @@ import no.nordicsemi.nrf.matter.theme.NordicTheme
 fun App(homeViewModel: HomeViewModel) {
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)
+
+    fun navigateToHome() = backStack.replaceWith(routesForTab(HomeRoute))
+
+    fun navigateToTab(tabRoute: NavKey) = backStack.replaceWith(routesForTab(tabRoute))
+
     val onBack: () -> Unit = {
-        if (backStack.size > 1) {
-            backStack.removeLastOrNull()
+        when (backActionFor(backStack.lastOrNull(), backStack.size)) {
+            BackAction.POP -> backStack.removeLastOrNull()
+            BackAction.GO_HOME -> navigateToHome()
+            BackAction.EXIT -> Unit
         }
     }
 
@@ -135,18 +142,7 @@ fun App(homeViewModel: HomeViewModel) {
                                 selected = isSelected,
                                 onClick = {
                                     if (!isSelected) {
-                                        // Clear current tab route and add the new selection
-                                        while (backStack.isNotEmpty()) {
-                                            backStack.removeLastOrNull()
-                                        }
-
-                                        val targetRoute = when (tabRoute) {
-                                            is HomeRoute -> HomeRoute
-                                            is BindingRoute -> BindingRoute
-                                            is LoggerRoute -> LoggerRoute
-                                            else -> error("Unknown tab route: $tabRoute")
-                                        }
-                                        backStack.add(targetRoute)
+                                        navigateToTab(tabRoute)
                                     }
                                 },
                                 icon = {
@@ -214,8 +210,10 @@ private fun EntryProviderScope<NavKey>.screens(
     entry<CommissioningRoute> { _ ->
         CommissioningScreen(
             onBack = {
-                if (backStack.size > 1) {
-                    backStack.removeLastOrNull()
+                when (backActionFor(backStack.lastOrNull(), backStack.size)) {
+                    BackAction.POP -> backStack.removeLastOrNull()
+                    BackAction.GO_HOME -> backStack.replaceWith(routesForTab(HomeRoute))
+                    BackAction.EXIT -> Unit
                 }
             },
             navigateToLogs = {
@@ -226,6 +224,35 @@ private fun EntryProviderScope<NavKey>.screens(
     entry<BindingRoute> {
         BindingsScreen()
     }
+}
+
+internal enum class BackAction {
+    POP,
+    GO_HOME,
+    EXIT,
+}
+
+internal fun backActionFor(currentRoute: NavKey?, stackSize: Int): BackAction {
+    return when {
+        stackSize > 1 -> BackAction.POP
+        currentRoute !is HomeRoute -> BackAction.GO_HOME
+        else -> BackAction.EXIT
+    }
+}
+
+internal fun routesForTab(tabRoute: NavKey): List<NavKey> {
+    return if (tabRoute is HomeRoute) {
+        listOf(HomeRoute)
+    } else {
+        listOf(HomeRoute, tabRoute)
+    }
+}
+
+private fun NavBackStack<NavKey>.replaceWith(routes: List<NavKey>) {
+    while (isNotEmpty()) {
+        removeLastOrNull()
+    }
+    routes.forEach { add(it) }
 }
 
 @Composable

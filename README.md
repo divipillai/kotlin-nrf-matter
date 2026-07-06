@@ -1,35 +1,62 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# nRF Matter for Mobile
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+A [Matter](https://csa-iot.org/all-solutions/matter/) commissioning and control companion app by
+[Nordic Semiconductor](https://www.nordicsemi.com/), built with Kotlin Multiplatform and Compose Multiplatform
+for Android and iOS.
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+The app lets you:
+- **Commission** new Matter devices onto your fabric (via the Android Home API / Google Play Services).
+- **Control** commissioned devices — door locks, lights, switches, and manufacturer-specific clusters.
+- **Manage bindings** between devices, e.g. a switch controlling a light.
+- **View logs** for diagnosing commissioning and cluster interactions.
 
-### Build and Run Android Application
 
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
+## Project structure
+
+This is a Kotlin Multiplatform project targeting Android and iOS.
+
+* [`/composeApp`](./composeApp/src) — shared Compose Multiplatform UI, screens, view models, navigation, and DI
+  (Koin). Contains the usual KMP source sets:
+  - [`commonMain`](./composeApp/src/commonMain/kotlin) — code shared across all targets (screens for home,
+    commissioning, bindings, logs, and per-device-type controllers for locks, lights, and switches).
+  - `androidMain` / `iosMain` — platform-specific code, e.g. wiring up Matter commissioning on each platform.
+* [`/androidDeps`](./androidDeps) — Android library wrapping the native Matter (CHIP) SDK and the
+  Google Home API, exposing helpers such as `ChipClient`, `ClustersHelper`, and `BindingManager`.
+* [`/core`](./core) — shared domain models (`Device`, `DeviceMatterInfo`, `LockDeviceState`, …) and a
+  Room-backed logger used across platforms.
+* [`/androidApp`](./androidApp) — the Android application entry point.
+* [`/iosApp`](./iosApp/iosApp) — the iOS application entry point (SwiftUI host for the shared Compose UI).
+  Even though the UI is shared, this project is required as the entry point for the iOS app, and is where
+  you'd add any additional SwiftUI code.
+
+### Build and run the Android application
+
+Use the run configuration from the run widget in your IDE's toolbar, or build it directly from the terminal:
 - on macOS/Linux
   ```shell
-  ./gradlew :composeApp:assembleDebug
+  ./gradlew :androidApp:assembleDebug
   ```
 - on Windows
   ```shell
-  .\gradlew.bat :composeApp:assembleDebug
+  .\gradlew.bat :androidApp:assembleDebug
   ```
 
-### Build and Run iOS Application
+### Build and run the iOS application
 
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+Use the run configuration from the run widget in your IDE's toolbar, or open the [`/iosApp`](./iosApp)
+directory in Xcode and run it from there.
+
+## Requirements
+
+- Android: minSdk 27+, a device with Google Play Services (Home API is used for commissioning).
+- iOS: Xcode to build/run [`/iosApp`](./iosApp).
+
+## License
+
+Copyright (c) Nordic Semiconductor. Licensed under a BSD-3-Clause style license — see the license header in
+[`App.kt`](./composeApp/src/commonMain/kotlin/no/nordicsemi/nrf/matter/App.kt) for full terms.
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)
+and [Compose Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform.html).

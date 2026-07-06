@@ -209,7 +209,6 @@ internal fun BindingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "No eligible source devices found. Please add a Light Switch or Outlet device to configure bindings.",
@@ -242,8 +241,7 @@ internal fun BindingsScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(16.dp),
                 ) {
                     Text(
                         text = "No active bindings configured.",
@@ -356,7 +354,6 @@ private fun BindingTableDetails(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "No eligible target devices found for the selected source. Please ensure you have a compatible Light or Dimmable light device added.",

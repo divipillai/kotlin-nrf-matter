@@ -17,9 +17,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingFlat
+import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.SwapCalls
 import androidx.compose.material.icons.filled.Tag
-import androidx.compose.material.icons.filled.Transform
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
@@ -174,7 +174,7 @@ internal fun BindingsScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Transform,
+                        imageVector = Icons.Default.Cable,
                         contentDescription = "Bindings Explanation",
                         tint = MaterialTheme.colorScheme.primary,
                     )

@@ -5,6 +5,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,8 +41,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -185,10 +192,11 @@ internal fun BindingsScreen(
                             text = "Understanding Matter Bindings",
                         )
                         Text(
-                            text = "The Binding Cluster (0x001E) allows client nodes to directly control target servers over unicast/multicast fabric connections, bypassing intermediate bridge proxies entirely.",
+                            text = "The Binding Cluster (0x001E) allows client devices (such as a light switch) to directly control or communicate with target devices (such as light bulbs) over the Matter fabric, without routing through an intermediate bridge or proxy.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                         )
+                        BindingLearnMoreText()
                     }
                 }
             }
@@ -211,7 +219,7 @@ internal fun BindingsScreen(
                         .padding(16.dp),
                 ) {
                     Text(
-                        text = "No eligible source devices found. Please add a Light Switch or Outlet device to configure bindings.",
+                        text = "No compatible source devices found. Add a supported source device (for example, a light switch) to configure bindings.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
                 }
@@ -544,6 +552,38 @@ fun BindingCardRow(
             }
         }
     }
+}
+
+private const val LEARN_MORE_URL =
+    "https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/samples/matter/light_switch/README.html"
+
+@Composable
+private fun ColumnScope.BindingLearnMoreText() {
+    val helpText = buildAnnotatedString {
+        append("For more information, click ")
+        withLink(
+            link = LinkAnnotation.Url(
+                url = LEARN_MORE_URL,
+                styles = TextLinkStyles(
+                    style = SpanStyle(
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline
+                    )
+                )
+            )
+        ) {
+            append("here")
+        }
+        append(".")
+    }
+
+    Text(
+        text = helpText,
+        modifier = Modifier.align(Alignment.Start),
+        style = MaterialTheme.typography.bodySmall.copy(
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+        )
+    )
 }
 
 @Preview(showBackground = true)

@@ -3,6 +3,9 @@ name: Deploy to Play Store Internal
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   deployInternal:
     runs-on: ubuntu-latest

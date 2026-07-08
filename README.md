@@ -1,6 +1,6 @@
 # nRF Matter for Mobile
 
-A [Matter](https://csa-iot.org/all-solutions/matter/) commissioning and control companion app by
+A [Matter](https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/index.html) commissioning and control companion app by
 [Nordic Semiconductor](https://www.nordicsemi.com/), built with Kotlin Multiplatform and Compose
 Multiplatform
 for Android and iOS.
@@ -23,7 +23,7 @@ The app lets you:
 
 This is a Kotlin Multiplatform project targeting Android and iOS.
 
-* [`/composeApp`](./composeApp/src) — shared Compose Multiplatform UI, screens, view models,
+* [`/composeApp`](./composeApp/src) — shared Compose Multiplatform UI, screens,
   navigation, and DI
   (Koin). Contains the usual KMP source sets:
     - [`commonMain`](./composeApp/src/commonMain/kotlin) — code shared across all targets (screens
@@ -111,20 +111,24 @@ To get a newer version:
 1. Check the [Home Mobile SDK for Android](https://developers.home.google.com/matter/apis/home) page and
    Google's public Maven index first — if the version you need has since been published there, drop the
    vendored copy here and depend on `google()` directly instead.
-2. Otherwise, get the newer `.aar` through Google's Home APIs developer program, then install it into
-   `./mavenLocal` preserving the existing Maven layout (`com/google/android/gms/<artifact>/<version>/...`,
-   including the `.pom` and checksums), e.g.:
+2. Otherwise, download the newer artifacts from the Home APIs early-access program: sign in to the Google
+   Cloud Console project you were given access to and grab the ZIP from the Home SDK storage bucket — see
+   [Exploring the Android Google Home APIs SDK](https://proandroiddev.com/exploring-the-android-google-home-apis-sdk-72b29eef0819)
+   for the walkthrough. Unzip it and install the `.aar`s into `./mavenLocal`, preserving the existing Maven
+   layout (`com/google/android/gms/<artifact>/<version>/...`, including the `.pom` and checksums), e.g.:
    ```shell
    mvn install:install-file -Dmaven.repo.local=./mavenLocal \
      -DgroupId=com.google.android.gms -DartifactId=play-services-home -Dversion=<new-version> \
      -Dpackaging=aar -Dfile=<path-to-aar> -DpomFile=<path-to-pom>
    ```
    (repeat for `play-services-home-types`).
-3. Bump the version behind `libs.play.services.home` / `libs.play.services.types` — these aliases come from
-   Nordic's shared `no.nordicsemi.gradle:version-catalog` dependency (see `settings.gradle.kts`), so check
-   whether that catalog needs updating too, not just the files in `./mavenLocal`.
-4. Re-test Android commissioning/control end-to-end after swapping versions — the Home API is still
-   evolving and minor version bumps have changed behavior before.
+3. None of this is required just to build the project — `./mavenLocal` already ships the vendored
+   `17.1.0` artifacts in this repo, so the steps above only matter if you're deliberately moving to a
+   newer version. Re-test Android commissioning/control end-to-end after swapping versions.
+
+   > **Warning:** the Home API is still evolving, so a newer version may introduce changes that weren't
+   > present in the older one — check `androidDeps` and anywhere else the Home API is used, and adjust as
+   > needed.
 
 ### Build and run the Android application
 

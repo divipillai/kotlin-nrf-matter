@@ -14,9 +14,9 @@ jobs:
       - name: Deploy to Play Internal
         shell: bash
         env:
-          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
-          KEYSTORE_KEY_PSWD: ${{ secrets.KEYSTORE_KEY_PSWD }}
+          PLAY_STORE_JSON_KEY_B64: ${{ secrets.PLAY_STORE_JSON_KEY_B64 }}
         run: |
-
+          echo "$PLAY_STORE_JSON_KEY_B64" | base64 --decode > fastlane-api.json
           fastlane deployInternal
+          rm -f fastlane-api.json
 

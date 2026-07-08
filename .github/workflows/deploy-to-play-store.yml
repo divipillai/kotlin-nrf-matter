@@ -1,0 +1,22 @@
+name: Deploy to Play Store Internal
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deployInternal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Deploy to Play Internal
+        shell: bash
+        env:
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+          KEYSTORE_KEY_PSWD: ${{ secrets.KEYSTORE_KEY_PSWD }}
+        run: |
+
+          fastlane deployInternal
+

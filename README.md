@@ -221,40 +221,37 @@ before the app is used.
 
 ### iOS
 
-The iPhone needs a Thread Border Router on the same network, and the corresponding Thread Network
-Credentials already installed via the system — these are installed through a system API and shared
-with
-every app on the phone, this one included. There are two ways to get them onto the iPhone:
+## Installing Thread Network Credentials on iOS
 
-- **Apple's own Home app**: set up a Thread-capable home hub — a HomePod mini, HomePod, or Apple TV
-  4K
-  (Wi-Fi + Ethernet model only; the Wi-Fi-only Apple TV 4K does *not* support Thread) — added to a
-  room.
-  HomePod (mini) becomes a home hub automatically; Apple TV becomes one once assigned to a room.
-  Once set
-  up, credentials are stored on the phone and Apple's `MatterSupport` framework
-  (`MatterAddDeviceRequest`) surface them to this app automatically during commissioning — no extra
-  in-app configuration.
-- **A third-party ecosystem's companion app**, when the Thread network is instead provided by a
-  device
-  such as a Samsung TV or a dedicated hub like a **Google TV Streamer 4K**: sign in to the
-  manufacturer's
-  companion app, add the Thread-enabled device to the home, and enable its Thread Border Router
-  functionality. For example:
-    - **Samsung**: [SmartThings](https://apps.apple.com/us/app/smartthings/id1222822904)
-    - **Google**: [Google Home](https://apps.apple.com/us/app/google-home/id680819774)
+This app requires a **Thread Border Router** connected to the same local network as the app. In
+addition, the iPhone must already have the corresponding **Thread Network Credentials** installed.
+The credentials are installed using system API and available for all the apps on the phone.
 
-  For detailed instructions, refer to the device manufacturer's documentation. If the credentials
-  aren't immediately available, commissioning a Matter device via the corresponding companion app
-  may
-  trigger their download and installation.
+The process for obtaining these credentials depends on the Thread ecosystem being used. In most
+cases, when the Thread network is provided by a device such as a Samsung TV or a dedicated hub such
+as **Google TV Streamer 4K**, the manufacturer's companion app must be used to download and install
+the Thread Network Credentials on the iPhone.
 
-  > **Note**
-  >
-  > This app has been tested with a **Google TV Streamer 4K**. At the time of writing, Google
-  provides
-  > no alternative method for installing or sharing Thread Network Credentials on iPhone other than
-  > through the **Google Home** app.
+For example:
+
+- **Samsung**: [SmartThings](https://apps.apple.com/us/app/smartthings/id1222822904)
+- **Google**: [Google Home](https://apps.apple.com/us/app/google-home/id680819774)
+
+For detailed instructions, refer to the documentation provided by the device manufacturer. In
+general, the required credentials are installed after signing in to the companion app, adding the
+Thread-enabled device to the home, and enabling its Thread Border Router functionality.
+
+If the credentials are not immediately available, commissioning a Matter device using the
+corresponding companion app may trigger the download and installation of the Thread Network
+Credentials.
+
+> **Note**
+>
+> The app has been tested with **Google TV Streamer 4K**. At the time of writing, Google does not
+> provide any alternative method for installing or sharing Thread Network Credentials on iPhone
+> other
+> than through the **Google Home** app.
+>
 
 ### Android
 

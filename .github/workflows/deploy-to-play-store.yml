@@ -24,7 +24,7 @@ jobs:
         env:
           PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY}}
           KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
-          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }}
+          KEYSTORE_PSWD: ${{ secrets.KEYSTORE_PSWD }}
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
           KEYSTORE_KEY_PSWD: ${{ secrets.KEYSTORE_KEY_PSWD }}
         run: |

@@ -9,7 +9,8 @@ for Android and iOS.
 The app lets you:
 
 - **Commission** new Matter devices onto your fabric:
-    - Android — via the Android Home API / Google Play Services, onto a Google Home fabric.
+    - Android — via the Android Home API / Google Play Services, provisioning the device onto both
+      the Google Home fabric and the app’s local fabric.
     - iOS — via Apple's `MatterSupport` framework (`MatterAddDeviceRequest`), onto a local fabric
       managed
       directly by the app itself (using `Matter.framework` / `MTRDeviceController`), with a bundled
@@ -63,36 +64,8 @@ fork of Project CHIP,
 downstream of
 [project-chip/connectedhomeip](https://github.com/project-chip/connectedhomeip)) — specifically its
 Android
-`chip-tool` build target for arm64. To rebuild them from source:
-
-1. Clone `sdk-connectedhomeip` and bootstrap the build environment (first time only):
-   ```shell
-   git clone https://github.com/nrfconnect/sdk-connectedhomeip.git
-   cd sdk-connectedhomeip
-   source scripts/bootstrap.sh
-   ```
-2. Point it at your Android SDK/NDK. This vendored build was produced with **NDK 28.2.13676358**, so
-   use
-   a matching version to keep the native ABI compatible:
-   ```shell
-   export ANDROID_HOME=~/Library/Android/sdk   # macOS; ~/Android/Sdk on Linux
-   export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.2.13676358
-   ```
-3. Build the `android-arm64-chip-tool` target:
-   ```shell
-   ./scripts/build/build_examples.py --target android-arm64-chip-tool build
-   ```
-4. Copy the resulting artifacts into this repo:
-    - `out/android-arm64-chip-tool/lib/*.jar` → [`androidDeps/libs`](./androidDeps/libs)
-    - `out/android-arm64-chip-tool/lib/jni/arm64-v8a/*.so` → [
-      `androidDeps/libs/jniLibs/arm64-v8a`](./androidDeps/libs/jniLibs/arm64-v8a)
-
-Artifact names have changed across connectedhomeip versions (e.g. `OnboardingPayload.jar` was
-previously
-named `SetupPayloadParser.jar`), so pin to a commit/tag that matches what's currently vendored here
-before
-comparing filenames, and re-test commissioning/cluster control end-to-end after swapping in a new
-build.
+`chip-tool` build target for arm64. To rebuild them from source follow the provided in the
+[nrfconnect/sdk-connectedhomeip](https://github.com/nrfconnect/sdk-connectedhomeip/blob/9895b2bdb4c43b48426930f03e3c05502babd2f0/docs/platforms/android/android_building.md).
 
 > **Note:** if you build  `.jars`/`.so` files yourself against a newer Matter version, this project
 > may need some changes to handle the newer version — newer Matter releases can add, rename, or
@@ -219,9 +192,7 @@ repository — it relies on the OS-provided home hub infrastructure, which is co
 network
 before the app is used.
 
-### iOS
-
-## Installing Thread Network Credentials on iOS
+### Installing Thread Network Credentials on iOS
 
 This app requires a **Thread Border Router** connected to the same local network as the app. In
 addition, the iPhone must already have the corresponding **Thread Network Credentials** installed.
@@ -261,8 +232,6 @@ Home app. Google Play Services (the Home API) then makes the credentials availab
 same
 way.
 
-### Either way
-
 - The phone and the hub **must be on the same Wi-Fi network** — credential/device discovery relies
   on
   local-network multicast (mDNS), which doesn't cross subnets or routers.
@@ -274,9 +243,7 @@ way.
 - Matter standardizes Thread credential sharing across ecosystems, so a single hub can plausibly
   serve
   both platforms — e.g. a Google TV Streamer 4K set up once in Google Home has been observed working
-  for both iOS and Android commissioning in this app, without a separate Apple-ecosystem hub. Treat
-  this as a field observation rather than a guarantee — re-verify if you hit setup issues on one
-  platform.
+  for both iOS and Android commissioning in this app, without a separate Apple-ecosystem hub.
 
 ### Testing without a hub: Matter Virtual Device (MVD)
 

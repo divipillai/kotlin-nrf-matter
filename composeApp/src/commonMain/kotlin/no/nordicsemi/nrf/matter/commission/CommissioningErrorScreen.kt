@@ -160,43 +160,34 @@ fun CommissioningErrorScreen(
             Button(
                 onClick = { navigateToLogs() },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(8.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(48.dp)
             ) {
                 Icon(Icons.Rounded.Terminal, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Go to Logs Panel", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("Go to Logs Panel", fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Surface(
+            Button(
                 onClick = { onBack() },
-                color = if (isSystemInDarkTheme()) PillBgDark else PillBgLight,
-                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isSystemInDarkTheme()) PillBgDark else PillBgLight,
+                    contentColor = if (isSystemInDarkTheme()) TextTitleDark else TextTitleLight
+                ),
+                shape = RoundedCornerShape(8.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(48.dp)
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Rounded.Close,
-                        contentDescription = null,
-                        tint = if (isSystemInDarkTheme()) TextTitleDark else TextTitleLight
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "Finish",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isSystemInDarkTheme()) TextTitleDark else TextTitleLight
-                    )
-                }
+                Icon(Icons.Rounded.Close, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Finish", fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -232,10 +223,11 @@ fun DetailsCard(
                             fontSize = 14.sp,
                             color = if (isDark) TextTitleDark else TextTitleLight,
                             maxLines = 1,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
-                                iterations = Int.MAX_VALUE,
-                                repeatDelayMillis = 1000
-                            )
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                .basicMarquee(
+                                    iterations = Int.MAX_VALUE,
+                                    repeatDelayMillis = 1000
+                                )
                         )
                     }
                 },
@@ -256,10 +248,11 @@ fun DetailsCard(
                             fontSize = 14.sp,
                             color = if (isDark) TextTitleDark else TextTitleLight,
                             maxLines = 1,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
-                                iterations = Int.MAX_VALUE,
-                                repeatDelayMillis = 1000
-                            )
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                .basicMarquee(
+                                    iterations = Int.MAX_VALUE,
+                                    repeatDelayMillis = 1000
+                                )
                         )
                     }
                 },
@@ -274,10 +267,11 @@ fun DetailsCard(
                         fontSize = 14.sp,
                         color = if (isDark) TextTitleDark else TextTitleLight,
                         maxLines = 1,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
-                            iterations = Int.MAX_VALUE,
-                            repeatDelayMillis = 1000
-                        )
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            .basicMarquee(
+                                iterations = Int.MAX_VALUE,
+                                repeatDelayMillis = 1000
+                            )
                     )
                 },
                 isDark = isDark
@@ -291,10 +285,11 @@ fun DetailsCard(
                         fontSize = 14.sp,
                         color = if (isDark) TextTitleDark else TextTitleLight,
                         maxLines = 1,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp).basicMarquee(
-                            iterations = Int.MAX_VALUE,
-                            repeatDelayMillis = 1000
-                        )
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            .basicMarquee(
+                                iterations = Int.MAX_VALUE,
+                                repeatDelayMillis = 1000
+                            )
                     )
                 },
                 isDark = isDark

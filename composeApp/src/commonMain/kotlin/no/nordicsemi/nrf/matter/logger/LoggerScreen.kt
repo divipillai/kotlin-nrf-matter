@@ -22,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,7 +44,7 @@ fun LoggerScreen() {
 
     val listState = rememberLazyListState()
 
-    var searchQuery = viewModel.filter.collectAsStateWithLifecycle().value
+    val searchQuery by viewModel.filter.collectAsStateWithLifecycle()
     val selectedLevelFilters = viewModel.selectedLogLevels.collectAsStateWithLifecycle().value
 
     val filteredLogs = viewModel.filteredLogs.collectAsStateWithLifecycle().value
@@ -57,11 +58,17 @@ fun LoggerScreen() {
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.setSearch(it) },
-                placeholder = { Text("Search messages, nodes or tags...", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                placeholder = {
+                    Text(
+                        "Search messages, nodes or tags...",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
+                        IconButton(onClick = { viewModel.setSearch("") }) {
                             Icon(Icons.Default.Clear, contentDescription = "Clear Search")
                         }
                     }

@@ -19,7 +19,6 @@ jobs:
         env:
           PLAY_STORE_JSON_KEY_B64: ${{ secrets.PLAY_STORE_JSON_KEY_B64 }}
         run: |
-          echo "$PLAY_STORE_JSON_KEY_B64" | base64 --decode > fastlane-api.json
+          echo "$PLAY_STORE_JSON_KEY_B64" > fastlane-api.json
           fastlane deployInternal
           rm -f fastlane-api.json
-

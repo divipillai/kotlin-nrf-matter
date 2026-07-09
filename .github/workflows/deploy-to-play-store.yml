@@ -23,9 +23,12 @@ jobs:
         shell: bash
         env:
           PLAY_STORE_JSON_KEY_B64: ${{ secrets.PLAY_STORE_JSON_KEY_B64 }}
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KEYSTORE_PSWD: ${{ secrets.KEYSTORE_PSWD }}
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
           KEYSTORE_KEY_PSWD: ${{ secrets.KEYSTORE_KEY_PSWD }}
         run: |
-          echo "$PLAY_STORE_JSON_KEY_B64" > fastlane-api.json
+          echo "$PLAY_STORE_JSON_KEY_B64" | base64 --decode > fastlane-api.json
+          echo "$KEYSTORE_B64" | base64 --decode > keystore
           fastlane deployInternal
-          rm -f fastlane-api.json
+          rm -f fastlane-api.json keystore

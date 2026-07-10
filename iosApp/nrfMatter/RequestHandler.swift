@@ -15,7 +15,6 @@ import SharedCode
  * The system extension job is to scan commissioning QR code
  * The class has 2 basic implementation:
  *  1. ``LocalRequestHandler`` - for adding a device to a local fabric that exists on the phone.
- *  2. ``GoogleRequestHandler`` - for adding a device to a Google Hub.
  *
  *  The system extension communicates with the app using a callback based apprach.
  *  The job of the app is to consume payload that is read from QR code,
@@ -57,6 +56,9 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
         SharedLogger.info("Configuring device '\(name)' in room: \(String(describing: room?.displayName))")
         
         await handler.configureDevice(named: name, in: room)
+        
+        let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
+        storage.storeBool(key: SharedConsts.resultKey, value: true)
     }
 
     override func validateDeviceCredential(_ deviceCredential: MatterAddDeviceExtensionRequestHandler.DeviceCredential) async throws {

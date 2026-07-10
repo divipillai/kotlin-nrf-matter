@@ -38,6 +38,7 @@ class LocalMatterCommissioner : MatterCommissioner {
         let request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
         
         let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
+        let _ = storage.removeStorageData(forKey: SharedConsts.resultKey)
         storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.local.rawValue)
         storage.storeNumber(key: SharedConsts.nodeIdKey, value: deviceId.nsNumber())
         
@@ -50,6 +51,17 @@ class LocalMatterCommissioner : MatterCommissioner {
                 stage: Stage.commissioning,
                 errorCode: KotlinInt(int: Int32(error.code)),
                 displayMessage: error.localizedDescription,
+                fabricId: 1
+            ))
+        }
+        
+        let result = storage.getBool(key: SharedConsts.resultKey) ?? false
+        guard result else {
+            return OperationResultError(t: CommissioningException(
+                deviceId: deviceId,
+                stage: Stage.commissioning,
+                errorCode: nil,
+                displayMessage: "Cancelled.",
                 fabricId: 1
             ))
         }

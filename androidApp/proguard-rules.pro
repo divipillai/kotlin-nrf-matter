@@ -5,6 +5,10 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
+# Matter SDK keep rules
+-keep class chip.** { *; }
+-keep class matter.** { *; }
+
 # If your project uses WebView with JS, uncomment the following
 # and specify the fully qualified class name to the JavaScript interface
 # class:
@@ -18,4 +22,12 @@
 
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Renamesourcefileattribute SourceFile
+
+# Gson keep rules
+-dontwarn com.google.gson.JsonArray
+-dontwarn com.google.gson.JsonElement
+-dontwarn com.google.gson.JsonNull
+-dontwarn com.google.gson.JsonObject
+-dontwarn com.google.gson.JsonParser
+-dontwarn com.google.gson.JsonPrimitive

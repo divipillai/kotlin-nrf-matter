@@ -87,6 +87,7 @@ class ChipClient(
 
     // Lazily instantiate [ChipDeviceController] and hold a reference to it.
     val chipDeviceController: ChipDeviceController by lazy {
+        System.loadLibrary("c++_shared")
         ChipDeviceController.loadJni()
 
         AndroidChipLogging.setLogCallback { module, _, message ->

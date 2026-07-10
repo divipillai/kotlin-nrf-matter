@@ -11,4 +11,5 @@ public class SharedConsts {
     public static let sharedStorage = "group.nordicsemi.nrf.matter.shared"
     public static let matterEnvStorageKey = "MatterEnvironment"
     public static let nodeIdKey = "nodeIdKey"
+    public static let resultKey = "resultKey"
 }

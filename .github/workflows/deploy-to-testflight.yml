@@ -29,5 +29,6 @@ jobs:
         FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
         FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
         SPACESHIP_ONLY_ALLOW_INTERACTIVE_2FA: ${{ secrets.SPACESHIP_ONLY_ALLOW_INTERACTIVE_2FA }}
+      working-directory: iosApp
       run:
         bundle exec fastlane upload_testflight

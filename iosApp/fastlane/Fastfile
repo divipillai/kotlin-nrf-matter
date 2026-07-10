@@ -17,4 +17,99 @@ platform :ios do
     )
   end
 
+  lane :authenticate do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APPLE_KEY_ID"],
+      issuer_id: ENV["APPLE_ISSUER_ID"],
+      key_content: ENV["APPLE_P8"],
+      is_key_content_base64: true,
+      duration: 1200,
+      in_house: false
+    )
+
+    api_key
+  end
+
+  def ensure_keychain(name)
+    delete_keychain(
+      name: name
+    ) if File.exist? File.expand_path("~/Library/Keychains/#{name}-db")
+    create_keychain(
+      name: name,
+      password: ENV["MATCH_KEYCHAIN_PASSWORD"],
+      default_keychain: true,
+      unlock: true,
+      timeout: 0,
+      lock_when_sleeps: false,
+      add_to_search_list: true
+    )
+  end
+
+  lane :unlock_db do
+    sh("security unlock-keychain -p #{ENV["MATCH_KEYCHAIN_PASSWORD"]} fastlane-db", log: false)
+    sh("security default-keychain -s fastlane-db", log: false)
+  end
+
+  lane :build do
+    path = build_app(
+      scheme: "iOS release",
+      export_method: "app-store",
+    )
+
+    path
+  end
+
+  lane :upload_testflight do
+    api_key = authenticate
+
+    ensure_keychain('fastlane');
+    unlock_db
+
+    match(
+      type: "appstore",
+      keychain_name: "fastlane",
+      keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"],
+      app_identifier: "com.nordicsemi.nrf.matter",
+      readonly: true
+    )
+
+    path = build
+
+    pilot(
+      api_key: api_key,
+      ipa: path,
+    )
+  end
+
+  lane :release do
+    UI.message("STAGE: authenticate")
+    api_key = authenticate
+
+    UI.message("STAGE: keychain")
+    ensure_keychain('fastlane');
+    unlock_db
+
+    UI.message("STAGE: match")
+    match(
+      type: "appstore",
+      keychain_name: "fastlane",
+      keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"],
+      app_identifier: "com.nordicsemi.nrf.matter",
+      readonly: true
+    )
+
+    UI.message("STAGE: build")
+    path = build
+
+    UI.message("STAGE: deliver")
+    deliver(
+      submit_for_review: false,
+      api_key: api_key,
+      ipa: path,
+      force: true,
+      precheck_include_in_app_purchases: false,
+      screenshots_path: "./fastlane/screenshots",
+      overwrite_screenshots: true
+    )
+  end
 end

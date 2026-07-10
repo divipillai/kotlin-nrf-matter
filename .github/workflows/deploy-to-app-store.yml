@@ -16,6 +16,7 @@ jobs:
       with:
         ruby-version: '3.4'
         bundler-cache: true
+        working-directory: iosApp
     - shell: bash
       env:
         APPLE_ISSUER_ID: ${{ secrets.APPLE_ISSUER_ID }}

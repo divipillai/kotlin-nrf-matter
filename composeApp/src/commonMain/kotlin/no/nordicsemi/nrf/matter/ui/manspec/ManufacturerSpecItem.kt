@@ -48,6 +48,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
@@ -93,6 +94,7 @@ fun ManufacturerSpecItem(
             .clickable {
                 isExpanded = !isExpanded
             }
+            .then(if (showMatterDeviceInfo) Modifier.cloudy() else Modifier)
     ) {
         Column {
             Row(

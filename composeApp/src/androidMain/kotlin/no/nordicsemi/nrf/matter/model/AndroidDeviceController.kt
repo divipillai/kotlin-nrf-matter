@@ -6,6 +6,7 @@ import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterDoorLockController
 import no.nordicsemi.nrf.matter.chip.MatterLightController
+import no.nordicsemi.nrf.matter.chip.MatterManufacturerSpecificController
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -44,6 +45,7 @@ class AndroidDeviceController(
     private val bindingManager: BindingManager,
     private val lightController: MatterLightController,
     private val lockController: MatterDoorLockController,
+    private val manufacturerSpecificController: MatterManufacturerSpecificController,
 ) : DeviceController {
 
     override val bindingLogs: Flow<String>
@@ -67,11 +69,8 @@ class AndroidDeviceController(
         isOn: Boolean,
         endpoint: Int
     ) {
-        chipClient.setLet(
-            deviceId,
-            0x1,
-            clusterId = 0xFFF1FC01L, // TODO: change the dynamic clusterId
-            commandId = 0xFFF10000L, // TODO: Change to the dynamic commandId
+        manufacturerSpecificController.setLed(
+            deviceId = deviceId,
         )
     }
 
@@ -112,11 +111,9 @@ class AndroidDeviceController(
         deviceId: DeviceId,
         endpoint: Int
     ): Flow<Boolean> {
-        return clustersHelper.subscribeToButtonChanges(
-            deviceId,
-            endpoint,
-            clusterId = 0xFFF1FC01L, // TODO: fix with dynamic clusterId.
-            attributeId = 0xfff10002L // TODO: fix with dynamic attributeId.
+        return manufacturerSpecificController.observeButtonChanges(
+            deviceId = deviceId,
+            endpoint = endpoint,
         )
     }
 

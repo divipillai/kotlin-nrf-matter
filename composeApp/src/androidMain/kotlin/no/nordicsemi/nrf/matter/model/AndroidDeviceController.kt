@@ -4,6 +4,8 @@ import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
+import no.nordicsemi.nrf.matter.chip.MatterDoorLockController
+import no.nordicsemi.nrf.matter.chip.MatterLightController
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -40,6 +42,8 @@ class AndroidDeviceController(
     private val clustersHelper: ClustersHelper,
     private val chipClient: ChipClient,
     private val bindingManager: BindingManager,
+    private val lightController: MatterLightController,
+    private val lockController: MatterDoorLockController,
 ) : DeviceController {
 
     override val bindingLogs: Flow<String>
@@ -51,8 +55,8 @@ class AndroidDeviceController(
         isOn: Boolean,
         endpoint: Int,
     ) {
-        clustersHelper.setOnOffDeviceStateOnOffCluster(
-            deviceId = deviceId.longValue,
+        lightController.setOnOffDeviceStateOnOffCluster(
+            deviceId = deviceId,
             isOn = isOn,
             endpoint = endpoint
         )
@@ -80,8 +84,8 @@ class AndroidDeviceController(
         isLocked: Boolean,
         endpoint: Int
     ) {
-        clustersHelper.lockUnlockDoor(
-            deviceId = deviceId.longValue,
+        lockController.lockUnlockDoor(
+            deviceId = deviceId,
             isLocked = isLocked,
             endpoint = endpoint,
         )
@@ -128,7 +132,7 @@ class AndroidDeviceController(
         brightnessLevel: Int,
         endpoint: Int
     ) {
-        clustersHelper.setBrightnessLevel(
+        lightController.setBrightnessLevel(
             deviceId = deviceId,
             brightnessLevel = brightnessLevel,
             endpoint = endpoint
@@ -139,7 +143,7 @@ class AndroidDeviceController(
         deviceId: DeviceId,
         endpoint: Int
     ): Flow<Boolean> {
-        return clustersHelper.observeLightState(
+        return lightController.observeLightState(
             deviceId = deviceId,
             endpoint = endpoint
         )
@@ -149,7 +153,7 @@ class AndroidDeviceController(
         deviceId: DeviceId,
         endpoint: Int
     ): Flow<Float> {
-        return clustersHelper.observeBrightnessState(
+        return lightController.observeBrightnessState(
             deviceId = deviceId,
             endpoint = endpoint
         )
@@ -158,10 +162,9 @@ class AndroidDeviceController(
     override fun observeLockDeviceState(
         deviceId: DeviceId,
         endpoint: Int,
-
         doorLockClusterId: Long
     ): Flow<LockDeviceState> {
-        return clustersHelper.observeLockState(
+        return lockController.observeLockState(
             deviceId = deviceId,
             endpoint = endpoint,
             doorLockClusterId = doorLockClusterId

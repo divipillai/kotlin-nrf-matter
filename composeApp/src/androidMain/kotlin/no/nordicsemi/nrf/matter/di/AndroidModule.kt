@@ -7,6 +7,7 @@ import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
+import no.nordicsemi.nrf.matter.chip.MatterDoorLockController
 import no.nordicsemi.nrf.matter.chip.MatterLightController
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
@@ -76,13 +77,14 @@ val androidModule = module {
     single { BindingManager(chipClient = get()) }
     single<MatterBasicInfoProvider> { MatterBasicInfoProvider(chipClient = get()) }
     single { MatterLightController(chipClient = get()) }
+    single { MatterDoorLockController(chipClient = get()) }
 
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<BindingRepository> { BindingRepository(get()) }
 
     // Inject DeviceController
-    single<DeviceController> { AndroidDeviceController(get(), get(), get(), get()) }
+    single<DeviceController> { AndroidDeviceController(get(), get(), get(), get(), get()) }
 
     factory { LightCommandHandler(get()) }
     factory { LockCommandHandler(get()) }

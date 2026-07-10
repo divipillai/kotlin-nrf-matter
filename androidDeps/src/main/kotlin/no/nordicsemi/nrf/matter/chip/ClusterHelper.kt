@@ -2,21 +2,14 @@ package no.nordicsemi.nrf.matter.chip
 
 import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
-import chip.devicecontroller.ReportCallback
 import chip.devicecontroller.model.AttributeState
 import chip.devicecontroller.model.ChipAttributePath
-import chip.devicecontroller.model.ChipEventPath
-import chip.devicecontroller.model.NodeState
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
-import no.nordicsemi.nrf.matter.model.LockDeviceState
-import java.util.Optional
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -362,111 +355,6 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 .writeNodeLabelAttribute(callback, nodeLabel)
         }
     }
-
-    suspend fun lockUnlockDoor(
-        deviceId: Long,
-        isLocked: Boolean,
-        endpoint: Int,
-        pinCode: String? = null
-    ) {
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId)
-            } catch (_: IllegalStateException) {
-                return
-            }
-
-        // If pin code is not provided then pull empty value.
-        val pinOptional = pinCode?.let {
-            Optional.of(it.toByteArray(Charsets.UTF_8))
-        } ?: Optional.empty()
-
-        return suspendCancellableCoroutine { continuation ->
-            val cluster = getLockUnlockClusterForDevice(connectedDevicePtr, endpoint)
-            val callback = object : ChipClusters.DefaultClusterCallback {
-                override fun onSuccess() {
-                    if (continuation.isActive) continuation.resume(Unit)
-                }
-
-                override fun onError(ex: Exception?) {
-                    if (continuation.isActive) {
-                        continuation.resumeWithException(
-                            ex ?: RuntimeException("Unknown Matter Error")
-                        )
-                    }
-                }
-            }
-
-            if (isLocked) {
-                cluster.lockDoor(callback, pinOptional, 10000)
-            } else {
-                cluster.unlockDoor(callback, pinOptional, 10000)
-            }
-        }
-    }
-
-    private fun getLockUnlockClusterForDevice(
-        devicePtr: Long,
-        endpoint: Int
-    ): ChipClusters.DoorLockCluster {
-        return ChipClusters.DoorLockCluster(devicePtr, endpoint)
-    }
-
-    fun observeLockState(deviceId: DeviceId, endpoint: Int, doorLockClusterId: Long) =
-        callbackFlow {
-            val reportCallback = object : ReportCallback {
-                override fun onError(
-                    attributePath: ChipAttributePath?,
-                    eventPath: ChipEventPath?,
-                    e: Exception
-                ) {
-                    NordicLogger.error("Subscription error on lock: $attributePath", e, tag = TAG)
-                }
-
-                override fun onReport(nodeState: NodeState) {
-                    val endpointState = nodeState.getEndpointState(endpoint) ?: return
-
-                    // Door Lock Cluster (257L), LockState Attribute (0)
-                    val lockCluster = endpointState.getClusterState(doorLockClusterId)
-                    val lockAttr = lockCluster?.getAttributeState(0)
-
-                    val rawValue = lockAttr?.value as? Number
-
-                    if (rawValue != null) {
-                        val lockStateEnum = rawValue.toInt()
-
-                        // 1 = Locked, 2 = Unlocked
-                        val isLocked = lockStateEnum == 1
-
-                        NordicLogger.info(
-                            "Received LockState report: isLocked=$isLocked", tag = TAG
-                        )
-
-                        trySend(LockDeviceState.create(lockStateEnum))
-                    }
-                }
-            }
-
-            try {
-                val devicePtr = chipClient.getConnectedDevicePointer(deviceId.longValue)
-                val targetPaths = listOf(
-                    ChipAttributePath.newInstance(endpoint, doorLockClusterId, 0) // Track LockState
-                )
-
-                chipClient.subscribeAttribute(
-                    reportCallback = reportCallback,
-                    devicePtr = devicePtr,
-                    attributePaths = targetPaths,
-                    minIntervalS = 0,
-                    maxIntervalS = 10,
-                    timeoutMs = 10000
-                )
-            } catch (e: Exception) {
-                close(e)
-            }
-
-            awaitClose { /* Cleanup */ }
-        }
 
     companion object {
         private val TAG: String

@@ -14,8 +14,10 @@ public class KeypairInitializer {
         let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
         
         if (storage.getBool(key: isInitializedKey) != true) {
+            SharedLogger.debug("Detected fresh app install. Clearing stale keychain data.")
             helper.deletePrivateKey()
             storage.storeBool(key: isInitializedKey, value: true)
+            SharedLogger.debug("Keychain cleared.")
         }
     }
 }

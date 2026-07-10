@@ -69,7 +69,10 @@ platform :ios do
       type: "appstore",
       keychain_name: "fastlane",
       keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"],
-      app_identifier: "com.nordicsemi.nrf.matter",
+      app_identifier: [
+          "com.nordicsemi.nrf.matter",
+          "com.nordicsemi.nrf.matter.extension"
+      ],
       readonly: true
     )
 
@@ -94,7 +97,10 @@ platform :ios do
       type: "appstore",
       keychain_name: "fastlane",
       keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"],
-      app_identifier: "com.nordicsemi.nrf.matter",
+      app_identifier: [
+          "com.nordicsemi.nrf.matter",
+          "com.nordicsemi.nrf.matter.extension"
+      ],
       readonly: true
     )
 

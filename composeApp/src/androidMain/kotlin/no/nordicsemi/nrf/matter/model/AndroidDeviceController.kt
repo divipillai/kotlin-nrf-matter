@@ -3,7 +3,6 @@ package no.nordicsemi.nrf.matter.model
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.chip.BindingManager
 import no.nordicsemi.nrf.matter.chip.ChipClient
-import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterDoorLockController
 import no.nordicsemi.nrf.matter.chip.MatterLightController
 import no.nordicsemi.nrf.matter.chip.MatterManufacturerSpecificController
@@ -40,7 +39,6 @@ import no.nordicsemi.nrf.matter.chip.MatterManufacturerSpecificController
  */
 
 class AndroidDeviceController(
-    private val clustersHelper: ClustersHelper,
     private val chipClient: ChipClient,
     private val bindingManager: BindingManager,
     private val lightController: MatterLightController,
@@ -121,7 +119,7 @@ class AndroidDeviceController(
         deviceId: DeviceId,
         endpoint: Int
     ): Int {
-        return clustersHelper.generateRandomNumber(deviceId)?.toInt() ?: -1
+        return manufacturerSpecificController.generateRandomNumber(deviceId)?.toInt() ?: -1
     }
 
     override suspend fun setBrightnessLevel(

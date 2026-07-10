@@ -86,7 +86,7 @@ val androidModule = module {
     single<BindingRepository> { BindingRepository(get()) }
 
     // Inject DeviceController
-    single<DeviceController> { AndroidDeviceController(get(), get(), get(), get(), get(), get()) }
+    single<DeviceController> { AndroidDeviceController(get(), get(), get(), get(), get()) }
 
     factory { LightCommandHandler(get()) }
     factory { LockCommandHandler(get()) }

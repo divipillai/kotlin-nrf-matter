@@ -30,9 +30,6 @@ jobs:
         run: |
           echo "$PLAY_STORE_JSON_KEY" > fastlane-api.json
           echo "$KEYSTORE_B64" | base64 --decode > keystore
-          # 3. Recreate the properties file
-          cat << 'EOF' > keystore.properties
-          ${{ secrets.KEYSTORE_PROPERTIES }}
-          EOF
+ 
           fastlane deployInternal
-          rm -f fastlane-api.json keystore keystore.properties
+          rm -f fastlane-api.json keystore

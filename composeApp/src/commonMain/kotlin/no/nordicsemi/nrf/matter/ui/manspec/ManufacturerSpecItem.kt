@@ -144,6 +144,10 @@ fun ManufacturerSpecItem(
                             .alpha(0.5f)
                     )
                 }
+                Icon(
+                    imageVector = if (isExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                    contentDescription = "Expand",
+                )
             }
 
             Column(

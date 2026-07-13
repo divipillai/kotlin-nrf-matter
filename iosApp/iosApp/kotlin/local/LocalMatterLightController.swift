@@ -10,14 +10,16 @@ import Matter
 import SharedCode
 import OSLog
 
-/**
- * A helper class from controlling a light type Matter device in a local fabric.
- */
+/// Controls a light type Matter device in the local fabric.
 class LocalMatterLightController : MatterLightController {
 
-    /**
-     * Set the light on/off on a remote Matter device.
-     */
+    /// Turns the light on or off.
+    ///
+    /// - Parameters:
+    ///   - deviceId: The Matter node ID of the target device.
+    ///   - isOn: `true` to turn the light on, `false` to turn it off.
+    ///   - endpoint: The endpoint hosting the On/Off cluster.
+    /// - Throws: An error if the local controller cannot be obtained or the command fails.
     func setDeviceOnOff(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         SharedLogger.debug("Set device on/off = \(isOn)")
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
@@ -32,9 +34,13 @@ class LocalMatterLightController : MatterLightController {
         }
     }
     
-    /**
-     * Set the brightness level on a remote Matter device.
-     */
+    /// Sets the brightness level via the Level Control cluster.
+    ///
+    /// - Parameters:
+    ///   - deviceId: The Matter node ID of the target device.
+    ///   - level: The target level, as defined by the Level Control cluster.
+    ///   - endpoint: The endpoint hosting the Level Control cluster.
+    /// - Throws: An error if the local controller cannot be obtained or the command fails.
     func setBrightnessLevel(deviceId: DeviceId, level: Int32, endpoint: Int32) async throws {
         SharedLogger.debug("Set brightess level: \(level)")
 
@@ -54,9 +60,13 @@ class LocalMatterLightController : MatterLightController {
         try await cluster?.moveToLevel(with: params)
     }
     
-    /**
-     * Observe if a device is on changes on a remote Matter device.
-     */
+    /// Subscribes to on/off state changes reported by the device.
+    ///
+    /// - Parameters:
+    ///   - deviceId: The Matter node ID of the target device.
+    ///   - endpoint: The endpoint hosting the On/Off cluster.
+    ///   - onUpdate: Called with each reported on/off state.
+    /// - Throws: An error if the local controller cannot be obtained.
     func subscribeToLedChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
         SharedLogger.debug("subscribeToLedChanges")
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
@@ -75,9 +85,16 @@ class LocalMatterLightController : MatterLightController {
         })
     }
     
-    /**
-     * Observe light level changes on a remote Matter device.
-     */
+    /// Subscribes to brightness level changes reported by the device.
+    ///
+    /// Raw level values from the Level Control cluster are normalized to a `0...1` range
+    /// before being delivered.
+    ///
+    /// - Parameters:
+    ///   - deviceId: The Matter node ID of the target device.
+    ///   - endpoint: The endpoint hosting the Level Control cluster.
+    ///   - onUpdate: Called with each reported level, normalized to `0...1`.
+    /// - Throws: An error if the local controller cannot be obtained.
     func subscribeToLightLevelChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinFloat) -> Void) async throws {
         SharedLogger.debug("subscribeToLightLevelChanges")
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()

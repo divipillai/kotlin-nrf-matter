@@ -8,22 +8,29 @@
 import Security
 import Foundation
 
-/**
- * A helper class for managing signing keys.
- * A signing keys needs to be unique and persistent for a specific fabric so those are
- * stored on the phone and retrieved when needed.
- */
+/// A helper class for managing signing keys.
+///
+/// A signing key needs to be unique and persistent for a specific fabric, so it is
+/// stored on the phone and retrieved when needed.
 class KeypairHelper {
     
     private let logTag: String
     private let tag: Data
     
+    /// Creates a helper that manages the signing keypair stored under a fixed application tag.
+    ///
+    /// - Parameter logTag: Tag used to prefix log messages emitted by this instance.
     init(logTag: String) {
         self.logTag = logTag
         let name = "com.nordicsemi.nrf.matter"
         tag = name.data(using: .utf8)!
     }
-    
+
+    /// Generates a new private key in the keychain, replacing any existing one with the same tag.
+    ///
+    /// - Returns: The newly generated private key.
+    /// - Throws: `KeypairError.generatePrivateKeyFailed` if key generation fails, or
+    ///   `KeypairError.generatePrivateKeyReturnedNil` if it unexpectedly returns no key.
     func generatePrivateKey() throws -> SecKey {
         SharedLogger.debug("\(self.logTag) - Generating new key.")
         
@@ -55,6 +62,9 @@ class KeypairHelper {
         return secKey
     }
     
+    /// Retrieves the previously generated private key from the keychain, if one exists.
+    ///
+    /// - Returns: The stored private key, or `nil` if no key is found.
     func getPrivateKey() -> SecKey? {
         SharedLogger.debug("\(self.logTag) - Getting private key.")
 
@@ -81,6 +91,7 @@ class KeypairHelper {
         return (item as! SecKey)
     }
     
+    /// Deletes the stored private key from the keychain.
     func deletePrivateKey() {
         SharedLogger.debug("\(self.logTag) - Deleting private key.")
         

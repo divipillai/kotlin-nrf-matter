@@ -11,26 +11,29 @@ import MatterSupport
 import nrfMatter
 import SharedCode
 
-/**
- * A helper class for commssioning a new matter device.
- * A new device may be commissioned using WiFi or Thread network.
- * A thread device requires Thread Border Router available in the local network
- * and network credentials stored on the phone.
- * The new device is added to a local fabric and managed by the phone.
- */
+/// Commissions a new Matter device into the local fabric.
+///
+/// A new device can be commissioned over Wi-Fi or Thread. Commissioning a Thread device
+/// requires a Thread Border Router available on the local network and Thread network
+/// credentials stored on the phone. Once commissioned, the device is added to the local fabric
+/// and managed by the phone.
 class LocalMatterCommissioner : MatterCommissioner {
 
-    /**
-     * Commission a new Matter device to a local fabric.
-     *
-     * During the process a logic moves to the app extension.
-     * The system's app extension is responsible for providing UI for scanning QR code and providing
-     * the list of available Thread networks.
-     * The local fabric is shared between main app and app exensions by App Groups.
-     *
-     * After successful commissioning, descriptor clusters for all available endpoint are read and
-     * all the meta data is returned.
-     */
+    /// Commissions a new Matter device into the local fabric using Apple's MatterSupport
+    /// add-device flow.
+    ///
+    /// During the process, control moves to the system app extension, which provides the UI
+    /// for scanning the QR code and choosing among available Thread networks. The local fabric
+    /// is shared between the main app and the app extension via App Groups.
+    ///
+    /// After successful commissioning, the descriptor clusters for all available endpoints are
+    /// read and the resulting device metadata is returned.
+    ///
+    /// - Parameter deviceId: The Matter node ID to assign to the newly commissioned device.
+    /// - Returns: An `OperationResultSuccess` containing the discovered `Device` on success, or
+    ///   an `OperationResultError` describing the failure.
+    /// - Throws: An error if the local controller needed for post-commissioning cluster
+    ///   discovery cannot be obtained.
     func startIosCommissioning(deviceId: DeviceId) async throws -> any OperationResult {
         let homes = [MatterAddDeviceRequest.Home(displayName: "Nordic Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "Nordic Ecosystem", homes: homes)

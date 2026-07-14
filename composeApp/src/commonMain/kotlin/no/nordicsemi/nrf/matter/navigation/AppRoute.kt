@@ -58,7 +58,14 @@ data object LoggerRoute : NavKey
 
 @Serializable
 @SerialName("Commissioning")
-data object CommissioningRoute : NavKey
+data class CommissioningRoute(
+    val id: Int = nextId++
+) : NavKey {
+
+    companion object {
+        var nextId: Int = 0
+    }
+}
 
 val config = SavedStateConfiguration {
     serializersModule = SerializersModule {

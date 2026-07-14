@@ -120,8 +120,13 @@ fun App(homeViewModel: HomeViewModel) {
                     if (devicesUiModel.devices.isNotEmpty()) {
                         FloatingActionButton(
                             onClick = {
-                                // invoke onCommission click action.
-                                backStack.add(CommissioningRoute)
+                                // Recreate the last destination if the route is already at the top.
+                                val lastIndex = backStack.lastIndex
+                                if (lastIndex >= 0 && backStack[lastIndex] is CommissioningRoute) {
+                                    backStack[lastIndex] = CommissioningRoute()
+                                } else {
+                                    backStack.add(CommissioningRoute())
+                                }
                             }
                         ) {
                             Icon(Icons.Default.Add, null)
@@ -169,7 +174,7 @@ fun App(homeViewModel: HomeViewModel) {
                     entryProvider = entryProvider {
                         screens(
                             onCommissioningStarted = {
-                                backStack.add(CommissioningRoute)
+                                backStack.add(CommissioningRoute())
                             },
                             backStack = backStack,
                             homeViewModel = homeViewModel

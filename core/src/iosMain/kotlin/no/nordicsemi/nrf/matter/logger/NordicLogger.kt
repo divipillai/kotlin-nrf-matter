@@ -34,6 +34,13 @@ actual object NordicLogger {
     }
 
     actual fun error(message: String, t: Throwable?, tag: String) {
-        logger.error(tag, message)
+        val fullMessage = buildString {
+            append(message)
+            if (t != null) {
+                appendLine()
+                append(t.stackTraceToString())
+            }
+        }
+        logger.error(tag, fullMessage)
     }
 }

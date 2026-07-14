@@ -6,6 +6,8 @@ final class iosAppUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    /// Launches the app and captures fastlane snapshot screenshots of the Dashboard,
+    /// Bindings, and Logs Panel tabs by navigating between them in turn.
     @MainActor
     func testScreenshots() throws {
         let app = XCUIApplication()
@@ -21,10 +23,12 @@ final class iosAppUITests: XCTestCase {
         snapshot("Logs Panel")
     }
 
-    // Compose Multiplatform tabs aren't native UIKit buttons, so their UIAccessibility
-    // trait isn't guaranteed to be `.button`. `Modifier.testTag(...)` on the Kotlin side
-    // maps to `accessibilityIdentifier` on iOS, so match on identifier across any element
-    // type instead of assuming `app.buttons[...]`.
+    /// Taps the tab identified by `identifier`.
+    ///
+    /// Compose Multiplatform tabs aren't native UIKit buttons, so their UIAccessibility
+    /// trait isn't guaranteed to be `.button`. `Modifier.testTag(...)` on the Kotlin side
+    /// maps to `accessibilityIdentifier` on iOS, so match on identifier across any element
+    /// type instead of assuming `app.buttons[...]`.
     @MainActor
     private func tapTab(_ app: XCUIApplication, _ identifier: String) {
         let tab = app.descendants(matching: .any).matching(identifier: identifier).firstMatch

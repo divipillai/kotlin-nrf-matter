@@ -8,26 +8,27 @@
 import Matter
 import os.log
 
+/// Errors that can occur while setting up the local ``MTRDeviceController``.
 enum ControllerError : Error {
+    /// The controller factory or fabric could not be initialized.
     case initializationError
 }
 
-/**
- * A helper class for managing access to ``MTRDeviceController``.
- * The controller is shared between the app extension and the main app.
- *
- * A local fabric is identify by fabric id, ipk and private/public keys used in noc signer.
- * If those data don't match then the controller may return a fabric with no devices even if the
- * fabric id matches with the previously used one.
- *
- * The controller takes care so the only one active controller is in use at the same time.
- * If an instance of a controller already exists then it is returned from the cache value.
- * If a new instance needs to be created then firstly it tries to create a controller on a fabric assuming that
- * the fabric already exists. If ipk, fabric id and noc signer matches then the new instance of the controller
- * will be created and stored locally in cached field for later used.
- * If creation of the existing fabric fails then the controller on a new fabric will be created.
- * It can happen even when fabric id was previously used for creating a fabric but ipk and noc signer doesn't match.
- */
+/// A helper class for managing access to ``MTRDeviceController``.
+///
+/// The controller is shared between the app extension and the main app.
+///
+/// A local fabric is identified by its fabric ID, IPK, and the private/public keys used by the
+/// NOC signer. If those don't match, the controller may return a fabric with no devices even if
+/// the fabric ID matches a previously used one.
+///
+/// The controller ensures that only one active controller is in use at a time. If an instance
+/// already exists, it is returned from the cached value. If a new instance needs to be created,
+/// it first tries to create a controller on a fabric assuming that fabric already exists. If the
+/// IPK, fabric ID, and NOC signer match, the new controller instance is created and cached for
+/// later use. If creation on the existing fabric fails, a controller on a new fabric is created
+/// instead. This can happen even when the fabric ID was previously used, if the IPK or NOC signer
+/// no longer match.
 public class LocalControllerProvider {
 
     private let logTag: String
@@ -35,18 +36,29 @@ public class LocalControllerProvider {
     
     private static var controller: MTRDeviceController? = nil
     
+    /// Creates a provider for accessing the shared local device controller.
+    ///
+    /// - Parameter logTag: Tag used to prefix log messages emitted by this instance.
     public init(logTag: String) {
         self.logTag = logTag
     }
-    
-    /**
-     * Releases ``MTRDeviceControllerFactory`` and all created by it ``MTRDeviceController``.
-     * After that ``MTRDeviceController`` cannot be used.
-     */
+
+    /// Releases the ``MTRDeviceControllerFactory`` and every ``MTRDeviceController`` it created.
+    ///
+    /// After calling this, no ``MTRDeviceController`` can be used.
     public func release() {
         factory.stop()
     }
-    
+
+    /// Returns the shared local device controller, creating it if necessary.
+    ///
+    /// If a running controller already exists, it is returned from the cache. Otherwise, this
+    /// starts the controller factory if needed, loads or creates the IPK, and attempts to create
+    /// a controller on the existing fabric before falling back to creating one on a new fabric.
+    ///
+    /// - Returns: The active ``MTRDeviceController``.
+    /// - Throws: `ControllerError.initializationError` if the IPK could not be loaded or created,
+    ///   or an error from the underlying controller factory if the controller cannot be created.
     public func getController() throws -> MTRDeviceController {
         if let controller = Self.controller, controller.isRunning {
             return controller
@@ -84,11 +96,13 @@ public class LocalControllerProvider {
         return controller
     }
     
-    /**
-     * Loads or creates IPK.
-     * IPK needs to be uniqu per fabric.
-     * It is used for CASE (Certificate Authenticated Session Establishment).
-     */
+    /// Loads the stored IPK, generating and persisting a new one if none exists.
+    ///
+    /// The IPK must be unique per fabric. It is used for CASE (Certificate Authenticated Session
+    /// Establishment).
+    ///
+    /// - Parameter storage: The storage to load the IPK from and persist it to.
+    /// - Returns: The IPK data, or `nil` if it could not be loaded or generated.
     private func loadOrCreateIPK(storage: SharedStorage) -> Data? {
         if let storedIpk = storage.getKey(forKey: "MatterIPK") {
             return storedIpk as Data

@@ -9,15 +9,13 @@ import ComposeApp
 import SharedCode
 import Matter
 
-/**
- * A helper class for decommissioning a device.
- * It is removed from local fabric after that.
- */
+/// Decommissions a device, removing it from the local fabric.
 class LocalMatterDecommissioner : MatterDecommissioner {
-    
-    /**
-     * Decommission a device and remove it from a local fabric.
-     */
+
+    /// Removes the operational credentials fabric from the device and forgets it locally.
+    ///
+    /// - Parameter deviceId: The Matter node ID of the device to decommission.
+    /// - Throws: An error if reading or removing the fabric fails.
     func decommission(deviceId: DeviceId) async throws {
         SharedLogger.info("Decommission device: \(deviceId)")
         let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()

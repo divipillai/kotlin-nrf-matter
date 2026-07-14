@@ -10,14 +10,16 @@ import Matter
 import SharedCode
 import OSLog
 
-/**
- * A helper class from controlling a door type Matter device.
- */
+/// Controls a door-lock type Matter device in the local fabric.
 class LocalMatterDoorController : MatterDoorController {
 
-    /**
-     * Lock/unlock the door.
-     */
+    /// Locks or unlocks the door.
+    ///
+    /// - Parameters:
+    ///   - deviceId: The Matter node ID of the target device.
+    ///   - isLocked: `true` to lock the door, `false` to unlock it.
+    ///   - endpoint: The endpoint hosting the Door Lock cluster.
+    /// - Throws: An error if the local controller cannot be obtained or the command fails.
     func lockUnlockDoor(deviceId: DeviceId, isLocked: Bool, endpoint: Int32) async throws {
         SharedLogger.debug(#function)
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
@@ -31,9 +33,13 @@ class LocalMatterDoorController : MatterDoorController {
         }
     }
     
-    /**
-     * Observe door lock state changes on a remote Matter device.
-     */
+    /// Subscribes to door lock state changes reported by the device.
+    ///
+    /// - Parameters:
+    ///   - deviceId: The Matter node ID of the target device.
+    ///   - endpoint: The endpoint hosting the Door Lock cluster.
+    ///   - onUpdate: Called with each reported lock state.
+    /// - Throws: An error if the local controller cannot be obtained.
     func subscribeToLockChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (LockDeviceState) -> Void) async throws {
         SharedLogger.debug(#function)
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()

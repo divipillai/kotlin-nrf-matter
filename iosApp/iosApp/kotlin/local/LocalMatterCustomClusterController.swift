@@ -10,8 +10,9 @@ import ComposeApp
 import SharedCode
 import OSLog
 
+/// Namespace for identifiers of the manufacturer-specific cluster used in this example.
 enum ManufacturerSpecificCluster {
-    
+
     static let id: NSNumber = 0xFFF1FC01
     
     enum Attribute {
@@ -25,18 +26,20 @@ enum ManufacturerSpecificCluster {
     }
 }
 
-/**
- * A helper class for communication with a manufacturer specific cluster defined in this example
- * A new cluster provides 2 functionalities:
- *  1. Turning on/off LED light.
- *  2. Observe button state changes.
- */
+/// Communicates with the manufacturer-specific cluster defined by this example's firmware.
+///
+/// The cluster provides two features:
+/// 1. Turning the LED on/off.
+/// 2. Observing button state changes.
 class LocalMatterCustomClusterController: MatterManufacturerCustomDataController {
-    
-    /**
-     * Reads the custom attributes from the Matter device.
-     * The new fields are: custom device name, state of LED light, state of button press.
-     */
+
+    /// Reads the custom attributes exposed by the manufacturer-specific cluster.
+    ///
+    /// - Parameters:
+    ///   - deviceId: The Matter node ID of the target device.
+    ///   - endpoint: The endpoint hosting the cluster.
+    /// - Returns: The device's custom name, LED state, and button state.
+    /// - Throws: An error if any of the attribute reads fail.
     func getData(deviceId: DeviceId, endpoint: Int32) async throws -> ManufacturerSpecificData {
         SharedLogger.debug("Getting custom manufacturer data...")
         
@@ -56,9 +59,13 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
         return data
     }
 
-    /**
-     * Sends a command for turning on/off LED light.
-     */
+    /// Sends a command to turn the LED on or off.
+    ///
+    /// - Parameters:
+    ///   - deviceId: The Matter node ID of the target device.
+    ///   - isOn: `true` to turn the LED on, `false` to turn it off.
+    ///   - endpoint: The endpoint hosting the cluster.
+    /// - Throws: An error if the command invocation fails.
     func setLed(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         SharedLogger.debug("invoke setLed")
         let commandExecutor = try CommandExecutor(deviceId: deviceId.nsNumber())
@@ -73,9 +80,12 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
         )
     }
     
-    /**
-     * Subscribe to button state changes.
-     */
+    /// Subscribes to button press state changes reported by the cluster.
+    ///
+    /// - Parameters:
+    ///   - deviceId: The Matter node ID of the target device.
+    ///   - endpoint: The endpoint hosting the cluster.
+    ///   - onUpdate: Called with each new button state.
     func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
         let attributeSubscriber = try? AttributeSubscriber(deviceId: deviceId.nsNumber())
         let endpointId = NSNumber(value: endpoint)

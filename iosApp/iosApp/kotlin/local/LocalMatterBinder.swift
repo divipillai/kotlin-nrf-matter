@@ -9,14 +9,23 @@ import ComposeApp
 import Matter
 import SharedCode
 
+/// Binds Matter device clusters directly to each other for device-to-device
+/// control, bypassing the controller.
 class LocalMatterBinder : MatterBinder {
 
-    /**
-     * Binds a source and a target Matter devices.
-     * The source will be sending commands directly to the target without using of a controller.
-     * The set of supported commands is defined in the cluster.
-     * The cluster is defined as a client cluster for the source and as a server cluster for the target.
-     */
+    /// Binds a source device and a target device together.
+    ///
+    /// The source device will send commands directly to the target without going through a
+    /// controller. The set of supported commands is defined by the cluster, which is declared
+    /// as a client cluster on the source and as a server cluster on the target.
+    ///
+    /// - Parameters:
+    ///   - sourceNodeId: The node ID of the device that will send commands.
+    ///   - sourceEndpoint: The endpoint on the source device that hosts the client cluster.
+    ///   - targetNodeId: The node ID of the device that will receive commands.
+    ///   - targetEndpoint: The endpoint on the target device that hosts the server cluster.
+    ///   - clusterId: The cluster ID used for the binding.
+    /// - Throws: An error if granting access on target or creating the binding on source fails.
     func bind(sourceNodeId: DeviceId, sourceEndpoint: Int32, targetNodeId: DeviceId, targetEndpoint: Int32, clusterId: Int64) async throws {
         SharedLogger.info("Binding clusters...")
         SharedLogger.debug("Source node id: \(sourceNodeId)")
@@ -36,22 +45,27 @@ class LocalMatterBinder : MatterBinder {
         SharedLogger.info("Binding successful.")
     }
 
-    /**
-     * Open access on a target so it can be controlled by another Matter device.
-     * It is important not to delete already existing records so the commissioner can
-     * still control the target.
-     *
-     * Privilate levels:
-     * View - for reading attributes.
-     * Operate - for sending commands.
-     * Manage - for bindings and subscriptions but without changing privilages, settings ACL etc.
-     * Administer - all permissions, available for commissioner.
-     *
-     * Auth mode:
-     * CASE - for secure 1 to 1 communication.
-     * Group - less secure but suitable for 1 to N communication.
-     */
-    func grantAccessToSource(targetDeviceID: NSNumber, sourceNodeID: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async {
+    /// Grants a source device access to a target device's cluster via an ACL entry.
+    ///
+    /// Existing ACL entries are preserved so the commissioner can continue to control the
+    /// target; the new entry is only appended if an equivalent one does not already exist.
+    ///
+    /// Privilege levels:
+    /// - View: for reading attributes.
+    /// - Operate: for sending commands.
+    /// - Manage: for bindings and subscriptions, without changing privileges, ACL settings, etc.
+    /// - Administer: all permissions, available to the commissioner.
+    ///
+    /// Auth mode:
+    /// - CASE: for secure one-to-one communication.
+    /// - Group: less secure but suitable for one-to-many communication.
+    ///
+    /// - Parameters:
+    ///   - targetDeviceID: The node ID of the device whose ACL is being modified.
+    ///   - sourceNodeID: The node ID being granted access.
+    ///   - clusterID: The cluster ID the access grant applies to.
+    ///   - controller: The Matter controller used to reach the target device.
+    private func grantAccessToSource(targetDeviceID: NSNumber, sourceNodeID: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async {
         let targetDevice = MTRBaseDevice(nodeID: targetDeviceID, controller: controller)
         guard let aclCluster = MTRBaseClusterAccessControl(device: targetDevice, endpointID: 0, queue: .main) else { return }
         
@@ -88,20 +102,24 @@ class LocalMatterBinder : MatterBinder {
         }
     }
     
-    /**
-     * Tells the source to send commands directly to another Matter device.
-     *
-     * The set of supported commands is defined by the cluster.
-     * The source should be able to support those commands and be able to send them to the target.
-     * The source declares that capability in descriptor cluster for the endpoint as a client cluster.
-     *
-     * The target needs to implement this cluster and is responsible for accepting commands.
-     * The target should declare that it is using this cluster in cluster descriptor for the endpoint as
-     * a server cluster.
-     *
-     * The binding record should be appended to not delete previously defined bindings. 
-     */
-    func bindSwitchToBulb(sourceDeviceID: NSNumber, sourceEndpoint: NSNumber, targetNodeID: NSNumber, targetEndpoint: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async {
+    /// Creates a binding so the source device can send commands directly to the target device.
+    ///
+    /// The set of supported commands is defined by the cluster. The source must support those
+    /// commands and should declare that capability in its descriptor cluster for the endpoint as a
+    /// client cluster. The target must implement the cluster and should declare it in its own
+    /// descriptor cluster for the endpoint as a server cluster.
+    ///
+    /// The new binding entry is appended to the source's existing binding list so previously
+    /// defined bindings are preserved.
+    ///
+    /// - Parameters:
+    ///   - sourceDeviceID: The node ID of the device that will send commands.
+    ///   - sourceEndpoint: The endpoint on the source device that hosts the client cluster.
+    ///   - targetNodeID: The node ID of the device that will receive commands.
+    ///   - targetEndpoint: The endpoint on the target device that hosts the server cluster.
+    ///   - clusterID: The cluster ID used for the binding.
+    ///   - controller: The Matter controller used to reach the source device.
+    private func bindSwitchToBulb(sourceDeviceID: NSNumber, sourceEndpoint: NSNumber, targetNodeID: NSNumber, targetEndpoint: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async {
         let sourceDevice = MTRBaseDevice(nodeID: sourceDeviceID, controller: controller)
         guard let bindingCluster = MTRBaseClusterBinding(device: sourceDevice, endpointID: sourceEndpoint, queue: .main) else { return }
         

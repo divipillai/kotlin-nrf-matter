@@ -9,10 +9,19 @@ import Foundation
 import Matter
 import SharedCode
 
+/// `MTRDeviceAttestationDelegate` implementation that ignores the attestation outcome and always
+/// allows commissioning to continue.
 class MatterAttestationDelegate: NSObject, MTRDeviceAttestationDelegate {
-    
+
     // MARK: - MTRDeviceAttestationDelegate
-    
+
+    /// Called when device attestation completes; logs the result and continues commissioning regardless of outcome.
+    ///
+    /// - Parameters:
+    ///   - controller: The controller performing commissioning.
+    ///   - opaqueDeviceHandle: The device handle to pass back to the controller when resuming commissioning.
+    ///   - attestationDeviceInfo: The attestation information reported for the device.
+    ///   - error: An error describing the attestation outcome, or `nil` if attestation succeeded.
     func deviceAttestationCompleted(
         for controller: MTRDeviceController,
         opaqueDeviceHandle: UnsafeMutableRawPointer,
@@ -26,7 +35,13 @@ class MatterAttestationDelegate: NSObject, MTRDeviceAttestationDelegate {
             SharedLogger.error("Failed to continue commissioning device error: \(error).")
         }
     }
-    
+
+    /// Called when device attestation fails; logs the failure and continues commissioning anyway.
+    ///
+    /// - Parameters:
+    ///   - controller: The controller performing commissioning.
+    ///   - opaqueDeviceHandle: The device handle to pass back to the controller when resuming commissioning.
+    ///   - error: The attestation failure.
     func deviceAttestationFailed(
         for controller: MTRDeviceController,
         opaqueDeviceHandle: UnsafeMutableRawPointer,

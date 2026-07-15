@@ -7,8 +7,8 @@ enum class LockDeviceState(val value: Int) {
     UNLATCHED(3);
 
     companion object {
-        fun create(value: Int): LockDeviceState? {
-            return LockDeviceState.entries.firstOrNull { it.value == value }
+        fun create(value: Int): LockDeviceState {
+            return LockDeviceState.entries.first { it.value == value }
         }
     }
 }

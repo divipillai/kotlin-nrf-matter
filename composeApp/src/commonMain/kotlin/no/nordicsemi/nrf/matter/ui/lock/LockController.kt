@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.device.UiState.*
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -27,21 +28,23 @@ class LockController(
 ) : MatterController {
 
     val lockState = MutableStateFlow(LockDeviceState.UNLOCKED)
-    val lockingState = MutableStateFlow<UiState<Unit>>(UiState.Success(Unit))
+    val lockingState = MutableStateFlow<UiState<Unit>>(Success(Unit))
     val finalState = lockState.combine(lockingState) { lockState, operationState ->
         when (operationState) {
-            is UiState.Error -> UiState.Error(operationState.message, operationState.cause)
-            is UiState.Loading -> UiState.Loading()
-            is UiState.Idle,
-            is UiState.Success -> when (lockState) {
-                LockDeviceState.NOT_FULLY_LOCKED -> UiState.Loading()
+            is Error -> Error(operationState.message, operationState.cause)
+            is Loading -> Loading<LockDeviceState>()
+            is Idle,
+            is Success -> when (lockState) {
+                LockDeviceState.NOT_FULLY_LOCKED -> Loading()
                 LockDeviceState.LOCKED,
-                LockDeviceState.UNLOCKED -> UiState.Success(lockState)
+                LockDeviceState.UNLOCKED -> Success(lockState)
+
+                LockDeviceState.UNLATCHED -> Loading()
             }
         }
     }
         .debounce(300.milliseconds)
-        .stateIn(scope, SharingStarted.Eagerly, UiState.Loading())
+        .stateIn(scope, SharingStarted.Eagerly, Loading<LockDeviceState>())
 
     init {
         observeDeviceRealtimeState()

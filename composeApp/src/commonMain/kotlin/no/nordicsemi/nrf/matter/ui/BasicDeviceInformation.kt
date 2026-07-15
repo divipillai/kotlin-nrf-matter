@@ -113,16 +113,14 @@ internal fun BasicDeviceInformation(
             device.device.vendorId?.let {
                 InfoRow(
                     label = "Vendor ID",
-                    value = "0x" + it
-                        .uppercase(),
+                    value = it.uppercase(),
                     attrId = "0x0002"
                 )
             }
             device.device.productId?.let {
                 InfoRow(
                     label = "Product ID",
-                    value = "0x" + it
-                        .uppercase(),
+                    value = it.uppercase(),
                     attrId = "0x0004"
                 )
             }

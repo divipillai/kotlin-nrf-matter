@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
@@ -115,6 +116,7 @@ fun SwitchControlContainer(
             .clickable {
                 isExpanded = !isExpanded
             }
+            .then(if(showMatterDeviceInfo) Modifier.cloudy() else Modifier)
     ) {
         Row(
             modifier = Modifier

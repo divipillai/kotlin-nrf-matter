@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -95,6 +96,7 @@ internal fun UnsupportedItem(
             .clickable {
                 isExpanded = !isExpanded
             }
+            .then(if(showMatterDeviceInfo) Modifier.cloudy() else Modifier)
     ) {
         Row(
             modifier = Modifier

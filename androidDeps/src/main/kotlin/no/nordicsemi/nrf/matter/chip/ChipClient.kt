@@ -8,7 +8,6 @@ import chip.devicecontroller.CommissionParameters
 import chip.devicecontroller.ControllerParams
 import chip.devicecontroller.GetConnectedDeviceCallbackJni
 import chip.devicecontroller.InvokeCallback
-import chip.devicecontroller.NetworkCredentials
 import chip.devicecontroller.ReportCallback
 import chip.devicecontroller.SubscriptionEstablishedCallback
 import chip.devicecontroller.model.AttributeState
@@ -27,10 +26,7 @@ import chip.platform.NsdManagerServiceResolver
 import chip.platform.PreferencesConfigurationManager
 import chip.platform.PreferencesKeyValueStoreManager
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import matter.tlv.AnonymousTag
 import matter.tlv.ContextSpecificTag
@@ -494,89 +490,6 @@ class ChipClient(
                 15_000,
                 30_000,
             )
-        }
-    }
-
-    /** Wrapper around [ChipDeviceController.subscribeToAttributePath] */
-    fun subscribeToAttribute(
-        deviceId: DeviceId,
-        endpoint: Int,
-        clusterId: Long,
-        attributeId: Long,
-    ): Flow<Boolean> = callbackFlow {
-        val devicePtr = getConnectedDevicePointer(deviceId.longValue)
-        val attributePath = ChipAttributePath.newInstance(
-            endpoint,
-            clusterId,
-            attributeId
-        )
-
-        chipDeviceController.subscribeToAttributePath(
-            object : SubscriptionEstablishedCallback {
-                override fun onSubscriptionEstablished(subscriptionId: Long) {
-                    NordicLogger.debug(
-                        "Subscription established: $subscriptionId",
-                        tag = "SubscribeToAttribute"
-                    )
-                }
-            },
-
-            object : ReportCallback {
-
-                override fun onError(
-                    onError: ChipAttributePath?,
-                    eventPath: ChipEventPath?,
-                    e: Exception
-                ) {
-                    NordicLogger.error(
-                        "Subscription error", e,
-                        tag = "SubscribeToAttribute"
-                    )
-
-                    close(e)
-                }
-
-                override fun onReport(nodeState: NodeState?) {
-
-                    try {
-                        val endpointState =
-                            nodeState
-                                ?.endpointStates
-                                ?.get(endpoint)
-
-                        val clusterState =
-                            endpointState
-                                ?.getClusterState(clusterId)
-
-
-                        val attributeState =
-                            clusterState
-                                ?.getAttributeState(attributeId)
-
-
-                        val value = attributeState?.value as? Boolean
-
-                        NordicLogger.debug("Button pressed: $value", tag = "SubscribeToAttribute")
-
-                        if (value != null) {
-                            trySend(value)
-                        }
-
-                    } catch (e: Exception) {
-                        close(e)
-                    }
-                }
-            },
-
-            devicePtr,
-            listOf(attributePath),
-            0,
-            30,
-            30_000
-        )
-
-        awaitClose {
-            NordicLogger.debug("Subscription closed", tag = "SubscribeToAttribute")
         }
     }
 

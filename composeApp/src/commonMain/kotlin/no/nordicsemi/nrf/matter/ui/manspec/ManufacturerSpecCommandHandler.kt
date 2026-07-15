@@ -1,9 +1,9 @@
 package no.nordicsemi.nrf.matter.ui.manspec
 
 import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.ui.CommandHandler
 
@@ -12,7 +12,7 @@ private const val MANUFACTURER_SPECIFIC_CLUSTER_ID: Long = 0xFFF1FC01
 
 class ManufacturerSpecCommandHandler(
     private val devicesStateRepository: DevicesStateRepository,
-    private val deviceController: DeviceController,
+    private val deviceController: MatterManufacturerSpecificController,
 ) : CommandHandler {
 
     fun handleLed(
@@ -31,8 +31,6 @@ class ManufacturerSpecCommandHandler(
 
             deviceController.setLed(
                 deviceId = deviceId,
-                isOn = isOn,
-                endpoint = endpoint
             )
 
             isOn
@@ -55,8 +53,7 @@ class ManufacturerSpecCommandHandler(
 
     fun generateRandomNumber(device: Device): Flow<UiState<Int>> {
         return withUiState {
-            val endpoint = resolveEndpoint(device, BASIC_INFORMATION_CLUSTER_ID)
-            deviceController.generateRandomNumber(device.deviceId, endpoint)
+            deviceController.generateRandomNumber(device.deviceId)?.toInt() ?: -1
         }
     }
 }

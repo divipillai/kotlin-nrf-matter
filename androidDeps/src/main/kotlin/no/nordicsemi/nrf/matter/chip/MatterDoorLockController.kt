@@ -10,6 +10,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.LockDeviceState
@@ -56,9 +57,10 @@ import kotlin.coroutines.resumeWithException
  * @property chipClient the underlying Matter stack used to resolve device pointers and send/subscribe
  * to cluster attributes.
  */
-class MatterDoorLockController(
+class MatterDoorLockControllerImpl (
     private val chipClient: ChipClient,
-) {
+) : MatterDoorLockController {
+
     /**
      * Locks or unlocks the door via the Door Lock cluster.
      *
@@ -70,11 +72,11 @@ class MatterDoorLockController(
      * @throws Exception if the underlying cluster command fails (e.g. device unreachable, command
      * rejected).
      */
-    suspend fun lockUnlockDoor(
+    override suspend fun lockUnlockDoor(
         deviceId: DeviceId,
         isLocked: Boolean,
         endpoint: Int,
-        pinCode: String? = null,
+        pinCode: String?,
     ) {
         val connectedDevicePtr = getConnectedDevicePointerOrNull(deviceId) ?: return
         val pinOptional = pinCode?.let {
@@ -104,7 +106,7 @@ class MatterDoorLockController(
      * @param doorLockClusterId the Door Lock cluster ID reported by this device (typically 257L).
      * @return a cold [Flow] emitting the current [LockDeviceState].
      */
-    fun observeLockState(
+    override fun observeLockState(
         deviceId: DeviceId,
         endpoint: Int,
         doorLockClusterId: Long,

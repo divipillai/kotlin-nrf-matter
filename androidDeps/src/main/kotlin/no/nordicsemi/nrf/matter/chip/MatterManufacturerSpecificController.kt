@@ -7,6 +7,7 @@ import chip.devicecontroller.model.NodeState
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 
@@ -41,9 +42,9 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class MatterManufacturerSpecificController(
+class MatterManufacturerSpecificControllerImpl(
     private val chipClient: ChipClient,
-) {
+) : MatterManufacturerSpecificController {
     /**
      * Sends the vendor-specific "set LED" command.
      *
@@ -56,7 +57,7 @@ class MatterManufacturerSpecificController(
      * @throws IllegalStateException if the device pointer cannot be resolved (e.g. device
      * unreachable).
      */
-    suspend fun setLed(deviceId: DeviceId) {
+    override suspend fun setLed(deviceId: DeviceId) {
         chipClient.setLet(
             deviceId,
             LED_ENDPOINT,
@@ -79,7 +80,7 @@ class MatterManufacturerSpecificController(
      * @return the generated random number, or `null` if the device is unreachable, the command is
      * rejected, or the attribute can't be read back.
      */
-    suspend fun generateRandomNumber(deviceId: DeviceId): Long? {
+    override suspend fun generateRandomNumber(deviceId: DeviceId): Long? {
         return try {
             val connectedDevicePtr = connectedDevicePointer(deviceId)
             chipClient.generateRandomNumber(
@@ -116,7 +117,7 @@ class MatterManufacturerSpecificController(
      * @param endpoint the Matter endpoint exposing the manufacturer-specific cluster.
      * @return a cold [Flow] emitting `true` when the button is pressed, `false` when released.
      */
-    fun observeButtonChanges(deviceId: DeviceId, endpoint: Int): Flow<Boolean> = callbackFlow {
+    override fun observeButtonChanges(deviceId: DeviceId, endpoint: Int): Flow<Boolean> = callbackFlow {
         val reportCallback = object : ReportCallback {
             override fun onError(
                 attributePath: ChipAttributePath?,

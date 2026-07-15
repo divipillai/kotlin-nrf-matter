@@ -1,14 +1,14 @@
 package no.nordicsemi.nrf.matter.ui.lock
 
+import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.ui.CommandHandler
 
 private const val LOCK_UNLOCK_CLUSTER_ID: Long = 0x0101.toLong()
 
 class LockCommandHandler(
-    private val deviceController: DeviceController,
+    private val deviceController: MatterDoorLockController,
 ) : CommandHandler {
 
     /**
@@ -38,7 +38,7 @@ class LockCommandHandler(
     fun observeLockDeviceState(
         device: Device
     ) =
-        deviceController.observeLockDeviceState(
+        deviceController.observeLockState(
             deviceId = device.deviceId,
             endpoint = resolveEndpoint(device, clusterId = LOCK_UNLOCK_CLUSTER_ID),
             doorLockClusterId = LOCK_UNLOCK_CLUSTER_ID

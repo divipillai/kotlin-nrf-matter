@@ -1,9 +1,9 @@
 package no.nordicsemi.nrf.matter.ui.light
 
 import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.controller.MatterLightController
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.ui.CommandHandler
 import kotlin.math.roundToInt
 
@@ -11,7 +11,7 @@ private const val ON_OFF_CLUSTER_ID: Long = 0x0006L
 private const val LEVEL_CONTROL_CLUSTER_ID: Long = 0x0008L
 
 class LightCommandHandler(
-    private val deviceController: DeviceController,
+    private val deviceController: MatterLightController,
 ) : CommandHandler {
 
     /**
@@ -28,7 +28,6 @@ class LightCommandHandler(
             deviceId = deviceId,
             isOn = isOn,
             endpoint = endpoint,
-            isDeviceOnline = true,
         )
     }
 
@@ -52,7 +51,7 @@ class LightCommandHandler(
     fun observeLightDeviceState(
         device: Device
     ): Flow<UiState<Boolean>> =
-        deviceController.observeLightDeviceState(
+        deviceController.observeLightState(
             deviceId = device.deviceId,
             endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
         ).withUiState()

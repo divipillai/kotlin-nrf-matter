@@ -5,11 +5,11 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.device.BindingState
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
-import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 
@@ -44,7 +44,7 @@ import no.nordicsemi.nrf.matter.repository.BindingRepository
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 class BindDevicesUseCase(
-    private val deviceController: DeviceController,
+    private val deviceController: BindingController,
     private val bindingRepository: BindingRepository,
 ) {
     operator fun invoke(

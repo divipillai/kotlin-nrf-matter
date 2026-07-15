@@ -124,7 +124,10 @@ class MatterDoorLockController(
                 val endpointState = nodeState.getEndpointState(endpoint) ?: return
                 val rawValue = endpointState.getClusterState(doorLockClusterId)
                     ?.getAttributeState(LOCK_STATE_ATTRIBUTE_ID)?.value as? Number ?: return
-                val lockState = LockDeviceState.create(rawValue.toInt())
+                val lockState = LockDeviceState.create(rawValue.toInt()) ?: run {
+                    NordicLogger.error("Received unknown LockState value: $rawValue", tag = TAG)
+                    return
+                }
                 NordicLogger.info("Received LockState report: lockState=$lockState", tag = TAG)
                 trySend(lockState)
             }

@@ -1,27 +1,18 @@
 package no.nordicsemi.nrf.matter.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
@@ -141,35 +132,6 @@ internal fun DeviceList(
                 }
 
                 it.Item { deviceId -> homeViewModel.decommissionDevice(deviceId) }
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FilterChipsRow() {
-    val filters = listOf("All", "Living Room", "Kitchen", "Bedroom")
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(filters) { filter ->
-            val isSelected = filter == "All"
-            Surface(
-                shape = CircleShape,
-                border = if (isSelected) null else BorderStroke(
-                    1.dp,
-                    Color.LightGray.copy(alpha = 0.5f)
-                )
-            ) {
-                Text(
-                    text = filter,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-                    color = if (isSelected) Color.White else Color.Unspecified,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium
-                )
             }
         }
     }

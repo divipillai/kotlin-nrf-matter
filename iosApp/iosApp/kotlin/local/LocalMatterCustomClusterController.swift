@@ -31,7 +31,7 @@ enum ManufacturerSpecificCluster {
 /// The cluster provides two features:
 /// 1. Turning the LED on/off.
 /// 2. Observing button state changes.
-class LocalMatterCustomClusterController: MatterManufacturerCustomDataController {
+class LocalMatterCustomClusterController: MatterManufacturerSpecificController {
 
     /// Reads the custom attributes exposed by the manufacturer-specific cluster.
     ///
@@ -63,10 +63,9 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
     ///
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
-    ///   - isOn: `true` to turn the LED on, `false` to turn it off.
     ///   - endpoint: The endpoint hosting the cluster.
     /// - Throws: An error if the command invocation fails.
-    func setLed(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
+    func setLed(deviceId: DeviceId, endpoint: Int32) async throws {
         SharedLogger.debug("invoke setLed")
         let commandExecutor = try CommandExecutor(deviceId: deviceId.nsNumber())
         let endpointId = NSNumber(value: endpoint)
@@ -76,7 +75,7 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
             cluster: ManufacturerSpecificCluster.id,
             command: ManufacturerSpecificCluster.Command.setLed,
             type: MTRUnsignedIntegerValueType,
-            value: isOn ? 1 : 0,
+            value: 2,
         )
     }
     
@@ -86,12 +85,19 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the cluster.
     ///   - onUpdate: Called with each new button state.
-    func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
+    func observeButtonChanges(deviceId: DeviceId, endpoint: Int32) -> any Kotlinx_coroutines_coreFlow {
+        SharedLogger.debug("Observe button changes")
+        let flowWrapper = IosFlowWrapper<KotlinBoolean>()
+        flowWrapper.emit(value: KotlinBoolean(value: true))
+        
         let attributeSubscriber = try? AttributeSubscriber(deviceId: deviceId.nsNumber())
         let endpointId = NSNumber(value: endpoint)
         
-        attributeSubscriber?.subscribe(endpoint: endpointId, cluster: ManufacturerSpecificCluster.id, attribute: ManufacturerSpecificCluster.Attribute.button, onUpdate: { result in
-            onUpdate(KotlinBoolean(bool: result))
+        attributeSubscriber?.subscribe(endpoint: endpointId, cluster: ManufacturerSpecificCluster.id, attribute: ManufacturerSpecificCluster.Attribute.button, onUpdate: { (result: Bool) in
+            SharedLogger.debug("Received new button state: \(result)")
+            return flowWrapper.emit(value: KotlinBoolean(bool: result))
         })
+        
+        return flowWrapper.flow
     }
 }

@@ -2,7 +2,6 @@ package no.nordicsemi.nrf.matter.chip
 
 import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
@@ -14,9 +13,8 @@ import kotlin.coroutines.resumeWithException
 class BindingControllerImpl(
     private val chipClient: ChipClient,
 ) : BindingController {
-    private var lightSwitchFabricIndex: Int? = null
 
-    override val bindingLogs: Flow<String> = chipClient.chipLogFlow
+    private var lightSwitchFabricIndex: Int? = null
 
     /**
      * Creates a binding between a switch and a light cluster, ensuring the switch can control the light.

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import no.nordicsemi.nrf.matter.controller.BindingController
+import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
 import no.nordicsemi.nrf.matter.device.BindingState
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
@@ -45,6 +46,7 @@ import no.nordicsemi.nrf.matter.repository.BindingRepository
  */
 class BindDevicesUseCase(
     private val deviceController: BindingController,
+    private val bindingLogsProvider: BindingLogsProvider,
     private val bindingRepository: BindingRepository,
 ) {
     operator fun invoke(
@@ -77,5 +79,5 @@ class BindDevicesUseCase(
     }.flowOn(Dispatchers.IO)
 
     val bindingLogs: Flow<String>
-        get() = deviceController.bindingLogs
+        get() = bindingLogsProvider.bindingLogs
 }

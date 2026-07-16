@@ -57,52 +57,13 @@ class MatterManufacturerSpecificControllerImpl(
      * @throws IllegalStateException if the device pointer cannot be resolved (e.g. device
      * unreachable).
      */
-    override suspend fun setLed(deviceId: DeviceId) {
+    override suspend fun setLed(deviceId: DeviceId, endpoint: Int) {
         chipClient.setLet(
             deviceId,
-            LED_ENDPOINT,
+            endpoint,
             clusterId = MANUFACTURER_SPECIFIC_CLUSTER_ID,
             commandId = SET_LED_COMMAND_ID,
         )
-    }
-
-    /**
-     * Sends a vendor-specific "generate random number" invoke, then reads back the resulting
-     * value.
-     *
-     * Targets cluster [RANDOM_NUMBER_CLUSTER_ID] (Basic Information) on endpoint
-     * [RANDOM_NUMBER_ENDPOINT], invoking [RANDOM_NUMBER_COMMAND_ID] and then reading
-     * [RANDOM_NUMBER_ATTRIBUTE_ID] for the result. These IDs are fixed rather than resolved from
-     * the device's descriptor cluster, and depend on the companion firmware exposing this vendor
-     * command on that cluster.
-     *
-     * @param deviceId the commissioned device to invoke.
-     * @return the generated random number, or `null` if the device is unreachable, the command is
-     * rejected, or the attribute can't be read back.
-     */
-    override suspend fun generateRandomNumber(deviceId: DeviceId): Long? {
-        return try {
-            val connectedDevicePtr = connectedDevicePointer(deviceId)
-            chipClient.generateRandomNumber(
-                connectedDevicePtr,
-                ChipAttributePath.newInstance(
-                    RANDOM_NUMBER_ENDPOINT,
-                    RANDOM_NUMBER_CLUSTER_ID,
-                    RANDOM_NUMBER_COMMAND_ID,
-                )
-            )
-            val namePath = ChipAttributePath.newInstance(
-                RANDOM_NUMBER_ENDPOINT,
-                RANDOM_NUMBER_CLUSTER_ID,
-                RANDOM_NUMBER_ATTRIBUTE_ID,
-            )
-            val nameAttr = chipClient.readAttribute(connectedDevicePtr, namePath)
-            nameAttr?.value as? Long
-        } catch (t: Throwable) {
-            NordicLogger.error("Random number generation failed: ${t.message}", t, tag = TAG)
-            t.printStackTrace()
-            null
-        }
     }
 
     /**
@@ -167,12 +128,6 @@ class MatterManufacturerSpecificControllerImpl(
         private const val MANUFACTURER_SPECIFIC_CLUSTER_ID = 0xFFF1FC01L
         private const val SET_LED_COMMAND_ID = 0xFFF10000L
         private const val BUTTON_ATTRIBUTE_ID = 0xFFF10002L
-        private const val LED_ENDPOINT = 0x1
-
-        private const val RANDOM_NUMBER_ENDPOINT = 0
-        private const val RANDOM_NUMBER_CLUSTER_ID = 0x28L
-        private const val RANDOM_NUMBER_COMMAND_ID = 0x00L
-        private const val RANDOM_NUMBER_ATTRIBUTE_ID = 0x00017L
 
         private val TAG: String
             get() = "MatterManufacturerSpecificController"

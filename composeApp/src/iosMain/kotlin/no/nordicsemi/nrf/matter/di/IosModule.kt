@@ -2,14 +2,20 @@ package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.SwiftCodeProvider
+import no.nordicsemi.nrf.matter.binding.BindingLogsProviderImpl
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.commission.CommissioningViewModelIos
+import no.nordicsemi.nrf.matter.controller.BindingController
+import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
+import no.nordicsemi.nrf.matter.controller.MatterClusterExtensionController
+import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
+import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
+import no.nordicsemi.nrf.matter.controller.MatterLightController
+import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
-import no.nordicsemi.nrf.matter.model.DeviceController
-import no.nordicsemi.nrf.matter.model.IosDeviceController
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
@@ -77,19 +83,6 @@ val iosModule = module {
         BindingRepository(get())
     }
 
-
-    // Device Controller
-    single<DeviceController> {
-        IosDeviceController(
-            get<SwiftCodeProvider>().getMatterOnOffController(),
-            get<SwiftCodeProvider>().getDecommissioner(),
-            get<SwiftCodeProvider>().getMatterBinder(),
-            get<SwiftCodeProvider>().getMatterDoorController(),
-            get<SwiftCodeProvider>().getMatterManufacturerCustomDataController(),
-            get<SwiftCodeProvider>().getMatterClusterExtensionController(),
-        )
-    }
-
     // View models.
     viewModelOf(::HomeViewModel)
 
@@ -99,5 +92,15 @@ val iosModule = module {
     viewModel { BindingViewModel(get(), get(), get()) }
     factory { LightCommandHandler(get()) }
     factory { LockCommandHandler(get()) }
-    factory { ManufacturerSpecCommandHandler(get(), get()) }
+    factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
+
+    single<MatterDecommissioner> { get<SwiftCodeProvider>().getDecommissioner() }
+    single<BindingController> { get<SwiftCodeProvider>().getMatterBinder() }
+    single<BindingLogsProvider> { BindingLogsProviderImpl() }
+    single<MatterLightController> { get<SwiftCodeProvider>().getMatterOnOffController() }
+    single<MatterDoorLockController> { get<SwiftCodeProvider>().getMatterDoorController() }
+    single<MatterClusterExtensionController> { get<SwiftCodeProvider>().getMatterClusterExtensionController() }
+    single<MatterManufacturerSpecificController> {
+        get<SwiftCodeProvider>().getMatterManufacturerCustomDataController()
+    }
 }

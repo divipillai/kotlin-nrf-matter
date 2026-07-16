@@ -3,7 +3,6 @@ package no.nordicsemi.nrf.matter.controller
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.model.DeviceId
 
-
 interface MatterLightController {
 
     /**
@@ -48,7 +47,7 @@ interface MatterLightController {
      * @param endpoint the Matter endpoint exposing the On/Off cluster.
      * @return a cold [Flow] emitting `true` when the light is on, `false` when it is off.
      */
-    fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<Boolean>
+    suspend fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<Boolean>
 
     /**
      * Subscribes to the CurrentLevel attribute of a light endpoint and emits its brightness as it
@@ -63,5 +62,5 @@ interface MatterLightController {
      * @param endpoint the Matter endpoint exposing the Level Control cluster.
      * @return a cold [Flow] emitting brightness as a fraction between 0f (off) and 1f (max).
      */
-    fun observeBrightnessState(deviceId: DeviceId, endpoint: Int): Flow<Float>
+    suspend fun observeBrightnessState(deviceId: DeviceId, endpoint: Int): Flow<Float>
 }

@@ -11,7 +11,7 @@ import SharedCode
 import OSLog
 
 /// Controls a door-lock type Matter device in the local fabric.
-class LocalMatterDoorController : MatterDoorController {
+class LocalMatterDoorController : MatterDoorLockController {
 
     /// Locks or unlocks the door.
     ///
@@ -40,21 +40,23 @@ class LocalMatterDoorController : MatterDoorController {
     ///   - endpoint: The endpoint hosting the Door Lock cluster.
     ///   - onUpdate: Called with each reported lock state.
     /// - Throws: An error if the local controller cannot be obtained.
-    func subscribeToLockChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (LockDeviceState) -> Void) async throws {
+    func observeLockState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug(#function)
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
 
         let cluster = MTRBaseClusterDoorLock(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
         
+        let flowWrapper = IosFlowWrapper<LockDeviceState>()
         cluster!.subscribeAttributeLockState(with: MTRSubscribeParams.defaultParams, subscriptionEstablished: { }, reportHandler: { result, error in
             if let result {
                 SharedLogger.debug("Received door lock state: \(result)")
-                onUpdate(LockDeviceState.companion.create(value: result.int32Value))
+                flowWrapper.emit(value: LockDeviceState.companion.create(value: result.int32Value))
             }
             if let error {
                 SharedLogger.debug("Received door lock error: \(error)")
             }
         })
+        return flowWrapper.flow
     }
 }

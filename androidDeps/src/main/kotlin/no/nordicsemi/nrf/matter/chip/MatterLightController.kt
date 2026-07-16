@@ -106,7 +106,7 @@ class MatterLightControllerImpl (
      * @param endpoint the Matter endpoint exposing the On/Off cluster.
      * @return a cold [Flow] emitting `true` when the light is on, `false` when it is off.
      */
-    override fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<Boolean> =
+    override suspend fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<Boolean> =
         observeAttribute(
             deviceId = deviceId,
             endpoint = endpoint,
@@ -131,7 +131,7 @@ class MatterLightControllerImpl (
      * @param endpoint the Matter endpoint exposing the Level Control cluster.
      * @return a cold [Flow] emitting brightness as a fraction between 0f (off) and 1f (max).
      */
-    override fun observeBrightnessState(deviceId: DeviceId, endpoint: Int): Flow<Float> =
+    override suspend fun observeBrightnessState(deviceId: DeviceId, endpoint: Int): Flow<Float> =
         observeAttribute(
             deviceId = deviceId,
             endpoint = endpoint,

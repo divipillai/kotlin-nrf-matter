@@ -12,8 +12,6 @@ interface MatterDoorLockController {
      * @param deviceId the commissioned device to control.
      * @param isLocked `true` to send the Lock Door command, `false` to send the Unlock Door command.
      * @param endpoint the Matter endpoint exposing the Door Lock cluster.
-     * @param pinCode optional PIN code required by the lock to authorize the operation; when
-     * omitted, an empty PIN is sent.
      * @throws Exception if the underlying cluster command fails (e.g. device unreachable, command
      * rejected).
      */
@@ -21,7 +19,6 @@ interface MatterDoorLockController {
         deviceId: DeviceId,
         isLocked: Boolean,
         endpoint: Int,
-        pinCode: String? = null,
     )
 
     /**
@@ -34,12 +31,10 @@ interface MatterDoorLockController {
      *
      * @param deviceId the commissioned device to observe.
      * @param endpoint the Matter endpoint exposing the Door Lock cluster.
-     * @param doorLockClusterId the Door Lock cluster ID reported by this device (typically 257L).
      * @return a cold [Flow] emitting the current [LockDeviceState].
      */
-    fun observeLockState(
+    suspend fun observeLockState(
         deviceId: DeviceId,
         endpoint: Int,
-        doorLockClusterId: Long,
-    ): Flow<LockDeviceState>
+    ) : Flow<LockDeviceState>
 }

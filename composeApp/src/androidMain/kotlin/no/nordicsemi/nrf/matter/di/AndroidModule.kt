@@ -4,15 +4,19 @@ import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.chip.BindingControllerImpl
+import no.nordicsemi.nrf.matter.chip.BindingLogsProviderImpl
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
-import no.nordicsemi.nrf.matter.chip.DecommissionerImpl
+import no.nordicsemi.nrf.matter.chip.MatterDecommissionerImpl
 import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
+import no.nordicsemi.nrf.matter.chip.MatterClusterExtensionControllerImpl
 import no.nordicsemi.nrf.matter.chip.MatterDoorLockControllerImpl
 import no.nordicsemi.nrf.matter.chip.MatterLightControllerImpl
 import no.nordicsemi.nrf.matter.chip.MatterManufacturerSpecificControllerImpl
 import no.nordicsemi.nrf.matter.controller.BindingController
-import no.nordicsemi.nrf.matter.controller.Decommissioner
+import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
+import no.nordicsemi.nrf.matter.controller.MatterClusterExtensionController
+import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
 import no.nordicsemi.nrf.matter.controller.MatterLightController
 import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
@@ -79,11 +83,13 @@ val androidModule = module {
 
     single<ChipClient> { ChipClient(context = androidContext()) }
     single<ClustersHelper> { ClustersHelper(chipClient = get()) }
-    single<Decommissioner> { DecommissionerImpl(chipClient = get()) }
+    single<MatterDecommissioner> { MatterDecommissionerImpl(chipClient = get()) }
     single<BindingController> { BindingControllerImpl(chipClient = get()) }
+    single<BindingLogsProvider> { BindingLogsProviderImpl(chipClient = get()) }
     single<MatterBasicInfoProvider> { MatterBasicInfoProvider(chipClient = get()) }
     single<MatterLightController> { MatterLightControllerImpl(chipClient = get()) }
     single<MatterDoorLockController> { MatterDoorLockControllerImpl(chipClient = get()) }
+    single<MatterClusterExtensionController> { MatterClusterExtensionControllerImpl(chipClient = get()) }
     single<MatterManufacturerSpecificController> {
         MatterManufacturerSpecificControllerImpl(
             chipClient = get()
@@ -96,7 +102,7 @@ val androidModule = module {
 
     factory { LightCommandHandler(get()) }
     factory { LockCommandHandler(get()) }
-    factory { ManufacturerSpecCommandHandler(get(), get()) }
+    factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
 
 
     // Binding Viewmodel

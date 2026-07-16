@@ -1,5 +1,11 @@
 package no.nordicsemi.nrf.matter
 
+import no.nordicsemi.nrf.matter.controller.BindingController
+import no.nordicsemi.nrf.matter.controller.MatterClusterExtensionController
+import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
+import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
+import no.nordicsemi.nrf.matter.controller.MatterLightController
+import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
 import no.nordicsemi.nrf.matter.device.OperationResult
 import no.nordicsemi.nrf.matter.logger.IOSLogger
 import no.nordicsemi.nrf.matter.model.Device
@@ -14,11 +20,11 @@ interface SwiftCodeProvider {
 
     fun getDecommissioner(): MatterDecommissioner
 
-    fun getMatterBinder(): MatterBinder
+    fun getMatterBinder(): BindingController
 
-    fun getMatterDoorController(): MatterDoorController
+    fun getMatterDoorController(): MatterDoorLockController
 
-    fun getMatterManufacturerCustomDataController(): MatterManufacturerCustomDataController
+    fun getMatterManufacturerCustomDataController(): MatterManufacturerSpecificController
 
     fun getMatterClusterExtensionController(): MatterClusterExtensionController
 
@@ -28,82 +34,4 @@ interface SwiftCodeProvider {
 interface MatterCommissioner {
 
     suspend fun startIosCommissioning(deviceId: DeviceId): OperationResult<Device>
-}
-
-interface MatterDecommissioner {
-
-    suspend fun decommission(deviceId: DeviceId)
-}
-
-interface MatterLightController {
-
-    suspend fun setDeviceOnOff(
-        deviceId: DeviceId,
-        isOn: Boolean,
-        endpoint: Int,
-    )
-
-    suspend fun setBrightnessLevel(
-        deviceId: DeviceId,
-        level: Int,
-        endpoint: Int,
-    )
-
-    suspend fun subscribeToLedChanges(
-        deviceId: DeviceId,
-        endpoint: Int,
-        onUpdate: (Boolean) -> Unit
-    )
-
-    suspend fun subscribeToLightLevelChanges(
-        deviceId: DeviceId,
-        endpoint: Int,
-        onUpdate: (Float) -> Unit
-    )
-}
-
-interface MatterBinder {
-
-    suspend fun bind(
-        sourceNodeId: DeviceId,
-        sourceEndpoint: Int,
-        targetNodeId: DeviceId,
-        targetEndpoint: Int,
-        clusterId: Long
-    )
-}
-
-interface MatterDoorController {
-
-    suspend fun lockUnlockDoor(
-        deviceId: DeviceId,
-        isLocked: Boolean,
-        endpoint: Int
-    )
-
-    suspend fun subscribeToLockChanges(
-        deviceId: DeviceId,
-        endpoint: Int,
-        onUpdate: (LockDeviceState) -> Unit
-    )
-}
-
-interface MatterManufacturerCustomDataController {
-
-    suspend fun setLed(
-        deviceId: DeviceId,
-        isOn: Boolean,
-        endpoint: Int,
-    )
-
-    suspend fun subscribeToButtonChanges(
-        deviceId: DeviceId,
-        endpoint: Int,
-        onUpdate: (Boolean) -> Unit
-    )
-}
-
-interface MatterClusterExtensionController {
-
-    suspend fun generateRandomNumber(deviceId: DeviceId, endpoint: Int): Int
 }

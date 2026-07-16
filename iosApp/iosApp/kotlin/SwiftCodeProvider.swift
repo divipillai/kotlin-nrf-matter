@@ -32,17 +32,17 @@ class SwiftCodeProviderImpl : @MainActor SwiftCodeProvider {
     }
 
     /// - Returns: The native Matter binder used to manage device bindings.
-    func getMatterBinder() -> any MatterBinder {
+    func getMatterBinder() -> any BindingController {
         return LocalMatterBinder()
     }
 
     /// - Returns: The native Matter controller used to control door lock devices.
-    func getMatterDoorController() -> any MatterDoorController {
+    func getMatterDoorController() -> any MatterDoorLockController {
         return LocalMatterDoorController()
     }
 
     /// - Returns: The native Matter controller used to read/write manufacturer-specific custom cluster data.
-    func getMatterManufacturerCustomDataController() -> any MatterManufacturerCustomDataController {
+    func getMatterManufacturerCustomDataController() -> any MatterManufacturerSpecificController {
         return LocalMatterCustomClusterController()
     }
 

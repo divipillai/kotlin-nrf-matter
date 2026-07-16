@@ -1,5 +1,7 @@
 package no.nordicsemi.nrf.matter.ui.lock
 
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
@@ -37,10 +39,12 @@ class LockCommandHandler(
 
     fun observeLockDeviceState(
         device: Device
-    ) =
-        deviceController.observeLockState(
-            deviceId = device.deviceId,
-            endpoint = resolveEndpoint(device, clusterId = LOCK_UNLOCK_CLUSTER_ID),
-            doorLockClusterId = LOCK_UNLOCK_CLUSTER_ID
+    ) = flow {
+        emitAll(
+            deviceController.observeLockState(
+                deviceId = device.deviceId,
+                endpoint = resolveEndpoint(device, clusterId = LOCK_UNLOCK_CLUSTER_ID),
+            )
         )
+    }
 }

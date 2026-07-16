@@ -1,6 +1,8 @@
 package no.nordicsemi.nrf.matter.ui.light
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import no.nordicsemi.nrf.matter.controller.MatterLightController
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.Device
@@ -50,18 +52,24 @@ class LightCommandHandler(
     
     fun observeLightDeviceState(
         device: Device
-    ): Flow<UiState<Boolean>> =
-        deviceController.observeLightState(
-            deviceId = device.deviceId,
-            endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
-        ).withUiState()
+    ): Flow<UiState<Boolean>> = flow {
+        emitAll(
+            deviceController.observeLightState(
+                deviceId = device.deviceId,
+                endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
+            )
+        )
+    }.withUiState()
 
     fun observeBrightnessState(
         device: Device
-    ): Flow<UiState<Float>> =
-        deviceController.observeBrightnessState(
-            deviceId = device.deviceId,
-            endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
-        ).withUiState()
+    ): Flow<UiState<Float>> = flow {
+        emitAll(
+            deviceController.observeBrightnessState(
+                deviceId = device.deviceId,
+                endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
+            )
+        )
+    }.withUiState()
 
 }

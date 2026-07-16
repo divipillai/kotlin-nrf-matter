@@ -76,12 +76,9 @@ class MatterDoorLockControllerImpl (
         deviceId: DeviceId,
         isLocked: Boolean,
         endpoint: Int,
-        pinCode: String?,
     ) {
         val connectedDevicePtr = getConnectedDevicePointerOrNull(deviceId) ?: return
-        val pinOptional = pinCode?.let {
-            Optional.of(it.toByteArray(Charsets.UTF_8))
-        } ?: Optional.empty()
+        val pinOptional = Optional.empty<ByteArray>()
 
         awaitClusterCallback { callback ->
             val cluster = getDoorLockClusterForDevice(connectedDevicePtr, endpoint)
@@ -103,13 +100,11 @@ class MatterDoorLockControllerImpl (
      *
      * @param deviceId the commissioned device to observe.
      * @param endpoint the Matter endpoint exposing the Door Lock cluster.
-     * @param doorLockClusterId the Door Lock cluster ID reported by this device (typically 257L).
      * @return a cold [Flow] emitting the current [LockDeviceState].
      */
-    override fun observeLockState(
+    override suspend fun observeLockState(
         deviceId: DeviceId,
         endpoint: Int,
-        doorLockClusterId: Long,
     ): Flow<LockDeviceState> = callbackFlow {
         val reportCallback = object : ReportCallback {
             override fun onError(
@@ -124,7 +119,7 @@ class MatterDoorLockControllerImpl (
 
             override fun onReport(nodeState: NodeState) {
                 val endpointState = nodeState.getEndpointState(endpoint) ?: return
-                val rawValue = endpointState.getClusterState(doorLockClusterId)
+                val rawValue = endpointState.getClusterState(LOCK_UNLOCK_CLUSTER_ID)
                     ?.getAttributeState(LOCK_STATE_ATTRIBUTE_ID)?.value as? Number ?: return
                 val lockState = LockDeviceState.create(rawValue.toInt()) ?: run {
                     NordicLogger.error("Received unknown LockState value: $rawValue", tag = TAG)
@@ -141,7 +136,7 @@ class MatterDoorLockControllerImpl (
                 reportCallback = reportCallback,
                 devicePtr = devicePtr,
                 attributePaths = listOf(
-                    ChipAttributePath.newInstance(endpoint, doorLockClusterId, LOCK_STATE_ATTRIBUTE_ID)
+                    ChipAttributePath.newInstance(endpoint, LOCK_UNLOCK_CLUSTER_ID, LOCK_STATE_ATTRIBUTE_ID)
                 ),
                 minIntervalS = 0,    // Report changes instantly
                 maxIntervalS = 10,   // Heartbeat check every 10 seconds
@@ -195,6 +190,8 @@ class MatterDoorLockControllerImpl (
     }
 
     companion object {
+        private const val LOCK_UNLOCK_CLUSTER_ID: Long = 0x0101.toLong()
+
         private const val LOCK_STATE_ATTRIBUTE_ID = 0L
         private const val PIN_TIMEOUT_MS = 10000
 

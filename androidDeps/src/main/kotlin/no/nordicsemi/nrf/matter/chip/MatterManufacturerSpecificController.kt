@@ -41,52 +41,6 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Controls and observes the state of a Matter device's vendor/manufacturer-specific cluster
- * (cluster ID `0xFFF1FC01`).
- *
- * All commands are sent over an existing CASE session; callers are responsible for ensuring the
- * device has already been commissioned and is reachable through [chipClient].
- *
- * ### About the cluster ID
- * Matter reserves cluster IDs `0xFC00`-`0xFFFE` (per vendor) for manufacturer-specific
- * extensions, so a vendor cluster ID is conventionally built as `0xVVVVFCxx`, where `VVVV` is the
- * 16-bit CSA-assigned Vendor ID and `FCxx` is a vendor-chosen suffix in that reserved range. The
- * cluster ID used here, `0xFFF1FC01`, decomposes into Vendor ID `0xFFF1` and suffix `0xFC01`. The
- * attribute/command IDs (`0xFFF10000`-`0xFFF10002`) follow the same `0xVVVVxxxx` shape.
- *
- * `0xFFF1` is the Vendor ID nRF Connect SDK Matter samples ship with by default (confirmed on
- * [Nordic DevZone](https://devzone.nordicsemi.com/f/nordic-q-a/91101/how-do-i-change-the-vendor-id)).
- * Note the nuance: `0xFFF1` is also documented elsewhere as the Matter specification's generic
- * *test* Vendor ID used by unbranded sample templates across multiple vendor SDKs, not a value the
- * CSA registry lists as exclusively assigned to Nordic — so treat it as "what Nordic's samples
- * default to" rather than "Nordic's registered production VID" unless confirmed otherwise. See the
- * [Nordic DevZone thread on manufacturer-specific clusters](https://devzone.nordicsemi.com/f/nordic-q-a/99501/matter-manufacturer-specific-cluster)
- * for a worked (if messy) example of defining one of these clusters in firmware.
- *
- * ### Preparing matching firmware (general nRF Connect SDK / ZAP workflow)
- * To expose a compatible cluster from firmware (Zephyr + nRF Connect SDK Matter sample):
- * 1. Add the cluster/attribute/command definitions (name, type, IDs) to the sample's ZAP cluster
- *    data, either via the ZAP GUI (`west zap-gui`) editing the sample's `.zap`/`.matter` file, or
- *    by hand-editing the underlying ZAP data model XML.
- * 2. Regenerate the `zap-generated` C++ callback stubs (`west build` triggers code generation, or
- *    run the ZAP generation script directly) so the new cluster gets server/client interaction
- *    model glue code.
- * 3. Implement the generated attribute read/write and command-invoke callbacks in the sample's
- *    application code (e.g. `main.cpp` / the device's cluster server logic), backing them with
- *    real hardware (LED GPIO, button GPIO, etc.).
- * 4. Instantiate the cluster on the desired endpoint in the generated endpoint config
- *    (`zap-generated/endpoint_config.h`), so it shows up in that endpoint's server cluster list.
- * 5. Rebuild and flash the firmware; the resulting device will report this cluster ID in its
- *    Descriptor cluster's ServerList for that endpoint.
- *
- * Once firmware is flashed, the exact numeric cluster/attribute/command IDs it uses must be
- * copied into this class's companion object constants — there is no IDL/schema exchange at
- * runtime, so a mismatch here silently fails (commands time out / attributes read back `null`).
- *
- * @property chipClient the underlying Matter stack used to resolve device pointers and send/subscribe
- * to cluster attributes.
- */
 class MatterManufacturerSpecificController(
     private val chipClient: ChipClient,
 ) {

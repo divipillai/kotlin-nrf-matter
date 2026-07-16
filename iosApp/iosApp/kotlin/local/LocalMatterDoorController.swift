@@ -38,7 +38,7 @@ class LocalMatterDoorController : MatterDoorLockController {
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the Door Lock cluster.
-    ///   - onUpdate: Called with each reported lock state.
+    /// - Returns: A flow emitting the current lock state.
     /// - Throws: An error if the local controller cannot be obtained.
     func observeLockState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug(#function)

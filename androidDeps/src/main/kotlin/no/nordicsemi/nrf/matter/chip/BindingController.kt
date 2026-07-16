@@ -25,10 +25,10 @@ class BindingControllerImpl(
      *
      * The operation is idempotent: if the ACL or binding already exists, it will not create duplicates.
      *
-     * @param switchNodeId Node ID of the switch device.
-     * @param switchEndpoint Endpoint on the switch where the binding is configured.
-     * @param lightNodeId Node ID of the target light device.
-     * @param lightEndpoint Endpoint on the light device.
+     * @param sourceNodeId Node ID of the switch device.
+     * @param sourceEndpoint Endpoint on the switch where the binding is configured.
+     * @param targetNodeId Node ID of the target light device.
+     * @param targetEndpoint Endpoint on the light device.
      * @param clusterId ID of the cluster to bind (e.g., On/Off).
      */
     override suspend fun bind(

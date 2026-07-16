@@ -15,6 +15,7 @@ interface MatterClusterExtensionController {
      * command on that cluster.
      *
      * @param deviceId the commissioned device to invoke.
+     * @param endpoint the Matter endpoint exposing the vendor-specific cluster.
      * @return the generated random number, or `null` if the device is unreachable, the command is
      * rejected, or the attribute can't be read back.
      */

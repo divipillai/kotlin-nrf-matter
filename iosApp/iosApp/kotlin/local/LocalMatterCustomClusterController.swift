@@ -84,7 +84,7 @@ class LocalMatterCustomClusterController: MatterManufacturerSpecificController {
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the cluster.
-    ///   - onUpdate: Called with each new button state.
+    /// - Returns: A flow emitting `true` when the button is pressed, `false` when released.
     func observeButtonChanges(deviceId: DeviceId, endpoint: Int32) -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("Observe button changes")
         let flowWrapper = IosFlowWrapper<KotlinBoolean>()

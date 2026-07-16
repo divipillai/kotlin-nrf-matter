@@ -65,7 +65,7 @@ class LocalMatterLightController : MatterLightController {
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the On/Off cluster.
-    ///   - onUpdate: Called with each reported on/off state.
+    /// - Returns: A flow emitting `true` when the light is on, `false` when it is off.
     /// - Throws: An error if the local controller cannot be obtained.
     func observeLightState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("subscribeToLedChanges")
@@ -96,7 +96,7 @@ class LocalMatterLightController : MatterLightController {
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the Level Control cluster.
-    ///   - onUpdate: Called with each reported level, normalized to `0...1`.
+    /// - Returns: A flow emitting brightness normalized to `0...1`.
     /// - Throws: An error if the local controller cannot be obtained.
     func observeBrightnessState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("subscribeToLightLevelChanges")

@@ -54,6 +54,7 @@ class MatterManufacturerSpecificControllerImpl(
      * cluster/command combination on that endpoint.
      *
      * @param deviceId the commissioned device to control.
+     * @param endpoint the Matter endpoint exposing the manufacturer-specific cluster.
      * @throws IllegalStateException if the device pointer cannot be resolved (e.g. device
      * unreachable).
      */

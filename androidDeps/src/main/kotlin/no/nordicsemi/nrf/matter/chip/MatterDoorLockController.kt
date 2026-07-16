@@ -67,8 +67,6 @@ class MatterDoorLockControllerImpl (
      * @param deviceId the commissioned device to control.
      * @param isLocked `true` to send the Lock Door command, `false` to send the Unlock Door command.
      * @param endpoint the Matter endpoint exposing the Door Lock cluster.
-     * @param pinCode optional PIN code required by the lock to authorize the operation; when
-     * omitted, an empty PIN is sent.
      * @throws Exception if the underlying cluster command fails (e.g. device unreachable, command
      * rejected).
      */

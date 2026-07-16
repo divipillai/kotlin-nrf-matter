@@ -58,6 +58,7 @@ val commonModule = module {
         BindDevicesUseCase(
             get(),
             get(),
+            get(),
         )
     }
     single {

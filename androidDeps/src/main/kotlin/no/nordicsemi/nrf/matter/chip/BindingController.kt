@@ -3,14 +3,17 @@ package no.nordicsemi.nrf.matter.chip
 import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
 import kotlinx.coroutines.suspendCancellableCoroutine
+import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
+import no.nordicsemi.nrf.matter.model.DeviceId
 import java.util.Optional
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class BindingManager(
+class BindingControllerImpl(
     private val chipClient: ChipClient,
-) {
+) : BindingController {
+
     private var lightSwitchFabricIndex: Int? = null
 
     /**
@@ -22,13 +25,23 @@ class BindingManager(
      *
      * The operation is idempotent: if the ACL or binding already exists, it will not create duplicates.
      *
-     * @param switchNodeId Node ID of the switch device.
-     * @param switchEndpoint Endpoint on the switch where the binding is configured.
-     * @param lightNodeId Node ID of the target light device.
-     * @param lightEndpoint Endpoint on the light device.
+     * @param sourceNodeId Node ID of the switch device.
+     * @param sourceEndpoint Endpoint on the switch where the binding is configured.
+     * @param targetNodeId Node ID of the target light device.
+     * @param targetEndpoint Endpoint on the light device.
      * @param clusterId ID of the cluster to bind (e.g., On/Off).
      */
-    suspend fun createBinding(
+    override suspend fun bind(
+        sourceNodeId: DeviceId,
+        sourceEndpoint: Int,
+        targetNodeId: DeviceId,
+        targetEndpoint: Int,
+        clusterId: Long
+    ) {
+        bind(sourceNodeId.longValue, sourceEndpoint, targetNodeId.longValue, targetEndpoint, clusterId)
+    }
+
+    private suspend fun bind(
         switchNodeId: Long,
         switchEndpoint: Int,
         lightNodeId: Long,

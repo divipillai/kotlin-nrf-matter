@@ -12,7 +12,7 @@ import OSLog
 
 /// Controls a light type Matter device in the local fabric.
 class LocalMatterLightController : MatterLightController {
-
+    
     /// Turns the light on or off.
     ///
     /// - Parameters:
@@ -41,8 +41,8 @@ class LocalMatterLightController : MatterLightController {
     ///   - level: The target level, as defined by the Level Control cluster.
     ///   - endpoint: The endpoint hosting the Level Control cluster.
     /// - Throws: An error if the local controller cannot be obtained or the command fails.
-    func setBrightnessLevel(deviceId: DeviceId, level: Int32, endpoint: Int32) async throws {
-        SharedLogger.debug("Set brightess level: \(level)")
+    func setBrightnessLevel(deviceId: DeviceId, brightnessLevel: Int32, endpoint: Int32) async throws {
+        SharedLogger.debug("Set brightess level: \(brightnessLevel)")
 
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
@@ -56,7 +56,7 @@ class LocalMatterLightController : MatterLightController {
         SharedLogger.debug("Cluster created: \(String(describing: cluster))")
 
         let params = MTRLevelControlClusterMoveToLevelParams()
-        params.level = NSNumber(value: level)
+        params.level = NSNumber(value: brightnessLevel)
         try await cluster?.moveToLevel(with: params)
     }
     
@@ -65,24 +65,27 @@ class LocalMatterLightController : MatterLightController {
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the On/Off cluster.
-    ///   - onUpdate: Called with each reported on/off state.
+    /// - Returns: A flow emitting `true` when the light is on, `false` when it is off.
     /// - Throws: An error if the local controller cannot be obtained.
-    func subscribeToLedChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
+    func observeLightState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("subscribeToLedChanges")
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
 
         let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
-        SharedLogger.info("Cluster: \(cluster)")
+        SharedLogger.info("Cluster: \(String(describing: cluster))")
+        
+        let flowWrapper = IosFlowWrapper<KotlinBoolean>()
         cluster?.subscribeAttributeOnOff(with: MTRSubscribeParams.defaultParams, subscriptionEstablished: { }, reportHandler: { result, error in
             if let result {
                 SharedLogger.info("Received led state: \(result)")
-                onUpdate(KotlinBoolean(bool: result.boolValue))
+                flowWrapper.emit(value: KotlinBoolean(bool: result.boolValue))
             }
             if let error {
                 SharedLogger.debug("Received led on error: \(error)")
             }
         })
+        return flowWrapper.flow
     }
     
     /// Subscribes to brightness level changes reported by the device.
@@ -93,26 +96,29 @@ class LocalMatterLightController : MatterLightController {
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the Level Control cluster.
-    ///   - onUpdate: Called with each reported level, normalized to `0...1`.
+    /// - Returns: A flow emitting brightness normalized to `0...1`.
     /// - Throws: An error if the local controller cannot be obtained.
-    func subscribeToLightLevelChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinFloat) -> Void) async throws {
+    func observeBrightnessState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("subscribeToLightLevelChanges")
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
 
         let cluster = MTRBaseClusterLevelControl(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
-        SharedLogger.info("Cluster: \(cluster)")
+        SharedLogger.info("Cluster: \(String(describing: cluster))")
+        
+        let flowWrapper = IosFlowWrapper<KotlinFloat>()
         cluster?.subscribeAttributeCurrentLevel(with: MTRSubscribeParams.defaultParams, subscriptionEstablished: { }, reportHandler: { result, error in
             if let result {
                 SharedLogger.info("Received light level: \(result)")
                 let rawLevel = result.intValue
                 let percent = max(0, min(1, (Float(rawLevel) - 1) / 253))
                 SharedLogger.info("Calculated percent: \(percent)")
-                onUpdate(KotlinFloat(float: percent))
+                flowWrapper.emit(value: KotlinFloat(float: percent))
             }
             if let error {
                 SharedLogger.debug("Received light level error: \(error)")
             }
         })
+        return flowWrapper.flow
     }
 }

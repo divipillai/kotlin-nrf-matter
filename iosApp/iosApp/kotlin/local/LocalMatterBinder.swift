@@ -11,7 +11,7 @@ import SharedCode
 
 /// Binds Matter device clusters directly to each other for device-to-device
 /// control, bypassing the controller.
-class LocalMatterBinder : MatterBinder {
+class LocalMatterBinder : BindingController {
 
     /// Binds a source device and a target device together.
     ///
@@ -39,9 +39,9 @@ class LocalMatterBinder : MatterBinder {
         
         let controller = try LocalControllerProvider(logTag: "LocalMatterBinder").getController()
         SharedLogger.info("Granting access to source.")
-        await grantAccessToSource(targetDeviceID: target, sourceNodeID: source, clusterID: cluster, controller: controller)
+        try await grantAccessToSource(targetDeviceID: target, sourceNodeID: source, clusterID: cluster, controller: controller)
         SharedLogger.info("Preparing binding.")
-        await bindSwitchToBulb(sourceDeviceID: source, sourceEndpoint: sourceEnd, targetNodeID: target, targetEndpoint: targetEnd, clusterID: cluster, controller: controller)
+        try await bindSwitchToBulb(sourceDeviceID: source, sourceEndpoint: sourceEnd, targetNodeID: target, targetEndpoint: targetEnd, clusterID: cluster, controller: controller)
         SharedLogger.info("Binding successful.")
     }
 
@@ -65,7 +65,7 @@ class LocalMatterBinder : MatterBinder {
     ///   - sourceNodeID: The node ID being granted access.
     ///   - clusterID: The cluster ID the access grant applies to.
     ///   - controller: The Matter controller used to reach the target device.
-    private func grantAccessToSource(targetDeviceID: NSNumber, sourceNodeID: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async {
+    private func grantAccessToSource(targetDeviceID: NSNumber, sourceNodeID: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async throws {
         let targetDevice = MTRBaseDevice(nodeID: targetDeviceID, controller: controller)
         guard let aclCluster = MTRBaseClusterAccessControl(device: targetDevice, endpointID: 0, queue: .main) else { return }
         
@@ -80,25 +80,20 @@ class LocalMatterBinder : MatterBinder {
         newEntry.subjects = [sourceNodeID]
         newEntry.targets = [target]
         
-        do {
-            SharedLogger.info("Reading attribute ACL...")
-            var currentACLs = try await aclCluster.readAttributeACL(with: nil) as? [MTRAccessControlClusterAccessControlEntryStruct] ?? []
-            SharedLogger.info("Amending ACL records...")
-            let entryExists = currentACLs.contains { entry in
-                (entry.subjects as? [NSNumber])?.contains(sourceNodeID) == true && entry.privilege == newEntry.privilege
-            }
-            
-            if !entryExists {
-                SharedLogger.info("Storing new ACL record on the target device...")
-                currentACLs.append(newEntry)
-                try await aclCluster.writeAttributeACL(withValue: currentACLs)
-                SharedLogger.debug("Access granted successfully to node \(sourceNodeID)")
-            } else {
-                SharedLogger.debug("ACL entry already exists for node \(sourceNodeID). Skipping write.")
-            }
-            
-        } catch {
-            SharedLogger.error("ACL read/write failed: \(error.localizedDescription)")
+        SharedLogger.info("Reading attribute ACL...")
+        var currentACLs = try await aclCluster.readAttributeACL(with: nil) as? [MTRAccessControlClusterAccessControlEntryStruct] ?? []
+        SharedLogger.info("Amending ACL records...")
+        let entryExists = currentACLs.contains { entry in
+            (entry.subjects as? [NSNumber])?.contains(sourceNodeID) == true && entry.privilege == newEntry.privilege
+        }
+        
+        if !entryExists {
+            SharedLogger.info("Storing new ACL record on the target device...")
+            currentACLs.append(newEntry)
+            try await aclCluster.writeAttributeACL(withValue: currentACLs)
+            SharedLogger.debug("Access granted successfully to node \(sourceNodeID)")
+        } else {
+            SharedLogger.debug("ACL entry already exists for node \(sourceNodeID). Skipping write.")
         }
     }
     
@@ -119,7 +114,7 @@ class LocalMatterBinder : MatterBinder {
     ///   - targetEndpoint: The endpoint on the target device that hosts the server cluster.
     ///   - clusterID: The cluster ID used for the binding.
     ///   - controller: The Matter controller used to reach the source device.
-    private func bindSwitchToBulb(sourceDeviceID: NSNumber, sourceEndpoint: NSNumber, targetNodeID: NSNumber, targetEndpoint: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async {
+    private func bindSwitchToBulb(sourceDeviceID: NSNumber, sourceEndpoint: NSNumber, targetNodeID: NSNumber, targetEndpoint: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async throws {
         let sourceDevice = MTRBaseDevice(nodeID: sourceDeviceID, controller: controller)
         guard let bindingCluster = MTRBaseClusterBinding(device: sourceDevice, endpointID: sourceEndpoint, queue: .main) else { return }
         
@@ -129,15 +124,11 @@ class LocalMatterBinder : MatterBinder {
         bindingEntry.endpoint = targetEndpoint
         bindingEntry.cluster = clusterID
         
-        do {
-            SharedLogger.debug("Storing record on a source device.")
-            var bindings = try await bindingCluster.readAttributeBinding(with: nil)
-            bindings.append(bindingEntry)
-            try await bindingCluster.writeAttributeBinding(withValue: bindings)
-            
-            SharedLogger.debug("Binding created successfully on source.")
-        } catch {
-            SharedLogger.error("Binding failed: \(error.localizedDescription)")
-        }
+        SharedLogger.debug("Storing record on a source device.")
+        var bindings = try await bindingCluster.readAttributeBinding(with: nil)
+        bindings.append(bindingEntry)
+        try await bindingCluster.writeAttributeBinding(withValue: bindings)
+        
+        SharedLogger.debug("Binding created successfully on source.")
     }
 }

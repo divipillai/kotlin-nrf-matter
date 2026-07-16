@@ -10,6 +10,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import no.nordicsemi.nrf.matter.controller.MatterLightController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import kotlin.coroutines.resumeWithException
@@ -55,24 +56,11 @@ import kotlin.coroutines.resumeWithException
  * @property chipClient the underlying Matter stack used to resolve device pointers and send/subscribe
  * to cluster attributes.
  */
-class MatterLightController(
+class MatterLightControllerImpl (
     private val chipClient: ChipClient,
-) {
-    /**
-     * Writes the current brightness level to the Level Control cluster.
-     *
-     * The command used is "Move to Level with On/Off", which sets the brightness level and turns on
-     * or off the device based on the brightness level (if [brightnessLevel] > 0, the device will be
-     * turned on; if [brightnessLevel] == 0, the device will be turned off). The transition is
-     * instantaneous (no fade).
-     *
-     * @param deviceId the commissioned device to control.
-     * @param brightnessLevel target level in the device's raw Level Control range (typically 1-254).
-     * @param endpoint the Matter endpoint exposing the Level Control cluster.
-     * @throws Exception if the underlying cluster command fails (e.g. device unreachable, command
-     * rejected).
-     */
-    suspend fun setBrightnessLevel(
+) : MatterLightController {
+
+    override suspend fun setBrightnessLevel(
         deviceId: DeviceId,
         brightnessLevel: Int,
         endpoint: Int
@@ -99,7 +87,7 @@ class MatterLightController(
      * @throws Exception if the underlying cluster command fails (e.g. device unreachable, command
      * rejected).
      */
-    suspend fun setOnOffDeviceStateOnOffCluster(deviceId: DeviceId, isOn: Boolean, endpoint: Int) {
+    override suspend fun setDeviceOnOff(deviceId: DeviceId, isOn: Boolean, endpoint: Int) {
         val connectedDevicePtr = getConnectedDevicePointerOrNull(deviceId) ?: return
         val cluster = getOnOffClusterForDevice(connectedDevicePtr, endpoint)
         awaitClusterCallback { callback ->
@@ -118,7 +106,7 @@ class MatterLightController(
      * @param endpoint the Matter endpoint exposing the On/Off cluster.
      * @return a cold [Flow] emitting `true` when the light is on, `false` when it is off.
      */
-    fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<Boolean> =
+    override suspend fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<Boolean> =
         observeAttribute(
             deviceId = deviceId,
             endpoint = endpoint,
@@ -143,7 +131,7 @@ class MatterLightController(
      * @param endpoint the Matter endpoint exposing the Level Control cluster.
      * @return a cold [Flow] emitting brightness as a fraction between 0f (off) and 1f (max).
      */
-    fun observeBrightnessState(deviceId: DeviceId, endpoint: Int): Flow<Float> =
+    override suspend fun observeBrightnessState(deviceId: DeviceId, endpoint: Int): Flow<Float> =
         observeAttribute(
             deviceId = deviceId,
             endpoint = endpoint,

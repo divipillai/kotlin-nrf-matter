@@ -38,7 +38,7 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
     ///   - endpoint: The endpoint hosting the cluster extension.
     /// - Returns: The newly generated random number.
     /// - Throws: An error if the command invocation or the subsequent attribute read fails.
-    func generateRandomNumber(deviceId: DeviceId, endpoint: Int32) async throws -> KotlinInt {
+    func generateRandomNumber(deviceId: DeviceId, endpoint: Int32) async throws -> KotlinLong {
         SharedLogger.debug("Generating random number...")
         let commandExecutor = try CommandExecutor(deviceId: deviceId.nsNumber())
         let endpointId = NSNumber(value: endpoint)
@@ -63,13 +63,13 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
     ///   - endpointId: The endpoint hosting the cluster extension.
     /// - Returns: The current random number value.
     /// - Throws: An error if the attribute read fails.
-    private func getRandomNumber(deviceId: DeviceId, endpointId: NSNumber) async throws -> KotlinInt {
+    private func getRandomNumber(deviceId: DeviceId, endpointId: NSNumber) async throws -> KotlinLong {
         let attributeReader = try AttributeReader(deviceId: deviceId.nsNumber())
         let result: Int32 = try await attributeReader.readAttribute(
             endpoint: endpointId,
             cluster: BasicInformationClusterExtension.id,
             attribute: BasicInformationClusterExtension.Attribute.randomNumber
         )
-        return KotlinInt(int: result)
+        return KotlinLong(longLong: Int64(result))
     }
 }

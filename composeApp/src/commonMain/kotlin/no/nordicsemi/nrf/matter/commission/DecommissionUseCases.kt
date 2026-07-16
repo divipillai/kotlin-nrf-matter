@@ -5,7 +5,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import no.nordicsemi.nrf.matter.model.DeviceController
+import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
@@ -42,7 +42,7 @@ import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 class DecommissionUseCases(
-    private val deviceController: DeviceController,
+    private val deviceController: MatterDecommissioner,
     private val devicesStateRepository: DevicesStateRepository,
     private val devicesRepository: DevicesRepository,
     private val bindingRepository: BindingRepository,
@@ -68,7 +68,7 @@ class DecommissionUseCases(
 
     fun decommissionDevice(deviceId: DeviceId): Flow<DecommissionState> =
         decommissionFlow(deviceId) {
-            deviceController.unlinkDevice(deviceId)
+            deviceController.decommission(deviceId)
             devicesStateRepository.removeDevice(deviceId)
             devicesRepository.removeDevice(deviceId)
             // Let's also remove all bindings for this device, as it is decommissioned and won't be able to communicate with other devices.

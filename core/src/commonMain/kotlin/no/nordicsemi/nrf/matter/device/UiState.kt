@@ -1,6 +1,6 @@
-package no.nordicsemi.nrf.matter.model
+package no.nordicsemi.nrf.matter.device
 
-import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.model.DeviceBinding
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -32,67 +32,26 @@ import kotlinx.coroutines.flow.Flow
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-interface DeviceController {
+sealed interface UiState<out T> {
 
-    val bindingLogs : Flow<String>
+    class Idle<T> : UiState<T>
+    class Loading<T> : UiState<T>
 
-    suspend fun setDeviceOnOff(
-        deviceId: DeviceId,
-        isDeviceOnline: Boolean,
-        isOn: Boolean,
-        endpoint: Int,
-    )
+    data class Success<T>(val data: T) : UiState<T>
 
-    suspend fun setLed(
-        deviceId: DeviceId,
-        isOn: Boolean,
-        endpoint: Int,
-    )
-
-    suspend fun unlinkDevice(deviceId: DeviceId)
-
-    suspend fun lockUnlockDoor(
-        deviceId: DeviceId,
-        isLocked: Boolean,
-        endpoint: Int,
-    )
-
-    // Bind switch to light
-    suspend fun bind(
-        sourceNodeId: DeviceId,
-        sourceEndpoint: Int,
-        targetNodeId: DeviceId,
-        targetEndpoint: Int,
-        clusterId: Long,
-    )
-
-    fun observeButtonChanges(
-        deviceId: DeviceId,
-        endpoint: Int,
-    ): Flow<Boolean>
-
-    suspend fun generateRandomNumber(deviceId: DeviceId, endpoint: Int): Int
-
-    suspend fun setBrightnessLevel(
-        deviceId: DeviceId,
-        brightnessLevel: Int,
-        endpoint: Int,
-    )
-
-    fun observeLightDeviceState(
-        deviceId: DeviceId,
-        endpoint: Int,
-    ): Flow<Boolean>
-
-    fun observeBrightnessState(
-        deviceId: DeviceId,
-        endpoint: Int,
-    ): Flow<Float>
-
-    // Observe the real-time state of the door lock device, including its locked/unlocked status.
-    fun observeLockDeviceState(
-        deviceId: DeviceId,
-        endpoint: Int,
-        doorLockClusterId: Long,
-    ): Flow<LockDeviceState>
+    data class Error(
+        val message: String,
+        val cause: Throwable? = null
+    ) : UiState<Nothing>
 }
+
+fun <T,R> UiState<T>.mapType(transform: (T) -> R): UiState<R> {
+    return when (this) {
+        is UiState.Error -> UiState.Error(message, cause)
+        is UiState.Idle -> UiState.Idle()
+        is UiState.Loading -> UiState.Loading()
+        is UiState.Success -> UiState.Success(transform(data))
+    }
+}
+
+typealias BindingState = UiState<DeviceBinding>

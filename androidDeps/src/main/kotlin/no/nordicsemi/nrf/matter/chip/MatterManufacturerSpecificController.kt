@@ -7,6 +7,7 @@ import chip.devicecontroller.model.NodeState
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 
@@ -41,9 +42,9 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class MatterManufacturerSpecificController(
+class MatterManufacturerSpecificControllerImpl(
     private val chipClient: ChipClient,
-) {
+) : MatterManufacturerSpecificController {
     /**
      * Sends the vendor-specific "set LED" command.
      *
@@ -53,55 +54,17 @@ class MatterManufacturerSpecificController(
      * cluster/command combination on that endpoint.
      *
      * @param deviceId the commissioned device to control.
+     * @param endpoint the Matter endpoint exposing the manufacturer-specific cluster.
      * @throws IllegalStateException if the device pointer cannot be resolved (e.g. device
      * unreachable).
      */
-    suspend fun setLed(deviceId: DeviceId) {
+    override suspend fun setLed(deviceId: DeviceId, endpoint: Int) {
         chipClient.setLet(
             deviceId,
-            LED_ENDPOINT,
+            endpoint,
             clusterId = MANUFACTURER_SPECIFIC_CLUSTER_ID,
             commandId = SET_LED_COMMAND_ID,
         )
-    }
-
-    /**
-     * Sends a vendor-specific "generate random number" invoke, then reads back the resulting
-     * value.
-     *
-     * Targets cluster [RANDOM_NUMBER_CLUSTER_ID] (Basic Information) on endpoint
-     * [RANDOM_NUMBER_ENDPOINT], invoking [RANDOM_NUMBER_COMMAND_ID] and then reading
-     * [RANDOM_NUMBER_ATTRIBUTE_ID] for the result. These IDs are fixed rather than resolved from
-     * the device's descriptor cluster, and depend on the companion firmware exposing this vendor
-     * command on that cluster.
-     *
-     * @param deviceId the commissioned device to invoke.
-     * @return the generated random number, or `null` if the device is unreachable, the command is
-     * rejected, or the attribute can't be read back.
-     */
-    suspend fun generateRandomNumber(deviceId: DeviceId): Long? {
-        return try {
-            val connectedDevicePtr = connectedDevicePointer(deviceId)
-            chipClient.generateRandomNumber(
-                connectedDevicePtr,
-                ChipAttributePath.newInstance(
-                    RANDOM_NUMBER_ENDPOINT,
-                    RANDOM_NUMBER_CLUSTER_ID,
-                    RANDOM_NUMBER_COMMAND_ID,
-                )
-            )
-            val namePath = ChipAttributePath.newInstance(
-                RANDOM_NUMBER_ENDPOINT,
-                RANDOM_NUMBER_CLUSTER_ID,
-                RANDOM_NUMBER_ATTRIBUTE_ID,
-            )
-            val nameAttr = chipClient.readAttribute(connectedDevicePtr, namePath)
-            nameAttr?.value as? Long
-        } catch (t: Throwable) {
-            NordicLogger.error("Random number generation failed: ${t.message}", t, tag = TAG)
-            t.printStackTrace()
-            null
-        }
     }
 
     /**
@@ -116,7 +79,7 @@ class MatterManufacturerSpecificController(
      * @param endpoint the Matter endpoint exposing the manufacturer-specific cluster.
      * @return a cold [Flow] emitting `true` when the button is pressed, `false` when released.
      */
-    fun observeButtonChanges(deviceId: DeviceId, endpoint: Int): Flow<Boolean> = callbackFlow {
+    override fun observeButtonChanges(deviceId: DeviceId, endpoint: Int): Flow<Boolean> = callbackFlow {
         val reportCallback = object : ReportCallback {
             override fun onError(
                 attributePath: ChipAttributePath?,
@@ -166,12 +129,6 @@ class MatterManufacturerSpecificController(
         private const val MANUFACTURER_SPECIFIC_CLUSTER_ID = 0xFFF1FC01L
         private const val SET_LED_COMMAND_ID = 0xFFF10000L
         private const val BUTTON_ATTRIBUTE_ID = 0xFFF10002L
-        private const val LED_ENDPOINT = 0x1
-
-        private const val RANDOM_NUMBER_ENDPOINT = 0
-        private const val RANDOM_NUMBER_CLUSTER_ID = 0x28L
-        private const val RANDOM_NUMBER_COMMAND_ID = 0x00L
-        private const val RANDOM_NUMBER_ATTRIBUTE_ID = 0x00017L
 
         private val TAG: String
             get() = "MatterManufacturerSpecificController"

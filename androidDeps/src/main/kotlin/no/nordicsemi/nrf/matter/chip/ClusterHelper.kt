@@ -43,9 +43,29 @@ import kotlin.coroutines.resumeWithException
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * Provides read access to Matter Descriptor cluster attributes and Nordic manufacturer-specific
+ * cluster attributes for commissioned devices, and aggregates them into [DeviceMatterInfo].
+ *
+ * All read operations delegate to [chipClient] for device connectivity and are safe to call
+ * from a coroutine; each suspends until the underlying CHIP callback completes.
+ *
+ * @property chipClient client used to obtain connected device pointers and perform attribute reads.
+ */
 class ClustersHelper(private val chipClient: ChipClient) {
 
-    /** Fetches MatterDeviceInfo for each endpoint supported by the device. */
+    /**
+     * Retrieves the full Matter topology and cluster information for a commissioned device.
+     *
+     * Resolves a connected device pointer for [deviceId] and walks its endpoint tree, starting
+     * at the root endpoint (0), collecting descriptor cluster data (device types, server/client
+     * cluster lists) and any manufacturer-specific data for every endpoint exposed by the
+     * device, including its child endpoints ("parts").
+     *
+     * @param deviceId identifier of the commissioned device to query.
+     * @return a list of [DeviceMatterInfo], one entry per endpoint discovered on the device, or
+     *   an empty list if a connected device pointer for [deviceId] could not be obtained.
+     */
     suspend fun fetchDeviceMatterInfo(deviceId: DeviceId): List<DeviceMatterInfo> {
         val matterDeviceInfoList = arrayListOf<DeviceMatterInfo>()
         val connectedDevicePtr =
@@ -59,7 +79,22 @@ class ClustersHelper(private val chipClient: ChipClient) {
         return matterDeviceInfoList
     }
 
-    /** Fetches MatterDeviceInfo for a specific endpoint. */
+    /**
+     * Recursively collects [DeviceMatterInfo] for [endpointInt] and all of its child endpoints.
+     *
+     * Reads the descriptor cluster's parts, device type, server, and client lists for the given
+     * endpoint, resolves manufacturer-specific data when the manufacturer-specific cluster
+     * (`0xFFF1FC01`) is present in the server list, appends the resulting [DeviceMatterInfo] to
+     * [matterDeviceInfoList], then recurses into every child endpoint reported by the parts
+     * list that itself exposes a non-empty server list. Endpoints without a Descriptor cluster
+     * are logged and skipped.
+     *
+     * @param nodeId Matter node ID of the device being queried.
+     * @param connectedDevicePtr native pointer to the connected device, as obtained from
+     *   [ChipClient.getConnectedDevicePointer].
+     * @param endpointInt endpoint to query on this invocation.
+     * @param matterDeviceInfoList mutable list that accumulated results are appended to.
+     */
     private suspend fun fetchDeviceMatterInfo(
         nodeId: Long,
         connectedDevicePtr: Long,
@@ -131,11 +166,16 @@ class ClustersHelper(private val chipClient: ChipClient) {
         }
     }
 
-    // -----------------------------------------------------------------------------------------------
-    // DescriptorCluster functions
-
     /**
-     * PartsListAttribute. These are the endpoints supported.
+     * Reads the `PartsList` attribute of the Descriptor cluster on the given endpoint.
+     *
+     * The parts list enumerates the child endpoints ("parts") composed under this endpoint.
+     *
+     * @param devicePtr native pointer to the connected device.
+     * @param endpoint endpoint hosting the Descriptor cluster to query.
+     * @return the part values reported by the device (typically endpoint numbers as [Int]), or
+     *   `null` if none were reported.
+     * @throws Exception if the underlying read request fails.
      */
     suspend fun readDescriptorClusterPartsListAttribute(
         devicePtr: Long,
@@ -156,6 +196,20 @@ class ClustersHelper(private val chipClient: ChipClient) {
         }
     }
 
+    /**
+     * Reads Nordic's manufacturer-specific cluster (cluster ID `0xFFF1FC01`) attributes for the
+     * given endpoint and assembles them into a [ManufacturerSpecificData] instance.
+     *
+     * Reads the device name (attribute `0xFFF10000`), LED presence (attribute `0xFFF10001`),
+     * and button presence (attribute `0xFFF10002`) in a single batched request.
+     *
+     * @param endpoint endpoint hosting the manufacturer-specific cluster.
+     * @param connectedDevicePtr native pointer to the connected device.
+     * @return the decoded [ManufacturerSpecificData], or `null` if the name attribute is
+     *   missing or of an unexpected type, or if the read fails for any other reason. LED and
+     *   button values default to `false` when absent or of an unexpected type. Failures are
+     *   logged rather than thrown.
+     */
     suspend fun getManufacturerSpecificData(
         endpoint: Long,
         connectedDevicePtr: Long
@@ -207,14 +261,12 @@ class ClustersHelper(private val chipClient: ChipClient) {
     }
 
     /**
-     * DeviceListAttribute
+     * Reads the `DeviceTypeList` attribute of the Descriptor cluster on the given endpoint.
      *
-     * ```
-     * For example, on endpoint 0:
-     *   device: [long type: 22, int revision: 1] -> maps to Root node (0x0016) (utility device type)
-     * on endpoint 1:
-     *   device: [long type: 256, int revision: 1] -> maps to On/Off Light (0x0100)
-     * ```
+     * @param devicePtr native pointer to the connected device.
+     * @param endpoint endpoint hosting the Descriptor cluster to query.
+     * @return the device type structs the device reports for this endpoint.
+     * @throws Exception if the underlying read request fails.
      */
     suspend fun readDescriptorClusterDeviceListAttribute(
         devicePtr: Long,
@@ -238,7 +290,12 @@ class ClustersHelper(private val chipClient: ChipClient) {
     }
 
     /**
-     * ServerListAttribute
+     * Reads the `ServerList` attribute of the Descriptor cluster on the given endpoint.
+     *
+     * @param devicePtr native pointer to the connected device.
+     * @param endpoint endpoint hosting the Descriptor cluster to query.
+     * @return the cluster IDs of the server clusters implemented on this endpoint.
+     * @throws Exception if the underlying read request fails.
      */
     suspend fun readDescriptorClusterServerListAttribute(
         devicePtr: Long,
@@ -259,7 +316,14 @@ class ClustersHelper(private val chipClient: ChipClient) {
         }
     }
 
-    /** ClientListAttribute */
+    /**
+     * Reads the `ClientList` attribute of the Descriptor cluster on the given endpoint.
+     *
+     * @param devicePtr native pointer to the connected device.
+     * @param endpoint endpoint hosting the Descriptor cluster to query.
+     * @return the cluster IDs of the client clusters implemented on this endpoint.
+     * @throws Exception if the underlying read request fails.
+     */
     suspend fun readDescriptorClusterClientListAttribute(
         devicePtr: Long,
         endpoint: Int
@@ -279,44 +343,18 @@ class ClustersHelper(private val chipClient: ChipClient) {
         }
     }
 
+    /**
+     * Creates a [ChipClusters.DescriptorCluster] binding for the given device and endpoint.
+     *
+     * @param devicePtr native pointer to the connected device.
+     * @param endpoint endpoint the returned cluster binding will target.
+     * @return a new [ChipClusters.DescriptorCluster] bound to [devicePtr] and [endpoint].
+     */
     private fun getDescriptorClusterForDevice(
         devicePtr: Long,
         endpoint: Int
     ): ChipClusters.DescriptorCluster {
         return ChipClusters.DescriptorCluster(devicePtr, endpoint)
-    }
-
-    /**
-     * Writes NodeLabel attribute. See spec section "11.1.6.3. Attributes" of the "Basic Information
-     * Cluster".
-     *
-     * @param deviceId device identifier
-     * @param nodeLabel device name/node label
-     */
-    suspend fun writeBasicClusterNodeLabelAttribute(deviceId: DeviceId, nodeLabel: String) {
-        val connectedDevicePtr =
-            try {
-                chipClient.getConnectedDevicePointer(deviceId.longValue)
-            } catch (e: IllegalStateException) {
-                NordicLogger.error("Can't get connectedDevicePointer.", e, tag = TAG)
-                return
-            }
-
-        return suspendCancellableCoroutine { continuation ->
-            val callback =
-                object : ChipClusters.DefaultClusterCallback {
-                    override fun onSuccess() {
-                        continuation.resume(Unit)
-                    }
-
-                    override fun onError(ex: Exception) {
-                        continuation.resumeWithException(ex)
-                    }
-                }
-
-            ChipClusters.BasicInformationCluster(connectedDevicePtr, 0)
-                .writeNodeLabelAttribute(callback, nodeLabel)
-        }
     }
 
     companion object {

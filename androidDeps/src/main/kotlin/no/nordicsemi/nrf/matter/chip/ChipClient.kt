@@ -73,15 +73,34 @@ private const val VENDOR_ID = 0xFFF4
 
 private const val DEFAULT_TIMEOUT = 1000
 
+/**
+ * Owns the lifecycle of the CHIP (Matter) native device controller and exposes coroutine-based
+ * wrappers around its callback-based APIs: commissioning, pairing, attribute reads/writes,
+ * command invocation, attribute subscription, and fabric management for decommissioning.
+ *
+ * @property context Android context used to initialize the underlying Android CHIP platform
+ *   (BLE, NFC, mDNS, and persistent storage integrations).
+ */
 class ChipClient(
     private val context: Context,
 ) {
+    /**
+     * Stream of native CHIP SDK log lines, each prefixed with its originating module name.
+     * Buffers up to 200 entries, dropping the oldest on overflow.
+     */
     val chipLogFlow = MutableSharedFlow<String>(
         extraBufferCapacity = 200,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    // Lazily instantiate [ChipDeviceController] and hold a reference to it.
+    /**
+     * The lazily-initialized [ChipDeviceController] backing all operations in this class.
+     *
+     * Initialization loads the native CHIP JNI library, wires native log output into
+     * [chipLogFlow], configures the Android CHIP platform (BLE, NFC, mDNS, and
+     * preference-backed storage), and constructs the controller with [VENDOR_ID] as its
+     * vendor ID.
+     */
     val chipDeviceController: ChipDeviceController by lazy {
         ChipDeviceController.loadJni()
 
@@ -107,7 +126,13 @@ class ChipClient(
     }
 
     /**
-     * Wrapper around [ChipDeviceController.getConnectedDevicePointer] to return the value directly.
+     * Resolves a native device pointer for an already-commissioned node, establishing a CASE
+     * session with it if one is not already active.
+     *
+     * @param nodeId Matter node ID of the device to connect to.
+     * @return native pointer to the connected device, valid until released via
+     *   [ChipDeviceController.releaseConnectedDevicePointer].
+     * @throws IllegalStateException if the connection attempt fails.
      */
     suspend fun getConnectedDevicePointer(nodeId: Long): Long {
         return suspendCancellableCoroutine { continuation ->
@@ -127,10 +152,19 @@ class ChipClient(
         }
     }
 
+
     /**
-     * Fully decommissions a device by removing all fabrics, including foreign fabrics and the device's own fabric.
+     * Removes this app's fabric — and any other fabric present on the device — from a
+     * commissioned device, returning it to a factory-uncommissioned state from the device's
+     * perspective.
      *
-     * @param deviceId The ID of the device to decommission.
+     * Reads all fabrics on the device, removes every fabric other than this app's own first
+     * (for example, a foreign fabric left behind by commissioning through another ecosystem
+     * such as Google Home), then removes this app's own fabric last. Errors removing
+     * individual fabrics are logged and do not abort the operation; the connected device
+     * pointer is always released before returning.
+     *
+     * @param deviceId Matter node ID of the device to decommission.
      */
     suspend fun decommissionDevice(deviceId: Long) {
         NordicLogger.info("Decommission device: $deviceId", tag = TAG)
@@ -195,6 +229,15 @@ class ChipClient(
         }
     }
 
+    /**
+     * Reads the Operational Credentials cluster's `Fabrics` attribute on endpoint 0.
+     *
+     * @param connectedDevicePtr native pointer to the connected device.
+     * @param fabricFiltered if `true`, restricts the result to the fabric of the caller's
+     *   active session; if `false`, returns all fabrics known to the device.
+     * @return the fabric descriptors reported by the device.
+     * @throws Exception if the underlying read fails.
+     */
     private suspend fun readFabrics(
         connectedDevicePtr: Long,
         fabricFiltered: Boolean
@@ -219,6 +262,14 @@ class ChipClient(
             cluster.readFabricsAttributeWithFabricFilter(callback, fabricFiltered)
         }
 
+    /**
+     * Removes the fabric at [fabricIndex] from the device via the Operational Credentials
+     * cluster's `RemoveFabric` command.
+     *
+     * @param connectedDevicePtr native pointer to the connected device.
+     * @param fabricIndex index of the fabric to remove, as reported by [readFabrics].
+     * @throws Exception if the command fails.
+     */
     private suspend fun removeFabric(
         connectedDevicePtr: Long,
         fabricIndex: Int
@@ -242,6 +293,21 @@ class ChipClient(
             )
     }
 
+    /**
+     * Establishes a PASE (Password-Authenticated Session Establishment) connection with a
+     * device over IP, as the first step of commissioning.
+     *
+     * Suspends until the connection is established, commissioning info has been read, a
+     * commissioning status update is received, or pairing completes — whichever the native
+     * SDK reports first for this flow.
+     *
+     * @param deviceId node ID to assign to the device being paired.
+     * @param ipAddress IP address of the device to connect to.
+     * @param port port of the device to connect to.
+     * @param setupPinCode setup PIN code from the device's onboarding payload.
+     * @throws IllegalStateException if pairing completes with a non-zero error code.
+     * @throws Throwable if the native SDK reports an error during the connection attempt.
+     */
     suspend fun awaitEstablishPaseConnection(
         deviceId: DeviceId,
         ipAddress: String,
@@ -308,6 +374,16 @@ class ChipClient(
     }
 
 
+    /**
+     * Commissions a device that already has an established PASE connection, completing the
+     * Matter commissioning flow with no network credentials supplied (for devices that do not
+     * require Wi-Fi/Thread network provisioning during commissioning).
+     *
+     * @param deviceId node ID of the device to commission, as previously used with
+     *   [awaitEstablishPaseConnection].
+     * @throws IllegalStateException if commissioning completes with a non-zero error code.
+     * @throws Throwable if the native SDK reports an error during commissioning.
+     */
     suspend fun awaitCommissionDevice(deviceId: DeviceId) {
         return suspendCancellableCoroutine { continuation ->
             chipDeviceController.setCompletionListener(
@@ -337,11 +413,30 @@ class ChipClient(
         }
     }
 
+    /**
+     * Reads a single attribute.
+     *
+     * Convenience wrapper over [readAttributes] for callers that need only one attribute.
+     *
+     * @param devicePtr native pointer to the connected device.
+     * @param attributePath path of the attribute to read.
+     * @return the attribute's state, or `null` if the device did not report it.
+     * @throws IllegalStateException if the underlying read fails.
+     */
     suspend fun readAttribute(devicePtr: Long, attributePath: ChipAttributePath): AttributeState? {
         return readAttributes(devicePtr, listOf(attributePath))[attributePath]
     }
 
-    /** Wrapper around [ChipDeviceController.readAttributePath] */
+    /**
+     * Reads one or more attributes from a device in a single interaction.
+     *
+     * @param devicePtr native pointer to the connected device.
+     * @param attributePaths paths of the attributes to read.
+     * @return a map from each requested path to its resolved [AttributeState]; paths the
+     *   device did not report are omitted from the map. The read is subject to a 30-second
+     *   timeout.
+     * @throws IllegalStateException if the underlying read fails.
+     */
     suspend fun readAttributes(
         devicePtr: Long,
         attributePaths: List<ChipAttributePath>
@@ -388,6 +483,18 @@ class ChipClient(
         }
     }
 
+    /**
+     * Invokes a command with a hardcoded single-field TLV payload (an unsigned byte with
+     * value `2` in context-specific tag 0).
+     *
+     * Resolves a connected device pointer for [deviceId] before invoking. Errors from the
+     * invocation are logged and swallowed rather than propagated.
+     *
+     * @param deviceId node ID of the device to invoke the command on.
+     * @param endpoint endpoint hosting the target cluster.
+     * @param clusterId cluster ID of the command to invoke.
+     * @param commandId command ID to invoke.
+     */
     suspend fun setLet(
         deviceId: DeviceId,
         endpoint: Int,
@@ -440,6 +547,15 @@ class ChipClient(
         }
     }
 
+    /**
+     * Invokes a command with a hardcoded single-field TLV payload (a boolean `true` in
+     * context-specific tag 0).
+     *
+     * @param devicePtr native pointer to the connected device.
+     * @param path endpoint and cluster of the command to invoke; its attribute ID is used as
+     *   the command ID.
+     * @throws Exception if the invocation fails.
+     */
     suspend fun generateRandomNumber(
         devicePtr: Long,
         path: ChipAttributePath
@@ -493,7 +609,19 @@ class ChipClient(
         }
     }
 
-    /** Wrapper around [ChipDeviceController.invoke] */
+    /**
+     * Invokes a cluster command on a device.
+     *
+     * @param devicePtr native pointer to the connected device.
+     * @param invokeElement command to invoke, encoding its endpoint, cluster, command ID, and
+     *   TLV-encoded fields.
+     * @param timedRequestTimeoutMs timeout, in milliseconds, for the timed-invoke window;
+     *   defaults to [DEFAULT_TIMEOUT].
+     * @param imTimeoutMs timeout, in milliseconds, for the Interaction Model exchange;
+     *   defaults to [DEFAULT_TIMEOUT].
+     * @return the success status code returned by the device.
+     * @throws IllegalStateException if the invocation fails.
+     */
     suspend fun invoke(
         devicePtr: Long,
         invokeElement: InvokeElement,
@@ -517,7 +645,16 @@ class ChipClient(
         }
     }
 
-    /** Wrapper around [ChipDeviceController.subscribeToAttributePath] for multiple attributes */
+    /**
+     * Subscribes to one or more attributes, delivering ongoing reports to [reportCallback].
+     *
+     * @param reportCallback callback invoked with each attribute report and on error.
+     * @param devicePtr native pointer to the connected device.
+     * @param attributePaths paths of the attributes to subscribe to.
+     * @param minIntervalS minimum reporting interval, in seconds.
+     * @param maxIntervalS maximum reporting interval, in seconds.
+     * @param timeoutMs timeout, in milliseconds, for establishing the subscription.
+     */
     fun subscribeAttribute(
         reportCallback: ReportCallback,
         devicePtr: Long,

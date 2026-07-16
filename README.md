@@ -20,7 +20,88 @@ The app lets you:
   clusters.
 - **Manage bindings** between devices, e.g. a switch controlling a light.
 - **View logs** for diagnosing commissioning and cluster interactions.
+## Initial setup: hosting Thread network credentials
 
+Commissioning a **Thread** Matter device requires a Thread Border Router already running on the
+local
+network, and Thread network credentials available on the phone. Setup code is not part of this
+repository — it relies on the OS-provided home hub infrastructure, which is configured once per
+network
+before the app is used.
+
+### Installing Thread Network Credentials on iOS
+
+This app requires a **Thread Border Router** connected to the same local network as the app. In
+addition, the iPhone must already have the corresponding **Thread Network Credentials** installed.
+The credentials are installed using system API and available for all the apps on the phone.
+
+The process for obtaining these credentials depends on the Thread ecosystem being used. In most
+cases, when the Thread network is provided by a device such as a Samsung TV or a dedicated hub such
+as **Google TV Streamer 4K**, the manufacturer's companion app must be used to download and install
+the Thread Network Credentials on the iPhone.
+
+For example:
+
+- **Samsung**: [SmartThings](https://apps.apple.com/us/app/smartthings/id1222822904)
+- **Google**: [Google Home](https://apps.apple.com/us/app/google-home/id680819774)
+
+For detailed instructions, refer to the documentation provided by the device manufacturer. In
+general, the required credentials are installed after signing in to the companion app, adding the
+Thread-enabled device to the home, and enabling its Thread Border Router functionality.
+
+If the credentials are not immediately available, commissioning a Matter device using the
+corresponding companion app may trigger the download and installation of the Thread Network
+Credentials.
+
+> **Note**
+>
+> The app has been tested with **Google TV Streamer 4K**. At the time of writing, Google does not
+> provide any alternative method for installing or sharing Thread Network Credentials on iPhone
+> other
+> than through the **Google Home** app.
+>
+
+### Android
+
+Set up a Thread Border Router — such as a Nest Hub (2nd gen) or Google TV Streamer 4K — via the
+Google
+Home app. Google Play Services (the Home API) then makes the credentials available to this app the
+same
+way.
+
+- The phone and the hub **must be on the same Wi-Fi network** — credential/device discovery relies
+  on
+  local-network multicast (mDNS), which doesn't cross subnets or routers.
+- The hub needs a **user account signed in** (a Google account added via the Google Home app, or an
+  Apple ID signed in to the Home app) before it will share any credentials — a freshly unboxed,
+  no-account hub won't work.
+- Make sure the router on the network has **IPv6 enabled** — without it, Thread commissioning can
+  appear to succeed, but device control might fail afterward.
+- Matter standardizes Thread credential sharing across ecosystems, so a single hub can plausibly
+  serve
+  both platforms — e.g. a Google TV Streamer 4K set up once in Google Home has been observed working
+  for both iOS and Android commissioning in this app, without a separate Apple-ecosystem hub.
+
+### Testing without a hub: Matter Virtual Device (MVD)
+
+If you don't have a Thread Border Router or physical accessory handy, Google's
+[Matter Virtual Device](https://developers.home.google.com/matter/tools/virtual-device) (MVD) tool
+lets you
+commission a simulated Matter accessory from a Mac instead:
+
+1. Download the MVD `.dmg` for your Mac (Apple Silicon or Intel) and drag it into `Applications`.
+2. Launch MVD and configure the simulated accessory (device type, name, discriminator, Matter port,
+   test VID/PID).
+3. Commission it from this app like a real device — it shows a QR code and joins over the macOS
+   existing Wi-Fi connection. (Make sure that Google Home app is installed to commission the device
+   in the
+   Android platform).
+4. The Mac running MVD and the phone **must be on the same Wi-Fi network**, for the same
+   mDNS-discovery
+   reason as above.
+5. Once commissioned, you can control the simulated device from this app, but not all features such
+   as light
+   switch binding is not available with MVD.
 ## Project structure
 
 This is a Kotlin Multiplatform project targeting Android and iOS.
@@ -183,88 +264,6 @@ For the authoritative, up-to-date list of supported hardware, see Nordic's
 [Matter hardware and memory requirements](https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/getting_started/hw_requirements.html)
 page — new DKs and SoCs are added there as they gain Matter support.
 
-## Initial setup: hosting Thread network credentials
-
-Commissioning a **Thread** Matter device requires a Thread Border Router already running on the
-local
-network, and Thread network credentials available on the phone. Setup code is not part of this
-repository — it relies on the OS-provided home hub infrastructure, which is configured once per
-network
-before the app is used.
-
-### Installing Thread Network Credentials on iOS
-
-This app requires a **Thread Border Router** connected to the same local network as the app. In
-addition, the iPhone must already have the corresponding **Thread Network Credentials** installed.
-The credentials are installed using system API and available for all the apps on the phone.
-
-The process for obtaining these credentials depends on the Thread ecosystem being used. In most
-cases, when the Thread network is provided by a device such as a Samsung TV or a dedicated hub such
-as **Google TV Streamer 4K**, the manufacturer's companion app must be used to download and install
-the Thread Network Credentials on the iPhone.
-
-For example:
-
-- **Samsung**: [SmartThings](https://apps.apple.com/us/app/smartthings/id1222822904)
-- **Google**: [Google Home](https://apps.apple.com/us/app/google-home/id680819774)
-
-For detailed instructions, refer to the documentation provided by the device manufacturer. In
-general, the required credentials are installed after signing in to the companion app, adding the
-Thread-enabled device to the home, and enabling its Thread Border Router functionality.
-
-If the credentials are not immediately available, commissioning a Matter device using the
-corresponding companion app may trigger the download and installation of the Thread Network
-Credentials.
-
-> **Note**
->
-> The app has been tested with **Google TV Streamer 4K**. At the time of writing, Google does not
-> provide any alternative method for installing or sharing Thread Network Credentials on iPhone
-> other
-> than through the **Google Home** app.
->
-
-### Android
-
-Set up a Thread Border Router — such as a Nest Hub (2nd gen) or Google TV Streamer 4K — via the
-Google
-Home app. Google Play Services (the Home API) then makes the credentials available to this app the
-same
-way.
-
-- The phone and the hub **must be on the same Wi-Fi network** — credential/device discovery relies
-  on
-  local-network multicast (mDNS), which doesn't cross subnets or routers.
-- The hub needs a **user account signed in** (a Google account added via the Google Home app, or an
-  Apple ID signed in to the Home app) before it will share any credentials — a freshly unboxed,
-  no-account hub won't work.
-- Make sure the router on the network has **IPv6 enabled** — without it, Thread commissioning can
-  appear to succeed but device control might fail afterward.
-- Matter standardizes Thread credential sharing across ecosystems, so a single hub can plausibly
-  serve
-  both platforms — e.g. a Google TV Streamer 4K set up once in Google Home has been observed working
-  for both iOS and Android commissioning in this app, without a separate Apple-ecosystem hub.
-
-### Testing without a hub: Matter Virtual Device (MVD)
-
-If you don't have a Thread Border Router or physical accessory handy, Google's
-[Matter Virtual Device](https://developers.home.google.com/matter/tools/virtual-device) (MVD) tool
-lets you
-commission a simulated Matter accessory from a Mac instead:
-
-1. Download the MVD `.dmg` for your Mac (Apple Silicon or Intel) and drag it into `Applications`.
-2. Launch MVD and configure the simulated accessory (device type, name, discriminator, Matter port,
-   test VID/PID).
-3. Commission it from this app like a real device — it shows a QR code and joins over the macOS
-   existing Wi-Fi connection. (Make sure that Google Home app is installed to commission the device
-   in the
-   Android platform).
-4. The Mac running MVD and the phone **must be on the same Wi-Fi network**, for the same
-   mDNS-discovery
-   reason as above.
-5. Once commissioned, you can control the simulated device from this app, but not all features such
-   as light
-   switch binding is not available with MVD.
 
 ## License
 

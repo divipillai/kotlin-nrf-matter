@@ -35,48 +35,98 @@ import no.nordicsemi.nrf.matter.logger.NordicLogger
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /**
- * ChipDeviceController uses a CompletionListener for callbacks. This is a "base" default
- * implementation for that CompletionListener.
+ * Default logging implementation of [ChipDeviceController.CompletionListener].
+ *
+ * This base class provides no-op behavior beyond structured logging for all callback
+ * events, allowing subclasses to override only the callbacks they need.
  */
 abstract class BaseCompletionListener : ChipDeviceController.CompletionListener {
+    /**
+     * Called when device connection completes.
+     */
     override fun onConnectDeviceComplete() {
         NordicLogger.info("Connect Device Complete!", tag = TAG)
     }
 
+    /**
+     * Called when the controller reports a status update.
+     *
+     * @param status The status code provided by the controller.
+     */
     override fun onStatusUpdate(status: Int) {
         NordicLogger.info("Status Updated, status [${status}]", tag = TAG)
     }
 
+    /**
+     * Called when pairing completes.
+     *
+     * @param errorCode The pairing result code.
+     */
     override fun onPairingComplete(errorCode: Long) {
         NordicLogger.info("Pairing Completed!", tag = TAG)
     }
 
+    /**
+     * Called when a pairing is deleted.
+     *
+     * @param errorCode The deletion result code.
+     */
     override fun onPairingDeleted(errorCode: Long) {
-        NordicLogger.info("AAA, BaseCompletionListener onPairingDeleted(): errorCode [${errorCode}]")
+        NordicLogger.info("Pairing deleted, errorCode [${errorCode}]", tag = TAG)
     }
 
+    /**
+     * Called when commissioning completes.
+     *
+     * @param nodeId The commissioned node ID.
+     * @param errorCode The commissioning result code.
+     */
     override fun onCommissioningComplete(nodeId: Long, errorCode: Long) {
-        NordicLogger.debug(
+        NordicLogger.info(
             "Commissioning Complete! nodeId [${nodeId}], errorCode [${errorCode}]", tag = TAG
         )
     }
 
+    /**
+     * Called when the CHIP connection is closed.
+     */
     override fun onNotifyChipConnectionClosed() {
         NordicLogger.debug("Notify Chip Connection Closed!", tag = TAG)
     }
 
+    /**
+     * Called when BLE teardown completes.
+     */
     override fun onCloseBleComplete() {
         NordicLogger.debug("Close Ble Completed!", tag = TAG)
     }
 
+    /**
+     * Called when the controller reports an error.
+     *
+     * @param error The reported error.
+     */
     override fun onError(error: Throwable) {
         NordicLogger.error("Commission Error", error, tag = TAG)
     }
 
+    /**
+     * Called when operational CSR generation completes.
+     *
+     * @param csr The generated certificate signing request bytes.
+     */
     override fun onOpCSRGenerationComplete(csr: ByteArray) {
-        NordicLogger.debug("Op CSR GenerationCompleted! CSR: ${csr.toHexString()}", tag = TAG)
+        NordicLogger.debug("Op CSR GenerationCompleted!", tag = TAG)
     }
 
+    /**
+     * Called when commissioning metadata is read.
+     *
+     * @param vendorId The device vendor ID.
+     * @param productId The device product ID.
+     * @param wifiEndpointId The Wi-Fi endpoint ID.
+     * @param threadEndpointId The Thread endpoint ID.
+     */
     override fun onReadCommissioningInfo(
         vendorId: Int,
         productId: Int,
@@ -89,6 +139,13 @@ abstract class BaseCompletionListener : ChipDeviceController.CompletionListener 
         )
     }
 
+    /**
+     * Called when the commissioning status changes.
+     *
+     * @param nodeId The target node ID.
+     * @param stage The current commissioning stage.
+     * @param errorCode The stage result code.
+     */
     override fun onCommissioningStatusUpdate(nodeId: Long, stage: String?, errorCode: Long) {
         NordicLogger.debug(
             "Commissioning Status Updated! \tnodeId [${nodeId}]\tstage [${stage}]\terrorCode [${errorCode}]",
@@ -96,6 +153,12 @@ abstract class BaseCompletionListener : ChipDeviceController.CompletionListener 
         )
     }
 
+    /**
+     * Called when a commissioning stage starts.
+     *
+     * @param nodeId The target node ID.
+     * @param stage The stage that started.
+     */
     override fun onCommissioningStageStart(nodeId: Long, stage: String?) {
         NordicLogger.debug(
             "Commissioning Stage Started! \tnodeId [${nodeId}]\tstage [${stage}]",
@@ -103,18 +166,27 @@ abstract class BaseCompletionListener : ChipDeviceController.CompletionListener 
         )
     }
 
+    /**
+     * Called when ICD registration completes.
+     *
+     * @param errorCode The registration result code.
+     * @param icdDeviceInfo The returned ICD device info, if available.
+     */
     override fun onICDRegistrationComplete(errorCode: Long, icdDeviceInfo: ICDDeviceInfo?) {
         NordicLogger.debug(
-            "ICD Registration Completed! \terrorCode [${errorCode}]\ticdDeviceInfo [${icdDeviceInfo}]",
+            "ICD Registration Completed! \terrorCode [${errorCode}]",
             tag = TAG
         )
     }
 
+    /**
+     * Called when ICD registration information is required.
+     */
     override fun onICDRegistrationInfoRequired() {
         NordicLogger.debug("ICD Registration Info Required!", tag = TAG)
     }
 
     companion object {
-        private val TAG = BaseCompletionListener::class.java.simpleName
+        private const val TAG = "MatterCommissioning"
     }
 }

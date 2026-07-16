@@ -82,7 +82,6 @@ class CommissioningViewModelAndroid(
                 val deviceMatterInfoList = catchAndThrow(Stage.READ_DESCRIPTOR_CLUSTER) {
                     clustersHelper.fetchDeviceMatterInfo(deviceId)
                 }
-                NordicLogger.debug("device matter info list: $deviceMatterInfoList", tag = "AAA")
 
                 val deviceType = mutableStateListOf<DeviceType>()
                 deviceMatterInfoList.forEach {

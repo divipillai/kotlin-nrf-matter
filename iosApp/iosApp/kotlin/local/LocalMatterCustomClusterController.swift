@@ -88,7 +88,6 @@ class LocalMatterCustomClusterController: MatterManufacturerSpecificController {
     func observeButtonChanges(deviceId: DeviceId, endpoint: Int32) -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("Observe button changes")
         let flowWrapper = IosFlowWrapper<KotlinBoolean>()
-        flowWrapper.emit(value: KotlinBoolean(value: true))
         
         let attributeSubscriber = try? AttributeSubscriber(deviceId: deviceId.nsNumber())
         let endpointId = NSNumber(value: endpoint)

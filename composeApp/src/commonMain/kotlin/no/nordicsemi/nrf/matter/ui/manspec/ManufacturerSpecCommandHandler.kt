@@ -33,6 +33,7 @@ class ManufacturerSpecCommandHandler(
 
             manufacturerSpecificController.setLed(
                 deviceId = deviceId,
+                isOn = isOn,
                 endpoint = endpoint
             )
 

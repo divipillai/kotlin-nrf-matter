@@ -489,12 +489,14 @@ class ChipClient(
      * are logged and not propagated to the caller.
      *
      * @param deviceId The node ID of the target device.
+     * @param isOn `true` to send the On command, `false` to send the Off command.
      * @param endpoint The endpoint hosting the target cluster.
      * @param clusterId The cluster ID of the command to invoke.
      * @param commandId The command ID to invoke.
      */
     suspend fun setLet(
         deviceId: DeviceId,
+        isOn: Boolean,
         endpoint: Int,
         clusterId: Long,
         commandId: Long,
@@ -502,9 +504,11 @@ class ChipClient(
         val ptr = getConnectedDevicePointer(deviceId.longValue)
         return suspendCancellableCoroutine { continuation ->
 
+            val onCommand = if (isOn) { 1 } else { 0 }.toUByte()
+
             val tlvWriter = TlvWriter()
             tlvWriter.startStructure(AnonymousTag)
-            tlvWriter.put(ContextSpecificTag(0), 2.toUByte())
+            tlvWriter.put(ContextSpecificTag(0), onCommand)
             tlvWriter.endStructure()
             val invokeElement =
                 InvokeElement.newInstance(

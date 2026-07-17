@@ -63,9 +63,10 @@ class LocalMatterCustomClusterController: MatterManufacturerSpecificController {
     ///
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
+    ///   - isOn: Wheater to turn on device or off.
     ///   - endpoint: The endpoint hosting the cluster.
     /// - Throws: An error if the command invocation fails.
-    func setLed(deviceId: DeviceId, endpoint: Int32) async throws {
+    func setLed(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         SharedLogger.debug("invoke setLed")
         let commandExecutor = try CommandExecutor(deviceId: deviceId.nsNumber())
         let endpointId = NSNumber(value: endpoint)
@@ -75,7 +76,7 @@ class LocalMatterCustomClusterController: MatterManufacturerSpecificController {
             cluster: ManufacturerSpecificCluster.id,
             command: ManufacturerSpecificCluster.Command.setLed,
             type: MTRUnsignedIntegerValueType,
-            value: 2,
+            value: isOn ? 1 : 0,
         )
     }
     

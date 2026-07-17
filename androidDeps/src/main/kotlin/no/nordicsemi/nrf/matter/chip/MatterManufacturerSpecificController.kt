@@ -54,13 +54,15 @@ class MatterManufacturerSpecificControllerImpl(
      * cluster/command combination on that endpoint.
      *
      * @param deviceId the commissioned device to control.
+     * @param isOn `true` to send the On command, `false` to send the Off command.
      * @param endpoint the Matter endpoint exposing the manufacturer-specific cluster.
      * @throws IllegalStateException if the device pointer cannot be resolved (e.g. device
      * unreachable).
      */
-    override suspend fun setLed(deviceId: DeviceId, endpoint: Int) {
+    override suspend fun setLed(deviceId: DeviceId, isOn: Boolean, endpoint: Int) {
         chipClient.setLet(
             deviceId,
+            isOn,
             endpoint,
             clusterId = MANUFACTURER_SPECIFIC_CLUSTER_ID,
             commandId = SET_LED_COMMAND_ID,

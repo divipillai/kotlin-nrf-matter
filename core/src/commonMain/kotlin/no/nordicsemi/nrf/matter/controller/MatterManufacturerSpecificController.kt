@@ -14,11 +14,12 @@ interface MatterManufacturerSpecificController {
      * cluster/command combination on that endpoint.
      *
      * @param deviceId the commissioned device to control.
+     * @param isOn `true` to send the On command, `false` to send the Off command.
      * @param endpoint the Matter endpoint exposing the manufacturer-specific cluster.
      * @throws IllegalStateException if the device pointer cannot be resolved (e.g. device
      * unreachable).
      */
-    suspend fun setLed(deviceId: DeviceId, endpoint: Int)
+    suspend fun setLed(deviceId: DeviceId, isOn: Boolean, endpoint: Int)
 
     /**
      * Subscribes to the vendor-specific button-pressed attribute and emits its state as it

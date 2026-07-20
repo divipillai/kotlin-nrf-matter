@@ -61,7 +61,6 @@ import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
@@ -106,7 +105,7 @@ internal fun BindingsScreen(
     val bindingUiState by bindingViewModel.bindingUiState.collectAsStateWithLifecycle()
     val bindingLogs by bindingViewModel.bindingLogs.collectAsStateWithLifecycle()
 
-    when (val bindingState = bindingUiState.bindingState) {
+    when (bindingUiState.bindingState) {
         is UiState.Error -> {
             AlertDialogView(
                 onDismiss = {
@@ -156,8 +155,6 @@ internal fun BindingsScreen(
 
         is UiState.Success -> {
             NordicLogger.info("Binding Success", tag = "Bindings")
-            bindingViewModel.updateActiveBinding(bindingState.data)
-            bindingViewModel.updateBindingState(UiState.Idle())
             showToast(
                 message = "Binding completed successfully!",
                 duration = ToastDuration.Long,
@@ -225,12 +222,18 @@ internal fun BindingsScreen(
                 }
                 return@item
             } else {
-                BindingTableDetails(bindingUiState, {
-                    bindingViewModel.onSourceSelected(it)
+                BindingTableDetails(
+                    bindingScreenState = bindingUiState,
+                    onSourceSelected = {
+                        bindingViewModel.onSourceSelected(it)
 
-                }, { sourceId, targetId ->
-                    bindingViewModel.initiateBinding(sourceId, targetId)
-                })
+                    },
+                    onTargetSelected = { targetId ->
+                        bindingViewModel.onTargetSelected(targetId)
+                    },
+                    initiateBinding = { sourceId, targetId ->
+                        bindingViewModel.initiateBinding(sourceId, targetId)
+                    })
             }
         }
 
@@ -277,14 +280,22 @@ internal fun BindingsScreen(
 private fun BindingTableDetails(
     bindingScreenState: BindingUiState,
     onSourceSelected: (sourceDeviceId: DeviceId) -> Unit,
+    onTargetSelected: (targetDeviceId: DeviceId) -> Unit,
     initiateBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId) -> Unit,
 ) {
-    var selectedTargetDevice by rememberSaveable { mutableStateOf<Long?>(null) }
     var isSourceDropdownExpanded by rememberSaveable { mutableStateOf(false) }
     var isTargetDropdownExpanded by rememberSaveable { mutableStateOf(false) }
 
-    var sourceText by rememberSaveable { mutableStateOf("Select Light Switch") }
-    var targetText by rememberSaveable { mutableStateOf("Select Light Bulb") }
+    // Derive displayed text from current UiState
+    val sourceText = bindingScreenState.sourceDevices
+        .firstOrNull { it.deviceId == bindingScreenState.selectedSourceDeviceId }
+        ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
+        ?: "Select Light Switch"
+
+    val targetText = bindingScreenState.eligibleTargetDevices
+        .firstOrNull { it.deviceId == bindingScreenState.selectedTargetDeviceId }
+        ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
+        ?: "Select Light Bulb"
 
     OutlinedCard(
         modifier = Modifier.fillMaxWidth()
@@ -293,7 +304,7 @@ private fun BindingTableDetails(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Selector for Source Node
+            // Source Dropdown
             Column {
                 Text(
                     text = "Select Client / Source Node (Write Client)",
@@ -307,7 +318,6 @@ private fun BindingTableDetails(
                         .fillMaxWidth()
                         .padding(8.dp)
                 ) {
-
                     OutlinedTextField(
                         value = sourceText,
                         onValueChange = {},
@@ -331,9 +341,6 @@ private fun BindingTableDetails(
                                     Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
                                 },
                                 onClick = {
-                                    sourceText =
-                                        device.productName
-                                            ?: "Node ${device.deviceId.longValue}"
                                     isSourceDropdownExpanded = false
                                     onSourceSelected(device.deviceId)
                                 }
@@ -369,6 +376,7 @@ private fun BindingTableDetails(
                 }
                 return@Column
             } else {
+                // Target Dropdown
                 Column {
                     Text(
                         text = "Select Server / Target Node (Control Target)",
@@ -382,7 +390,6 @@ private fun BindingTableDetails(
                             .fillMaxWidth()
                             .padding(8.dp)
                     ) {
-
                         OutlinedTextField(
                             value = targetText,
                             onValueChange = {},
@@ -406,10 +413,8 @@ private fun BindingTableDetails(
                                         Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
                                     },
                                     onClick = {
-                                        targetText = device.productName
-                                            ?: "Node ${device.deviceId.longValue}"
                                         isTargetDropdownExpanded = false
-                                        selectedTargetDevice = device.deviceId.longValue
+                                        onTargetSelected(device.deviceId)
                                     }
                                 )
                             }
@@ -418,7 +423,7 @@ private fun BindingTableDetails(
                 }
             }
 
-            // Cluster Info static tag
+            // Target Cluster Info Banner
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -441,27 +446,22 @@ private fun BindingTableDetails(
                 )
             }
 
+            // Execute Button
+            val canSubmit = bindingScreenState.selectedTargetDeviceId != null
 
             Button(
                 onClick = {
-                    if (selectedTargetDevice != null) {
-                        NordicLogger.debug(
-                            "Initiating binding with source: ${bindingScreenState.selectedSourceDeviceId}, target: $selectedTargetDevice",
-                            tag = "BindingScreen"
-                        )
-                        initiateBinding(
-                            bindingScreenState.selectedSourceDeviceId,
-                            (selectedTargetDevice as Long).toDeviceId(),
-                        )
+                    val source = bindingScreenState.selectedSourceDeviceId
+                    val target = bindingScreenState.selectedTargetDeviceId
+                    if (target != null) {
+                        initiateBinding(source, target)
                     }
-
                 },
-                enabled = selectedTargetDevice != null,
+                enabled = canSubmit,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Write Binding ")
+                Text("Write Binding")
             }
         }
     }
@@ -481,6 +481,7 @@ private fun BindingTableDetailsPreview() {
                 )
             ),
             {},
+            {}
         ) { _, _ -> }
 
     }

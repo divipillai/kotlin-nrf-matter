@@ -62,6 +62,7 @@ data class BindingUiState(
     val sourceDevices: List<Device> = emptyList(),
     val activeBindings: List<DeviceBinding> = emptyList(),
     val selectedSourceDeviceId: DeviceId? = null,
+    val selectedTargetDeviceId: DeviceId? = null,
     val eligibleTargetDevices: List<Device> = emptyList(),
 )
 
@@ -114,6 +115,14 @@ class BindingViewModel(
         updateEligibleTargetDevices(sourceDeviceId)
     }
 
+
+    fun onTargetSelected(targetDeviceId: DeviceId) {
+        _bindingUiState.update {
+            it.copy(selectedTargetDeviceId = targetDeviceId)
+        }
+    }
+
+
     fun initiateBinding(sourceDeviceId: DeviceId, targetDeviceId: DeviceId) {
         val collectLogsJob = bindDevicesUseCase.bindingLogs
             .onStart { _bindingLogs.update { it.cleared() } }
@@ -128,8 +137,27 @@ class BindingViewModel(
             .onStart { updateBindingState(UiState.Loading()) }
             .onCompletion { collectLogsJob.cancel() }
             .delayIf(1.seconds) { it is UiState.Success } // Fake delay to display success log.
-            .onEach { updateBindingState(it) }
+            .onEach { state ->
+                if (state is UiState.Success) {
+                    updateActiveBinding(state.data)
+                    resetFormAndState()
+                } else {
+                    updateBindingState(state)
+                }
+
+            }
             .launchIn(viewModelScope)
+    }
+
+    // Resets selections and UI status back to initial state
+    private fun resetFormAndState() {
+        _bindingUiState.update {
+            it.copy(
+                bindingState = UiState.Idle(),
+                selectedSourceDeviceId = null,
+                selectedTargetDeviceId = null,
+            )
+        }
     }
 
     fun updateEligibleTargetDevices(sourceDeviceId: DeviceId) = viewModelScope.launch {

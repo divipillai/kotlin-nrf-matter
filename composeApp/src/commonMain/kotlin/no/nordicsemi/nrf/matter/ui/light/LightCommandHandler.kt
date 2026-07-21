@@ -67,7 +67,7 @@ class LightCommandHandler(
         emitAll(
             deviceController.observeBrightnessState(
                 deviceId = device.deviceId,
-                endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
+                endpoint = resolveEndpoint(device, clusterId = LEVEL_CONTROL_CLUSTER_ID)
             )
         )
     }.withUiState()

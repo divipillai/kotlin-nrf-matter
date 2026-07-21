@@ -56,7 +56,7 @@ import kotlin.coroutines.resumeWithException
  * @property chipClient the underlying Matter stack used to resolve device pointers and send/subscribe
  * to cluster attributes.
  */
-class MatterLightControllerImpl (
+class MatterLightControllerImpl(
     private val chipClient: ChipClient,
 ) : MatterLightController {
 
@@ -209,7 +209,8 @@ class MatterLightControllerImpl (
 
             override fun onReport(nodeState: NodeState) {
                 val endpointState = nodeState.getEndpointState(endpoint) ?: return
-                val rawValue = endpointState.getClusterState(clusterId)?.getAttributeState(attributeId)?.value
+                val rawValue =
+                    endpointState.getClusterState(clusterId)?.getAttributeState(attributeId)?.value
                 val mappedValue = mapValue(rawValue) ?: return
                 trySend(mappedValue)
             }
@@ -220,7 +221,13 @@ class MatterLightControllerImpl (
             chipClient.subscribeAttribute(
                 reportCallback = reportCallback,
                 devicePtr = devicePtr,
-                attributePaths = listOf(ChipAttributePath.newInstance(endpoint, clusterId, attributeId)),
+                attributePaths = listOf(
+                    ChipAttributePath.newInstance(
+                        endpoint,
+                        clusterId,
+                        attributeId
+                    )
+                ),
                 minIntervalS = 0,    // Report changes instantly
                 maxIntervalS = 10,   // Heartbeat check every 10 seconds
                 timeoutMs = 10000    // 10 second network timeout for establishing the session

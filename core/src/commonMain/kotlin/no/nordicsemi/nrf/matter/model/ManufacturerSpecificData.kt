@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.domain
+package no.nordicsemi.nrf.matter.model
 
 import kotlinx.serialization.Serializable
 

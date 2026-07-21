@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import no.nordicsemi.nrf.matter.controller.MatterLightController
-import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.ui.CommandHandler
 import kotlin.math.roundToInt

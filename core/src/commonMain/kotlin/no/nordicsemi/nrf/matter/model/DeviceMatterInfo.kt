@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter.model
 
 import kotlinx.serialization.Serializable
-import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor

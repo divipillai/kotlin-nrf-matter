@@ -17,7 +17,7 @@ import com.google.android.gms.home.matter.commissioning.CommissioningResult
 import com.google.android.gms.home.matter.commissioning.MatterCommissioningApiException
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.first
-import no.nordicsemi.nrf.matter.device.OperationResult
+import no.nordicsemi.nrf.matter.domain.OperationResult
 import no.nordicsemi.nrf.matter.home.CommissioningViewModelAndroid
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device

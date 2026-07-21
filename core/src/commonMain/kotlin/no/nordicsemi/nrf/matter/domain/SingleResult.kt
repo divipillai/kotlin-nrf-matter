@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.device
+package no.nordicsemi.nrf.matter.domain
 
 sealed interface OperationResult<out T> {
 

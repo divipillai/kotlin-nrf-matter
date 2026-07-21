@@ -6,9 +6,13 @@ import chip.devicecontroller.model.ChipAttributePath
 import chip.devicecontroller.model.ChipEventPath
 import chip.devicecontroller.model.NodeState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.controller.MatterLightController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
@@ -107,15 +111,11 @@ class MatterLightControllerImpl(
      * @return a cold [Flow] emitting `true` when the light is on, `false` when it is off.
      */
     override suspend fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<Boolean> =
-        observeAttribute(
-            deviceId = deviceId,
-            endpoint = endpoint,
-            clusterId = ON_OFF_CLUSTER_ID,
-            attributeId = ON_OFF_ATTRIBUTE_ID,
-        ) { rawValue ->
-            (rawValue as? Boolean)?.also {
-                NordicLogger.info("Received On/Off report: isLedOn=$it", tag = TAG)
-            }
+        observeNodeState(deviceId, endpoint).mapNotNull { nodeState ->
+            readOnOff(
+                nodeState,
+                endpoint
+            )
         }
 
     /**
@@ -132,18 +132,34 @@ class MatterLightControllerImpl(
      * @return a cold [Flow] emitting brightness as a fraction between 0f (off) and 1f (max).
      */
     override suspend fun observeBrightnessState(deviceId: DeviceId, endpoint: Int): Flow<Float> =
-        observeAttribute(
-            deviceId = deviceId,
-            endpoint = endpoint,
-            clusterId = LEVEL_CONTROL_CLUSTER_ID,
-            attributeId = CURRENT_LEVEL_ATTRIBUTE_ID,
-        ) { rawValue ->
-            (rawValue as? Number)?.let { level ->
-                ((level.toFloat() - MIN_LEVEL) / LEVEL_RANGE).coerceIn(0f, 1f)
-            }?.also {
-                NordicLogger.info("Received Brightness report: brightnessPercentage=$it", tag = TAG)
-            }
+        observeNodeState(deviceId, endpoint).mapNotNull { nodeState ->
+            readBrightness(
+                nodeState,
+                endpoint
+            )
         }
+
+    private fun readOnOff(nodeState: NodeState, endpoint: Int): Boolean? {
+        val rawValue = nodeState.getEndpointState(endpoint)
+            ?.getClusterState(ON_OFF_CLUSTER_ID)
+            ?.getAttributeState(ON_OFF_ATTRIBUTE_ID)
+            ?.value
+        return (rawValue as? Boolean)?.also {
+            NordicLogger.info("Received On/Off report: isLedOn=$it", tag = TAG)
+        }
+    }
+
+    private fun readBrightness(nodeState: NodeState, endpoint: Int): Float? {
+        val rawValue = nodeState.getEndpointState(endpoint)
+            ?.getClusterState(LEVEL_CONTROL_CLUSTER_ID)
+            ?.getAttributeState(CURRENT_LEVEL_ATTRIBUTE_ID)
+            ?.value
+        return (rawValue as? Number)?.let { level ->
+            ((level.toFloat() - MIN_LEVEL) / LEVEL_RANGE).coerceIn(0f, 1f)
+        }?.also {
+            NordicLogger.info("Received Brightness report: brightnessPercentage=$it", tag = TAG)
+        }
+    }
 
     private suspend fun getConnectedDevicePointerOrNull(deviceId: DeviceId): Long? =
         try {
@@ -187,60 +203,89 @@ class MatterLightControllerImpl(
     }
 
     /**
-     * Subscribes to a single attribute and maps each report to [T], emitting only non-null results.
+     * Emits every attribute report received for [deviceId]/[endpoint] as a raw [NodeState].
+     *
+     * On/Off and CurrentLevel live on the same endpoint for a Dimmable Light, so a single native
+     * subscription covering both attributes (set up once per [deviceId]/[endpoint] by [nodeStateReports])
+     * is shared between [observeLightState] and [observeBrightnessState] instead of each opening its own
+     * competing subscription.
      */
-    private fun <T> observeAttribute(
-        deviceId: DeviceId,
-        endpoint: Int,
-        clusterId: Long,
-        attributeId: Long,
-        mapValue: (Any?) -> T?,
-    ): Flow<T> = callbackFlow {
-        val reportCallback = object : ReportCallback {
-            override fun onError(
-                attributePath: ChipAttributePath?,
-                eventPath: ChipEventPath?,
-                e: Exception
-            ) {
-                NordicLogger.error(
-                    "Error receiving report from DK for path: $attributePath", e, tag = TAG
+    private fun observeNodeState(deviceId: DeviceId, endpoint: Int): Flow<NodeState> =
+        callbackFlow {
+            val reports = nodeStateReports(deviceId, endpoint)
+            val job = launch { reports.collect { trySend(it) } }
+            awaitClose { job.cancel() }
+        }
+
+    /**
+     * Returns the shared report flow for [deviceId]/[endpoint], establishing the native subscription
+     * covering both the On/Off and Level Control attributes on first access; later callers just attach
+     * to the already-running subscription.
+     */
+    private suspend fun nodeStateReports(deviceId: DeviceId, endpoint: Int): Flow<NodeState> {
+        var isNew = false
+        val subscription = synchronized(subscriptionsLock) {
+            subscriptions.getOrPut(deviceId to endpoint) { isNew = true; NodeStateSubscription() }
+        }
+        if (isNew) {
+            try {
+                val devicePtr = connectedDevicePointer(deviceId)
+                chipClient.subscribeAttribute(
+                    reportCallback = object : ReportCallback {
+                        override fun onError(
+                            attributePath: ChipAttributePath?,
+                            eventPath: ChipEventPath?,
+                            e: Exception
+                        ) {
+                            NordicLogger.error(
+                                "Error receiving report from DK for path: $attributePath",
+                                e,
+                                tag = TAG
+                            )
+                        }
+
+                        override fun onReport(nodeState: NodeState) {
+                            subscription.reports.tryEmit(nodeState)
+                        }
+                    },
+                    devicePtr = devicePtr,
+                    attributePaths = listOf(
+                        ChipAttributePath.newInstance(
+                            endpoint,
+                            ON_OFF_CLUSTER_ID,
+                            ON_OFF_ATTRIBUTE_ID
+                        ),
+                        ChipAttributePath.newInstance(
+                            endpoint,
+                            LEVEL_CONTROL_CLUSTER_ID,
+                            CURRENT_LEVEL_ATTRIBUTE_ID
+                        ),
+                    ),
+                    minIntervalS = 0,    // Report changes instantly
+                    maxIntervalS = 10,   // Heartbeat check every 10 seconds
+                    timeoutMs = 10000    // 10 second network timeout for establishing the session
                 )
-            }
-
-            override fun onReport(nodeState: NodeState) {
-                val endpointState = nodeState.getEndpointState(endpoint) ?: return
-                val rawValue =
-                    endpointState.getClusterState(clusterId)?.getAttributeState(attributeId)?.value
-                val mappedValue = mapValue(rawValue) ?: return
-                trySend(mappedValue)
+            } catch (e: Exception) {
+                NordicLogger.error("Failed to setup wrapper subscription", e, tag = TAG)
+                subscription.establishFailure = e
             }
         }
-
-        try {
-            val devicePtr = connectedDevicePointer(deviceId)
-            chipClient.subscribeAttribute(
-                reportCallback = reportCallback,
-                devicePtr = devicePtr,
-                attributePaths = listOf(
-                    ChipAttributePath.newInstance(
-                        endpoint,
-                        clusterId,
-                        attributeId
-                    )
-                ),
-                minIntervalS = 0,    // Report changes instantly
-                maxIntervalS = 10,   // Heartbeat check every 10 seconds
-                timeoutMs = 10000    // 10 second network timeout for establishing the session
-            )
-        } catch (e: Exception) {
-            NordicLogger.error("Failed to setup wrapper subscription", e, tag = TAG)
-            close(e)
-        }
-
-        awaitClose {
-            // Handle stream cleanup
-        }
+        subscription.establishFailure?.let { throw it }
+        return subscription.reports
     }
+
+    private class NodeStateSubscription {
+        val reports = MutableSharedFlow<NodeState>(
+            extraBufferCapacity = 64,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
+
+        @Volatile
+        var establishFailure: Exception? = null
+    }
+
+    private val subscriptionsLock = Any()
+    private val subscriptions = mutableMapOf<Pair<DeviceId, Int>, NodeStateSubscription>()
 
     private suspend fun connectedDevicePointer(deviceId: DeviceId): Long =
         chipClient.getConnectedDevicePointer(deviceId.longValue)

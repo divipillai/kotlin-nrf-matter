@@ -30,6 +30,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -292,6 +293,10 @@ fun BrightnessControlCard(
     onBrightnessChange: (DeviceId, Float) -> Unit,
 ) {
     var brightness by remember { mutableFloatStateOf(brightnessLevel) }
+
+    LaunchedEffect(brightnessLevel) {
+        brightness = brightnessLevel
+    }
 
     Column(
         modifier = modifier

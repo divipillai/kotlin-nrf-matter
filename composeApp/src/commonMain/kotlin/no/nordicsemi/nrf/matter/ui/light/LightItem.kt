@@ -185,7 +185,7 @@ internal fun LightItemContainer(
                 HorizontalDivider()
                 BrightnessControlCard(
                     deviceId = deviceId,
-                    brightnessLevel = brightnessLevel,
+                    brightness = brightnessLevel,
                     modifier = Modifier.padding(16.dp),
                     isEnabled = isEnabled,
                     onBrightnessChange = { deviceId, brightnessLevel ->
@@ -287,12 +287,10 @@ fun InfoItem(
 fun BrightnessControlCard(
     modifier: Modifier = Modifier,
     deviceId: DeviceId,
-    brightnessLevel: Float,
+    brightness: Float,
     isEnabled: Boolean,
     onBrightnessChange: (DeviceId, Float) -> Unit,
 ) {
-    var brightness by remember { mutableFloatStateOf(brightnessLevel) }
-
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -322,7 +320,7 @@ fun BrightnessControlCard(
         }
         Slider(
             value = brightness,
-            onValueChange = { brightness = it },
+            onValueChange = { onBrightnessChange(deviceId, it) },
             onValueChangeFinished = {
                 onBrightnessChange(deviceId, brightness)
             },

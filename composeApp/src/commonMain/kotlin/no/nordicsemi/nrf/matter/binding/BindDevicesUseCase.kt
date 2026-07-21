@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
-import no.nordicsemi.nrf.matter.device.BindingState
-import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.domain.BindingState
+import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId

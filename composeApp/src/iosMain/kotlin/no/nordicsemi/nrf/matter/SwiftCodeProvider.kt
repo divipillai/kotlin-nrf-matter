@@ -6,11 +6,10 @@ import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
 import no.nordicsemi.nrf.matter.controller.MatterLightController
 import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
-import no.nordicsemi.nrf.matter.device.OperationResult
+import no.nordicsemi.nrf.matter.domain.OperationResult
 import no.nordicsemi.nrf.matter.logger.IOSLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.LockDeviceState
 
 interface SwiftCodeProvider {
 

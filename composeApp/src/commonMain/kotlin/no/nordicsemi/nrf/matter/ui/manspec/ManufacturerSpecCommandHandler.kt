@@ -3,7 +3,7 @@ package no.nordicsemi.nrf.matter.ui.manspec
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.controller.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
-import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.ui.CommandHandler

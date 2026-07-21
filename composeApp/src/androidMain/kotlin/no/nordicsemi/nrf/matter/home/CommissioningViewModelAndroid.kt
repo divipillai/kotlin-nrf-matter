@@ -13,7 +13,7 @@ import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
 import no.nordicsemi.nrf.matter.commission.CommissioningException
 import no.nordicsemi.nrf.matter.commission.Stage
 import no.nordicsemi.nrf.matter.commission.toCommissioningException
-import no.nordicsemi.nrf.matter.device.OperationResult
+import no.nordicsemi.nrf.matter.domain.OperationResult
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId

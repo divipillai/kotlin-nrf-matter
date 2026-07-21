@@ -50,8 +50,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
-import no.nordicsemi.nrf.matter.device.UiState
-import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
+import no.nordicsemi.nrf.matter.domain.UiState
+import no.nordicsemi.nrf.matter.model.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceMatterInfo

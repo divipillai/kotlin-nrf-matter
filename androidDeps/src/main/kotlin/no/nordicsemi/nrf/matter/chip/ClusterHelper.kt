@@ -5,7 +5,7 @@ import chip.devicecontroller.ChipStructs
 import chip.devicecontroller.model.AttributeState
 import chip.devicecontroller.model.ChipAttributePath
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
+import no.nordicsemi.nrf.matter.model.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceMatterInfo

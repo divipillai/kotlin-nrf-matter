@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.logger
+package no.nordicsemi.nrf.matter.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +33,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import no.nordicsemi.nrf.matter.logger.LogEntity
+import no.nordicsemi.nrf.matter.logger.LogLevel
+import no.nordicsemi.nrf.matter.logger.LoggerViewModel
+import no.nordicsemi.nrf.matter.logger.SelectableLogLevel
 import no.nordicsemi.nrf.matter.theme.NordicBlue
 import no.nordicsemi.nrf.matter.theme.NordicGreen
 import no.nordicsemi.nrf.matter.theme.NordicRed

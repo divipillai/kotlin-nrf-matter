@@ -15,8 +15,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
-import no.nordicsemi.nrf.matter.device.UiState
-import no.nordicsemi.nrf.matter.device.mapType
+import no.nordicsemi.nrf.matter.domain.UiState
+import no.nordicsemi.nrf.matter.domain.mapType
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId

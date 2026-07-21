@@ -16,8 +16,8 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.device.BindingState
-import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.domain.BindingState
+import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId

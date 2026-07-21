@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.binding
+package no.nordicsemi.nrf.matter.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -57,7 +57,11 @@ import com.skydoves.cloudy.cloudy
 import multiplatform.network.cmptoast.ToastDuration
 import multiplatform.network.cmptoast.ToastGravity
 import multiplatform.network.cmptoast.showToast
-import no.nordicsemi.nrf.matter.device.UiState
+import no.nordicsemi.nrf.matter.binding.BindingLoaderDialog
+import no.nordicsemi.nrf.matter.binding.BindingUiState
+import no.nordicsemi.nrf.matter.binding.BindingViewModel
+import no.nordicsemi.nrf.matter.binding.DeviceBindingTest
+import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId

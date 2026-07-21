@@ -2,7 +2,7 @@ package no.nordicsemi.nrf.matter.commission
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import no.nordicsemi.nrf.matter.device.OperationResult
+import no.nordicsemi.nrf.matter.domain.OperationResult
 import no.nordicsemi.nrf.matter.model.Device
 import org.koin.compose.viewmodel.koinViewModel
 

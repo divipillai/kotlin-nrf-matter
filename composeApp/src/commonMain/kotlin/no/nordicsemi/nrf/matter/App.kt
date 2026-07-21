@@ -36,9 +36,9 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import no.nordicsemi.nrf.matter.binding.BindingsScreen
-import no.nordicsemi.nrf.matter.commission.CommissioningScreen
-import no.nordicsemi.nrf.matter.logger.LoggerScreen
+import no.nordicsemi.nrf.matter.screens.BindingsScreen
+import no.nordicsemi.nrf.matter.screens.CommissioningScreen
+import no.nordicsemi.nrf.matter.screens.LoggerScreen
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
 import no.nordicsemi.nrf.matter.navigation.BindingRoute

@@ -30,9 +30,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -65,6 +63,7 @@ fun LightItem(
     lightDeviceState: LightDeviceState,
     isEnabled: Boolean,
     onBrightnessChange: (deviceId: DeviceId, brightnessLevel: Float) -> Unit,
+    onBrightnessChangeFinished: (deviceId: DeviceId) -> Unit,
     updateDeviceState: (deviceId: DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
@@ -76,10 +75,11 @@ fun LightItem(
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
         isLightOn = lightDeviceState.isOn,
-        brightnessLevel = lightDeviceState.brightness,
+        brightnessLevel = lightDeviceState.localBrightness,
         updateDeviceState = updateDeviceState,
         isEnabled = isEnabled,
         onBrightnessChange = onBrightnessChange,
+        onBrightnessChangeFinished = onBrightnessChangeFinished,
         onDecommission = onDecommission,
     )
 }
@@ -95,6 +95,7 @@ internal fun LightItemContainer(
     brightnessLevel: Float,
     isEnabled: Boolean,
     onBrightnessChange: (DeviceId, Float) -> Unit,
+    onBrightnessChangeFinished: (DeviceId) -> Unit,
     updateDeviceState: (DeviceId, Boolean) -> Unit,
     onDecommission: (DeviceId) -> Unit,
 ) {
@@ -186,12 +187,11 @@ internal fun LightItemContainer(
                 HorizontalDivider()
                 BrightnessControlCard(
                     deviceId = deviceId,
-                    brightnessLevel = brightnessLevel,
+                    brightness = brightnessLevel,
                     modifier = Modifier.padding(16.dp),
                     isEnabled = isEnabled,
-                    onBrightnessChange = { deviceId, brightnessLevel ->
-                        onBrightnessChange(deviceId, brightnessLevel)
-                    }
+                    onBrightnessChange = onBrightnessChange,
+                    onBrightnessChangeFinished = onBrightnessChangeFinished,
                 )
 
                 // Matter Device information section
@@ -288,15 +288,11 @@ fun InfoItem(
 fun BrightnessControlCard(
     modifier: Modifier = Modifier,
     deviceId: DeviceId,
-    brightnessLevel: Float,
+    brightness: Float,
     isEnabled: Boolean,
     onBrightnessChange: (DeviceId, Float) -> Unit,
+    onBrightnessChangeFinished: (DeviceId) -> Unit,
 ) {
-    var brightness by remember { mutableFloatStateOf(brightnessLevel) }
-
-    LaunchedEffect(brightnessLevel) {
-        brightness = brightnessLevel
-    }
 
     Column(
         modifier = modifier
@@ -327,9 +323,9 @@ fun BrightnessControlCard(
         }
         Slider(
             value = brightness,
-            onValueChange = { brightness = it },
+            onValueChange = { onBrightnessChange(deviceId, it) },
             onValueChangeFinished = {
-                onBrightnessChange(deviceId, brightness)
+                onBrightnessChangeFinished(deviceId)
             },
             valueRange = 0f..1f,
             colors = SliderDefaults.colors(
@@ -381,6 +377,7 @@ private fun LightItemContainerPreview() {
         isLightOn = true,
         brightnessLevel = 60f,
         onBrightnessChange = { _, _ -> },
+        onBrightnessChangeFinished = { _-> },
         updateDeviceState = { _, _ -> },
         isEnabled = true,
         onDecommission = {  },

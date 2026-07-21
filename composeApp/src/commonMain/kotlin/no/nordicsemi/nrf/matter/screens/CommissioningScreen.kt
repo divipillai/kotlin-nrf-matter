@@ -4,12 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.commission.CommissioningErrorScreen
+import no.nordicsemi.nrf.matter.commission.CommissioningException
+import no.nordicsemi.nrf.matter.commission.CommissioningInProgressScreen
+import no.nordicsemi.nrf.matter.commission.CommissioningTask
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import org.koin.compose.viewmodel.koinViewModel
 
 sealed interface CommissioningScreenState {
     data object InProgress : CommissioningScreenState
-    data class Error(val error: no.nordicsemi.nrf.matter.commission.CommissioningException) : CommissioningScreenState
+    data class Error(val error: CommissioningException) : CommissioningScreenState
 }
 
 @Composable
@@ -17,7 +21,7 @@ fun CommissioningScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
     val homeViewModel: HomeViewModel = koinViewModel()
     val state = remember { mutableStateOf<CommissioningScreenState>(CommissioningScreenState.InProgress) }
 
-    _root_ide_package_.no.nordicsemi.nrf.matter.commission.CommissioningTask(
+   CommissioningTask(
         onSuccess = {
             homeViewModel.addCommissionedDevice(device = it, true, false)
             onBack()
@@ -31,8 +35,8 @@ fun CommissioningScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
     NordicLogger.info("State: ${state.value}")
 
     when (val state = state.value) {
-        CommissioningScreenState.InProgress -> _root_ide_package_.no.nordicsemi.nrf.matter.commission.CommissioningInProgressScreen()
-        is CommissioningScreenState.Error -> _root_ide_package_.no.nordicsemi.nrf.matter.commission.CommissioningErrorScreen(
+        CommissioningScreenState.InProgress -> CommissioningInProgressScreen()
+        is CommissioningScreenState.Error -> CommissioningErrorScreen(
             state.error,
             onBack,
             navigateToLogs

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.device.mapType
@@ -25,7 +26,8 @@ import kotlin.time.Duration.Companion.milliseconds
 
 data class LightDeviceState(
     val isOn: Boolean = false,
-    val brightness: Float = 0.0f
+    val localBrightness: Float = 0.0f,
+    val remoteBrightness: Float = 0.0f,
 )
 
 class LightController(
@@ -59,7 +61,7 @@ class LightController(
                 NordicLogger.info("New brightness state: $state")
                 (state as? UiState.Success)?.let {
                     lightDeviceState.update {
-                        it.copy(brightness = state.data)
+                        it.copy(localBrightness = state.data, remoteBrightness = state.data)
                     }
                 }
             }
@@ -68,6 +70,7 @@ class LightController(
 
     fun setLet(device: Device, isOn: Boolean) {
         commandHandler.handleLed(device, isOn)
+            .onStart { lightDeviceState.update { it.copy(isOn = isOn) } }
             .delaySuccess()
             .catch {
                 NordicLogger.error(
@@ -84,11 +87,23 @@ class LightController(
                         it.copy(isOn = newState)
                     }
                 }
+                (it.mapType { isOn } as? UiState.Error)?.let {
+                    lightDeviceState.update {
+                        it.copy(isOn = !isOn)
+                    }
+                }
             }
             .launchIn(scope)
     }
 
-    fun setBrightness(device: Device, brightnessLevel: Float) {
+    fun setBrightness(brightnessLevel: Float) {
+        lightDeviceState.update {
+            it.copy(localBrightness = brightnessLevel)
+        }
+    }
+
+    fun updateRemoteBrightness(device: Device) {
+        val brightnessLevel = lightDeviceState.value.localBrightness
         commandHandler.handleBrightness(device, brightnessLevel)
             .delaySuccess()
             .catch {
@@ -104,7 +119,12 @@ class LightController(
 
                 (it.mapType { brightnessLevel } as? UiState.Success)?.data?.let { newState ->
                     lightDeviceState.update {
-                        it.copy(brightness = newState)
+                        it.copy(remoteBrightness = newState)
+                    }
+                }
+                (it.mapType { brightnessLevel } as? UiState.Error)?.let { newState ->
+                    lightDeviceState.update {
+                        it.copy(localBrightness = it.remoteBrightness)
                     }
                 }
             }
@@ -136,7 +156,10 @@ class LightController(
             lightDeviceState = lightDeviceState.collectAsStateWithLifecycle().value,
             isEnabled = isEnabled,
             onBrightnessChange = { _, brightnessLevel ->
-                setBrightness(device.device, brightnessLevel)
+                setBrightness(brightnessLevel)
+            },
+            onBrightnessChangeFinished = {
+                updateRemoteBrightness(device.device)
             },
             updateDeviceState = { deviceId, state ->
                 setLet(device.device, state)

@@ -23,19 +23,19 @@ The app lets you:
 
 ## Preparing the work setup
 
-The apps for working needs a Matter-enabled device. There are 2 common ways of getting such a device.
-1. Using Matter Virtual Device. It works over locel network and it's easier for set up.
+The apps for working need a Matter-enabled device. There are 2 common ways of getting such a device.
+1. Using a Matter Virtual Device. It works over a local network, and it's easier to set up.
 2. Using one of Nordic's DKs. It will require a working Thread Border Router accessible in a local network.
 
-Those 2 approaches are explained in details in below section.
+Those 2 approaches are explained in detail in below section.
 
 ### Matter Virtual Device
 
-The Matter Virtual Device (MVD) can be downloaded from the official Google Home developer resources [here](https://developers.home.google.com/matter/tools/virtual-device#install_mvd).
 
-After launching the application, the initial screen will look like this:
-<img width="1104" height="759" alt="Screenshot 2026-07-22 at 13 04 52" src="https://github.com/user-attachments/assets/aac2b545-1e16-4ef1-81bc-68d74bbc186b" />
-
+If you don't have a Thread Border Router or physical accessory handy, Google's
+[Matter Virtual Device](https://developers.home.google.com/matter/tools/virtual-device) (MVD) tool
+lets you
+commission a simulated Matter accessory from a Mac instead.
 The nRF Matter implementation currently supports only a subset of the device types available in the Matter Virtual Device application:
 1. **Dimmable Light**
 2. **Door Lock**
@@ -44,21 +44,17 @@ To explore and test additional device types, a compatible Nordic development kit
 
 #### Testing without a hub: Matter Virtual Device (MVD)
 
-If you don't have a Thread Border Router or physical accessory handy, Google's
-[Matter Virtual Device](https://developers.home.google.com/matter/tools/virtual-device) (MVD) tool
-lets you
-commission a simulated Matter accessory from a Mac instead:
 
-1. Download the MVD `.dmg` for your Mac (Apple Silicon or Intel) and drag it into `Applications`.
+1. Download the MVD `.dmg` for your Mac (Apple Silicon or Intel) and drag it into `Applications`. The Matter Virtual Device (MVD) can be downloaded from the official Google Home developer resources [here](https://developers.home.google.com/matter/tools/virtual-device#install_mvd).
 2. Launch MVD and configure the simulated accessory (device type, name, discriminator, Matter port,
-   test VID/PID).
+   test VID/PID). After launching the application, the initial screen will look like this:
+<img  width="500" alt="Screenshot 2026-07-22 at 13 04 52" src="https://github.com/user-attachments/assets/aac2b545-1e16-4ef1-81bc-68d74bbc186b" />
+
 3. Commission it from this app like a real device — it shows a QR code and joins over the macOS
-   existing Wi-Fi connection. (Make sure that Google Home app is installed to commission the device
+   existing Wi-Fi connection. (Make sure that the Google Home app is installed to commission the device
    in the
    Android platform).
-4. The Mac running MVD and the phone **must be on the same Wi-Fi network**, for the same
-   mDNS-discovery
-   reason as above.
+4. The Mac running MVD and the phone **must be on the same Wi-Fi network**.
 5. Once commissioned, you can control the simulated device from this app.
    
 <div align="center">
@@ -69,7 +65,7 @@ commission a simulated Matter accessory from a Mac instead:
 ### Nordic Semiconductor DKs
 
 Another option is to configure a Nordic Semiconductor development kit (DK) to act as a Matter device using one of the available Matter samples.
-The samples can be installed using [Matter Quick Start app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/matter-quick-start-app) 
+The samples can be installed using the [Matter Quick Start app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/matter-quick-start-app) 
 which is a part of [nRF Connect For Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download).
 
 1. **Door Lock** — available directly in the Matter Quick Start App.
@@ -89,7 +85,7 @@ network before the app is used.
 
 Matter examples installed on DKs require a **Thread Border Router** connected to the same local network as the app. In
 addition, the iPhone must already have the corresponding **Thread Network Credentials** installed.
-The credentials are installed using system API and available for all the apps on the phone.
+The credentials are installed using the system API and are available for all the apps on the phone.
 
 The process for obtaining these credentials depends on the Thread ecosystem being used. In most
 cases, when the Thread network is provided by a device such as a Samsung TV or a dedicated hub such
@@ -128,8 +124,7 @@ way.
 - The phone and the hub **must be on the same Wi-Fi network** — credential/device discovery relies
   on
   local-network multicast (mDNS), which doesn't cross subnets or routers.
-- The hub needs a **user account signed in** (a Google account added via the Google Home app, or an
-  Apple ID signed in to the Home app) before it will share any credentials — a freshly unboxed,
+- The hub needs a **user account signed in** (a Google account added via the Google Home app) before it will share any credentials — a freshly unboxed,
   no-account hub won't work.
 - Make sure the router on the network has **IPv6 enabled** — without it, Thread commissioning can
   appear to succeed, but device control might fail afterward.
@@ -181,7 +176,7 @@ fork of Project CHIP,
 downstream of
 [project-chip/connectedhomeip](https://github.com/project-chip/connectedhomeip)) — specifically its
 Android
-`chip-tool` build target for arm64. To rebuild them from source follow the provided in the
+`chip-tool` build target for arm64. To rebuild them from source, follow the instructions provided in the
 [nrfconnect/sdk-connectedhomeip](https://github.com/nrfconnect/sdk-connectedhomeip/blob/9895b2bdb4c43b48426930f03e3c05502babd2f0/docs/platforms/android/android_building.md).
 
 > **Note:** if you build  `.jars`/`.so` files yourself against a newer Matter version, this project
@@ -234,7 +229,7 @@ Services
 libraries (`com.google.android.gms.*`), and they are **not yet available** in Maven Central or
 Google's
 standard Maven repositories (`google()` / `dl.google.com/android/maven2`).
-Therefore, getting started requires a few non-standard integration process.
+Therefore, getting started requires a few non-standard integration steps.
 
 #### How to get the SDK: manual download
 
@@ -242,7 +237,7 @@ Therefore, getting started requires a few non-standard integration process.
    account.
 2. Access the Home APIs early-access program and download the ZIP archive containing the SDK
    artifacts.
-3. Extract the SDK into your system's local Maven repository, `.m2/repository` directory. This is
+3. Extract the SDK into your system's local Maven repository, the `.m2/repository` directory. This is
    the standard path used for local Maven repositories.
     - **Linux:** `~/.m2/repository/`
     - **macOS:** `~/Users/<User_Name>/.m2/repository/`

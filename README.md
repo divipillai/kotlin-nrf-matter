@@ -73,6 +73,11 @@ which is a part of [nRF Connect For Desktop](https://www.nordicsemi.com/Products
 3. **Switch** - build this [sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_switch) in Visual Studio.
 4. **Manufacturer specific cluster + cluster extension** - build this [sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific) in Visual Studio.
 
+> [!TIP]
+> All examples display a link with QR code required for commissioning in the logs. The logs from a DK can be viewed using the [Serial Terminal app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/serial-terminal-app).
+> 
+> <img width="914" height="21" alt="Screenshot 2026-07-22 at 15 35 56" src="https://github.com/user-attachments/assets/844905d9-5701-4426-b049-5d686369b455" />
+
 ## Initial setup: hosting Thread network credentials
 
 Commissioning a **Thread** Matter device requires a Thread Border Router already running on the

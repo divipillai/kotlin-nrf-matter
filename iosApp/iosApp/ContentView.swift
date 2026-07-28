@@ -13,7 +13,7 @@ struct ContentView: UIViewControllerRepresentable {
     /// Creates the Compose Multiplatform view controller, wired up with the native
     /// Swift implementation of `SwiftCodeProvider`.
     func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.MainViewController(swiftCodeProvider: SwiftCodeProviderImpl())
+        MainViewControllerKt.MainViewController()
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {

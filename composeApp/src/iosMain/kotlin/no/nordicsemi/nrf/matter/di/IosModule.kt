@@ -1,7 +1,12 @@
 package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.HomeViewModel
-import no.nordicsemi.nrf.matter.SwiftCodeProvider
+import no.nordicsemi.nrf.matter.adapters.BindingControllerImpl
+import no.nordicsemi.nrf.matter.adapters.MatterClusterExtensionControllerImpl
+import no.nordicsemi.nrf.matter.adapters.MatterDecommissionerImpl
+import no.nordicsemi.nrf.matter.adapters.MatterDoorLockControllerImpl
+import no.nordicsemi.nrf.matter.adapters.MatterLightControllerImpl
+import no.nordicsemi.nrf.matter.adapters.MatterManufacturerSpecificControllerImpl
 import no.nordicsemi.nrf.matter.binding.BindingLogsProviderImpl
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
@@ -94,13 +99,13 @@ val iosModule = module {
     factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
 
-    single<MatterDecommissioner> { get<SwiftCodeProvider>().getDecommissioner() }
-    single<BindingController> { get<SwiftCodeProvider>().getMatterBinder() }
+    single<MatterDecommissioner> { MatterDecommissionerImpl() }
+    single<BindingController> { BindingControllerImpl() }
     single<BindingLogsProvider> { BindingLogsProviderImpl() }
-    single<MatterLightController> { get<SwiftCodeProvider>().getMatterOnOffController() }
-    single<MatterDoorLockController> { get<SwiftCodeProvider>().getMatterDoorController() }
-    single<MatterClusterExtensionController> { get<SwiftCodeProvider>().getMatterClusterExtensionController() }
+    single<MatterLightController> { MatterLightControllerImpl() }
+    single<MatterDoorLockController> { MatterDoorLockControllerImpl() }
+    single<MatterClusterExtensionController> { MatterClusterExtensionControllerImpl() }
     single<MatterManufacturerSpecificController> {
-        get<SwiftCodeProvider>().getMatterManufacturerCustomDataController()
+        MatterManufacturerSpecificControllerImpl()
     }
 }

@@ -32,11 +32,13 @@ kotlin {
     }
 
     swiftPMDependencies {
-        // Import FirebaseAnalytics into your Kotlin code
+        // Must match the `platforms` requirement declared by the ios-matter package.
+        iosMinimumDeploymentTarget.set("26.0")
+
         swiftPackage(
-            url = url("https://github.com/sylwester-zielinski/ios-matter"),
-            version = from("0.0.1"),
-            products = listOf(),
+            url = url("git@github.com:sylwester-zielinski/ios-matter.git"),
+            version = from("0.0.3"),
+            products = listOf(product("ios-matter")),
         )
     }
 

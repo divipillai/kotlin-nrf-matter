@@ -3,7 +3,7 @@ import PackageDescription
 let package = Package(
   name: "_composeApp",
   platforms: [
-    .iOS("15.0")
+    .iOS("26.0")
   ],
   products: [
     .library(
@@ -14,14 +14,18 @@ let package = Package(
   ],
   dependencies: [
     .package(
-      url: "https://github.com/sylwester-zielinski/ios-matter",
-      from: "0.0.1"
+      url: "git@github.com:sylwester-zielinski/ios-matter.git",
+      from: "0.0.3"
     )
   ],
   targets: [
     .target(
       name: "_composeApp",
       dependencies: [
+        .product(
+          name: "ios-matter",
+          package: "ios-matter"
+        )
       ]
     )
   ]

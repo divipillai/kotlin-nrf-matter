@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:sylwester-zielinski/ios-matter.git",
       "state" : {
-        "revision" : "bf9e29d2c4c0cfd262d9b55ed459221e360fd403",
-        "version" : "0.0.5"
+        "revision" : "41b3eb8cff887c9d6bec39708b7e207d8764bda2",
+        "version" : "0.0.8"
       }
     },
     {

@@ -37,7 +37,7 @@ kotlin {
 
         swiftPackage(
             url = url("git@github.com:sylwester-zielinski/ios-matter.git"),
-            version = from("0.0.5"),
+            version = from("0.0.8"),
             products = listOf(product("ios-matter")),
         )
     }

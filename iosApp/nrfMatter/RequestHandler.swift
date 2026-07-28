@@ -7,6 +7,7 @@
 
 import MatterSupport
 import Matter
+import ios_matter
 
 /// Entry point class for the Matter "Add Device" app extension.
 ///

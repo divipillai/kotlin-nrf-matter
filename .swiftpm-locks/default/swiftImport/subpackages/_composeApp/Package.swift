@@ -15,7 +15,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "git@github.com:sylwester-zielinski/ios-matter.git",
-      from: "0.0.3"
+      from: "0.0.5"
     )
   ],
   targets: [

@@ -31,6 +31,15 @@ kotlin {
         }
     }
 
+    swiftPMDependencies {
+        // Import FirebaseAnalytics into your Kotlin code
+        swiftPackage(
+            url = url("https://github.com/sylwester-zielinski/ios-matter"),
+            version = from("0.0.1"),
+            products = listOf(),
+        )
+    }
+
     sourceSets {
         androidMain.dependencies {
             implementation(project(":androidDeps"))

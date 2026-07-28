@@ -35,9 +35,16 @@ kotlin {
         // Must match the `platforms` requirement declared by the ios-matter package.
         iosMinimumDeploymentTarget.set("26.0")
 
+        // Pinned exactly: `from(...)` would allow any 0.x release, and ios-matter
+        // makes no API-stability promise below 1.0.
+        //
+        // Changing this version makes the NEXT iOS build fail once, by design
+        // ("Synthetic project regenerated" -- Kotlin rewrites the generated
+        // Package.swift mid-build). Re-resolve packages and build again; see the
+        // bump procedure in iosApp/Configuration/check_swiftpm_lockfiles.sh.
         swiftPackage(
             url = url("git@github.com:sylwester-zielinski/ios-matter.git"),
-            version = from("0.0.9"),
+            version = exact("0.0.9"),
             products = listOf(product("ios-matter")),
         )
     }

@@ -3,6 +3,7 @@
 package no.nordicsemi.nrf.matter.adapters
 
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -43,6 +44,8 @@ class MatterDoorLockControllerImpl : MatterDoorLockController {
             ) { error ->
                 error?.let { close(IOSException(it)) }
             }
+
+            awaitClose {  }
         }
     }
 }

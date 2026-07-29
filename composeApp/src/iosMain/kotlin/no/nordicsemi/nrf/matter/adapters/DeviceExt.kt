@@ -10,7 +10,7 @@ import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.ManufacturerSpecificData
 import platform.Foundation.NSNumber
 
-fun swiftPMImport.no.nordicsemi.nrf.matter.shared.composeApp.Device.toDomain(): Device {
+fun swiftPMImport.no.nordicsemi.nrf.matter.composeApp.Device.toDomain(): Device {
     return Device(
         deviceId = this.deviceId.toDeviceId(),
         dateCommissioned = this.dateCommissioned.longValue,
@@ -25,12 +25,12 @@ fun swiftPMImport.no.nordicsemi.nrf.matter.shared.composeApp.Device.toDomain(): 
         specificationVersion = this.specificationVersion.longValue,
         serialNumer = this.serialNumber,
         deviceMatterInfo = this.deviceMatterInfo
-            .filterIsInstance<swiftPMImport.no.nordicsemi.nrf.matter.shared.composeApp.DeviceMatterInfo>()
+            .filterIsInstance<swiftPMImport.no.nordicsemi.nrf.matter.composeApp.DeviceMatterInfo>()
             .map { it.toDomain() }
     )
 }
 
-fun swiftPMImport.no.nordicsemi.nrf.matter.shared.composeApp.DeviceMatterInfo.toDomain(): DeviceMatterInfo {
+fun swiftPMImport.no.nordicsemi.nrf.matter.composeApp.DeviceMatterInfo.toDomain(): DeviceMatterInfo {
     return DeviceMatterInfo(
         endpoint = this.endpoint.intValue,
         types = this.types.filterIsInstance<NSNumber>().map { it.longValue },
@@ -40,7 +40,7 @@ fun swiftPMImport.no.nordicsemi.nrf.matter.shared.composeApp.DeviceMatterInfo.to
     )
 }
 
-fun swiftPMImport.no.nordicsemi.nrf.matter.shared.composeApp.ManufacturerSpecificData.toDomain(): ManufacturerSpecificData {
+fun swiftPMImport.no.nordicsemi.nrf.matter.composeApp.ManufacturerSpecificData.toDomain(): ManufacturerSpecificData {
     return ManufacturerSpecificData(
         name = this.name,
         led = this.led,

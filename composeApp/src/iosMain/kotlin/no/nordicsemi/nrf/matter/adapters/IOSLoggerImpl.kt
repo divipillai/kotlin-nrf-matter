@@ -7,7 +7,7 @@ import kotlinx.coroutines.channels.Channel
 import no.nordicsemi.nrf.matter.logger.IOSLogger
 import no.nordicsemi.nrf.matter.logger.LogEntity
 import no.nordicsemi.nrf.matter.logger.LogLevel
-import swiftPMImport.no.nordicsemi.nrf.matter.shared.composeApp.IOSLoggerSwift
+import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.IOSLoggerSwift
 
 class IOSLoggerImpl : IOSLogger {
 
@@ -18,7 +18,7 @@ class IOSLoggerImpl : IOSLogger {
     override fun getLogs(onReady: (List<LogEntity>) -> Unit) {
         swiftLogger.getLogsOnReady {
             val logs = it
-                ?.filterIsInstance<swiftPMImport.no.nordicsemi.nrf.matter.shared.composeApp.LogEntity>()
+                ?.filterIsInstance<swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LogEntity>()
                 ?.map { it.toDomain() }
             logs?.let { onReady(it) }
         }
@@ -37,7 +37,7 @@ class IOSLoggerImpl : IOSLogger {
     }
 }
 
-private fun swiftPMImport.no.nordicsemi.nrf.matter.shared.composeApp.LogEntity.toDomain(): LogEntity {
+private fun swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LogEntity.toDomain(): LogEntity {
     return LogEntity(
         date = this.date,
         level = this.level.toDomain(),
@@ -46,7 +46,7 @@ private fun swiftPMImport.no.nordicsemi.nrf.matter.shared.composeApp.LogEntity.t
     )
 }
 
-private fun swiftPMImport.no.nordicsemi.nrf.matter.shared.composeApp.LogLevel.toDomain(): LogLevel {
+private fun swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LogLevel.toDomain(): LogLevel {
     return when (this) {
         0L -> LogLevel.INFO
         1L -> LogLevel.DEBUG

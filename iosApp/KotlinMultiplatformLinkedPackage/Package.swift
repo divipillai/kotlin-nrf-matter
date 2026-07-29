@@ -13,19 +13,13 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(
-      url: "git@github.com:sylwester-zielinski/ios-matter.git",
-      exact: "0.0.9"
-    )
+    .package(path: "subpackages/_composeApp")
   ],
   targets: [
     .target(
       name: "KotlinMultiplatformLinkedPackage",
       dependencies: [
-        .product(
-          name: "ios-matter",
-          package: "ios-matter"
-        )
+        .product(name: "_composeApp", package: "_composeApp")
       ]
     )
   ]

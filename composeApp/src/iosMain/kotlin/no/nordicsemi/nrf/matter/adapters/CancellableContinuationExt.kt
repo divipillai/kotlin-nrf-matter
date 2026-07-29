@@ -11,6 +11,6 @@ fun <T> CancellableContinuation<T>.handleResult(error: NSError?, result: T? = nu
     } else if (result != null) {
         resume(result)
     } else {
-        resumeWithException(IllegalArgumentException("iOS callback - both result and error are null."))
+        // Can occur for successful operations without a result.
     }
 }

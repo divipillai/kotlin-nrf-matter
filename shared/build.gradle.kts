@@ -30,7 +30,7 @@ kotlin {
             // from Swift via `import shared`. Do NOT use transitiveExport: it would also export
             // transitive deps such as cmptoast, whose own MainViewController.kt collides with
             // composeApp's and forces MainViewController() into a "MainViewControllerKt_" class.
-            export(project(":composeApp"))
+//            export(project(":composeApp"))
         }
     }
 
@@ -38,11 +38,11 @@ kotlin {
         androidMain.dependencies {
         }
         commonMain.dependencies {
-            api(project(":composeApp"))
+//            api(project(":composeApp"))
 
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.jetbrains.compose.resources)
-//            api("no.nordicsemi:composeApp:0.1.2")
+            api("no.nordicsemi.nrf.matter:composeApp:1.0.0")
         }
         commonTest.dependencies {
         }

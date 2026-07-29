@@ -14,14 +14,16 @@ let package = Package(
   ],
   dependencies: [
     .package(path: "subpackages/_composeApp"),
-    .package(path: "subpackages/_shared")
+    .package(path: "subpackages/_shared"),
+    .package(path: "subpackages/no_nordicsemi_nrf_matter_composeApp_1_0_0")
   ],
   targets: [
     .target(
       name: "KotlinMultiplatformLinkedPackage",
       dependencies: [
         .product(name: "_composeApp", package: "_composeApp"),
-        .product(name: "_shared", package: "_shared")
+        .product(name: "_shared", package: "_shared"),
+        .product(name: "no_nordicsemi_nrf_matter_composeApp_1_0_0", package: "no_nordicsemi_nrf_matter_composeApp_1_0_0")
       ]
     )
   ]

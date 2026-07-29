@@ -6,9 +6,21 @@ plugins {
     alias(libs.plugins.nordic.android.kmp.library)
     alias(libs.plugins.nordic.kotlin)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.nordic.publish.kmp)
 }
 
 group = "no.nordicsemi.nrf.matter"
+
+nordicPublishing {
+    POM_ARTIFACT_ID = "matter-support"
+    POM_NAME = "Nordic library for Matter connectivity."
+
+    POM_DESCRIPTION = "Nordic Android Matter Library"
+    POM_URL = "https://github.com/nordicsemi/kotlin-nrf-matter"
+    POM_SCM_URL = "https://github.com/nordicsemi/kotlin-nrf-matter"
+    POM_SCM_CONNECTION = "scm:git@github.com:nordicsemi/kotlin-nrf-matter.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:nordicsemi/kotlin-nrf-matter.git"
+}
 
 kotlin {
     android {
@@ -18,8 +30,7 @@ kotlin {
             enable = true
         }
     }
-
-    jvm()
+    
     listOf(
         iosArm64(),
         iosSimulatorArm64()

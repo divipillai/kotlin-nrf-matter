@@ -1,3 +1,7 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.compiler)
@@ -55,7 +59,7 @@ kotlin {
         // bump procedure in iosApp/Configuration/check_swiftpm_lockfiles.sh.
         swiftPackage(
             url = url("git@github.com:sylwester-zielinski/ios-matter.git"),
-            version = exact("0.0.9"),
+            version = exact("0.0.10"),
             products = listOf(product("ios-matter")),
         )
     }

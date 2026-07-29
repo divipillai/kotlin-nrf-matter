@@ -17,7 +17,10 @@ class MatterCommissionerImpl : MatterCommissioner {
     override suspend fun startIosCommissioning(deviceId: DeviceId): OperationResult<Device> {
         return suspendCancellableCoroutine { continuation ->
             localMatterCommissioner.startIosCommissioningWithDeviceId(deviceId.toNSNumber()) { device, error ->
-                device?.let { continuation.resume(OperationResult.Success(it.toDomain()), null) }
+                continuation.handleResult(
+                    error = error,
+                    result = device?.let { OperationResult.Success(it.toDomain()) }
+                )
             }
         }
     }

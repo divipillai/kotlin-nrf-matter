@@ -1,8 +1,10 @@
 package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.MatterCommissioner
 import no.nordicsemi.nrf.matter.adapters.BindingControllerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterClusterExtensionControllerImpl
+import no.nordicsemi.nrf.matter.adapters.MatterCommissionerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterDecommissionerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterDoorLockControllerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterLightControllerImpl
@@ -99,6 +101,7 @@ val iosModule = module {
     factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
 
+    single<MatterCommissioner> { MatterCommissionerImpl() }
     single<MatterDecommissioner> { MatterDecommissionerImpl() }
     single<BindingController> { BindingControllerImpl() }
     single<BindingLogsProvider> { BindingLogsProviderImpl() }

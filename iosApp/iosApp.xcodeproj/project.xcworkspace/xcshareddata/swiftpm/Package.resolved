@@ -1,6 +1,14 @@
 {
-  "originHash" : "c50daeb6040a99be303f8d885de33dd4047177960479d17847dfd869638ef944",
   "pins" : [
+    {
+      "identity" : "ios-matter",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:sylwester-zielinski/ios-matter.git",
+      "state" : {
+        "revision" : "a210676b606487048193355d163a4b44cf38b803",
+        "version" : "0.0.9"
+      }
+    },
     {
       "identity" : "pulse",
       "kind" : "remoteSourceControl",
@@ -11,5 +19,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }

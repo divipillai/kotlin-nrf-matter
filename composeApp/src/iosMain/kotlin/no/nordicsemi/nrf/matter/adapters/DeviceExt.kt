@@ -51,4 +51,5 @@ fun swiftPMImport.no.nordicsemi.nrf.matter.composeApp.ManufacturerSpecificData.t
 fun Long.toNSNumber() = NSNumber(long = this)
 
 fun DeviceId.toNSNumber() = NSNumber(long = this.longValue)
+fun Int.toNSNumber() = NSNumber(int = this)
 fun NSNumber.toDeviceId() = DeviceId(this.stringValue)

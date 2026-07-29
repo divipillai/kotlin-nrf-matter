@@ -13,13 +13,15 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(path: "subpackages/_composeApp")
+    .package(path: "subpackages/_composeApp"),
+    .package(path: "subpackages/_shared")
   ],
   targets: [
     .target(
       name: "KotlinMultiplatformLinkedPackage",
       dependencies: [
-        .product(name: "_composeApp", package: "_composeApp")
+        .product(name: "_composeApp", package: "_composeApp"),
+        .product(name: "_shared", package: "_shared")
       ]
     )
   ]

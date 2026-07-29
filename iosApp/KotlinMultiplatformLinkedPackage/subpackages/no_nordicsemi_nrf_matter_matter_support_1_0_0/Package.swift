@@ -1,15 +1,15 @@
 // swift-tools-version: 5.9
 import PackageDescription
 let package = Package(
-  name: "_composeApp",
+  name: "no_nordicsemi_nrf_matter_matter_support_1_0_0",
   platforms: [
     .iOS("26.0")
   ],
   products: [
     .library(
-      name: "_composeApp",
+      name: "no_nordicsemi_nrf_matter_matter_support_1_0_0",
       type: .none,
-      targets: ["_composeApp"]
+      targets: ["no_nordicsemi_nrf_matter_matter_support_1_0_0"]
     )
   ],
   dependencies: [
@@ -20,7 +20,7 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "_composeApp",
+      name: "no_nordicsemi_nrf_matter_matter_support_1_0_0",
       dependencies: [
         .product(
           name: "ios-matter",

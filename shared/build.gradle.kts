@@ -26,11 +26,15 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "shared"
             isStatic = true
-            // Re-export composeApp's own API so symbols like MainViewControllerKt are visible
+            // Re-export matter-support's own API so symbols like MainViewControllerKt are visible
             // from Swift via `import shared`. Do NOT use transitiveExport: it would also export
             // transitive deps such as cmptoast, whose own MainViewController.kt collides with
-            // composeApp's and forces MainViewController() into a "MainViewControllerKt_" class.
-            export("no.nordicsemi.nrf.matter:composeApp:1.0.0")
+            // matter-support's and forces MainViewController() into a "MainViewControllerKt_" class.
+            //
+            // Must stay identical to the api(...) notation below: exporting a dependency the source
+            // set doesn't declare as `api` fails the link with "dependencies exported in the
+            // debugFramework binary are not specified as API-dependencies".
+            export("no.nordicsemi.nrf.matter:matter-support:1.0.0")
         }
     }
 
@@ -42,7 +46,7 @@ kotlin {
 
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.jetbrains.compose.resources)
-            api("no.nordicsemi.nrf.matter:composeApp:1.0.0")
+            api("no.nordicsemi.nrf.matter:matter-support:1.0.0")
         }
         commonTest.dependencies {
         }

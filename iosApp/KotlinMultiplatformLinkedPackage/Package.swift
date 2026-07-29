@@ -13,13 +13,13 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(path: "subpackages/no_nordicsemi_nrf_matter_composeApp_1_0_0")
+    .package(path: "subpackages/no_nordicsemi_nrf_matter_matter_support_1_0_0")
   ],
   targets: [
     .target(
       name: "KotlinMultiplatformLinkedPackage",
       dependencies: [
-        .product(name: "no_nordicsemi_nrf_matter_composeApp_1_0_0", package: "no_nordicsemi_nrf_matter_composeApp_1_0_0")
+        .product(name: "no_nordicsemi_nrf_matter_matter_support_1_0_0", package: "no_nordicsemi_nrf_matter_matter_support_1_0_0")
       ]
     )
   ]

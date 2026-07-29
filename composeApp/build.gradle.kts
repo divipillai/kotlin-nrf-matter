@@ -53,10 +53,13 @@ kotlin {
         // Pinned exactly: `from(...)` would allow any 0.x release, and ios-matter
         // makes no API-stability promise below 1.0.
         //
-        // Changing this version makes the NEXT iOS build fail once, by design
+        // Do not edit this line by hand -- bumping the pin also needs a
+        // re-resolve, a cache purge and a prune of orphaned generated
+        // subpackages, and the first build after the change FAILS BY DESIGN
         // ("Synthetic project regenerated" -- Kotlin rewrites the generated
-        // Package.swift mid-build). Re-resolve packages and build again; see the
-        // bump procedure in iosApp/Configuration/check_swiftpm_lockfiles.sh.
+        // Package.swift mid-build). Run this instead, which does all of it:
+        //
+        //     ./iosApp/Configuration/bump_ios_matter_version.sh <version>
         swiftPackage(
             url = url("git@github.com:sylwester-zielinski/ios-matter.git"),
             version = exact("0.0.11"),

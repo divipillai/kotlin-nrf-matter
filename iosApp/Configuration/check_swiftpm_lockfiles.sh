@@ -11,28 +11,18 @@
 #
 # BUMPING A swiftPackage VERSION
 #
-#   1. Edit the version in composeApp/build.gradle.kts (the only source of truth).
-#   2. xcodebuild ... build
-#        This build FAILS ON PURPOSE with:
-#          "error: Synthetic project regenerated"
-#          "error: Please go to File -> Package -> Resolve Package Versions"
-#        Kotlin regenerates iosApp/KotlinMultiplatformLinkedPackage/Package.swift
-#        mid-build and refuses to continue against a manifest it just rewrote.
-#        Only the Xcode-invoked generator writes that file, so this first failure
-#        cannot be avoided from the CLI -- it is not a broken build.
-#   3. xcodebuild -project iosApp/iosApp.xcodeproj -scheme 'iOS debug' \
-#          -resolvePackageDependencies
-#   4. xcodebuild ... build          # succeeds
-#   5. ./iosApp/Configuration/check_swiftpm_lockfiles.sh
-#   6. Commit build.gradle.kts, BOTH Package.resolved files and the regenerated
-#      Package.swift files together. Splitting them across commits is what
-#      produces the drift this script detects.
+# Don't do it by hand. Run:
 #
-# Verify with the caches cleared before trusting a bump -- a stale pin stays
-# invisible while DerivedData and .swiftpm-locks/*/swiftPMCheckout hold the old
-# checkout:
-#   rm -rf ~/Library/Developer/Xcode/DerivedData/iosApp-*
-#   rm -rf .swiftpm-locks/*/swiftPMCheckout
+#   ./iosApp/Configuration/bump_ios_matter_version.sh <version>
+#
+# which rewrites the pin, purges the caches that hide a bad pin, absorbs the
+# build that fails by design, re-resolves, prunes orphaned generated
+# subpackages, rebuilds, and calls this script. Its header documents each step
+# and why it is needed.
+#
+# Whatever the bump touched -- build.gradle.kts, BOTH Package.resolved files,
+# the regenerated Package.swift files -- goes in ONE commit. Splitting them
+# across commits is what produces the drift this script detects.
 
 set -euo pipefail
 

@@ -30,7 +30,7 @@ kotlin {
             // from Swift via `import shared`. Do NOT use transitiveExport: it would also export
             // transitive deps such as cmptoast, whose own MainViewController.kt collides with
             // composeApp's and forces MainViewController() into a "MainViewControllerKt_" class.
-//            export(project(":composeApp"))
+            export("no.nordicsemi.nrf.matter:composeApp:1.0.0")
         }
     }
 

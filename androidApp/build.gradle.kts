@@ -19,8 +19,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":androidDeps"))
-    implementation(project(":composeApp"))
+    implementation(project(":shared"))
 
     // CMPToast: Toasts for Compose Multiplatform
     implementation(libs.cmptoast)

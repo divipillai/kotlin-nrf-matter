@@ -8,11 +8,11 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-group = "no.nordicsemi.nrf.matter.shared"
+group = "no.nordicsemi.nrf.matter"
 
 kotlin {
     android {
-        namespace = "no.nordicsemi.nrf.matter.shared"
+        namespace = "no.nordicsemi.nrf.matter.lib"
 
         androidResources {
             enable = true

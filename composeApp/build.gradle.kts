@@ -59,7 +59,7 @@ kotlin {
         // bump procedure in iosApp/Configuration/check_swiftpm_lockfiles.sh.
         swiftPackage(
             url = url("git@github.com:sylwester-zielinski/ios-matter.git"),
-            version = exact("0.0.10"),
+            version = exact("0.0.11"),
             products = listOf(product("ios-matter")),
         )
     }

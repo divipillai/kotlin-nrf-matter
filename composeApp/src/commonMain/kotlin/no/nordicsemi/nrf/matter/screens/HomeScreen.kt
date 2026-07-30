@@ -6,6 +6,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalUriHandler
 import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.commission.DecommissionState
+import no.nordicsemi.nrf.matter.commission.DecommissionStateHandler
 import no.nordicsemi.nrf.matter.ui.DeviceList
 
 /*
@@ -46,6 +48,13 @@ fun HomeScreen(
 ) {
     val uriHandler = LocalUriHandler.current
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
+    val decommissionState by homeViewModel.decommissionState.collectAsState()
+
+    DecommissionStateHandler(
+        state = decommissionState,
+        onForceRemove = { homeViewModel.forceRemove(it) },
+        onStateHandled = { homeViewModel.updateDecommissionState(DecommissionState.Idle) },
+    )
 
     Box {
         if (devicesUiModel.devices.isEmpty()) {
@@ -63,5 +72,6 @@ fun HomeScreen(
     }
 }
 
-private const val MATTER_OVERVIEW_URL = "https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/overview/index.html"
+private const val MATTER_OVERVIEW_URL =
+    "https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/overview/index.html"
 

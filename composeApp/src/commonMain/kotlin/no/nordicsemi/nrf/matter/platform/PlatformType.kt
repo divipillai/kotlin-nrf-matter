@@ -5,3 +5,5 @@ expect val currentType: PlatformType
 enum class PlatformType {
     IOS, ANDROID
 }
+
+expect fun getAppVersion(): String

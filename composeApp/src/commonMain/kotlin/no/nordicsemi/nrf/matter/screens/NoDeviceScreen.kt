@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import no.nordicsemi.nrf.matter.platform.getAppVersion
 import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.no_matter_devices
 import no.nordicsemi.nrf.matter.theme.NordicTheme
@@ -83,71 +84,88 @@ fun NoDevicesScreen(
     onAddDeviceClick: () -> Unit = {},
     onMatterUrlClick: () -> Unit = {}
 ) {
-    Column(
+    val version = getAppVersion()
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .padding(horizontal = 24.dp),
     ) {
-        EmptyStateIllustration()
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Text Content
-        Text(
-            text = "Let's get connected",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = "It looks like you haven't added any Matter accessories yet. Connect your first device to start controlling your home intelligently.",
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium,
+        Column(
             modifier = Modifier
-                .alpha(0.5f)
-                .widthIn(max = 320.dp)
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Action Button
-        Button(
-            onClick = { onAddDeviceClick() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .widthIn(max = 320.dp),
-            shape = RoundedCornerShape(8.dp),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                .fillMaxSize()
+                .padding(bottom = 48.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                Icons.Default.Add,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(Modifier.width(8.dp))
+            EmptyStateIllustration()
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Text Content
             Text(
-                "Add New Device",
+                text = "Let's get connected",
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
             )
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-        TextButton(onClick = { onMatterUrlClick() }) {
             Text(
-                "What is Matter?",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primary
+                text = "It looks like you haven't added any Matter accessories yet. Connect your first device to start controlling your home intelligently.",
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .alpha(0.5f)
+                    .widthIn(max = 320.dp)
             )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Action Button
+            Button(
+                onClick = { onAddDeviceClick() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .widthIn(max = 320.dp),
+                shape = RoundedCornerShape(8.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Add New Device",
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(onClick = { onMatterUrlClick() }) {
+                Text(
+                    "What is Matter?",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
+
+        Text(
+            text = "Version: $version",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp),
+        )
     }
 }
 

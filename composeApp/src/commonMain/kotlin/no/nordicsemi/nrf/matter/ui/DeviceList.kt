@@ -1,24 +1,15 @@
 package no.nordicsemi.nrf.matter.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
-import multiplatform.network.cmptoast.ToastDuration
-import multiplatform.network.cmptoast.ToastGravity
-import multiplatform.network.cmptoast.showToast
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.model.Device
@@ -74,63 +65,6 @@ internal fun DeviceList(
 
         devices.forEach {
             item {
-                when (val state = decommissionState) {
-                    is DecommissionState.Error -> {
-                        // Show error dialog with an option to force remove.
-                        AlertDialogView(
-                            onDismiss = {
-                                homeViewModel.updateDecommissionState(DecommissionState.Idle)
-                            },
-                            onConfirm = {
-                                homeViewModel.updateDecommissionState(
-                                    DecommissionState.ForceRemove(
-                                        state.deviceId
-                                    )
-                                )
-                            },
-                            title = "Error Removing Device",
-                            message = "An error occurred while removing the device. Force remove?"
-                        )
-                    }
-
-                    is DecommissionState.ForceRemove -> {
-                        homeViewModel.forceRemove(state.deviceId)
-                    }
-
-                    DecommissionState.Idle -> {
-                        // DO NOTHING
-                    }
-
-                    is DecommissionState.InProgress -> {
-                        // Show loader while the device is being removed.
-                        Loader {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    "Removing device...",
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                )
-                                Text(
-                                    "It might take a few seconds, please wait!",
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                )
-                            }
-                        }
-                    }
-
-                    is DecommissionState.Success -> {
-                        homeViewModel.updateDecommissionState(DecommissionState.Idle)
-                        showToast(
-                            message = "Device decommissioned successfully!",
-                            duration = ToastDuration.Long,
-                            gravity = ToastGravity.Center
-                        )
-                    }
-                }
-
                 it.Item { deviceId -> homeViewModel.decommissionDevice(deviceId) }
             }
         }

@@ -47,37 +47,11 @@ kotlin {
     }
 
     swiftPMDependencies {
-        // Must match the `platforms` requirement declared by the ios-matter package.
         iosMinimumDeploymentTarget.set("26.0")
 
-        // THIS IS THE ONLY PLACE ios-matter IS DECLARED.
-        //
-        // Xcode does not depend on it directly. Both the iosApp and nrfMatter
-        // targets link the generated KotlinMultiplatformLinkedPackage, which
-        // pulls ios-matter (and its Pulse dependency) in transitively, so the
-        // `import ios_matter` in iOSApp.swift and nrfMatter/RequestHandler.swift
-        // resolves from the package graph Kotlin generated. Adding ios-matter
-        // back as an Xcode package product dependency gives it a second,
-        // independently versioned declaration -- exactly the drift that
-        // check_swiftpm_lockfiles.sh exists to catch.
-        //
-        // A target that imports ios_matter must therefore link
-        // KotlinMultiplatformLinkedPackage; without it the module is not on the
-        // target's search path (it fails on Pulse's ObjC helper module first).
-
-        // Pinned exactly: `from(...)` would allow any 0.x release, and ios-matter
-        // makes no API-stability promise below 1.0.
-        //
-        // Do not edit this line by hand -- bumping the pin also needs a
-        // re-resolve, a cache purge and a prune of orphaned generated
-        // subpackages, and the first build after the change FAILS BY DESIGN
-        // ("Synthetic project regenerated" -- Kotlin rewrites the generated
-        // Package.swift mid-build). Run this instead, which does all of it:
-        //
-        //     ./iosApp/Configuration/bump_ios_matter_version.sh <version>
         swiftPackage(
             url = url("git@github.com:sylwester-zielinski/ios-matter.git"),
-            version = exact("0.0.14"),
+            version = exact("0.0.16"),
             products = listOf(product("ios-matter")),
         )
     }

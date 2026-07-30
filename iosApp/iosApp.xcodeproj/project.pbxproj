@@ -206,6 +206,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A725F1C22F4DAACB005BC977 /* Build configuration list for PBXNativeTarget "nrfMatter" */;
 			buildPhases = (
+				A7C0DE2F0000000000000001 /* Compile Kotlin Framework */,
 				A725F1B62F4DAACB005BC977 /* Sources */,
 				A725F1B72F4DAACB005BC977 /* Frameworks */,
 				A725F1B82F4DAACB005BC977 /* Resources */,
@@ -394,6 +395,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+		};
+		A7C0DE2F0000000000000001 /* Compile Kotlin Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Compile Kotlin Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# nrfMatter imports the Kotlin `shared` framework, which resolves through a\n# symlink in BUILT_PRODUCTS_DIR pointing at shared/build/xcode-frameworks. Only\n# this Gradle task regenerates it, so the extension needs its own copy of the\n# phase: it compiles before the iosApp target, and without this it would build\n# against whatever stale framework happened to be on disk. A newly added Kotlin\n# symbol then fails to resolve here, which also stops iosApp's copy of this\n# phase from ever running -- a deadlock that only a manual resync clears.\nif [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

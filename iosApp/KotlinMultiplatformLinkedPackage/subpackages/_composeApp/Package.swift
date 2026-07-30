@@ -15,7 +15,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "git@github.com:sylwester-zielinski/ios-matter.git",
-      exact: "0.0.14"
+      exact: "0.0.16"
     )
   ],
   targets: [

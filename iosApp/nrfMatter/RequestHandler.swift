@@ -38,7 +38,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     /// - Parameter home: The home to fetch rooms for, or `nil` if no home was selected.
     /// - Returns: The rooms the device can be assigned to, as reported by the active handler.
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
-        SharedLogger.info("Received request to fetch rooms in home: \(String(describing: home?.displayName)).")
+        SwiftLogger.info("Received request to fetch rooms in home: \(String(describing: home?.displayName)).")
 
         return await handler.rooms(in: home)
     }
@@ -51,7 +51,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     ///   - commissioningID: The unique identifier for this commissioning attempt.
     /// - Throws: An error if commissioning fails.
     override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
-        SharedLogger.info("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
+        SwiftLogger.info("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
 
         try await handler.commissionDevice(in: home, onboardingPayload: onboardingPayload, commissioningID: commissioningID)
     }
@@ -62,7 +62,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     ///   - name: The display name chosen for the device.
     ///   - room: The room the device was placed in, or `nil` if no room was selected.
     override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
-        SharedLogger.info("Configuring device '\(name)' in room: \(String(describing: room?.displayName))")
+        SwiftLogger.info("Configuring device '\(name)' in room: \(String(describing: room?.displayName))")
 
         await handler.configureDevice(named: name, in: room)
 
@@ -75,7 +75,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     /// - Parameter deviceCredential: The credential to validate.
     /// - Throws: An error if the credential is invalid.
     override func validateDeviceCredential(_ deviceCredential: MatterAddDeviceExtensionRequestHandler.DeviceCredential) async throws {
-        SharedLogger.info("Validating device credential")
+        SwiftLogger.info("Validating device credential")
 
         try await handler.validateDeviceCredential(deviceCredential)
     }
@@ -86,7 +86,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     /// - Returns: The network association the device should use.
     /// - Throws: An error if no suitable network can be selected.
     override func selectWiFiNetwork(from wifiScanResults: [MatterAddDeviceExtensionRequestHandler.WiFiScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.WiFiNetworkAssociation {
-        SharedLogger.info("Selecting WiFi network from \(wifiScanResults.count) scan results")
+        SwiftLogger.info("Selecting WiFi network from \(wifiScanResults.count) scan results")
 
         return try await handler.selectWiFiNetwork(from: wifiScanResults)
     }
@@ -97,10 +97,10 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     /// - Returns: The network association the device should use.
     /// - Throws: An error if no suitable network can be selected.
     override func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
-        SharedLogger.info("Selecting Thread network from \(threadScanResults.count) scan results")
+        SwiftLogger.info("Selecting Thread network from \(threadScanResults.count) scan results")
         
         threadScanResults.forEach { item in
-            SharedLogger.debug("Detected thread network: \(item.networkName)")
+            SwiftLogger.debug("Detected thread network: \(item.networkName)")
         }
 
         return try await handler.selectThreadNetwork(from: threadScanResults)

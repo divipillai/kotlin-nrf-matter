@@ -62,7 +62,7 @@ kotlin {
         //     ./iosApp/Configuration/bump_ios_matter_version.sh <version>
         swiftPackage(
             url = url("git@github.com:sylwester-zielinski/ios-matter.git"),
-            version = exact("0.0.11"),
+            version = exact("0.0.13"),
             products = listOf(product("ios-matter")),
         )
     }

@@ -1,4 +1,4 @@
-import ios_matter
+import shared
 import SwiftUI
 
 /// The app's entry point, hosting the shared Compose Multiplatform UI.
@@ -7,7 +7,7 @@ struct iOSApp: App {
 
     /// Ensures the keychain-backed Matter keypair is correctly initialized before the UI loads.
     init() {
-        KeypairInitializer.initKeychain()
+        KeychainKt.prepareKeychain()
     }
     
     var body: some Scene {

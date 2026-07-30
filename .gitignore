@@ -163,5 +163,22 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+# ========================================
+# Kotlin SwiftPM interop
+# ========================================
+
+# Gradle regenerates the whole linked-package scaffolding under
+# .swiftpm-locks/*/swiftImport/ on every build: Package.swift, the subpackage
+# manifests, and the ObjC shims. It is a duplicate of the copy Xcode actually
+# builds (iosApp/KotlinMultiplatformLinkedPackage/), and tracking both means
+# they drift -- the tracked copy here still declared a `_shared` subpackage the
+# Xcode copy no longer has, and pinned ios-matter a second time.
+#
+# Package.resolved is the exception and stays tracked: it is Gradle's persisted
+# lockfile, and check_swiftpm_lockfiles.sh compares it against Xcode's to catch
+# exactly this kind of drift.
+.swiftpm-locks/*/swiftImport/*
+!.swiftpm-locks/*/swiftImport/Package.resolved
+
 # Google Services (optional)
 # google-services.json

@@ -7,10 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		72CDAA76DCC4DFA859C2F826 /* KotlinMultiplatformLinkedPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 510118089AC3BA7A8865F9BB /* KotlinMultiplatformLinkedPackage */; };
 		A725F1C12F4DAACB005BC977 /* nrfMatter.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		A7F766383018F60400291A4B /* ios-matter in Frameworks */ = {isa = PBXBuildFile; productRef = A7F766373018F60400291A4B /* ios-matter */; };
-		A7F766403018F60400291A4C /* ios-matter in Frameworks */ = {isa = PBXBuildFile; productRef = A7F766413018F60400291A4C /* ios-matter */; };
+		A7F766423018F60400291A4D /* KotlinMultiplatformLinkedPackage in Frameworks */ = {isa = PBXBuildFile; productRef = A7F766433018F60400291A4D /* KotlinMultiplatformLinkedPackage */; };
+		A7F766443018F60400291A4E /* KotlinMultiplatformLinkedPackage in Frameworks */ = {isa = PBXBuildFile; productRef = A7F766453018F60400291A4E /* KotlinMultiplatformLinkedPackage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -117,8 +116,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				72CDAA76DCC4DFA859C2F826 /* KotlinMultiplatformLinkedPackage in Frameworks */,
-				A7F766403018F60400291A4C /* ios-matter in Frameworks */,
+				A7F766443018F60400291A4E /* KotlinMultiplatformLinkedPackage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -126,7 +124,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A7F766383018F60400291A4B /* ios-matter in Frameworks */,
+				A7F766423018F60400291A4D /* KotlinMultiplatformLinkedPackage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,8 +196,7 @@
 			);
 			name = iosApp;
 			packageProductDependencies = (
-				510118089AC3BA7A8865F9BB /* KotlinMultiplatformLinkedPackage */,
-				A7F766413018F60400291A4C /* ios-matter */,
+				A7F766453018F60400291A4E /* KotlinMultiplatformLinkedPackage */,
 			);
 			productName = iosApp;
 			productReference = 503AE3C9DDF68C5089274E2D /* NRFMatterforMobile.app */;
@@ -223,7 +220,7 @@
 			);
 			name = nrfMatter;
 			packageProductDependencies = (
-				A7F766373018F60400291A4B /* ios-matter */,
+				A7F766433018F60400291A4D /* KotlinMultiplatformLinkedPackage */,
 			);
 			productName = nrfMatter;
 			productReference = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */;
@@ -803,17 +800,13 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		510118089AC3BA7A8865F9BB /* KotlinMultiplatformLinkedPackage */ = {
+		A7F766433018F60400291A4D /* KotlinMultiplatformLinkedPackage */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KotlinMultiplatformLinkedPackage;
 		};
-		A7F766373018F60400291A4B /* ios-matter */ = {
+		A7F766453018F60400291A4E /* KotlinMultiplatformLinkedPackage */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = "ios-matter";
-		};
-		A7F766413018F60400291A4C /* ios-matter */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = "ios-matter";
+			productName = KotlinMultiplatformLinkedPackage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

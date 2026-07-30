@@ -95,26 +95,57 @@ if drift:
     sys.exit(1)
 PY
 
-# --- 2. Is there more than one generated Package.swift claiming a version? ---
+# --- 2. Is there a generated Package.swift outside the canonical directory? ---
 #
-# Gradle regenerates KotlinMultiplatformLinkedPackage/Package.swift on every
-# build. Stale copies at old paths stay tracked in git, pinned to whatever
-# version was current when they were generated, and silently mislead readers.
+# Gradle regenerates the linked-package manifests on every build. Stale copies
+# at old paths stay tracked in git, pinned to whatever version was current when
+# they were generated, and silently mislead readers.
+#
+# Matching on the path alone is not enough: Gradle also writes a full copy of
+# the scaffolding to .swiftpm-locks/*/swiftImport/, whose directory is not named
+# after the package, so a '*KotlinMultiplatformLinkedPackage/Package.swift' glob
+# walks straight past it. That copy went unnoticed long enough to drift -- it
+# declared a `_shared` subpackage the Xcode copy no longer has. So identify
+# generated manifests by content: either they declare the linked package itself,
+# or they are one of its subpackages pinning a swiftPackage dependency.
+
+canonical_dir="iosApp/KotlinMultiplatformLinkedPackage"
 
 echo
 echo "Checking generated KotlinMultiplatformLinkedPackage manifests"
 
-manifests=$(git ls-files '*KotlinMultiplatformLinkedPackage/Package.swift')
-if [ -z "$manifests" ]; then
+generated=""
+while IFS= read -r manifest; do
+  [ -n "$manifest" ] || continue
+  if grep -qE 'name: "(KotlinMultiplatformLinkedPackage|_[A-Za-z])' "$manifest"; then
+    generated="$generated$manifest"$'\n'
+  fi
+done <<EOF
+$(git ls-files '*Package.swift')
+EOF
+
+generated=$(printf '%s' "$generated" | sed '/^$/d')
+
+if [ -z "$generated" ]; then
   echo "  none tracked"
 else
-  count=$(echo "$manifests" | wc -l | tr -d ' ')
-  echo "$manifests" | sed 's/^/  /'
-  if [ "$count" -gt 1 ]; then
+  strays=""
+  while IFS= read -r manifest; do
+    case "$manifest" in
+      "$canonical_dir"/*) echo "  ok     $manifest" ;;
+      *) echo "  STRAY  $manifest"; strays="$strays  $manifest"$'\n' ;;
+    esac
+  done <<EOF
+$generated
+EOF
+
+  if [ -n "$strays" ]; then
     echo
-    echo "  error: $count tracked manifests. Gradle only regenerates the one under"
-    echo "         the Xcode project directory; the others are stale orphans that"
-    echo "         will disagree after the next version bump. Delete them."
+    echo "  error: tracked generated manifests outside $canonical_dir/."
+    echo "         Gradle only regenerates the copy Xcode builds; the others are"
+    echo "         stale orphans that will disagree after the next version bump."
+    echo "         Untrack them (git rm --cached) and leave them gitignored:"
+    printf '%s' "$strays"
     status=1
   fi
 fi

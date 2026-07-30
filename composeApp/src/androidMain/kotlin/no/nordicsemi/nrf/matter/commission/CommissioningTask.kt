@@ -25,6 +25,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.service.AppCommissioningService
 import org.koin.compose.viewmodel.koinViewModel
 
+private const val TAG = "Commissioning"
 @Composable
 actual fun CommissioningTask(
     onSuccess: (Device) -> Unit,
@@ -41,7 +42,7 @@ actual fun CommissioningTask(
                     CommissioningResult.fromIntentSenderResult(result.resultCode, result.data)
                 commissioningModelAndroid.gpsCommissioningDeviceSucceeded(commissioningResult)
             } catch (t: Throwable) {
-                NordicLogger.error("Commissioning failed", t)
+                NordicLogger.error("Commissioning failed", t, tag = TAG)
                 onError(t.toCommissioningException(commissioningModelAndroid.nextNodeId.value!!))
             }
         }
@@ -90,7 +91,7 @@ private fun commissionDevice(
             commissionDeviceLauncher.launch(IntentSenderRequest.Builder(result).build())
         }
         .addOnFailureListener { error ->
-            NordicLogger.error("Commissioning failed", error)
+            NordicLogger.error("Commissioning failed", error, tag = TAG)
             onError(error.toCommissioningException(deviceId))
         }
 }

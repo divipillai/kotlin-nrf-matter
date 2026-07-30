@@ -64,7 +64,7 @@ class LockController(
                 NordicLogger.error(
                     "Failed to send Lock/Unlock command",
                     it,
-                    tag = "LockController"
+                    tag = TAG
                 )
             }
             .onEach {
@@ -83,5 +83,9 @@ class LockController(
             },
             onDecommission = onDecommission,
         )
+    }
+
+    companion object {
+        private const val TAG = "LockController"
     }
 }

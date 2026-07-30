@@ -47,7 +47,7 @@ class LightController(
     private fun observeDeviceRealtimeState() {
         commandHandler.observeLightDeviceState(device.device)
             .onEach { state ->
-                NordicLogger.info("New light device state: $state")
+                NordicLogger.info("New light device state: $state", tag = TAG)
                 (state as? UiState.Success)?.let {
                     lightDeviceState.update {
                         it.copy(isOn = state.data)
@@ -58,7 +58,7 @@ class LightController(
 
         commandHandler.observeBrightnessState(device.device)
             .onEach { state ->
-                NordicLogger.info("New brightness state: $state")
+                NordicLogger.info("New brightness state: $state", tag = TAG)
                 (state as? UiState.Success)?.let {
                     lightDeviceState.update {
                         it.copy(localBrightness = state.data, remoteBrightness = state.data)
@@ -76,11 +76,11 @@ class LightController(
                 NordicLogger.error(
                     "Failed to send Brightness level adjustment",
                     it,
-                    tag = "LightController"
+                    tag = TAG
                 )
             }
             .onEach {
-                NordicLogger.info("Led state $it")
+                NordicLogger.info("Led state $it", tag = TAG)
                 ledState.value = it.mapType { isOn }
                 (it.mapType { isOn } as? UiState.Success)?.data?.let { newState ->
                     lightDeviceState.update {
@@ -110,11 +110,11 @@ class LightController(
                 NordicLogger.error(
                     "Failed to send Brightness level adjustment",
                     it,
-                    tag = "LightController"
+                    tag = TAG
                 )
             }
             .onEach {
-                NordicLogger.info("Brightness state $it")
+                NordicLogger.info("Brightness state $it", tag = TAG)
                 brightnessLevelState.value = it.mapType { brightnessLevel }
 
                 (it.mapType { brightnessLevel } as? UiState.Success)?.data?.let { newState ->
@@ -166,5 +166,9 @@ class LightController(
             },
             onDecommission = onDecommission
         )
+    }
+
+    companion object {
+        private const val TAG = "LightController"
     }
 }

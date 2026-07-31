@@ -4,6 +4,7 @@ package no.nordicsemi.nrf.matter.adapters
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.MatterCommissioner
+import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.SwiftLogger
 
 class ExtensionMatterCommissioner {
 
@@ -11,7 +12,7 @@ class ExtensionMatterCommissioner {
 
     suspend fun commission() {
 //        commissioner.commissionWithPayload()
-
+        SwiftLogger.infoWithTag("s", "mine log")
     }
 
     fun releaseCommissioner() {

@@ -27,8 +27,8 @@ kotlin {
             baseName = "shared"
             isStatic = true
 
-            export(project(":composeApp"))
-//            export("no.nordicsemi.nrf.matter:matter-support:1.0.0")
+//            export(project(":composeApp"))
+            export("no.nordicsemi.nrf.matter:matter-support:1.0.0")
         }
     }
 
@@ -36,8 +36,8 @@ kotlin {
         androidMain.dependencies {
         }
         commonMain.dependencies {
-            api(project(":composeApp"))
-//            api("no.nordicsemi.nrf.matter:matter-support:1.0.0")
+//            api(project(":composeApp"))
+            api("no.nordicsemi.nrf.matter:matter-support:1.0.0")
 
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.jetbrains.compose.resources)

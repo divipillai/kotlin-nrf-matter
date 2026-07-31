@@ -264,18 +264,34 @@ Therefore, getting started requires a few non-standard integration steps.
 git, the Apple-side counterpart to the vendoring described above. It used to be resolved from
 `git@github.com:sylwester-zielinski/ios-matter.git` at an exact tag; it is now built in place.
 
-`:composeApp` declares it in [`build.gradle.kts`](./composeApp/build.gradle.kts):
+`:composeApp` declares it in [`build.gradle.kts`](./composeApp/build.gradle.kts), switching between the
+vendored copy and the tagged remote on one flag:
 
 ```kotlin
 swiftPMDependencies {
     iosMinimumDeploymentTarget.set("26.0")
 
-    localSwiftPackage(
-        rootProject.layout.projectDirectory.dir("ios-matter"),
-        listOf(product("ios-matter")),
-    )
+    if (providers.gradleProperty("iosMatter.useVendored").get().toBoolean()) {
+        localSwiftPackage(
+            rootProject.layout.projectDirectory.dir("ios-matter"),
+            listOf(product("ios-matter")),
+        )
+    } else {
+        packageResolvedSynchronization = identifier("release")
+        swiftPackage(
+            url = url("git@github.com:sylwester-zielinski/ios-matter.git"),
+            version = exact(providers.gradleProperty("iosMatter.version").get()),
+            products = listOf(product("ios-matter")),
+        )
+    }
 }
 ```
+
+`iosMatter.useVendored` defaults to `true` in [`gradle.properties`](./gradle.properties), so **every
+ordinary build — debug, release, TestFlight, App Store — uses the vendored copy.** A vendored package
+compiles into the app exactly like a resolved one, without needing network or SSH access to the
+ios-matter remote, so app releases have no reason to flip it. The one case that does is
+[publishing `matter-support`](#publishing-matter-support-for-outside-consumers).
 
 Kotlin generates the linked SwiftPM package under
 [`/iosApp/KotlinMultiplatformLinkedPackage`](./iosApp/KotlinMultiplatformLinkedPackage) from that
@@ -293,13 +309,56 @@ Two things follow from being a path-based dependency rather than a versioned one
 - SwiftPM refuses `unsafeFlags` in a package consumed as a dependency, but exempts local ones —
   which is what lets [`/ios-matter/Package.swift`](./ios-matter/Package.swift) keep
   `-enable-library-evolution`. Its comment explains why that flag is needed.
-- `:shared` depends on `project(":composeApp")`, not on the published
-  `no.nordicsemi.nrf.matter:matter-support` artifact. It has to: the Xcode-side linked package is
-  generated from `:composeApp`'s `swiftPMDependencies` metadata, and going through
-  `publishToMavenLocal` would serve Xcode whatever pin was current the last time that artifact was
-  published. Note also that this metadata stores the vendored package as an **absolute** path, so if
-  `matter-support` is ever published for outside consumers, they cannot resolve it — such a
-  publication needs a versioned `swiftPackage(url = ...)` declaration instead.
+- **The Xcode side goes through `~/.m2`.** `:shared` depends on the published
+  `no.nordicsemi.nrf.matter:matter-support:1.0.0` artifact, and the Xcode-side linked package is
+  generated from the `swiftPMDependencies` metadata carried *inside that artifact* — not from
+  `composeApp/build.gradle.kts` directly. So after changing the `swiftPMDependencies` block, run
+
+  ```shell
+  ./gradlew :composeApp:publishToMavenLocal
+  ```
+
+  **before** building in Xcode. Skip it and the generator faithfully rewrites the manifests under
+  `/iosApp/KotlinMultiplatformLinkedPackage` back to whatever was current when that artifact was last
+  published — which looks exactly like the change not having worked. (Depending on
+  `project(":composeApp")` instead removes the round trip entirely, at the cost of no longer building
+  `:shared` against the artifact that actually ships.)
+#### Publishing `matter-support` for outside consumers
+
+`publishToMavenLocal` and `publish` attach the `swiftPMDependencies` declaration to the
+`kotlinMultiplatform` publication as `matter-support-<version>-swiftpm-metadata.json`, in a variant
+with `org.gradle.usage=swiftPMDependenciesMetadata`. That is how `:shared` — and any external
+consumer — learns which Swift package to reconstruct.
+
+With the vendored declaration, that file says:
+
+```json
+{ "type": "…SwiftPMDependency.Local",
+  "absolutePath": "/Users/you/StudioProjects/KMP-nRF-Matter/ios-matter" }
+```
+
+An absolute path on the publishing machine. Fine for `:shared` here, unresolvable anywhere else — and
+it makes the artifact's checksum machine-specific. So publish with the flag off:
+
+```shell
+./gradlew :composeApp:publishToMavenLocal -PiosMatter.useVendored=false     # or :publish
+```
+
+which emits `"type": "…SwiftPMDependency.Remote"` with the url and `exact` version instead.
+
+The catch is that nothing keeps `/ios-matter` and the tag in sync — that is on you:
+
+1. Push the contents of `/ios-matter` to the ios-matter remote and tag it.
+2. Set `iosMatter.version` in [`gradle.properties`](./gradle.properties) to that tag.
+3. Publish with `-PiosMatter.useVendored=false`.
+
+Step 3 builds the cinterop klib against the *remote* checkout, so an API that exists in your working
+tree but not in the tag fails the publish. Behavioural differences pass silently, though, so treat
+step 1 as mandatory rather than as something to catch later.
+
+The flag also keeps its own lockfile, `.swiftpm-locks/release/swiftImport/Package.resolved`, so
+resolving against the tag never touches the `default` one that app builds and Xcode share.
+`check_swiftpm_lockfiles.sh` reports it separately and fails if it disagrees with `iosMatter.version`.
 
 Changing the *shape* of the package graph — adding or removing a `swiftPackage` declaration, or a
 dependency in `/ios-matter/Package.swift` — makes Kotlin regenerate those manifests, and the first

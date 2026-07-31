@@ -62,14 +62,21 @@ status=0
 # --- 1. Do the two Package.resolved files pin the same revisions? ------------
 
 xcode_lock="iosApp/iosApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-gradle_lock=""
-for candidate in .swiftpm-locks/*/swiftImport/Package.resolved; do
-  [ -f "$candidate" ] && gradle_lock="$candidate" && break
-done
 
-if [ -z "$gradle_lock" ]; then
-  echo "error: no Gradle SwiftPM lockfile found under .swiftpm-locks/*/swiftImport/"
-  echo "       run ./gradlew :composeApp:syncSyntheticPackageResolvedToPersisted"
+# Named, not "first match of .swiftpm-locks/*/swiftImport/". There are two lock
+# directories now: `default` for the vendored ios-matter that app builds use, and
+# `release` written by -PiosMatter.useVendored=false, which legitimately pins
+# ios-matter to a tag. Comparing `release` against Xcode's lockfile would report
+# that extra pin as drift, and which one a glob picks up is nobody's intent.
+gradle_lock=".swiftpm-locks/default/swiftImport/Package.resolved"
+release_lock=".swiftpm-locks/release/swiftImport/Package.resolved"
+
+if [ ! -f "$gradle_lock" ]; then
+  echo "error: Gradle SwiftPM lockfile missing: $gradle_lock"
+  # NOT syncSyntheticPackageResolvedToPersisted: as of Kotlin 2.4.10 that task
+  # fails standalone with "property 'destinationFile' doesn't have a configured
+  # value". The cinterop task writes the same lockfile as a side effect.
+  echo "       run ./gradlew :composeApp:cinteropSwiftPMImportIosSimulatorArm64"
   exit 1
 fi
 if [ ! -f "$xcode_lock" ]; then
@@ -118,11 +125,44 @@ for identity in sorted(set(gradle) | set(xcode)):
 
 if drift:
     print("\nThe lockfiles disagree. To realign:")
-    print("  ./gradlew :composeApp:syncSyntheticPackageResolvedToPersisted")
+    print("  ./gradlew :composeApp:cinteropSwiftPMImportIosSimulatorArm64")
     print("  xcodebuild -project iosApp/iosApp.xcodeproj -scheme 'iOS debug' -resolvePackageDependencies")
     print("then re-run this script and commit both lockfiles together.")
+    print("\nIf 'ios-matter' shows up here at all, something built with")
+    print("-PiosMatter.useVendored=false and wrote to the wrong lock directory:")
+    print("the vendored package has no revision to pin.")
     sys.exit(1)
 PY
+
+# --- 1b. The release lockfile, if one has been produced ----------------------
+#
+# Reported, never compared: it pins ios-matter to a tag on purpose. It only has
+# to agree with iosMatter.version in gradle.properties, which is what a stale
+# release lock silently gets wrong.
+
+if [ -f "$release_lock" ]; then
+  echo
+  echo "Release lockfile (-PiosMatter.useVendored=false)"
+  echo "  $release_lock"
+  pinned_version=$(python3 -c "
+import json, sys
+pins = json.load(open(sys.argv[1])).get('pins', [])
+print(next((p['state'].get('version', '?') for p in pins
+            if p.get('identity', '').lower() == 'ios-matter'), ''))
+" "$release_lock")
+  declared_version=$(sed -n 's/^iosMatter\.version=//p' gradle.properties)
+
+  if [ -z "$pinned_version" ]; then
+    echo "  warning: no ios-matter pin -- the release lock looks incomplete"
+  elif [ "$pinned_version" = "$declared_version" ]; then
+    echo "  ok     ios-matter: $pinned_version (matches iosMatter.version)"
+  else
+    echo "  DRIFT  ios-matter: locked $pinned_version, gradle.properties says $declared_version"
+    echo "         re-resolve with: ./gradlew :composeApp:cinteropSwiftPMImportIosSimulatorArm64 \\"
+    echo "                            -PiosMatter.useVendored=false"
+    status=1
+  fi
+fi
 
 # --- 2. Is there a generated Package.swift outside the canonical directory? ---
 #

@@ -180,5 +180,12 @@ fabric.properties
 .swiftpm-locks/*/swiftImport/*
 !.swiftpm-locks/*/swiftImport/Package.resolved
 
+# The vendored ios-matter package (/ios-matter) is built in place, so SwiftPM
+# and Xcode leave per-user state next to its manifest: .build/ when it is built
+# from the command line, .swiftpm/ scheme management when Xcode opens it.
+# The sources and Package.swift are tracked; these are not.
+/ios-matter/.build/
+/ios-matter/.swiftpm/
+
 # Google Services (optional)
 # google-services.json

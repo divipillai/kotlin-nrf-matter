@@ -7,22 +7,51 @@
 # the two. When they drift, builds keep working off cached checkouts and only
 # break once someone clears DerivedData -- long after the bad commit landed.
 #
-# Run after bumping a swiftPackage version, and in CI.
+# Run after changing anything in the SwiftPM graph, and in CI.
 #
-# BUMPING A swiftPackage VERSION
+# ios-matter ITSELF IS NO LONGER PINNED
 #
-# Don't do it by hand. Run:
+# It is vendored at /ios-matter and declared with `localSwiftPackage`, so it has
+# no revision to drift and does not appear in either lockfile. Only its own
+# remote dependencies do -- today just Pulse. Editing the vendored sources
+# therefore needs none of this: build and go.
 #
-#   ./iosApp/Configuration/bump_ios_matter_version.sh <version>
+# CHANGING THE SHAPE OF THE PACKAGE GRAPH
 #
-# which rewrites the pin, purges the caches that hide a bad pin, absorbs the
-# build that fails by design, re-resolves, prunes orphaned generated
-# subpackages, rebuilds, and calls this script. Its header documents each step
-# and why it is needed.
+# Adding or removing a swiftPackage declaration, or a dependency in
+# /ios-matter/Package.swift, still makes Kotlin rewrite the generated manifests
+# under iosApp/KotlinMultiplatformLinkedPackage/. Three things follow from that,
+# all of which used to be automated by a bump script that no longer has a
+# version to bump:
 #
-# Whatever the bump touched -- build.gradle.kts, BOTH Package.resolved files,
-# the regenerated Package.swift files -- goes in ONE commit. Splitting them
-# across commits is what produces the drift this script detects.
+#   1. The first Xcode build after such a change FAILS BY DESIGN, with
+#      "Synthetic project regenerated" -- Kotlin rewrote the manifest mid-build
+#      and will not continue against a manifest it just wrote. Only an
+#      Xcode-invoked build regenerates that copy, so this failure cannot be
+#      avoided from the CLI. Re-resolve and build again:
+#
+#        xcodebuild -project iosApp/iosApp.xcodeproj -scheme 'iOS debug' \
+#          -resolvePackageDependencies
+#        xcodebuild -project iosApp/iosApp.xcodeproj -scheme 'iOS debug' \
+#          -destination 'generic/platform=iOS Simulator' build
+#
+#   2. Renaming or re-scoping a Kotlin module leaves an ORPHANED subpackage
+#      under iosApp/KotlinMultiplatformLinkedPackage/subpackages/ -- still
+#      tracked in git, no longer declared by the sibling root Package.swift.
+#      Xcode's PIF cache in DerivedData keeps serving it and the build dies at
+#      CreateBuildDescription with
+#
+#        error: Missing package product '<orphan name>' (in target 'iosApp')
+#
+#      which nothing in project.pbxproj explains. Delete any subpackage
+#      directory the root Package.swift does not declare, then clear
+#      ~/Library/Developer/Xcode/DerivedData/iosApp-* so the PIF cache goes
+#      with it. Step 2 of this check flags tracked strays.
+#
+#   3. Everything the change touched -- build.gradle.kts, BOTH Package.resolved
+#      files, the regenerated Package.swift files -- goes in ONE commit.
+#      Splitting them across commits is what produces the drift this script
+#      detects.
 
 set -euo pipefail
 

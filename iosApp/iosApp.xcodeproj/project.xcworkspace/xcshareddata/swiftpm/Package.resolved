@@ -1,15 +1,6 @@
 {
   "pins" : [
     {
-      "identity" : "ios-matter",
-      "kind" : "remoteSourceControl",
-      "location" : "git@github.com:sylwester-zielinski/ios-matter.git",
-      "state" : {
-        "revision" : "cb4ee3fae6676d4a0899d946198f7ee22a58462d",
-        "version" : "0.0.19"
-      }
-    },
-    {
       "identity" : "pulse",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kean/Pulse",

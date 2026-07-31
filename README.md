@@ -159,6 +159,11 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
   Even though the UI is shared, this project is required as the entry point for the iOS app, and is
   where
   you'd add any additional SwiftUI code.
+* [`/ios-matter`](./ios-matter) — the Swift package that wraps Apple's Matter and MatterSupport
+  frameworks, vendored into this repo rather than resolved from git. `:composeApp` cinterops against
+  it, so this is where the iOS half of commissioning, cluster access, and the keypair/storage shared
+  with the Matter extension lives. See
+  [`/ios-matter` — vendored Matter Swift package](#ios-matter--vendored-matter-swift-package).
 
 ### `androidDeps` native Matter (CHIP) SDK binaries
 
@@ -252,6 +257,55 @@ Therefore, getting started requires a few non-standard integration steps.
 > check `androidDeps` and anywhere else the Home API is used (search for `play.services.home` in the
 > source), and adjust as needed.
 >
+
+### `/ios-matter` — vendored Matter Swift package
+
+[`/ios-matter`](./ios-matter) is a full Swift package — manifest and sources — checked directly into
+git, the Apple-side counterpart to the vendoring described above. It used to be resolved from
+`git@github.com:sylwester-zielinski/ios-matter.git` at an exact tag; it is now built in place.
+
+`:composeApp` declares it in [`build.gradle.kts`](./composeApp/build.gradle.kts):
+
+```kotlin
+swiftPMDependencies {
+    iosMinimumDeploymentTarget.set("26.0")
+
+    localSwiftPackage(
+        rootProject.layout.projectDirectory.dir("ios-matter"),
+        listOf(product("ios-matter")),
+    )
+}
+```
+
+Kotlin generates the linked SwiftPM package under
+[`/iosApp/KotlinMultiplatformLinkedPackage`](./iosApp/KotlinMultiplatformLinkedPackage) from that
+declaration, emitting a **relative** path (`../../../../ios-matter`) into the generated manifests, so
+the checked-in scaffolding is the same on every machine.
+
+**Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the next Gradle or
+Xcode build picks it up. There is no tag to push, no version to bump, and no lockfile to realign;
+`ios-matter` has no revision to pin, so it appears in neither `Package.resolved`. Only its own
+remote dependency, [Pulse](https://github.com/kean/Pulse), is still pinned. Building from a clean
+clone also no longer needs SSH access to the ios-matter remote.
+
+Two things follow from being a path-based dependency rather than a versioned one:
+
+- SwiftPM refuses `unsafeFlags` in a package consumed as a dependency, but exempts local ones —
+  which is what lets [`/ios-matter/Package.swift`](./ios-matter/Package.swift) keep
+  `-enable-library-evolution`. Its comment explains why that flag is needed.
+- `:shared` depends on `project(":composeApp")`, not on the published
+  `no.nordicsemi.nrf.matter:matter-support` artifact. It has to: the Xcode-side linked package is
+  generated from `:composeApp`'s `swiftPMDependencies` metadata, and going through
+  `publishToMavenLocal` would serve Xcode whatever pin was current the last time that artifact was
+  published. Note also that this metadata stores the vendored package as an **absolute** path, so if
+  `matter-support` is ever published for outside consumers, they cannot resolve it — such a
+  publication needs a versioned `swiftPackage(url = ...)` declaration instead.
+
+Changing the *shape* of the package graph — adding or removing a `swiftPackage` declaration, or a
+dependency in `/ios-matter/Package.swift` — makes Kotlin regenerate those manifests, and the first
+Xcode build after that fails by design. The header of
+[`check_swiftpm_lockfiles.sh`](./iosApp/Configuration/check_swiftpm_lockfiles.sh) documents that
+cycle and the orphaned-subpackage trap that comes with it; run the script after any such change.
 
 ### Build and run the Android application
 

@@ -49,10 +49,9 @@ kotlin {
     swiftPMDependencies {
         iosMinimumDeploymentTarget.set("26.0")
 
-        swiftPackage(
-            url = url("git@github.com:sylwester-zielinski/ios-matter.git"),
-            version = exact("0.0.20"),
-            products = listOf(product("ios-matter")),
+        localSwiftPackage(
+            rootProject.layout.projectDirectory.dir("ios-matter"),
+            listOf(product("ios-matter")),
         )
     }
 

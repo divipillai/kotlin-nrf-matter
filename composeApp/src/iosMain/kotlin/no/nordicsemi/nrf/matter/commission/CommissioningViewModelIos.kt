@@ -19,10 +19,14 @@ class CommissioningViewModelIos(
     suspend fun startIosCommissioning(): OperationResult<Device> {
         mutex.withLock {
             val deviceId = devicesRepository.incrementAndReturnLastDeviceId()
-            NordicLogger.debug("startIosCommissioning: $this")
-            NordicLogger.debug("iOS commissioning has started!")
-            NordicLogger.debug("New device id: $deviceId")
+            NordicLogger.debug("startIosCommissioning: $this", tag = TAG)
+            NordicLogger.debug("iOS commissioning has started!", tag = TAG)
+            NordicLogger.debug("New device id: $deviceId", tag = TAG)
             return swiftCodeProvider.getMatterCommissioner().startIosCommissioning(deviceId)
         }
+    }
+
+    companion object {
+        private const val TAG = "Commissioning"
     }
 }

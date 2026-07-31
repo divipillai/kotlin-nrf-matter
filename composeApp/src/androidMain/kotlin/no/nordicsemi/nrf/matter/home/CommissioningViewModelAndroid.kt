@@ -113,7 +113,7 @@ class CommissioningViewModelAndroid(
 
                 deviceEvent.send(OperationResult.Success(device))
             } catch (t: Throwable) {
-                NordicLogger.error("Commissioning failed", t)
+                NordicLogger.error("Commissioning failed", t, tag = TAG)
                 deviceEvent.send(OperationResult.Error(t.toCommissioningException(deviceId)))
             }
         }
@@ -154,5 +154,9 @@ class CommissioningViewModelAndroid(
             0xFFF10001 -> DeviceType.MANUFACTURER_SPECIFIC_DEVICE
             else -> DeviceType.UNSUPPORTED
         }
+    }
+
+    companion object {
+        private const val TAG = "Commissioning"
     }
 }

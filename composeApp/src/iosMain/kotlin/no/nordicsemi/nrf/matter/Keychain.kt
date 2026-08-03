@@ -3,7 +3,7 @@
 package no.nordicsemi.nrf.matter
 
 import kotlinx.cinterop.ExperimentalForeignApi
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.KeypairInitializer
+import iosMatter.KeypairInitializer
 
 /**
  * Clears leftover keychain data on the first launch after a fresh install.

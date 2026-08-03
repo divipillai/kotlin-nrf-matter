@@ -6,7 +6,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.model.DeviceId
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LocalMatterDecommissioner
+import iosMatter.LocalMatterDecommissioner
 
 class MatterDecommissionerImpl : MatterDecommissioner {
     private val controller = LocalMatterDecommissioner()

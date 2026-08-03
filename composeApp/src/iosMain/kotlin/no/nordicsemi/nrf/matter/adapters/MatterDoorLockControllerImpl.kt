@@ -10,7 +10,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.LockDeviceState
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LocalMatterDoorController
+import iosMatter.LocalMatterDoorController
 
 class MatterDoorLockControllerImpl : MatterDoorLockController {
 

@@ -6,7 +6,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.controller.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.model.DeviceId
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LocalMatterClusterExtController
+import iosMatter.LocalMatterClusterExtController
 
 class MatterClusterExtensionControllerImpl : MatterClusterExtensionController {
 

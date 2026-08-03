@@ -264,48 +264,44 @@ Therefore, getting started requires a few non-standard integration steps.
 git, the Apple-side counterpart to the vendoring described above. It used to be resolved from
 `git@github.com:sylwester-zielinski/ios-matter.git` at an exact tag; it is now built in place.
 
-`:composeApp` declares it in [`build.gradle.kts`](./composeApp/build.gradle.kts):
+**It is not a SwiftPM dependency of the Kotlin build.** It is compiled to a static library and
+consumed through plain cinterop, so the Swift object code ends up *inside* the published artifact.
+Three Gradle tasks per iOS target do this, in [`build.gradle.kts`](./composeApp/build.gradle.kts):
 
-```kotlin
-swiftPMDependencies {
-    iosMinimumDeploymentTarget.set("26.0")
+| Task | Does |
+| --- | --- |
+| `compileIosMatterSwift<Target>` | runs `xcodebuild` on `/ios-matter`, which also resolves and builds Pulse |
+| `iosMatterStaticLib<Target>` | `libtool`s the resulting objects into `libios-matter.a` and copies the Swift-generated ObjC header and module map beside it |
+| `cinteropIosMatter<Target>` | translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib |
 
-    localSwiftPackage(
-        rootProject.layout.projectDirectory.dir("ios-matter"),
-        listOf(product("ios-matter")),
-    )
-}
-```
+`./gradlew :composeApp:iosMatterStaticLibs` builds the library for every target. Both run
+automatically as part of any iOS compile — there is nothing to invoke by hand.
 
-Kotlin generates the linked SwiftPM package under
-[`/iosApp/KotlinMultiplatformLinkedPackage`](./iosApp/KotlinMultiplatformLinkedPackage) from that
-declaration, emitting a **relative** path (`../../../../ios-matter`) into the generated manifests, so
-the checked-in scaffolding is the same on every machine.
+Only the `@objc public` surface of ios-matter crosses the boundary; the Swift-generated
+Objective-C header is the contract, which is why the Kotlin-facing classes are annotated.
+Kotlin reaches them through the `iosMatter.*` package (`iosMatter.SwiftLogger`,
+`iosMatter.LocalMatterLightController`, …).
 
-**Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the next Gradle or
-Xcode build picks it up. There is no tag to push, no version to bump, and no lockfile to realign;
-`ios-matter` has no revision to pin, so it appears in neither `Package.resolved`. Only its own
-remote dependency, [Pulse](https://github.com/kean/Pulse), is still pinned. Building from a clean
-clone also no longer needs SSH access to the ios-matter remote.
+**Why not `localSwiftPackage`.** A SwiftPM declaration is published as
+`SwiftPMDependency.Local` carrying an **absolute** path — inspect
+`matter-support-<version>-swiftpm-metadata.json` in any published artifact to see it. A consumer
+resolving `matter-support` from Maven therefore cannot find the Swift code at all, and the Swift
+sources are not in the klib either. Only the version-pinned `swiftPackage(url = ...)` form is
+publishable, and that means a second source of truth for the Swift code. Archiving the objects into
+the cinterop klib avoids both problems: `no.nordicsemi.nrf.matter:matter-support` is now
+self-contained, and Xcode needs no package graph — neither `iosApp` nor `nrfMatter` imports
+`ios_matter`, both reach it through Kotlin bridges such as `KeychainKt.prepareKeychain()`.
 
-Two things follow from being a path-based dependency rather than a versioned one:
+**Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the task inputs
+cover the sources and the manifest, so the library is rebuilt and re-archived automatically. There
+is no tag to push, no version to bump, and no lockfile to realign. Its own remote dependency,
+[Pulse](https://github.com/kean/Pulse), is still pinned by
+[`/ios-matter/Package.resolved`](./ios-matter/Package.resolved) and is linked into the same archive.
 
-- SwiftPM refuses `unsafeFlags` in a package consumed as a dependency, but exempts local ones —
-  which is what lets [`/ios-matter/Package.swift`](./ios-matter/Package.swift) keep
-  `-enable-library-evolution`. Its comment explains why that flag is needed.
-- `:shared` depends on `project(":composeApp")`, not on the published
-  `no.nordicsemi.nrf.matter:matter-support` artifact. It has to: the Xcode-side linked package is
-  generated from `:composeApp`'s `swiftPMDependencies` metadata, and going through
-  `publishToMavenLocal` would serve Xcode whatever pin was current the last time that artifact was
-  published. Note also that this metadata stores the vendored package as an **absolute** path, so if
-  `matter-support` is ever published for outside consumers, they cannot resolve it — such a
-  publication needs a versioned `swiftPackage(url = ...)` declaration instead.
-
-Changing the *shape* of the package graph — adding or removing a `swiftPackage` declaration, or a
-dependency in `/ios-matter/Package.swift` — makes Kotlin regenerate those manifests, and the first
-Xcode build after that fails by design. The header of
-[`check_swiftpm_lockfiles.sh`](./iosApp/Configuration/check_swiftpm_lockfiles.sh) documents that
-cycle and the orphaned-subpackage trap that comes with it; run the script after any such change.
+One consequence of `/ios-matter` staying a local package: SwiftPM refuses `unsafeFlags` in a package
+consumed as a dependency but exempts local ones, which is what lets
+[`/ios-matter/Package.swift`](./ios-matter/Package.swift) keep `-enable-library-evolution`. Its
+comment explains why that flag is needed.
 
 ### Build and run the Android application
 

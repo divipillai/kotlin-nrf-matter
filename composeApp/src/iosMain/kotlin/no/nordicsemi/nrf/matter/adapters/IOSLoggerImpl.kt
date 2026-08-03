@@ -12,10 +12,10 @@ import no.nordicsemi.nrf.matter.logger.IOSLogger
 import no.nordicsemi.nrf.matter.logger.LogEntity
 import no.nordicsemi.nrf.matter.logger.LogLevel
 import platform.Foundation.NSError
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LogLevelDebug
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LogLevelInfo
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.SwiftLogger
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LogEntity as SwiftLogEntity
+import iosMatter.LogLevelDebug
+import iosMatter.LogLevelInfo
+import iosMatter.SwiftLogger
+import iosMatter.LogEntity as SwiftLogEntity
 
 class IOSLoggerImpl : IOSLogger {
 

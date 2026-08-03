@@ -3,8 +3,8 @@
 package no.nordicsemi.nrf.matter.adapters
 
 import kotlinx.cinterop.ExperimentalForeignApi
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.MatterCommissioner
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.SwiftLogger
+import iosMatter.MatterCommissioner
+import iosMatter.SwiftLogger
 
 class ExtensionMatterCommissioner {
 

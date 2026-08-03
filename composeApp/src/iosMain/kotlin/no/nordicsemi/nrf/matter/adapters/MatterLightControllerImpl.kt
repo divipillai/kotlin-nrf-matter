@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.controller.MatterLightController
 import no.nordicsemi.nrf.matter.model.DeviceId
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LocalMatterLightController
+import iosMatter.LocalMatterLightController
 
 class MatterLightControllerImpl : MatterLightController {
 

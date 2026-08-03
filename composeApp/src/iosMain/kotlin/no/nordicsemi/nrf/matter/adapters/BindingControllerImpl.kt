@@ -6,7 +6,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.model.DeviceId
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LocalMatterBinder
+import iosMatter.LocalMatterBinder
 
 class BindingControllerImpl : BindingController {
     private val binder = LocalMatterBinder()

@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		A725F1C12F4DAACB005BC977 /* nrfMatter.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		A7F766423018F60400291A4D /* KotlinMultiplatformLinkedPackage in Frameworks */ = {isa = PBXBuildFile; productRef = A7F766433018F60400291A4D /* KotlinMultiplatformLinkedPackage */; };
-		A7F766443018F60400291A4E /* KotlinMultiplatformLinkedPackage in Frameworks */ = {isa = PBXBuildFile; productRef = A7F766453018F60400291A4E /* KotlinMultiplatformLinkedPackage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,7 +45,6 @@
 		503AE3C9DDF68C5089274E2D /* NRFMatterforMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NRFMatterforMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = nrfMatter.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7B81C4E2FF7EAA0000AF7E4 /* iosAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iosAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A7F76AB830191FE600291A4B /* KotlinMultiplatformLinkedPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = KotlinMultiplatformLinkedPackage; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -116,7 +113,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A7F766443018F60400291A4E /* KotlinMultiplatformLinkedPackage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -124,7 +120,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A7F766423018F60400291A4D /* KotlinMultiplatformLinkedPackage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -151,7 +146,6 @@
 		7A153F9AB70F98838999796F = {
 			isa = PBXGroup;
 			children = (
-				A7F76AB830191FE600291A4B /* KotlinMultiplatformLinkedPackage */,
 				A7B81D812FF7F490000AF7E4 /* screenshots */,
 				A7B81D7B2FF7F45D000AF7E4 /* fastlane */,
 				A7228F212FD844A4009CC829 /* ../composeApp/src */,
@@ -195,9 +189,6 @@
 				208BF3748A4E27EC7D0D131C /* iosApp */,
 			);
 			name = iosApp;
-			packageProductDependencies = (
-				A7F766453018F60400291A4E /* KotlinMultiplatformLinkedPackage */,
-			);
 			productName = iosApp;
 			productReference = 503AE3C9DDF68C5089274E2D /* NRFMatterforMobile.app */;
 			productType = "com.apple.product-type.application";
@@ -220,9 +211,6 @@
 				A725F1BB2F4DAACB005BC977 /* nrfMatter */,
 			);
 			name = nrfMatter;
-			packageProductDependencies = (
-				A7F766433018F60400291A4D /* KotlinMultiplatformLinkedPackage */,
-			);
 			productName = nrfMatter;
 			productReference = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -279,9 +267,6 @@
 			);
 			mainGroup = 7A153F9AB70F98838999796F;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				F257D65963B8EA27E3106452 /* XCLocalSwiftPackageReference "KotlinMultiplatformLinkedPackage" */,
-			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5A2551E95002C7375D5F5A16 /* Products */;
 			projectDirPath = "";
@@ -816,24 +801,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		F257D65963B8EA27E3106452 /* XCLocalSwiftPackageReference "KotlinMultiplatformLinkedPackage" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = KotlinMultiplatformLinkedPackage;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		A7F766433018F60400291A4D /* KotlinMultiplatformLinkedPackage */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = KotlinMultiplatformLinkedPackage;
-		};
-		A7F766453018F60400291A4E /* KotlinMultiplatformLinkedPackage */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = KotlinMultiplatformLinkedPackage;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1D3437AFA1B1BD836742FA45 /* Project object */;
 }

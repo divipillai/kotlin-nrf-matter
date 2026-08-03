@@ -8,7 +8,7 @@ import no.nordicsemi.nrf.matter.MatterCommissioner
 import no.nordicsemi.nrf.matter.domain.OperationResult
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import swiftPMImport.no.nordicsemi.nrf.matter.composeApp.LocalMatterCommissioner
+import iosMatter.LocalMatterCommissioner
 
 class MatterCommissionerImpl : MatterCommissioner {
 

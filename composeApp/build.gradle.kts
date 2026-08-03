@@ -46,39 +46,13 @@ kotlin {
         }
     }
 
-    // ios-matter is vendored at <repo>/ios-matter and built from there, so its
-    // sources are edited in place -- no tag, no push, no version bump.
-    //
-    // -PiosMatter.useVendored=false switches to the tagged remote instead. That is
-    // needed ONLY when publishing matter-support for outside consumers: the
-    // swiftpm-metadata.json inside that artifact records a vendored package as an
-    // absolute path on the publishing machine, which nobody else can resolve.
-    // Building, running and releasing THIS app never needs the flag -- a vendored
-    // package compiles into the app the same way, without network or SSH.
-    //
-    // Flipping it changes the shape of the package graph, so the first Xcode build
-    // afterwards fails by design; see check_swiftpm_lockfiles.sh.
     swiftPMDependencies {
         iosMinimumDeploymentTarget.set("26.0")
 
-        if (providers.gradleProperty("iosMatter.useVendored").get().toBoolean()) {
-            localSwiftPackage(
-                rootProject.layout.projectDirectory.dir("ios-matter"),
-                listOf(product("ios-matter")),
-            )
-        } else {
-            // The remote flavour gets its own lock directory. A vendored package
-            // has no revision to pin, so sharing `default` would add and remove
-            // ios-matter from a TRACKED Package.resolved on every flip, and
-            // check_swiftpm_lockfiles.sh would read that as drift against Xcode.
-            packageResolvedSynchronization = identifier("release")
-
-            swiftPackage(
-                url = url("git@github.com:sylwester-zielinski/ios-matter.git"),
-                version = exact(providers.gradleProperty("iosMatter.version").get()),
-                products = listOf(product("ios-matter")),
-            )
-        }
+        localSwiftPackage(
+            rootProject.layout.projectDirectory.dir("ios-matter"),
+            listOf(product("ios-matter")),
+        )
     }
 
     sourceSets {

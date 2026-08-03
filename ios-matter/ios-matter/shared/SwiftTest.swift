@@ -20,8 +20,4 @@ import Foundation
     @objc public func return4() -> Int {
         return 4
     }
-
-    @objc public func return5() -> Int {
-        return 5
-    }
 }

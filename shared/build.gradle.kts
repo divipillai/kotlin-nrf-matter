@@ -27,8 +27,7 @@ kotlin {
             baseName = "shared"
             isStatic = true
 
-//            export(project(":composeApp"))
-            export("no.nordicsemi.nrf.matter:matter-support:1.0.0")
+            export(project(":composeApp"))
         }
     }
 
@@ -36,11 +35,11 @@ kotlin {
         androidMain.dependencies {
         }
         commonMain.dependencies {
-//            api(project(":composeApp"))
-            // api, not implementation: androidApp depends on :shared and uses
-            // matter-support types directly (App, commonModule, androidModule,
-            // LogDatabase), so they have to stay on its compile classpath.
-            api("no.nordicsemi.nrf.matter:matter-support:1.0.0")
+            // The project, not the published matter-support artifact: ios-matter is
+            // now a local SwiftPM package declared by :composeApp, and its
+            // swiftPMDependencies metadata has to reach the Xcode-side linked
+            // package without a publishToMavenLocal round trip in between.
+            api(project(":composeApp"))
 
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.jetbrains.compose.resources)

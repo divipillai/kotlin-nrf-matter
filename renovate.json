@@ -2,9 +2,9 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base",
-    ":dependencyDashboard",
-    "schedule:daily"
+    ":dependencyDashboard"
   ],
+  "deleteBranchAfterMerge": true,
   "packageRules": [
     {
       "description": "Group all non-major updates together",

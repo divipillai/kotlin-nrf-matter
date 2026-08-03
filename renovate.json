@@ -5,6 +5,7 @@
     ":dependencyDashboard",
     "schedule:daily"
   ],
+  "deleteBranchAfterMerge": true,
   "packageRules": [
     {
       "description": "Group all non-major updates together",

@@ -20,7 +20,7 @@ import shared
 /// selecting the WiFi or Thread network the device will operate on.
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     
-    private let commissioner = ExtensionMatterCommissioner()
+    private let commissioner = AppExtensionMatterCommissioner()
 
     /// Returns the list of rooms available in the given home for placing a newly added device.
     ///
@@ -41,13 +41,13 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     ///   - commissioningID: The unique identifier for this commissioning attempt.
     /// - Throws: An error if commissioning fails.
     override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
-//        SwiftLogger.info("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
+        SwiftLogger.info("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
 
-//        let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
-//        guard let nodeId = storage.getNumber(key: SharedConsts.nodeIdKey) else {
-//            throw CommissioningError.missingNodeId
-//        }
-        try await commissioner.commission()
+        let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
+        guard let nodeId = storage.getNumber(key: SharedConsts.nodeIdKey) else {
+            throw CommissioningError.missingNodeId
+        }
+        try await commissioner.commission(payload: onboardingPayload, deviceId: 1)
     }
 
     /// Finishes configuring a newly added device with its chosen name and room, and records the result in shared storage.

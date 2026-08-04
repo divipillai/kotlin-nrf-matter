@@ -27,86 +27,124 @@ class LocalMatterClusterDiscovery {
         baseDevice = MTRBaseDevice(nodeID: nodeId, controller: controller)
     }
 
-    /// Reads all available metadata for the device and assembles it into a `Device`.
-    ///
-    /// Vendor name, vendor id, product name, and product id are read from the root endpoint
-    /// (0), while device type, client clusters, and server clusters are read from every other
-    /// endpoint.
-    ///
-    /// - Returns: A `Device` containing all discovered metadata.
-    /// - Throws: An error if any of the underlying attribute reads fail.
     func discoverClusters() async throws -> Device {
         let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         let baseDevice = MTRBaseDevice(nodeID: nodeId, controller: controller)
-        let cluster = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
         
-        guard let cluster else { throw OperationError.unknown }
+        let basicInfo = try await readBasicInformation(baseDevice: baseDevice)
         
-        let deviceId = nodeId
-        let name = "Matter device: \(nodeId)"
-        let vendorId = try await cluster.getVendorId()
-        let vendorName = try await cluster.getVendorName()
-        let productId = try await cluster.getProductId()
-        let productName = try await cluster.getProductName()
-        let uniqueId = try await cluster.getUniqueId()
-        let swVersion = try await cluster.getSoftwareVersion()
-        let specVersion = try await cluster.getSpecificationVersion()
-        let serialNumber = try? await cluster.getSerialNumber()
-//
-//        self.stage = Stage.readDescriptorCluster
-        
-        let mainDescriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: DispatchQueue.global())
-        guard let mainDescriptor else { throw OperationError.unknown }
-        let _ = try await mainDescriptor.getDeviceType(endpoint: 0)
-        try await mainDescriptor.readEndpoint0()
-
-        var deviceMatterInfo: [DeviceMatterInfo] = []
-        let endpoints = try await mainDescriptor.readEndpoints()
-        
-        for endpoint in endpoints {
-            let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: endpoint, queue: DispatchQueue.global())
-            guard let descriptor else { continue }
-            
-            let deviceTypes = try await descriptor.getDeviceType(endpoint: endpoint)
-            let clientClusters = try await descriptor.readClientClusters(endpoint: endpoint)
-            let serverClusters = try await descriptor.readServerClusters(endpoint: endpoint)
-
-            let manufacturerSpecificData: ManufacturerSpecificData?
-            if (serverClusters.contains(0xFFF1FC01)) {
-                let controller = LocalMatterCustomClusterController()
-                manufacturerSpecificData = try await controller.getData(deviceId: deviceId, endpoint: endpoint)
-            } else {
-                manufacturerSpecificData = nil
-            }
-
-            let newInfo = DeviceMatterInfo(
-                endpoint: endpoint,
-                types: deviceTypes.map { $0.deviceType },
-                serverClusters: serverClusters.map { $0 },
-                clientClusters: clientClusters.map { $0 },
-                manufacturerSpecificData: manufacturerSpecificData,
-            )
-            deviceMatterInfo.append(newInfo)
+        guard let mainDescriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: .global()) else {
+            throw OperationError.unknown
         }
         
-        let deviceType = deviceMatterInfo.flatMap { $0.types }.first
-
+        let endpoints: [NSNumber]
+        do {
+            endpoints = try await mainDescriptor.readEndpoints()
+        } catch {
+            throw (error as NSError).withMoreUserInfo(deviceId: nodeId, stage: CommissioningStage.readDescriptorCluster)
+        }
+        
+        let deviceMatterInfo = await withTaskGroup(of: DeviceMatterInfo?.self) { group in
+            for endpoint in endpoints {
+                group.addTask {
+                    try? await self.fetchEndpointInfo(baseDevice: baseDevice, endpoint: endpoint)
+                }
+            }
+            
+            var results: [DeviceMatterInfo] = []
+            for await info in group {
+                if let info = info { results.append(info) }
+            }
+            return results
+        }
+        
+        let primaryDeviceType = deviceMatterInfo.compactMap { $0.types.first }.first ?? 0
+        
         SwiftLogger.debug("discoverClusters - finished")
         
         return Device(
-            deviceId: deviceId,
+            deviceId: nodeId,
             dateCommissioned: NSNumber(value: Date().timeIntervalSince1970 * 1000),
-            vendorId: vendorId.stringValue,
-            producId: productId.stringValue,
-            deviceType: deviceType!,
-            name: name,
-            productName: productName,
-            vendorName: vendorName,
-            uniqueId: uniqueId,
-            softwareVersion: swVersion,
-            specificationVersion: specVersion,
-            serialNumber: serialNumber,
-            deviceMatterInfo: deviceMatterInfo,
+            vendorId: basicInfo.vendorId.stringValue,
+            producId: basicInfo.productId.stringValue,
+            deviceType: primaryDeviceType,
+            name: "Matter device: \(nodeId)",
+            productName: basicInfo.productName,
+            vendorName: basicInfo.vendorName,
+            uniqueId: basicInfo.uniqueId,
+            softwareVersion: basicInfo.swVersion,
+            specificationVersion: basicInfo.specVersion,
+            serialNumber: basicInfo.serialNumber,
+            deviceMatterInfo: deviceMatterInfo
+        )
+    }
+
+    private struct BasicDeviceDetails {
+        let vendorId: NSNumber
+        let vendorName: String
+        let productId: NSNumber
+        let productName: String
+        let uniqueId: String
+        let swVersion: String
+        let specVersion: NSNumber
+        let serialNumber: String?
+    }
+
+    private func readBasicInformation(baseDevice: MTRBaseDevice) async throws -> BasicDeviceDetails {
+        guard let cluster = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: .global()) else {
+            throw OperationError.unknown
+        }
+        
+        do {
+            async let vendorId = cluster.getVendorId()
+            async let vendorName = cluster.getVendorName()
+            async let productId = cluster.getProductId()
+            async let productName = cluster.getProductName()
+            async let uniqueId = cluster.getUniqueId()
+            async let swVersion = cluster.getSoftwareVersion()
+            async let specVersion = cluster.getSpecificationVersion()
+            async let serialNumber = cluster.getSerialNumber()
+            
+            return try await BasicDeviceDetails(
+                vendorId: vendorId,
+                vendorName: vendorName,
+                productId: productId,
+                productName: productName,
+                uniqueId: uniqueId,
+                swVersion: swVersion,
+                specVersion: specVersion,
+                serialNumber: try? serialNumber
+            )
+        } catch {
+            throw (error as NSError).withMoreUserInfo(deviceId: nodeId, stage: CommissioningStage.readBaseInfo)
+        }
+    }
+
+    private func fetchEndpointInfo(baseDevice: MTRBaseDevice, endpoint: NSNumber) async throws -> DeviceMatterInfo {
+        guard let descriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: endpoint, queue: .global()) else {
+            throw OperationError.unknown
+        }
+        
+        async let deviceTypes = descriptor.getDeviceType(endpoint: endpoint)
+        async let clientClusters = descriptor.readClientClusters(endpoint: endpoint)
+        async let serverClusters = descriptor.readServerClusters(endpoint: endpoint)
+        
+        let (fetchedTypes, fetchedClients, fetchedServers) = try await (deviceTypes, clientClusters, serverClusters)
+        
+        let manufacturerData: ManufacturerSpecificData?
+        if fetchedServers.contains(0xFFF1FC01) {
+            let controller = LocalMatterCustomClusterController()
+            manufacturerData = try await controller.getData(deviceId: nodeId, endpoint: endpoint)
+        } else {
+            manufacturerData = nil
+        }
+        
+        return DeviceMatterInfo(
+            endpoint: endpoint,
+            types: fetchedTypes.map { $0.deviceType },
+            serverClusters: fetchedServers,
+            clientClusters: fetchedClients,
+            manufacturerSpecificData: manufacturerData
         )
     }
 }

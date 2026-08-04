@@ -8,24 +8,10 @@
 import Matter
 import MatterSupport
 
-enum Stage {
+@objc public enum CommissioningStage: Int {
     case commissioning
     case readBaseInfo
     case readDescriptorCluster
-}
-
-struct CommissioningException : Error {
-    let deviceId: NSNumber
-    let stage: Stage
-    let errorCode: Int?
-    let displayMessage: String
-    let fabricId: Int
-}
-
-/// Keeps the failure message readable once the error is flattened into an `NSError` on its way
-/// through the Objective-C bridge into Kotlin.
-extension CommissioningException: LocalizedError {
-    var errorDescription: String? { displayMessage }
 }
 
 /// Commissions a new Matter device into the local fabric.
@@ -65,41 +51,47 @@ extension CommissioningException: LocalizedError {
         do {
             try await request.perform()
         } catch {
-            let error = error as NSError
-            throw CommissioningException(
+            let nsError = error as NSError
+            throw nsError.withMoreUserInfo(
                 deviceId: deviceId,
-                stage: Stage.commissioning,
-                errorCode: error.code,
-                displayMessage: error.localizedDescription,
-                fabricId: 1
+                stage: CommissioningStage.commissioning
             )
         }
         
         let result = storage.getBool(key: SharedConsts.resultKey) ?? false
         guard result else {
-            throw CommissioningException(
+            let nsError = NSError()
+            throw nsError.withMoreUserInfo(
                 deviceId: deviceId,
-                stage: Stage.commissioning,
-                errorCode: nil,
+                stage: CommissioningStage.commissioning,
                 displayMessage: "Cancelled.",
-                fabricId: 1
             )
         }
         
         let descriptorCluster = try LocalMatterClusterDiscovery(nodeId: deviceId)
         
-        do {
-            let device = try await descriptorCluster.discoverClusters()
-            return device
-        } catch {
-            let error = error as NSError
-            throw CommissioningException(
-                deviceId: deviceId,
-                stage: Stage.readDescriptorCluster, //todo
-                errorCode: error.code,
-                displayMessage: error.localizedDescription,
-                fabricId: 1
-            )
-        }
+        let device = try await descriptorCluster.discoverClusters()
+        return device
+    }
+}
+
+extension NSError {
+    
+    func withMoreUserInfo(
+        deviceId: NSNumber,
+        stage: CommissioningStage,
+        displayMessage: String? = nil,
+    ) -> NSError {
+        var userInfo = userInfo
+        userInfo["deviceId"] = deviceId
+        userInfo["stage"] = stage.rawValue
+        userInfo["displayMessage"] = displayMessage ?? localizedDescription
+        userInfo["fabricId"] = 1
+
+        return NSError(
+            domain: domain,
+            code: code,
+            userInfo: userInfo
+        )
     }
 }

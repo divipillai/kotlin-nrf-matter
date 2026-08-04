@@ -43,6 +43,7 @@
 
 /* Begin PBXFileReference section */
 		503AE3C9DDF68C5089274E2D /* NRFMatterforMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NRFMatterforMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A71640AB3021D4D300531E94 /* ios-matter */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "ios-matter"; path = "../ios-matter"; sourceTree = SOURCE_ROOT; };
 		A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = nrfMatter.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7B81C4E2FF7EAA0000AF7E4 /* iosAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iosAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -146,6 +147,7 @@
 		7A153F9AB70F98838999796F = {
 			isa = PBXGroup;
 			children = (
+				A71640AB3021D4D300531E94 /* ios-matter */,
 				A7B81D812FF7F490000AF7E4 /* screenshots */,
 				A7B81D7B2FF7F45D000AF7E4 /* fastlane */,
 				A7228F212FD844A4009CC829 /* ../composeApp/src */,

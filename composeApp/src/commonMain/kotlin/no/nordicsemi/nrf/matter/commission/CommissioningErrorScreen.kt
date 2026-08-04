@@ -59,7 +59,7 @@ data class CommissioningException(
     val errorCode: Int?,
     val displayMessage: String,
     val fabricId: Int = 1,
-) : Throwable(displayMessage) {
+) : Exception(displayMessage) {
 
     val displayFabricId = fabricId.toHexString(ShortHexFormat)
     val displayDeviceId = deviceId?.longValue?.toHexString(ShortHexFormat) ?: "unknown"

@@ -21,7 +21,7 @@ import Foundation
     /// reinstalled app could pick up a stale private key that no longer matches its fabric.
     @objc public static func initKeychain() {
         let helper = KeypairHelper(logTag: "KeypairInitializer")
-        let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
+        let storage = SharedStorage()
         
         if (storage.getBool(key: isInitializedKey) != true) {
             SwiftLogger.debug("Detected fresh app install. Clearing stale keychain data.")

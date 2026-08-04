@@ -43,7 +43,7 @@ import MatterSupport
         
         let request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
         
-        let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
+        let storage = SharedStorage()
         let _ = storage.removeStorageData(forKey: SharedConsts.resultKey)
         storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.local.rawValue)
         storage.storeNumber(key: SharedConsts.nodeIdKey, value: deviceId)

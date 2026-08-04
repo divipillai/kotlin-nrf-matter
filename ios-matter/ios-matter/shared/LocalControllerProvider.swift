@@ -64,7 +64,7 @@ public class LocalControllerProvider {
             return controller
         }
 
-        let storage = SharedStorage(suitName: SharedConsts.localStorage)
+        let storage = MatterStorage()
         let factoryParams = MTRDeviceControllerFactoryParams(storage: storage)
         
         if (!factory.isRunning) {
@@ -103,7 +103,7 @@ public class LocalControllerProvider {
     ///
     /// - Parameter storage: The storage to load the IPK from and persist it to.
     /// - Returns: The IPK data, or `nil` if it could not be loaded or generated.
-    private func loadOrCreateIPK(storage: SharedStorage) -> Data? {
+    private func loadOrCreateIPK(storage: MatterStorage) -> Data? {
         if let storedIpk = storage.getKey(forKey: "MatterIPK") {
             return storedIpk as Data
         }

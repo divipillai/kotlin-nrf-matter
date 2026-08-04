@@ -3,10 +3,11 @@
 package no.nordicsemi.nrf.matter.adapters
 
 import iosMatter.MatterCommissioner
+import iosMatter.SharedConsts
+import iosMatter.SharedStorage
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.logger.NordicLogger
-import platform.Foundation.NSNumber
 
 class AppExtensionMatterCommissioner {
 
@@ -18,8 +19,10 @@ class AppExtensionMatterCommissioner {
 
     suspend fun commissionDevice(payload: String) {
         NordicLogger.info("Commission Matter device with payload: $payload")
+        val sharedStorage = SharedStorage()
+        val nodeId = sharedStorage.getNumberWithKey(SharedConsts.nodeIdKey)!!
         return suspendCancellableCoroutine { continuation ->
-            commissioner.commissionWithPayload(payload, NSNumber(1)) { error ->
+            commissioner.commissionWithPayload(payload, nodeId) { error ->
                 continuation.handleResult(error)
             }
         }

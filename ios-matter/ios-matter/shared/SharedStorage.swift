@@ -14,16 +14,9 @@ import Matter
 ///
 /// Also used for sharing data between the main app and the app extension.
 /// It uses ``UserDefaults`` with app groups under the hood.
-@objc public final class SharedStorage : NSObject, MTRStorage {
+@objc public final class SharedStorage : NSObject {
 
-    private let defaults: UserDefaults
-
-    /// Creates a storage instance backed by the shared ``UserDefaults`` for the given app group.
-    ///
-    /// - Parameter suitName: The app group identifier to use as the ``UserDefaults`` suite name.
-    @objc public init(suitName: String) {
-        defaults = UserDefaults(suiteName: suitName)!
-    }
+    private let defaults: UserDefaults = UserDefaults(suiteName: SharedConsts.sharedStorage)!
 
     /// Stores a string value for the given key.
     @objc public func storeString(key: String, value: String) {

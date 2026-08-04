@@ -20,9 +20,11 @@ import Matter
     @objc public let name: String
     @objc public let productName: String
     @objc public let vendorName: String
-    @objc public let uniqueId: String
+    /// Mandatory only from spec 1.4; `nil` if the device does not report it.
+    @objc public let uniqueId: String?
     @objc public let softwareVersion: String
-    @objc public let specificationVersion: NSNumber
+    /// Mandatory only from spec 1.3; `nil` if the device does not report it.
+    @objc public let specificationVersion: NSNumber?
     @objc public let serialNumber: String?
     @objc public let deviceMatterInfo: [DeviceMatterInfo]
 
@@ -35,9 +37,9 @@ import Matter
         name: String,
         productName: String,
         vendorName: String,
-        uniqueId: String,
+        uniqueId: String?,
         softwareVersion: String,
-        specificationVersion: NSNumber,
+        specificationVersion: NSNumber?,
         serialNumber: String?,
         deviceMatterInfo: [DeviceMatterInfo]
     ) {

@@ -22,7 +22,7 @@ fun iosMatter.Device.toDomain(): Device {
         vendorName = this.vendorName,
         uniqueId = this.uniqueId,
         softwareVersion = this.softwareVersion,
-        specificationVersion = this.specificationVersion.longValue,
+        specificationVersion = this.specificationVersion?.longValue,
         serialNumer = this.serialNumber,
         deviceMatterInfo = this.deviceMatterInfo
             .filterIsInstance<iosMatter.DeviceMatterInfo>()

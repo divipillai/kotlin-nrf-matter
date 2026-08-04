@@ -28,9 +28,6 @@ class LocalMatterClusterDiscovery {
     }
 
     func discoverClusters() async throws -> Device {
-        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
-        let baseDevice = MTRBaseDevice(nodeID: nodeId, controller: controller)
-        
         let basicInfo = try await readBasicInformation(baseDevice: baseDevice)
         
         guard let mainDescriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: .global()) else {
@@ -75,40 +72,59 @@ class LocalMatterClusterDiscovery {
         let vendorName: String
         let productId: NSNumber
         let productName: String
-        let uniqueId: String
+        let uniqueId: String?
         let swVersion: String
-        let specVersion: NSNumber
+        let specVersion: NSNumber?
         let serialNumber: String?
     }
 
+    /// Reads the Basic Information cluster on the root endpoint (0).
+    ///
+    /// The whole cluster is fetched with a single wildcard read instead of one read per
+    /// attribute. Attributes the device does not implement are then simply absent from the
+    /// report, whereas reading them by ID fails the read with `UNSUPPORTED_ATTRIBUTE` (0x86) —
+    /// `UniqueID` is only mandatory from spec 1.4, `SpecificationVersion` from 1.3, and
+    /// `SerialNumber` is always optional, so older firmware rejects them. It also keeps the
+    /// device from having to answer eight separate exchanges, which is where slow transports
+    /// start timing out.
+    ///
+    /// - Parameter baseDevice: The device to read from.
+    /// - Returns: The attributes that the device reported.
+    /// - Throws: An error if the read fails, or if the report is missing an attribute that is
+    ///   mandatory in every version of the cluster.
     private func readBasicInformation(baseDevice: MTRBaseDevice) async throws -> BasicDeviceDetails {
-        guard let cluster = MTRBaseClusterBasicInformation(device: baseDevice, endpointID: 0, queue: .global()) else {
-            throw OperationError.unknown
-        }
-        
+        SwiftLogger.debug("Basic Information Cluster - reading all attributes")
+
+        let values: [NSNumber: Any]
         do {
-            let vendorId = try await cluster.getVendorId()
-            let vendorName = try await cluster.getVendorName()
-            let productId = try await cluster.getProductId()
-            let productName = try await cluster.getProductName()
-            let uniqueId = try await cluster.getUniqueId()
-            let swVersion = try await cluster.getSoftwareVersion()
-            let specVersion = try await cluster.getSpecificationVersion()
-            let serialNumber = try await cluster.getSerialNumber()
-            
-            return BasicDeviceDetails(
-                vendorId: vendorId,
-                vendorName: vendorName,
-                productId: productId,
-                productName: productName,
-                uniqueId: uniqueId,
-                swVersion: swVersion,
-                specVersion: specVersion,
-                serialNumber: serialNumber
-            )
+            values = try await baseDevice.readAllAttributes(endpoint: 0, cluster: .basicInformationID)
         } catch {
             throw (error as NSError).withMoreUserInfo(deviceId: nodeId, stage: CommissioningStage.readBaseInfo)
         }
+
+        guard let vendorId: NSNumber = values.attribute(.clusterBasicInformationAttributeVendorIDID),
+              let vendorName: String = values.attribute(.clusterBasicInformationAttributeVendorNameID),
+              let productId: NSNumber = values.attribute(.clusterBasicInformationAttributeProductIDID),
+              let productName: String = values.attribute(.clusterBasicInformationAttributeProductNameID),
+              let swVersion: String = values.attribute(.clusterBasicInformationAttributeSoftwareVersionStringID)
+        else {
+            throw (OperationError.missingAttribute as NSError).withMoreUserInfo(
+                deviceId: nodeId,
+                stage: CommissioningStage.readBaseInfo,
+                displayMessage: "The device did not report its basic information.",
+            )
+        }
+
+        return BasicDeviceDetails(
+            vendorId: vendorId,
+            vendorName: vendorName,
+            productId: productId,
+            productName: productName,
+            uniqueId: values.attribute(.clusterBasicInformationAttributeUniqueIDID),
+            swVersion: swVersion,
+            specVersion: values.attribute(.clusterBasicInformationAttributeSpecificationVersionID),
+            serialNumber: values.attribute(.clusterBasicInformationAttributeSerialNumberID)
+        )
     }
 
     private func fetchEndpointInfo(baseDevice: MTRBaseDevice, endpoint: NSNumber) async throws -> DeviceMatterInfo {
@@ -138,8 +154,59 @@ class LocalMatterClusterDiscovery {
     }
 }
 
+private extension MTRBaseDevice {
+
+    /// Reads every attribute the device implements for a cluster in a single interaction.
+    ///
+    /// The read uses a wildcard attribute path, so unsupported attributes are left out of the
+    /// report rather than failing the read, and per-path errors are logged and skipped instead
+    /// of propagated.
+    ///
+    /// - Parameters:
+    ///   - endpoint: The endpoint ID hosting the cluster.
+    ///   - cluster: The cluster to read.
+    /// - Returns: The attribute values that could be read, keyed by attribute ID.
+    /// - Throws: An error if the read itself fails.
+    func readAllAttributes(endpoint: NSNumber, cluster: MTRClusterIDType) async throws -> [NSNumber: Any] {
+        let report = try await readAttributes(
+            withEndpointID: endpoint,
+            clusterID: NSNumber(value: cluster.rawValue),
+            attributeID: nil,
+            params: nil,
+            queue: .global()
+        )
+
+        var values: [NSNumber: Any] = [:]
+        for entry in report {
+            guard let path = entry["attributePath"] as? MTRAttributePath else { continue }
+
+            if let error = entry["error"] as? NSError {
+                SwiftLogger.debug("Attribute \(path.attribute) not readable: \(error.localizedDescription)")
+                continue
+            }
+            guard let value = try? entry.readAny() else { continue }
+
+            values[path.attribute] = value
+        }
+
+        SwiftLogger.debug("Endpoint \(endpoint), cluster \(cluster.rawValue) - read attributes: \(values)")
+        return values
+    }
+}
+
+private extension [NSNumber: Any] {
+
+    /// Looks up an attribute value in a report keyed by attribute ID.
+    ///
+    /// - Parameter id: The attribute ID to look up.
+    /// - Returns: The value if the device reported it as a `T`, otherwise `nil`.
+    func attribute<T>(_ id: MTRAttributeIDType) -> T? {
+        self[NSNumber(value: id.rawValue)] as? T
+    }
+}
+
 private extension MTRBaseClusterDescriptor {
-    
+
     /// Reads and logs the device type, client clusters, and server clusters for the root
     /// endpoint (0).
     func readEndpoint0() async throws {
@@ -209,107 +276,5 @@ private extension MTRBaseClusterDescriptor {
         let result = (try await readAttributeClientList()).map { $0 as! NSNumber}
         SwiftLogger.debug("Supported client clusters: \(result)")
         return result
-    }
-}
-
-private extension MTRBaseClusterBasicInformation {
-    
-    /// Reads the device name (node label) from the Basic Information cluster.
-    ///
-    /// - Returns: The device's node label.
-    /// - Throws: An error if the attribute read fails.
-    func getName() async throws -> String {
-        SwiftLogger.debug("Basic Information Cluster - getName()")
-        let name = try await readAttributeNodeLabel()
-        SwiftLogger.debug("Name: \(name)")
-        return name
-    }
-    
-    /// Reads the product name from the Basic Information cluster.
-    ///
-    /// - Returns: The product name.
-    /// - Throws: An error if the attribute read fails.
-    func getProductName() async throws -> String {
-        SwiftLogger.debug("Basic Information Cluster - getProductName()")
-        let productName = try await readAttributeProductName()
-        SwiftLogger.debug("ProductName: \(productName)")
-        return productName
-    }
-    
-    /// Reads the product ID from the Basic Information cluster.
-    ///
-    /// - Returns: The product ID.
-    /// - Throws: An error if the attribute read fails.
-    func getProductId() async throws -> NSNumber {
-        SwiftLogger.debug("Basic Information Cluster - getProductId()")
-        let productId = try await readAttributeProductID()
-        SwiftLogger.debug("ProductId: \(productId)")
-        return productId
-    }
-    
-    /// Reads the vendor name from the Basic Information cluster.
-    ///
-    /// - Returns: The vendor name.
-    /// - Throws: An error if the attribute read fails.
-    func getVendorName() async throws -> String {
-        SwiftLogger.debug("Basic Information Cluster - getVendorName()")
-        let vendorName = try await readAttributeVendorName()
-        SwiftLogger.debug("VendorName: \(vendorName)")
-        return vendorName
-    }
-    
-    /// Reads the vendor ID from the Basic Information cluster.
-    ///
-    /// - Returns: The vendor ID.
-    /// - Throws: An error if the attribute read fails.
-    func getVendorId() async throws -> NSNumber {
-        SwiftLogger.debug("Basic Information Cluster - getVendorId()")
-        let vendorId = try await readAttributeVendorID()
-        SwiftLogger.debug("VendorId: \(vendorId)")
-        return vendorId
-    }
-    
-    /// Reads the unique ID from the Basic Information cluster.
-    ///
-    /// - Returns: The device's unique ID.
-    /// - Throws: An error if the attribute read fails.
-    func getUniqueId() async throws -> String {
-        SwiftLogger.debug("Basic Information Cluster - getUniqueId()")
-        let uniqueId = try await readAttributeUniqueID()
-        SwiftLogger.debug("UniqueId: \(uniqueId)")
-        return uniqueId
-    }
-    
-    /// Reads the software version string from the Basic Information cluster.
-    ///
-    /// - Returns: The software version string.
-    /// - Throws: An error if the attribute read fails.
-    func getSoftwareVersion() async throws -> String {
-        SwiftLogger.debug("Basic Information Cluster - getSoftwareVersion()")
-        let swVersion = try await readAttributeSoftwareVersionString()
-        SwiftLogger.debug("Software version: \(swVersion)")
-        return swVersion
-    }
-    
-    /// Reads the Matter specification version from the Basic Information cluster.
-    ///
-    /// - Returns: The specification version.
-    /// - Throws: An error if the attribute read fails.
-    func getSpecificationVersion() async throws -> NSNumber {
-        SwiftLogger.debug("Basic Information Cluster - getSpecificationVersion()")
-        let specVersion = try await readAttributeSpecificationVersion()
-        SwiftLogger.debug("Specification version: \(specVersion)")
-        return specVersion
-    }
-    
-    /// Reads the serial number from the Basic Information cluster.
-    ///
-    /// - Returns: The device's serial number.
-    /// - Throws: An error if the attribute read fails.
-    func getSerialNumber() async throws -> String {
-        SwiftLogger.debug("Basic Information Cluster - getSerialNumber()")
-        let serialNumber = try await readAttributeSerialNumber()
-        SwiftLogger.debug("Serial number: \(serialNumber)")
-        return serialNumber
     }
 }

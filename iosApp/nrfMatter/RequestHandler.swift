@@ -47,7 +47,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     ///   - name: The display name chosen for the device.
     ///   - room: The room the device was placed in, or `nil` if no room was selected.
     override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
-        commissioner.releaseCommissioner()
+        commissioner.configureDevice()
     }
 
     /// Validates the device credential presented during commissioning.

@@ -44,18 +44,9 @@ class LocalMatterClusterDiscovery {
             throw (error as NSError).withMoreUserInfo(deviceId: nodeId, stage: CommissioningStage.readDescriptorCluster)
         }
         
-        let deviceMatterInfo = await withTaskGroup(of: DeviceMatterInfo?.self) { group in
-            for endpoint in endpoints {
-                group.addTask {
-                    try? await self.fetchEndpointInfo(baseDevice: baseDevice, endpoint: endpoint)
-                }
-            }
-            
-            var results: [DeviceMatterInfo] = []
-            for await info in group {
-                if let info = info { results.append(info) }
-            }
-            return results
+        var deviceMatterInfo: [DeviceMatterInfo] = []
+        for endpoint in endpoints {
+            deviceMatterInfo.append(try await self.fetchEndpointInfo(baseDevice: baseDevice, endpoint: endpoint))
         }
         
         let primaryDeviceType = deviceMatterInfo.compactMap { $0.types.first }.first ?? 0
@@ -96,16 +87,16 @@ class LocalMatterClusterDiscovery {
         }
         
         do {
-            async let vendorId = cluster.getVendorId()
-            async let vendorName = cluster.getVendorName()
-            async let productId = cluster.getProductId()
-            async let productName = cluster.getProductName()
-            async let uniqueId = cluster.getUniqueId()
-            async let swVersion = cluster.getSoftwareVersion()
-            async let specVersion = cluster.getSpecificationVersion()
-            async let serialNumber = cluster.getSerialNumber()
+            let vendorId = try await cluster.getVendorId()
+            let vendorName = try await cluster.getVendorName()
+            let productId = try await cluster.getProductId()
+            let productName = try await cluster.getProductName()
+            let uniqueId = try await cluster.getUniqueId()
+            let swVersion = try await cluster.getSoftwareVersion()
+            let specVersion = try await cluster.getSpecificationVersion()
+            let serialNumber = try await cluster.getSerialNumber()
             
-            return try await BasicDeviceDetails(
+            return BasicDeviceDetails(
                 vendorId: vendorId,
                 vendorName: vendorName,
                 productId: productId,
@@ -113,7 +104,7 @@ class LocalMatterClusterDiscovery {
                 uniqueId: uniqueId,
                 swVersion: swVersion,
                 specVersion: specVersion,
-                serialNumber: try? serialNumber
+                serialNumber: serialNumber
             )
         } catch {
             throw (error as NSError).withMoreUserInfo(deviceId: nodeId, stage: CommissioningStage.readBaseInfo)
@@ -125,14 +116,12 @@ class LocalMatterClusterDiscovery {
             throw OperationError.unknown
         }
         
-        async let deviceTypes = descriptor.getDeviceType(endpoint: endpoint)
-        async let clientClusters = descriptor.readClientClusters(endpoint: endpoint)
-        async let serverClusters = descriptor.readServerClusters(endpoint: endpoint)
-        
-        let (fetchedTypes, fetchedClients, fetchedServers) = try await (deviceTypes, clientClusters, serverClusters)
+        let deviceTypes = try await descriptor.getDeviceType(endpoint: endpoint)
+        let clientClusters = try await descriptor.readClientClusters(endpoint: endpoint)
+        let serverClusters = try await descriptor.readServerClusters(endpoint: endpoint)
         
         let manufacturerData: ManufacturerSpecificData?
-        if fetchedServers.contains(0xFFF1FC01) {
+        if serverClusters.contains(0xFFF1FC01) {
             let controller = LocalMatterCustomClusterController()
             manufacturerData = try await controller.getData(deviceId: nodeId, endpoint: endpoint)
         } else {
@@ -141,9 +130,9 @@ class LocalMatterClusterDiscovery {
         
         return DeviceMatterInfo(
             endpoint: endpoint,
-            types: fetchedTypes.map { $0.deviceType },
-            serverClusters: fetchedServers,
-            clientClusters: fetchedClients,
+            types: deviceTypes.map { $0.deviceType },
+            serverClusters: serverClusters,
+            clientClusters: clientClusters,
             manufacturerSpecificData: manufacturerData
         )
     }

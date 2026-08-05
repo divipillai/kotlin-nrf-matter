@@ -51,7 +51,7 @@ To explore and test additional device types, a compatible Nordic development kit
 3. Commission it from this app like a real device — it shows a QR code and joins over the macOS
    existing Wi-Fi connection. (Make sure that the Google Home app is installed to commission the device
    in the
-   Android platform). // todo: verify it.
+   Android platform).
 4. The Mac running MVD and the phone **must be on the same Wi-Fi network**.
 5. Once commissioned, you can control the simulated device from this app.
    

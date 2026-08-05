@@ -1,19 +1,22 @@
 //
 //  SharedStorage.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 20/03/2026.
 //
 
 import Matter
 
-/// A  storage class used for storing key-value entires.
+/// A storage class used for storing key-value entries.
 ///
-/// It is required by the Matter framework for storing the fabric (for the
-/// local fabric) and all related data.
+/// Used for sharing data between the main app and the app extension, which run in separate
+/// processes: `UserDefaults` over the ``SharedConsts/sharedStorage`` app group under the hood.
 ///
-/// Also used for sharing data between the main app and the app extension.
-/// It uses ``UserDefaults`` with app groups under the hood.
+/// The fabric that the Matter framework itself persists lives in the separate
+/// ``SharedConsts/localStorage`` group, written through ``MatterStorage`` — not through this class.
+///
+/// ``storageData(forKey:)``/``setStorageData(_:forKey:)`` and ``getKey(forKey:)``/``setKey(_:forKey:)``
+/// are two names for the same behaviour, kept because both spellings are already called.
 @objc public final class SharedStorage : NSObject {
 
     private let defaults: UserDefaults = UserDefaults(suiteName: SharedConsts.sharedStorage)!
@@ -43,7 +46,12 @@ import Matter
         defaults.set(value, forKey: key)
     }
 
-    /// Returns the boolean value stored for the given key.
+    /// Returns the boolean value stored for the given key, or `false` if the key is absent.
+    ///
+    /// Never returns `nil` despite the optional return type — `UserDefaults.bool(forKey:)` cannot
+    /// distinguish "absent" from "false", so callers cannot use this to test for presence.
+    ///
+    /// Not exposed to Objective-C, so this one is unreachable from Kotlin.
     public func getBool(key: String) -> Bool? {
         defaults.bool(forKey: key)
     }

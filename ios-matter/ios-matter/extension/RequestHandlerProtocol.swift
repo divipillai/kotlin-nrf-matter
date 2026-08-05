@@ -1,6 +1,6 @@
 //
 //  RequestHandlerProtocol.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 24/03/2026.
 //

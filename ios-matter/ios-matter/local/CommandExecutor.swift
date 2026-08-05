@@ -1,6 +1,6 @@
 //
 //  CommandExecutor.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 23/04/2026.
 //

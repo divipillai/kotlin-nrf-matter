@@ -7,6 +7,15 @@
 
 import Matter
 
+/// `MTRStorage` implementation backing the local fabric.
+///
+/// Handed to `MTRDeviceControllerFactoryParams`, so the Matter framework persists the fabric,
+/// operational certificates and node data through it. ``LocalControllerProvider`` also stores the
+/// IPK here.
+///
+/// Keyed into the ``SharedConsts/localStorage`` app group, which the app and the commissioning
+/// extension both reach — the same fabric has to be visible from both processes. Deleting that
+/// group's contents drops the fabric and orphans every commissioned device.
 final class MatterStorage : NSObject, MTRStorage {
 
     private let defaults: UserDefaults = UserDefaults(suiteName: SharedConsts.localStorage)!

@@ -12,11 +12,17 @@ import Matter
 /// Declared as an `@objc` class rather than a struct so it can cross the Objective-C bridge
 /// into Kotlin/Native.
 @objc public final class Device: NSObject {
+    /// The Matter node ID assigned at commissioning.
     @objc public let deviceId: NSNumber
+    /// Milliseconds since the Unix epoch, stamped when cluster discovery finished.
     @objc public let dateCommissioned: NSNumber
+    /// Vendor ID from the Basic Information cluster, as a decimal string.
     @objc public let vendorId: String
-    @objc public let producId: String
+    /// Product ID from the Basic Information cluster, as a decimal string.
+    @objc public let productId: String
+    /// The device type of the first endpoint that declares one, or `0` if none do.
     @objc public let deviceType: NSNumber
+    /// Display name, generated locally rather than read from the device.
     @objc public let name: String
     @objc public let productName: String
     @objc public let vendorName: String
@@ -46,7 +52,7 @@ import Matter
         self.deviceId = deviceId
         self.dateCommissioned = dateCommissioned
         self.vendorId = vendorId
-        self.producId = producId
+        self.productId = producId
         self.deviceType = deviceType
         self.name = name
         self.productName = productName

@@ -1,6 +1,6 @@
 //
 //  MatterCommissioner.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 26/02/2026.
 //

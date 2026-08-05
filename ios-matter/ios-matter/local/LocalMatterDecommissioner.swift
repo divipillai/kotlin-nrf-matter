@@ -1,6 +1,6 @@
 //
-//  MatterDecommissioner.swift
-//  iosApp
+//  LocalMatterDecommissioner.swift
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 11/03/2026.
 //
@@ -12,8 +12,14 @@ import Matter
 
     /// Removes the operational credentials fabric from the device and forgets it locally.
     ///
+    /// The `Fabrics` attribute is fabric-scoped and this read is fabric-filtered, so the list comes
+    /// back containing only this app's own fabric — which is why taking the first entry removes the
+    /// right one and leaves any other ecosystem the device is commissioned into untouched.
+    ///
     /// - Parameter deviceId: The Matter node ID of the device to decommission.
-    /// - Throws: An error if reading or removing the fabric fails.
+    /// - Throws: An error if reading the fabric list or removing the fabric fails.
+    /// - Note: Traps rather than throwing if the local controller cannot be obtained, or if the
+    ///   device reports no fabrics at all.
     @objc public func decommission(deviceId: NSNumber) async throws {
         SwiftLogger.info("Decommission device: \(deviceId)")
         let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()

@@ -29,7 +29,6 @@ Those 2 approaches are explained in detail in below section.
 
 ### Matter Virtual Device
 
-
 If you don't have a Thread Border Router or physical accessory handy, Google's
 [Matter Virtual Device](https://developers.home.google.com/matter/tools/virtual-device) (MVD) tool
 lets you
@@ -148,14 +147,21 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
       switches).
     - `androidMain` / `iosMain` — platform-specific code, e.g. wiring up Matter commissioning on
       each platform.
+* [`/shared`](./shared) — a thin KMP module that `api`/`export`s `:composeApp` and produces the iOS
+  framework the Xcode project consumes. It carries no source of its own; it exists so Swift has a
+  single `import shared` to reach the Kotlin surface. Both Xcode targets build it through a run-script
+  phase calling `./gradlew :shared:embedAndSignAppleFrameworkForXcode`.
 * [`/androidDeps`](./androidDeps) — Android library wrapping the native Matter (CHIP) SDK and the
   Google Home API, exposing helpers such as `ChipClient`, `ClustersHelper`, and `BindingManager`.
+  Google Home API, exposing helpers such as `ChipClient`, `ClustersHelper`, and
+  `BindingControllerImpl`.
 * [`/core`](./core) — shared domain models (`Device`, `DeviceMatterInfo`, `LockDeviceState`, …) and
-  a
-  Room-backed logger used across platforms.
+  the `NordicLogger` abstraction used across platforms — backed by Room on Android and, on iOS, by
+  `ios-matter`'s Pulse-based `SwiftLogger`.
 * [`/androidApp`](./androidApp) — the Android application entry point.
 * [`/iosApp`](./iosApp/iosApp) — the iOS application entry point (SwiftUI host for the shared
-  Compose UI).
+  Compose UI), plus the `nrfMatter` target — the `MatterSupport` app extension that provides the
+  system commissioning/QR-code UI.
   Even though the UI is shared, this project is required as the entry point for the iOS app, and is
   where
   you'd add any additional SwiftUI code.
@@ -249,7 +255,9 @@ Therefore, getting started requires a few non-standard integration steps.
     - **Linux:** `~/.m2/repository/`
     - **macOS:** `~/.m2/repository/`
     - **Windows:** `C:\Users\<User_Name>\.m2\repository\`
-4. Add `mavenLocal()` to their Gradle `repositories` block so Gradle can find the artifacts.
+4. Add `mavenLocal()` to your Gradle `repositories` block so Gradle can find the artifacts —
+   [`settings.gradle.kts`](./settings.gradle.kts) already declares it alongside the vendored
+   `./mavenLocal` repository.
 5. Repeat this process each time the SDK is updated, until Google officially publishes it to a Maven
    repository.
 
@@ -274,7 +282,7 @@ Three Gradle tasks per iOS target do this, in [`build.gradle.kts`](./composeApp/
 | `iosMatterStaticLib<Target>` | `libtool`s the resulting objects into `libios-matter.a` and copies the Swift-generated ObjC header and module map beside it |
 | `cinteropIosMatter<Target>` | translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib |
 
-`./gradlew :composeApp:iosMatterStaticLibs` builds the library for every target. Both run
+`./gradlew :composeApp:iosMatterStaticLibs` builds the library for every target. All three tasks run
 automatically as part of any iOS compile — there is nothing to invoke by hand.
 
 Only the `@objc public` surface of ios-matter crosses the boundary; the Swift-generated
@@ -325,8 +333,13 @@ directory in Xcode and run it from there.
 
 ## Requirements
 
-- Android: minSdk 27+, a device with Google Play Services (Home API is used for commissioning).
-- iOS: Xcode to build/run [`/iosApp`](./iosApp).
+- Android: minSdk 27+, a device with Google Play Services (Home API is used for commissioning). The
+  vendored CHIP native libraries are `arm64-v8a` only, so a physical arm64 device is required — the
+  app won't run on an emulator.
+- iOS: iOS 26.0 or newer — both [`/ios-matter`](./ios-matter/Package.swift) and the Xcode targets set
+  that as their minimum, because Apple's `Matter`/`MatterSupport` APIs the app relies on are only
+  available there. Building needs an Xcode recent enough for `swift-tools-version: 6.3`
+  (Xcode 26+). Open [`/iosApp`](./iosApp) in Xcode to build/run.
 
 ## Firmware supported
 

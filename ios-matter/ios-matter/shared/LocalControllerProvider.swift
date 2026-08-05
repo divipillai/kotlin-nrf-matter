@@ -1,6 +1,6 @@
 //
-//  MatterControllerProvider.swift
-//  iosApp
+//  LocalControllerProvider.swift
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 05/03/2026.
 //

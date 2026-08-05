@@ -1,6 +1,6 @@
 //
 //  LocalMatterBinder.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 25/03/2026.
 //
@@ -18,12 +18,13 @@ import Matter
     /// as a client cluster on the source and as a server cluster on the target.
     ///
     /// - Parameters:
-    ///   - sourceNodeId: The node ID of the device that will send commands.
+    ///   - source: The node ID of the device that will send commands.
     ///   - sourceEndpoint: The endpoint on the source device that hosts the client cluster.
-    ///   - targetNodeId: The node ID of the device that will receive commands.
+    ///   - target: The node ID of the device that will receive commands.
     ///   - targetEndpoint: The endpoint on the target device that hosts the server cluster.
-    ///   - clusterId: The cluster ID used for the binding.
-    /// - Throws: An error if granting access on target or creating the binding on source fails.
+    ///   - cluster: The cluster ID used for the binding.
+    /// - Throws: An error if the local controller cannot be obtained, or if granting access on the
+    ///   target or creating the binding on the source fails.
     @objc public func bind(source: NSNumber, sourceEndpoint: NSNumber, target: NSNumber, targetEndpoint: NSNumber, cluster: NSNumber) async throws {
         SwiftLogger.info("Binding clusters...")
         SwiftLogger.debug("Source node id: \(source)")

@@ -1,6 +1,6 @@
 //
 //  LocalMatterCustomClusterController.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 20/04/2026.
 //
@@ -77,7 +77,7 @@ enum ManufacturerSpecificCluster {
     ///
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
-    ///   - isOn: Wheater to turn on device or off.
+    ///   - isOn: `true` to turn the LED on, `false` to turn it off.
     ///   - endpoint: The endpoint hosting the cluster.
     /// - Throws: An error if the command invocation fails.
     @objc public func setLed(deviceId: NSNumber, isOn: Bool, endpoint: NSNumber) async throws {
@@ -98,7 +98,9 @@ enum ManufacturerSpecificCluster {
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the cluster.
-    /// - Returns: A flow emitting `true` when the button is pressed, `false` when released.
+    ///   - onUpdate: Called on a background queue with `true` when the button is pressed, `false`
+    ///     when released.
+    /// - Throws: An error if the local controller cannot be obtained.
     @objc public func observeButtonChanges(deviceId: NSNumber, endpoint: NSNumber, onUpdate: @escaping (Bool) -> Void) async throws {
         SwiftLogger.debug("Observe button changes")
         

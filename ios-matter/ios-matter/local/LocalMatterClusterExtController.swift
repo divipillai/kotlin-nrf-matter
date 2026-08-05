@@ -1,6 +1,6 @@
 //
 //  LocalMatterClusterExtController.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 30/04/2026.
 //

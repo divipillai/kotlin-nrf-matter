@@ -11,21 +11,27 @@ import shared
 
 /// Entry point class for the Matter "Add Device" app extension.
 ///
-/// The system extension scans a commissioning QR code and delegates the add-device flow to a
-/// ``RequestHandlerProtocol`` implementation; currently only ``LocalRequestHandler`` is used, which
-/// adds a device to a Matter fabric that already exists on the phone.
+/// The system extension provides the UI that scans the commissioning QR code, then calls back into
+/// these overrides: consuming the payload read from the QR code, providing a list of rooms and homes
+/// the user may add their device to, and selecting the WiFi or Thread network the device will
+/// operate on.
 ///
-/// The extension communicates with the app using a callback-based approach: consuming the payload
-/// read from the QR code, providing a list of rooms and homes the user may add their device to, and
-/// selecting the WiFi or Thread network the device will operate on.
+/// Every step is delegated to `AppExtensionMatterCommissioner`, which is Kotlin code reached through
+/// the `shared` framework — this target holds no commissioning logic of its own. That Kotlin class
+/// in turn drives `ios-matter`'s `MatterCommissioner` to add the device to the local Matter fabric.
+///
+/// The extension runs in its own process, so it exchanges data with the main app through
+/// `SharedStorage` (`UserDefaults` over an app group): the app writes the node ID to commission
+/// before starting the flow, and ``configureDevice(named:in:)`` writes back the success flag the app
+/// reads once the extension closes.
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     
     private let commissioner = AppExtensionMatterCommissioner()
 
     /// Returns the list of rooms available in the given home for placing a newly added device.
     ///
-    /// - Parameter home: The home to fetch rooms for, or `nil` if no home was selected.
-    /// - Returns: The rooms the device can be assigned to, as reported by the active handler.
+    /// - Parameter home: The home to fetch rooms for. Ignored — the room list is a fixed set.
+    /// - Returns: The rooms the device can be assigned to.
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
         return commissioner.rooms().map { MatterAddDeviceRequest.Room(displayName: $0) }
     }
@@ -50,18 +56,23 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
         commissioner.configureDevice()
     }
 
-    /// Validates the device credential presented during commissioning.
+    /// Accepts the device credential presented during commissioning without validating it.
     ///
-    /// - Parameter deviceCredential: The credential to validate.
-    /// - Throws: An error if the credential is invalid.
+    /// Returning without throwing tells the system every credential is acceptable, which is what
+    /// this app wants: it commissions development kits and simulated devices whose certificates are
+    /// not signed by a production attestation authority. ``MatterAttestationDelegate`` takes the
+    /// same stance for the attestation step.
+    ///
+    /// - Parameter deviceCredential: The credential presented by the device. Ignored.
     override func validateDeviceCredential(_ deviceCredential: MatterAddDeviceExtensionRequestHandler.DeviceCredential) async throws {
     }
 
-    /// Selects a WiFi network for the device to join, from the networks found during scanning.
+    /// Selects a WiFi network for the device to join.
     ///
-    /// - Parameter wifiScanResults: The WiFi networks discovered during scanning.
-    /// - Returns: The network association the device should use.
-    /// - Throws: An error if no suitable network can be selected.
+    /// Always defers to the network the phone is already on, so the scan results are unused.
+    ///
+    /// - Parameter wifiScanResults: The WiFi networks discovered during scanning. Ignored.
+    /// - Returns: `.defaultSystemNetwork`.
     override func selectWiFiNetwork(from wifiScanResults: [MatterAddDeviceExtensionRequestHandler.WiFiScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.WiFiNetworkAssociation {
 
         return .defaultSystemNetwork
@@ -69,9 +80,13 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
 
     /// Selects a Thread network for the device to join, from the networks found during scanning.
     ///
-    /// - Parameter threadScanResults: The Thread networks discovered during scanning.
-    /// - Returns: The network association the device should use.
-    /// - Throws: An error if no suitable network can be selected.
+    /// Logs every network found, then picks the first one by extended PAN ID.
+    /// `.defaultSystemNetwork` is not usable here, so there is no way to defer the choice to the
+    /// system.
+    ///
+    /// - Parameter threadScanResults: The Thread networks discovered during scanning. Must not be
+    ///   empty — the first entry is read unconditionally.
+    /// - Returns: An association naming the first scanned network's extended PAN ID.
     override func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
 
         let networkNames = threadScanResults.map { $0.networkName }

@@ -1,6 +1,6 @@
 //
 //  LocalMatterLightController.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 06/03/2026.
 //
@@ -55,7 +55,7 @@ enum DimmableLightDeviceType {
     ///
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
-    ///   - level: The target level, as defined by the Level Control cluster.
+    ///   - brightnessLevel: The target level, as defined by the Level Control cluster.
     ///   - endpoint: The endpoint hosting the Level Control cluster.
     /// - Throws: An error if the local controller cannot be obtained or the command fails.
     @objc public func setBrightnessLevel(deviceId: NSNumber, brightnessLevel: NSNumber, endpoint: NSNumber) async throws {
@@ -79,10 +79,14 @@ enum DimmableLightDeviceType {
     
     /// Subscribes to on/off state changes reported by the device.
     ///
+    /// The subscription is not cancellable and lives as long as the shared ``AttributeSubscriber``
+    /// for this node.
+    ///
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the On/Off cluster.
-    /// - Returns: A flow emitting `true` when the light is on, `false` when it is off.
+    ///   - onUpdate: Called on a background queue with `true` when the light is on, `false` when it
+    ///     is off — including once with the initial state when the subscription is established.
     /// - Throws: An error if the local controller cannot be obtained.
     @objc public func observeLightState(deviceId: NSNumber, endpoint: NSNumber, onUpdate: @escaping (Bool) -> Void) async throws {
         SwiftLogger.debug("subscribeToLedChanges")
@@ -97,12 +101,13 @@ enum DimmableLightDeviceType {
     /// Subscribes to brightness level changes reported by the device.
     ///
     /// Raw level values from the Level Control cluster are normalized to a `0...1` range
-    /// before being delivered.
+    /// before being delivered, mapping the cluster's `1...254` range and clamping anything outside
+    /// it.
     ///
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the Level Control cluster.
-    /// - Returns: A flow emitting brightness normalized to `0...1`.
+    ///   - onUpdate: Called on a background queue with the brightness normalized to `0...1`.
     /// - Throws: An error if the local controller cannot be obtained.
     @objc public func observeBrightnessState(deviceId: NSNumber, endpoint: NSNumber, onUpdate: @escaping (Float) -> Void) async throws {
         SwiftLogger.debug("subscribeToLightLevelChanges")

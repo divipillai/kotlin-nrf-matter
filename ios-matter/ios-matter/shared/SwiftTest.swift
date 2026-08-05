@@ -1,5 +1,5 @@
 //
-//  Test.swift
+//  SwiftTest.swift
 //  ios-matter
 //
 //  Created by Sylwester Zielinski on 30/07/2026.

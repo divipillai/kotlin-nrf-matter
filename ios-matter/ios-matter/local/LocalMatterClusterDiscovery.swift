@@ -1,6 +1,6 @@
 //
 //  LocalMatterClusterDiscovery.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 10/03/2026.
 //
@@ -10,9 +10,6 @@ import Matter
 /// Reads metadata for a Matter device: basic information from the root endpoint (0), and
 /// device type plus client/server clusters from each supported endpoint (1..n).
 class LocalMatterClusterDiscovery {
-
-    /// The discovery stage currently in progress, used for error reporting if discovery fails.
-//    var stage: Stage = Stage.readBasicInformation
 
     private let nodeId: NSNumber
     private let baseDevice: MTRBaseDevice
@@ -27,6 +24,17 @@ class LocalMatterClusterDiscovery {
         baseDevice = MTRBaseDevice(nodeID: nodeId, controller: controller)
     }
 
+    /// Reads everything the app records about a freshly commissioned device.
+    ///
+    /// Reads the Basic Information cluster, enumerates the endpoints from the root endpoint's
+    /// Descriptor cluster, then reads device types and cluster lists for each one — pulling the
+    /// manufacturer-specific data too for any endpoint that advertises that cluster.
+    ///
+    /// - Returns: The assembled ``Device``. `dateCommissioned` is stamped here, so it reflects when
+    ///   discovery ran rather than when the fabric actually accepted the device.
+    /// - Throws: An `NSError` carrying the ``withMoreUserInfo(deviceId:stage:displayMessage:)``
+    ///   payload if reading basic information or the descriptor cluster fails, or
+    ///   `OperationError.unknown` if a Descriptor cluster cannot be created for an endpoint.
     func discoverClusters() async throws -> Device {
         let basicInfo = try await readBasicInformation(baseDevice: baseDevice)
         

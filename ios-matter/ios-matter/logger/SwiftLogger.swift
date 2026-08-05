@@ -1,6 +1,6 @@
 //
-//  SharedLogger.swift
-//  iosApp
+//  SwiftLogger.swift
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 04/05/2026.
 //
@@ -43,7 +43,12 @@ import Combine
 
     /// Reads all persisted log entries, most recent first.
     ///
-    /// - Returns: The stored log entries ordered by creation date, descending.
+    /// The store is in the shared app group, so this includes entries written by the commissioning
+    /// extension's process as well as the app's.
+    ///
+    /// - Returns: The stored log entries, ordered by creation date descending. Each entry's
+    ///   ``LogEntity/date`` is stamped with the current time rather than the stored `createdAt`, so
+    ///   only the ordering conveys when things happened.
     /// - Throws: An error if the underlying log store could not be read.
     @objc public static func logs() throws -> [LogEntity] {
         let result = try store.messages(sortDescriptors: [SortDescriptor(\.createdAt, order: .reverse)])

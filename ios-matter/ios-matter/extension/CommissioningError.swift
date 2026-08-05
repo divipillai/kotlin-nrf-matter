@@ -1,6 +1,6 @@
 //
 //  CommissioningError.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 12/06/2026.
 //

@@ -5,13 +5,12 @@ import SwiftUI
 
 /// Bridges the shared Compose Multiplatform UI into SwiftUI.
 ///
-/// Wraps the Kotlin-defined `MainViewController`, injecting the native
-/// `SwiftCodeProviderImpl` so the shared code can call back into the iOS-specific
-/// Matter implementations.
+/// Wraps the Kotlin-defined `MainViewController`, which needs nothing injected from Swift: it
+/// installs the logger and starts Koin itself, and the iOS-specific Matter implementations are
+/// registered there as Kotlin adapters over `ios-matter`.
 struct ContentView: UIViewControllerRepresentable {
-    
-    /// Creates the Compose Multiplatform view controller, wired up with the native
-    /// Swift implementation of `SwiftCodeProvider`.
+
+    /// Creates the Compose Multiplatform view controller hosting the shared UI.
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.MainViewController()
     }

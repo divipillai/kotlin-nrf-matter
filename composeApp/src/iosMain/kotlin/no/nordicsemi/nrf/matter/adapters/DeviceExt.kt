@@ -15,7 +15,7 @@ fun iosMatter.Device.toDomain(): Device {
         deviceId = this.deviceId.toDeviceId(),
         dateCommissioned = this.dateCommissioned.longValue,
         vendorId = this.vendorId,
-        productId = this.producId,
+        productId = this.productId,
         deviceType = DeviceType.parse(this.deviceType.longValue),
         name = this.name,
         productName = this.productName,

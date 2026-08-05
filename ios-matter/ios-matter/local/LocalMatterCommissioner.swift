@@ -1,6 +1,6 @@
 //
-//  MyMatterSupport.swift
-//  iosApp
+//  LocalMatterCommissioner.swift
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 23/02/2026.
 //
@@ -8,9 +8,19 @@
 import Matter
 import MatterSupport
 
+/// The step of the commissioning flow an error was raised in, reported to Kotlin so the failure
+/// screen can say what was being attempted.
+///
+/// Kotlin resolves these by *ordinal*, not by name — `CommissioningExceptionMapper` does
+/// `Stage.entries[rawValue]` against `no.nordicsemi.nrf.matter.commission.Stage`. The cases here
+/// must therefore stay in the same order as that enum, and new cases must be appended rather than
+/// inserted.
 @objc public enum CommissioningStage: Int {
+    /// Failed while the system add-device flow was running, or the user cancelled it.
     case commissioning
+    /// Failed while reading the Basic Information cluster on endpoint 0.
     case readBaseInfo
+    /// Failed while reading the Descriptor cluster to enumerate endpoints and clusters.
     case readDescriptorCluster
 }
 
@@ -33,10 +43,11 @@ import MatterSupport
     /// read and the resulting device metadata is returned.
     ///
     /// - Parameter deviceId: The Matter node ID to assign to the newly commissioned device.
-    /// - Returns: An `OperationResultSuccess` containing the discovered `Device` on success, or
-    ///   an `OperationResultError` describing the failure.
-    /// - Throws: An error if the local controller needed for post-commissioning cluster
-    ///   discovery cannot be obtained.
+    /// - Returns: The ``Device`` metadata discovered after commissioning.
+    /// - Throws: An `NSError` carrying the ``withMoreUserInfo(deviceId:stage:displayMessage:)``
+    ///   payload if the system add-device flow fails or the extension did not report success (the
+    ///   user cancelled), or an error from cluster discovery if the local controller cannot be
+    ///   obtained or the device's metadata cannot be read.
     @objc public func startIosCommissioning(deviceId: NSNumber) async throws -> Device {
         let homes = [MatterAddDeviceRequest.Home(displayName: "Nordic Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "Nordic Ecosystem", homes: homes)
@@ -76,7 +87,21 @@ import MatterSupport
 }
 
 extension NSError {
-    
+
+    /// Copies this error, adding the `userInfo` keys Kotlin needs to build a `CommissioningException`.
+    ///
+    /// This is the contract read by `NSError.toCommissioningException()` on the Kotlin side: it
+    /// requires all four of `deviceId`, `stage`, `displayMessage` and `fabricId` to be present, and
+    /// returns `null` — losing the commissioning-specific detail — if any one of them is missing.
+    /// So an error thrown out of this package without going through here surfaces in the app as a
+    /// generic failure.
+    ///
+    /// - Parameters:
+    ///   - deviceId: The node ID the failed operation was targeting.
+    ///   - stage: The step that failed. Stored as its raw value.
+    ///   - displayMessage: Message to show the user. Defaults to `localizedDescription`, which for a
+    ///     bare `NSError()` is a generic Cocoa string rather than anything Matter-specific.
+    /// - Returns: A new error with the same domain and code, and the enriched `userInfo`.
     func withMoreUserInfo(
         deviceId: NSNumber,
         stage: CommissioningStage,

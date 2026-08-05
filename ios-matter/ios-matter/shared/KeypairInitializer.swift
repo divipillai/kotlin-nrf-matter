@@ -1,6 +1,6 @@
 //
 //  KeypairInitializer.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 12/06/2026.
 //
@@ -9,8 +9,9 @@ import Foundation
 
 /// Ensures the signing keypair stored in the keychain is not stale after a fresh app install.
 ///
-/// Exposed to Objective-C so Kotlin can reach it through `swiftPMImport`: the app entry point
-/// calls this via the shared Kotlin framework rather than importing `ios_matter` itself.
+/// Exposed to Objective-C so Kotlin can reach it through cinterop as `iosMatter.KeypairInitializer`:
+/// the app entry point calls this via the shared Kotlin framework (`KeychainKt.prepareKeychain()`)
+/// rather than importing `ios_matter` itself.
 @objc public final class KeypairInitializer : NSObject {
 
     private static let isInitializedKey = "is_keypair_initilized"

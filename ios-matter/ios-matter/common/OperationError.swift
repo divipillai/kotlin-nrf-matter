@@ -1,6 +1,6 @@
 //
 //  OperationError.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 22/04/2026.
 //

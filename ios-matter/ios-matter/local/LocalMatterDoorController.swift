@@ -1,6 +1,6 @@
 //
 //  LocalMatterDoorController.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 25/03/2026.
 //
@@ -44,7 +44,8 @@ enum DoorLockCluster {
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the Door Lock cluster.
-    /// - Returns: A flow emitting the current lock state.
+    ///   - onUpdate: Called on a background queue with the raw `LockState` attribute value as
+    ///     defined by the Door Lock cluster.
     /// - Throws: An error if the local controller cannot be obtained.
     @objc public func observeLockState(deviceId: NSNumber, endpoint: NSNumber, onUpdate: @escaping (Int32) -> Void) async throws {
         SwiftLogger.debug(#function)

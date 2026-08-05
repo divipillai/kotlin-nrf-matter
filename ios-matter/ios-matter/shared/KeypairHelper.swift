@@ -1,6 +1,6 @@
 //
 //  KeypairHelper.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 05/03/2026.
 //

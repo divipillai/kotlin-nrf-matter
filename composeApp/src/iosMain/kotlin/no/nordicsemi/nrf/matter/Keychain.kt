@@ -12,7 +12,8 @@ import iosMatter.KeypairInitializer
  * private key that no longer matches its fabric.
  *
  * Exists so the iOS app target can trigger this from `iOSApp.init()` without importing
- * `ios_matter`: the SwiftPM dependency is declared by this Kotlin module only.
+ * `ios_matter`: this module is the only one that cinterops against it, and the compiled Swift ships
+ * inside the klib, so Xcode has no module to import even if it wanted to.
  *
  * Not named `initKeychain`: Kotlin/Native exports `init`-prefixed functions to Objective-C
  * with a `do` prefix, which would make the Swift call site `KeychainKt.doInitKeychain()`.

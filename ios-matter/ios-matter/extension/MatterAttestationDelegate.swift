@@ -1,6 +1,6 @@
 //
 //  MatterAttestationDelegate.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 27/02/2026.
 //

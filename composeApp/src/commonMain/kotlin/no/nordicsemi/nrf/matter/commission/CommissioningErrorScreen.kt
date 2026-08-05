@@ -84,6 +84,12 @@ data class CommissioningException(
     }
 }
 
+/**
+ * The step of the commissioning flow a [CommissioningException] was raised in.
+ *
+ * On iOS these are resolved by ordinal from `ios-matter`'s `CommissioningStage`, so the order here
+ * must match that enum and new entries must be appended rather than inserted.
+ */
 enum class Stage {
     COMMISSIONING,
     READ_BASIC_INFORMATION,

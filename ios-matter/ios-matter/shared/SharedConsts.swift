@@ -1,6 +1,6 @@
 //
-//  SharedConst.swift
-//  iosApp
+//  SharedConsts.swift
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 16/03/2026.
 //

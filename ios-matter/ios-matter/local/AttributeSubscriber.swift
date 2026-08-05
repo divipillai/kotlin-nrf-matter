@@ -1,6 +1,6 @@
 //
 //  AttributeSubscriber.swift
-//  iosApp
+//  ios-matter
 //
 //  Created by Sylwester Zielinski on 23/04/2026.
 //
@@ -20,7 +20,7 @@ struct AttributeUpdate<T : Sendable> : Sendable {
 /// `MTRDevice` maintains one persistent, self-resubscribing report stream per node, unlike the
 /// lower-level `MTRBaseDevice`/`MTRBaseCluster*` APIs where every attribute opens its own
 /// independent subscription. Every observer of the same node must share one `AttributeSubscriber`
-/// instance (use `shared(deviceId:)`.
+/// instance (use `shared(deviceId:)`).
 ///
 /// Using multiple delegates on the same device causes visible lags in received subscriptions.
 class AttributeSubscriber: NSObject, MTRDeviceDelegate {

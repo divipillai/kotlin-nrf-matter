@@ -242,7 +242,7 @@ Therefore, getting started requires a few non-standard integration steps.
 3. Extract the SDK into your system's local Maven repository, the `.m2/repository` directory. This is
    the standard path used for local Maven repositories.
     - **Linux:** `~/.m2/repository/`
-    - **macOS:** `~/Users/<User_Name>/.m2/repository/`
+    - **macOS:** `~/.m2/repository/`
     - **Windows:** `C:\Users\<User_Name>\.m2\repository\`
 4. Add `mavenLocal()` to their Gradle `repositories` block so Gradle can find the artifacts.
 5. Repeat this process each time the SDK is updated, until Google officially publishes it to a Maven

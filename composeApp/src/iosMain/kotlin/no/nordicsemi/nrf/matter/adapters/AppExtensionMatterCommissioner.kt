@@ -18,6 +18,8 @@ import no.nordicsemi.nrf.matter.logger.NordicLogger
  */
 class AppExtensionMatterCommissioner {
 
+    private val TAG = "AppExtension"
+
     private val commissioner = MatterCommissioner()
     private val storage = SharedStorage()
 
@@ -26,7 +28,7 @@ class AppExtensionMatterCommissioner {
     }
 
     fun rooms(): List<String> {
-        NordicLogger.info("Getting rooms.")
+        NordicLogger.info("Getting rooms.", tag = TAG)
         return listOf("Living Room", "Bedroom", "Office", "Kitchen", "Dining Room")
     }
 
@@ -43,7 +45,7 @@ class AppExtensionMatterCommissioner {
         IllegalStateException::class,
     )
     suspend fun commissionDevice(payload: String) {
-        NordicLogger.info("Commission Matter device with payload: $payload")
+        NordicLogger.info("Commission Matter device with payload: $payload", tag = TAG)
         val nodeId = storage.getNumberWithKey(SharedConsts.nodeIdKey)
             ?: error("No node ID found in shared storage.")
         return suspendCancellableCoroutine { continuation ->
@@ -58,16 +60,22 @@ class AppExtensionMatterCommissioner {
      * the Matter controller.
      */
     fun configureDevice() {
-        NordicLogger.info("Device configured. Storing result and releasing commissioner...")
+        NordicLogger.info(
+            "Device configured. Storing result and releasing commissioner...",
+            tag = TAG,
+        )
         storage.storeBoolWithKey(SharedConsts.resultKey, true)
         commissioner.releaseCommissioner()
     }
 
     fun onThreadNetworksDetected(names: List<String>) {
-        NordicLogger.info("Selecting Thread network from ${names.size} scan results")
+        NordicLogger.info(
+            "Selecting Thread network from ${names.size} scan results",
+            tag = TAG,
+        )
 
         names.forEach {
-            NordicLogger.info("Detected thread network: $it.")
+            NordicLogger.info("Detected thread network: $it.", tag = TAG)
         }
     }
 }

@@ -302,8 +302,3 @@ page — new DKs and SoCs are added there as they gain Matter support.
 
 Copyright © Nordic Semiconductor. Licensed under a BSD-3-Clause style license — see the [LICENSE](LICENSE) for full terms.
 
----
-
-Learn more
-about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)
-and [Compose Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform.html).

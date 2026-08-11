@@ -2,6 +2,7 @@
 
 import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.konan.target.HostManager
 import javax.inject.Inject
 
 plugins {
@@ -117,12 +118,30 @@ abstract class PackageIosMatterStaticLib : DefaultTask() {
 /** xcodebuild coordinates for one Kotlin/Native target. */
 data class IosMatterPlatform(val destination: String, val sdk: String)
 
-/** Where the packaged artefacts for one Kotlin/Native target end up. */
+/**
+ * Where the packaged artefacts for one Kotlin/Native target end up.
+ *
+ * [packageTask] is null off macOS, where the Apple toolchain that produces those
+ * artefacts does not exist -- see [isMacOs].
+ */
 data class IosMatterArtifacts(
-    val packageTask: TaskProvider<PackageIosMatterStaticLib>,
+    val packageTask: TaskProvider<PackageIosMatterStaticLib>?,
     val libraryDir: File,
     val headerDir: File,
 )
+
+/**
+ * Whether the Apple toolchain (`xcodebuild`, `libtool`) is available.
+ *
+ * Kotlin/Native cannot build Apple targets off macOS either, so it disables the
+ * iOS compile and cinterop tasks on other hosts -- but Gradle still executes a
+ * skipped task's *dependencies*, so a plain `xcodebuild` task in the graph would
+ * fail the build on Windows and Linux even though nothing consumes its output.
+ * The tasks are therefore only registered on macOS, and the iOS targets below
+ * are left without their ios-matter dependency on other hosts. Android builds
+ * and runs everywhere.
+ */
+val isMacOs = HostManager.hostIsMac
 
 val iosMatterRoot = rootProject.layout.projectDirectory.dir("ios-matter")
 
@@ -137,6 +156,10 @@ val iosMatterArtifacts: Map<String, IosMatterArtifacts> =
         val derivedData = File(outputRoot, "derivedData")
         val libraryDir = File(outputRoot, "lib")
         val headerDir = File(outputRoot, "include")
+
+        if (!isMacOs) {
+            return@mapValues IosMatterArtifacts(null, libraryDir, headerDir)
+        }
 
         val compile = tasks.register<Exec>("compileIosMatterSwift$suffix") {
             group = "ios-matter"
@@ -199,7 +222,13 @@ val iosMatterArtifacts: Map<String, IosMatterArtifacts> =
 tasks.register("iosMatterStaticLibs") {
     group = "ios-matter"
     description = "Builds the ios-matter static library for every iOS target."
-    dependsOn(iosMatterArtifacts.values.map { it.packageTask })
+    if (isMacOs) {
+        dependsOn(iosMatterArtifacts.values.mapNotNull { it.packageTask })
+    } else {
+        doFirst {
+            error("ios-matter needs xcodebuild, which is only available on macOS.")
+        }
+    }
 }
 
 kotlin {
@@ -243,8 +272,11 @@ kotlin {
         // The .def references a header and a library that only exist once the Swift
         // package has been compiled and archived. `matching` keeps this lazy: the
         // cinterop task is registered by the block above, not yet realised here.
-        tasks.matching { it.name == "cinteropIosMatter$suffix" }.configureEach {
-            dependsOn(artifacts.packageTask)
+        val packageTask = artifacts.packageTask
+        if (packageTask != null) {
+            tasks.matching { it.name == "cinteropIosMatter$suffix" }.configureEach {
+                dependsOn(packageTask)
+            }
         }
     }
 

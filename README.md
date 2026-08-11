@@ -33,7 +33,7 @@ Those 2 approaches are explained in detail in below section.
 If you don't have a Thread Border Router or physical accessory handy, Google's
 [Matter Virtual Device](https://developers.home.google.com/matter/tools/virtual-device) (MVD) tool
 lets you
-commission a simulated Matter accessory from a Mac instead.
+commission a simulated Matter accessory from a Mac or Linux devices instead.
 The nRF Matter implementation currently supports only a subset of the device types available in the Matter Virtual Device application:
 1. **Dimmable Light**
 2. **Door Lock**

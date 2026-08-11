@@ -300,9 +300,7 @@ page — new DKs and SoCs are added there as they gain Matter support.
 
 ## License
 
-Copyright (c) Nordic Semiconductor. Licensed under a BSD-3-Clause style license — see the license
-header in
-[`App.kt`](./composeApp/src/commonMain/kotlin/no/nordicsemi/nrf/matter/App.kt) for full terms.
+Copyright © Nordic Semiconductor. Licensed under a BSD-3-Clause style license — see the [LICENSE](LICENSE) for full terms.
 
 ---
 

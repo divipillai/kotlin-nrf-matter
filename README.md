@@ -2,9 +2,7 @@
 
 A [Matter](https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/index.html)
 commissioning and control companion app by
-[Nordic Semiconductor](https://www.nordicsemi.com/), built with Kotlin Multiplatform and Compose
-Multiplatform
-for Android and iOS.
+[Nordic Semiconductor](https://www.nordicsemi.com/), built with Kotlin Multiplatform and Compose Multiplatform, with the iOS-specific implementation written in Swift.
 
 The app lets you:
 
@@ -35,7 +33,7 @@ Those 2 approaches are explained in detail in below section.
 If you don't have a Thread Border Router or physical accessory handy, Google's
 [Matter Virtual Device](https://developers.home.google.com/matter/tools/virtual-device) (MVD) tool
 lets you
-commission a simulated Matter accessory from a Mac instead.
+commission a simulated Matter accessory from a Mac or Linux devices instead.
 The nRF Matter implementation currently supports only a subset of the device types available in the Matter Virtual Device application:
 1. **Dimmable Light**
 2. **Door Lock**
@@ -51,9 +49,7 @@ To explore and test additional device types, a compatible Nordic development kit
 <img  width="500" alt="Screenshot 2026-07-22 at 13 04 52" src="https://github.com/user-attachments/assets/aac2b545-1e16-4ef1-81bc-68d74bbc186b" />
 
 3. Commission it from this app like a real device — it shows a QR code and joins over the macOS
-   existing Wi-Fi connection. (Make sure that the Google Home app is installed to commission the device
-   in the
-   Android platform).
+   existing Wi-Fi connection.
 4. The Mac running MVD and the phone **must be on the same Wi-Fi network**.
 5. Once commissioned, you can control the simulated device from this app.
    
@@ -74,7 +70,8 @@ which is a part of [nRF Connect For Desktop](https://www.nordicsemi.com/Products
 4. **Manufacturer specific cluster + cluster extension** - build this [sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific) in Visual Studio.
 
 > [!TIP]
-> All examples display a link with QR code required for commissioning in the logs. The logs from a DK can be viewed using the [Serial Terminal app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/serial-terminal-app).
+> All examples display a link with a QR code required for commissioning in the logs. The logs from a DK can be viewed using the [Serial Terminal app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/serial-terminal-app).
+> To view the logs, open the Serial Terminal app and connect the DK using the appropriate serial terminal port. If the device has not yet been commissioned, press the reset button on the DK. The device will then print the logs, including the QR code link, in the logs panel.
 > 
 > <img width="914" height="21" alt="Screenshot 2026-07-22 at 15 35 56" src="https://github.com/user-attachments/assets/844905d9-5701-4426-b049-5d686369b455" />
 
@@ -90,7 +87,7 @@ network before the app is used.
 
 Matter examples installed on DKs require a **Thread Border Router** connected to the same local network as the app. In
 addition, the iPhone must already have the corresponding **Thread Network Credentials** installed.
-The credentials are installed using the system API and are available for all the apps on the phone.
+The credentials are installed via the system API and are available to all apps on the phone.
 
 The process for obtaining these credentials depends on the Thread ecosystem being used. In most
 cases, when the Thread network is provided by a device such as a Samsung TV or a dedicated hub such
@@ -245,7 +242,7 @@ Therefore, getting started requires a few non-standard integration steps.
 3. Extract the SDK into your system's local Maven repository, the `.m2/repository` directory. This is
    the standard path used for local Maven repositories.
     - **Linux:** `~/.m2/repository/`
-    - **macOS:** `~/Users/<User_Name>/.m2/repository/`
+    - **macOS:** `~/.m2/repository/`
     - **Windows:** `C:\Users\<User_Name>\.m2\repository\`
 4. Add `mavenLocal()` to their Gradle `repositories` block so Gradle can find the artifacts.
 5. Repeat this process each time the SDK is updated, until Google officially publishes it to a Maven
@@ -303,12 +300,5 @@ page — new DKs and SoCs are added there as they gain Matter support.
 
 ## License
 
-Copyright (c) Nordic Semiconductor. Licensed under a BSD-3-Clause style license — see the license
-header in
-[`App.kt`](./composeApp/src/commonMain/kotlin/no/nordicsemi/nrf/matter/App.kt) for full terms.
+Copyright © Nordic Semiconductor. Licensed under a BSD-3-Clause style license — see the [LICENSE](LICENSE) for full terms.
 
----
-
-Learn more
-about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)
-and [Compose Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform.html).

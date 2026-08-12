@@ -33,7 +33,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            from("no.nordicsemi.gradle:version-catalog:3.1.2-2")
+            from("no.nordicsemi.gradle:version-catalog:3.2")
         }
     }
 }
@@ -42,3 +42,4 @@ include(":composeApp")
 include(":androidDeps")
 include(":androidApp")
 include(":core")
+include(":shared")

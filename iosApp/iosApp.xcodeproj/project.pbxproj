@@ -8,9 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		A725F1C12F4DAACB005BC977 /* nrfMatter.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		A75B954D2F58845E00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
-		A75B95522F58846C00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
-		A7DEDDC12FA8A80D00196D69 /* Pulse in Frameworks */ = {isa = PBXBuildFile; productRef = A7DEDDC02FA8A80D00196D69 /* Pulse */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -20,20 +17,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = A725F1B92F4DAACB005BC977;
 			remoteInfo = nrfMatter;
-		};
-		A75B954B2F58845E00902BE8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1D3437AFA1B1BD836742FA45 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A75B95462F58845E00902BE8;
-			remoteInfo = SharedCode;
-		};
-		A75B95542F58846C00902BE8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1D3437AFA1B1BD836742FA45 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A75B95462F58845E00902BE8;
-			remoteInfo = SharedCode;
 		};
 		A7B81C542FF7EAA0000AF7E4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -60,8 +43,8 @@
 
 /* Begin PBXFileReference section */
 		503AE3C9DDF68C5089274E2D /* NRFMatterforMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NRFMatterforMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A71640AB3021D4D300531E94 /* ios-matter */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "ios-matter"; path = "../ios-matter"; sourceTree = SOURCE_ROOT; };
 		A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = nrfMatter.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		A75B95472F58845E00902BE8 /* SharedCode.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SharedCode.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7B81C4E2FF7EAA0000AF7E4 /* iosAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iosAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -109,11 +92,6 @@
 			path = nrfMatter;
 			sourceTree = "<group>";
 		};
-		A75B95482F58845E00902BE8 /* SharedCode */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = SharedCode;
-			sourceTree = "<group>";
-		};
 		A7B81C4F2FF7EAA0000AF7E4 /* iosAppUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = iosAppUITests;
@@ -136,7 +114,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A75B954D2F58845E00902BE8 /* SharedCode.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -144,15 +121,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A75B95522F58846C00902BE8 /* SharedCode.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A75B95442F58845E00902BE8 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A7DEDDC12FA8A80D00196D69 /* Pulse in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -171,7 +139,6 @@
 			children = (
 				503AE3C9DDF68C5089274E2D /* NRFMatterforMobile.app */,
 				A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */,
-				A75B95472F58845E00902BE8 /* SharedCode.framework */,
 				A7B81C4E2FF7EAA0000AF7E4 /* iosAppUITests.xctest */,
 			);
 			name = Products;
@@ -180,13 +147,13 @@
 		7A153F9AB70F98838999796F = {
 			isa = PBXGroup;
 			children = (
+				A71640AB3021D4D300531E94 /* ios-matter */,
 				A7B81D812FF7F490000AF7E4 /* screenshots */,
 				A7B81D7B2FF7F45D000AF7E4 /* fastlane */,
 				A7228F212FD844A4009CC829 /* ../composeApp/src */,
 				924494A307E640B6954B6B71 /* Configuration */,
 				208BF3748A4E27EC7D0D131C /* iosApp */,
 				A725F1BB2F4DAACB005BC977 /* nrfMatter */,
-				A75B95482F58845E00902BE8 /* SharedCode */,
 				A7B81C4F2FF7EAA0000AF7E4 /* iosAppUITests */,
 				A75B953C2F5883D900902BE8 /* Frameworks */,
 				5A2551E95002C7375D5F5A16 /* Products */,
@@ -201,16 +168,6 @@
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
-
-/* Begin PBXHeadersBuildPhase section */
-		A75B95422F58845E00902BE8 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		7A7259E03000A3A7C58EDE9B /* iosApp */ = {
@@ -229,7 +186,6 @@
 			);
 			dependencies = (
 				A725F1C02F4DAACB005BC977 /* PBXTargetDependency */,
-				A75B954C2F58845E00902BE8 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				208BF3748A4E27EC7D0D131C /* iosApp */,
@@ -243,6 +199,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A725F1C22F4DAACB005BC977 /* Build configuration list for PBXNativeTarget "nrfMatter" */;
 			buildPhases = (
+				A7C0DE2F0000000000000001 /* Compile Kotlin Framework */,
 				A725F1B62F4DAACB005BC977 /* Sources */,
 				A725F1B72F4DAACB005BC977 /* Frameworks */,
 				A725F1B82F4DAACB005BC977 /* Resources */,
@@ -251,7 +208,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				A75B95552F58846C00902BE8 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A725F1BB2F4DAACB005BC977 /* nrfMatter */,
@@ -260,30 +216,6 @@
 			productName = nrfMatter;
 			productReference = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */;
 			productType = "com.apple.product-type.app-extension";
-		};
-		A75B95462F58845E00902BE8 /* SharedCode */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A75B954F2F58845E00902BE8 /* Build configuration list for PBXNativeTarget "SharedCode" */;
-			buildPhases = (
-				A75B95422F58845E00902BE8 /* Headers */,
-				A75B95432F58845E00902BE8 /* Sources */,
-				A75B95442F58845E00902BE8 /* Frameworks */,
-				A75B95452F58845E00902BE8 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				A75B95482F58845E00902BE8 /* SharedCode */,
-			);
-			name = SharedCode;
-			packageProductDependencies = (
-				A7DEDDC02FA8A80D00196D69 /* Pulse */,
-			);
-			productName = SharedCode;
-			productReference = A75B95472F58845E00902BE8 /* SharedCode.framework */;
-			productType = "com.apple.product-type.framework";
 		};
 		A7B81C4D2FF7EAA0000AF7E4 /* iosAppUITests */ = {
 			isa = PBXNativeTarget;
@@ -322,10 +254,6 @@
 					A725F1B92F4DAACB005BC977 = {
 						CreatedOnToolsVersion = 26.2;
 					};
-					A75B95462F58845E00902BE8 = {
-						CreatedOnToolsVersion = 26.3;
-						LastSwiftMigration = 2630;
-					};
 					A7B81C4D2FF7EAA0000AF7E4 = {
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = 7A7259E03000A3A7C58EDE9B;
@@ -341,9 +269,6 @@
 			);
 			mainGroup = 7A153F9AB70F98838999796F;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				A7DEDDBF2FA8A80D00196D69 /* XCRemoteSwiftPackageReference "Pulse" */,
-			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5A2551E95002C7375D5F5A16 /* Products */;
 			projectDirPath = "";
@@ -351,7 +276,6 @@
 			targets = (
 				7A7259E03000A3A7C58EDE9B /* iosApp */,
 				A725F1B92F4DAACB005BC977 /* nrfMatter */,
-				A75B95462F58845E00902BE8 /* SharedCode */,
 				A7B81C4D2FF7EAA0000AF7E4 /* iosAppUITests */,
 			);
 		};
@@ -359,13 +283,6 @@
 
 /* Begin PBXResourcesBuildPhase section */
 		A725F1B82F4DAACB005BC977 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A75B95452F58845E00902BE8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -408,6 +325,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"$SRCROOT/Configuration/set_version_from_git.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		899AFCC0CFB775A3E9481780 /* Set Version From Git Tag */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -428,6 +346,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"$SRCROOT/Configuration/set_version_from_git.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		A7B6EDB52F697C4D00E65235 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -446,6 +365,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Techo \"Removing wrongly embedded static framework...\"\nrm -rf \"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleHomeTypes.framework\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A7C0DE2F0000000000000001 /* Compile Kotlin Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Compile Kotlin Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# nrfMatter imports the Kotlin `shared` framework, which resolves through a\n# symlink in BUILT_PRODUCTS_DIR pointing at shared/build/xcode-frameworks. Only\n# this Gradle task regenerates it, so the extension needs its own copy of the\n# phase: it compiles before the iosApp target, and without this it would build\n# against whatever stale framework happened to be on disk. A newly added Kotlin\n# symbol then fails to resolve here, which also stops iosApp's copy of this\n# phase from ever running -- a deadlock that only a manual resync clears.\nif [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+			showEnvVarsInLog = 0;
 		};
 		CDF8714A2AA6774EF55697B2 /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -464,7 +404,8 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -477,13 +418,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A725F1B62F4DAACB005BC977 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A75B95432F58845E00902BE8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -504,16 +438,6 @@
 			isa = PBXTargetDependency;
 			target = A725F1B92F4DAACB005BC977 /* nrfMatter */;
 			targetProxy = A725F1BF2F4DAACB005BC977 /* PBXContainerItemProxy */;
-		};
-		A75B954C2F58845E00902BE8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A75B95462F58845E00902BE8 /* SharedCode */;
-			targetProxy = A75B954B2F58845E00902BE8 /* PBXContainerItemProxy */;
-		};
-		A75B95552F58846C00902BE8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A75B95462F58845E00902BE8 /* SharedCode */;
-			targetProxy = A75B95542F58846C00902BE8 /* PBXContainerItemProxy */;
 		};
 		A7B81C552FF7EAA0000AF7E4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -795,100 +719,6 @@
 			};
 			name = Release;
 		};
-		A75B95502F58845E00902BE8 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				ENABLE_MODULE_VERIFIER = NO;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-					"@loader_path/Frameworks",
-					"$(PROJECT_DIR)/Frameworks",
-				);
-				MACH_O_TYPE = staticlib;
-				MARKETING_VERSION = 1.0;
-				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
-				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.nordicsemi.nrf.matter.SharedCode;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_INSTALL_MODULE = YES;
-				SWIFT_INSTALL_OBJC_HEADER = NO;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Debug;
-		};
-		A75B95512F58845E00902BE8 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				ENABLE_MODULE_VERIFIER = NO;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-					"@loader_path/Frameworks",
-					"$(PROJECT_DIR)/Frameworks",
-				);
-				MACH_O_TYPE = staticlib;
-				MARKETING_VERSION = 1.0;
-				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
-				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
-				PRODUCT_BUNDLE_IDENTIFIER = com.nordicsemi.nrf.matter.SharedCode;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_INSTALL_MODULE = YES;
-				SWIFT_INSTALL_OBJC_HEADER = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
 		A7B81C572FF7EAA0000AF7E4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -954,15 +784,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A75B954F2F58845E00902BE8 /* Build configuration list for PBXNativeTarget "SharedCode" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A75B95502F58845E00902BE8 /* Debug */,
-				A75B95512F58845E00902BE8 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		A7B81C562FF7EAA0000AF7E4 /* Build configuration list for PBXNativeTarget "iosAppUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -982,25 +803,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		A7DEDDBF2FA8A80D00196D69 /* XCRemoteSwiftPackageReference "Pulse" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kean/Pulse";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.2.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		A7DEDDC02FA8A80D00196D69 /* Pulse */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A7DEDDBF2FA8A80D00196D69 /* XCRemoteSwiftPackageReference "Pulse" */;
-			productName = Pulse;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1D3437AFA1B1BD836742FA45 /* Project object */;
 }

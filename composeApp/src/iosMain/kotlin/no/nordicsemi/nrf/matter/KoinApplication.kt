@@ -36,8 +36,8 @@ import org.koin.core.module.Module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-fun initKoin(nativeIos: Module) {
+fun initKoin() {
     startKoin {
-        modules(commonModule, iosModule, nativeIos)
+        modules(commonModule, iosModule)
     }
 }

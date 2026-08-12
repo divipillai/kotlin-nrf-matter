@@ -1,12 +1,32 @@
 package no.nordicsemi.nrf.matter.logger
 
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
 actual object NordicLogger {
 
-    private lateinit var logger: IOSLogger
+    /**
+     * Used until [setLogger] installs the real logger.
+     *
+     * Every process running Kotlin code has to install its own logger, and the app extension runs
+     * in a process of its own. Falling back here keeps a missing installation from turning a log
+     * call into an unhandled Kotlin exception, which is fatal once it crosses the Swift boundary.
+     */
+    private object NoOpLogger : IOSLogger {
+        override val logsChannel: Channel<String> = Channel(Channel.RENDEZVOUS)
+
+        override fun getLogs(onReady: (List<LogEntity>) -> Unit) = onReady(emptyList())
+
+        override fun info(tag: String, message: String) = println("$tag: $message")
+
+        override fun debug(tag: String, message: String) = println("$tag: $message")
+
+        override fun error(tag: String, message: String) = println("$tag: $message")
+    }
+
+    private var logger: IOSLogger = NoOpLogger
 
     val logsChannel
         get() = logger.logsChannel
@@ -20,7 +40,7 @@ actual object NordicLogger {
             logger.getLogs { trySend(it) }
 
             awaitClose {
-                
+
             }
         }
     }

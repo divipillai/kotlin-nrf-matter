@@ -2,15 +2,15 @@ package no.nordicsemi.nrf.matter.logger
 
 import kotlinx.coroutines.channels.Channel
 
-abstract class IOSLogger {
+interface IOSLogger {
 
-    val logsChannel: Channel<String> = Channel(Channel.RENDEZVOUS)
+    val logsChannel: Channel<String>
 
-    abstract fun getLogs(onReady: (List<LogEntity>) -> Unit)
+    fun getLogs(onReady: (List<LogEntity>) -> Unit)
 
-    abstract fun info(tag: String, message: String)
+    fun info(tag: String, message: String)
 
-    abstract fun debug(tag: String, message: String)
+    fun debug(tag: String, message: String)
 
-    abstract fun error(tag: String, message: String)
+    fun error(tag: String, message: String)
 }

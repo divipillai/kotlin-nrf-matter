@@ -29,7 +29,6 @@ Those 2 approaches are explained in detail in below section.
 
 ### Matter Virtual Device
 
-
 If you don't have a Thread Border Router or physical accessory handy, Google's
 [Matter Virtual Device](https://developers.home.google.com/matter/tools/virtual-device) (MVD) tool
 lets you
@@ -148,17 +147,29 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
       switches).
     - `androidMain` / `iosMain` — platform-specific code, e.g. wiring up Matter commissioning on
       each platform.
+* [`/shared`](./shared) — a thin KMP module that `api`/`export`s `:composeApp` and produces the iOS
+  framework the Xcode project consumes. It carries no source of its own; it exists so Swift has a
+  single `import shared` to reach the Kotlin surface. Both Xcode targets build it through a run-script
+  phase calling `./gradlew :shared:embedAndSignAppleFrameworkForXcode`.
 * [`/androidDeps`](./androidDeps) — Android library wrapping the native Matter (CHIP) SDK and the
   Google Home API, exposing helpers such as `ChipClient`, `ClustersHelper`, and `BindingManager`.
+  Google Home API, exposing helpers such as `ChipClient`, `ClustersHelper`, and
+  `BindingControllerImpl`.
 * [`/core`](./core) — shared domain models (`Device`, `DeviceMatterInfo`, `LockDeviceState`, …) and
-  a
-  Room-backed logger used across platforms.
+  the `NordicLogger` abstraction used across platforms — backed by Room on Android and, on iOS, by
+  `ios-matter`'s Pulse-based `SwiftLogger`.
 * [`/androidApp`](./androidApp) — the Android application entry point.
 * [`/iosApp`](./iosApp/iosApp) — the iOS application entry point (SwiftUI host for the shared
-  Compose UI).
+  Compose UI), plus the `nrfMatter` target — the `MatterSupport` app extension that provides the
+  system commissioning/QR-code UI.
   Even though the UI is shared, this project is required as the entry point for the iOS app, and is
   where
   you'd add any additional SwiftUI code.
+* [`/ios-matter`](./ios-matter) — the Swift package that wraps Apple's Matter and MatterSupport
+  frameworks, vendored into this repo rather than resolved from git. `:composeApp` cinterops against
+  it, so this is where the iOS half of commissioning, cluster access, and the keypair/storage shared
+  with the Matter extension lives. See
+  [`/ios-matter` — vendored Matter Swift package](#ios-matter--vendored-matter-swift-package).
 
 ### `androidDeps` native Matter (CHIP) SDK binaries
 
@@ -244,7 +255,9 @@ Therefore, getting started requires a few non-standard integration steps.
     - **Linux:** `~/.m2/repository/`
     - **macOS:** `~/.m2/repository/`
     - **Windows:** `C:\Users\<User_Name>\.m2\repository\`
-4. Add `mavenLocal()` to their Gradle `repositories` block so Gradle can find the artifacts.
+4. Add `mavenLocal()` to your Gradle `repositories` block so Gradle can find the artifacts —
+   [`settings.gradle.kts`](./settings.gradle.kts) already declares it alongside the vendored
+   `./mavenLocal` repository.
 5. Repeat this process each time the SDK is updated, until Google officially publishes it to a Maven
    repository.
 
@@ -252,6 +265,51 @@ Therefore, getting started requires a few non-standard integration steps.
 > check `androidDeps` and anywhere else the Home API is used (search for `play.services.home` in the
 > source), and adjust as needed.
 >
+
+### `/ios-matter` — vendored Matter Swift package
+
+[`/ios-matter`](./ios-matter) is a full Swift package — manifest and sources — checked directly into
+git, the Apple-side counterpart to the vendoring described above. It used to be resolved from
+`git@github.com:sylwester-zielinski/ios-matter.git` at an exact tag; it is now built in place.
+
+**It is not a SwiftPM dependency of the Kotlin build.** It is compiled to a static library and
+consumed through plain cinterop, so the Swift object code ends up *inside* the published artifact.
+Three Gradle tasks per iOS target do this, in [`build.gradle.kts`](./composeApp/build.gradle.kts):
+
+| Task | Does |
+| --- | --- |
+| `compileIosMatterSwift<Target>` | runs `xcodebuild` on `/ios-matter`, which also resolves and builds Pulse |
+| `iosMatterStaticLib<Target>` | `libtool`s the resulting objects into `libios-matter.a` and copies the Swift-generated ObjC header and module map beside it |
+| `cinteropIosMatter<Target>` | translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib |
+
+`./gradlew :composeApp:iosMatterStaticLibs` builds the library for every target. All three tasks run
+automatically as part of any iOS compile — there is nothing to invoke by hand.
+
+Only the `@objc public` surface of ios-matter crosses the boundary; the Swift-generated
+Objective-C header is the contract, which is why the Kotlin-facing classes are annotated.
+Kotlin reaches them through the `iosMatter.*` package (`iosMatter.SwiftLogger`,
+`iosMatter.LocalMatterLightController`, …).
+
+**Why not `localSwiftPackage`.** A SwiftPM declaration is published as
+`SwiftPMDependency.Local` carrying an **absolute** path — inspect
+`matter-support-<version>-swiftpm-metadata.json` in any published artifact to see it. A consumer
+resolving `matter-support` from Maven therefore cannot find the Swift code at all, and the Swift
+sources are not in the klib either. Only the version-pinned `swiftPackage(url = ...)` form is
+publishable, and that means a second source of truth for the Swift code. Archiving the objects into
+the cinterop klib avoids both problems: `no.nordicsemi.nrf.matter:matter-support` is now
+self-contained, and Xcode needs no package graph — neither `iosApp` nor `nrfMatter` imports
+`ios_matter`, both reach it through Kotlin bridges such as `KeychainKt.prepareKeychain()`.
+
+**Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the task inputs
+cover the sources and the manifest, so the library is rebuilt and re-archived automatically. There
+is no tag to push, no version to bump, and no lockfile to realign. Its own remote dependency,
+[Pulse](https://github.com/kean/Pulse), is still pinned by
+[`/ios-matter/Package.resolved`](./ios-matter/Package.resolved) and is linked into the same archive.
+
+One consequence of `/ios-matter` staying a local package: SwiftPM refuses `unsafeFlags` in a package
+consumed as a dependency but exempts local ones, which is what lets
+[`/ios-matter/Package.swift`](./ios-matter/Package.swift) keep `-enable-library-evolution`. Its
+comment explains why that flag is needed.
 
 ### Build and run the Android application
 
@@ -275,8 +333,13 @@ directory in Xcode and run it from there.
 
 ## Requirements
 
-- Android: minSdk 27+, a device with Google Play Services (Home API is used for commissioning).
-- iOS: Xcode to build/run [`/iosApp`](./iosApp).
+- Android: minSdk 27+, a device with Google Play Services (Home API is used for commissioning). The
+  vendored CHIP native libraries are `arm64-v8a` only, so a physical arm64 device is required — the
+  app won't run on an emulator.
+- iOS: iOS 26.0 or newer — both [`/ios-matter`](./ios-matter/Package.swift) and the Xcode targets set
+  that as their minimum, because Apple's `Matter`/`MatterSupport` APIs the app relies on are only
+  available there. Building needs an Xcode recent enough for `swift-tools-version: 6.3`
+  (Xcode 26+). Open [`/iosApp`](./iosApp) in Xcode to build/run.
 
 ## Firmware supported
 

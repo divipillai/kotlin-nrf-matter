@@ -1,6 +1,9 @@
 package no.nordicsemi.nrf.matter.cluster
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.model.DeviceId
 
@@ -16,7 +19,7 @@ class AndroidMatterClient(
         attributeId: Int
     ) {
         val devicePointer = chipClient.getConnectedDevicePointer(deviceId.longValue)
-        chipClient.readAttribute(devicePointer, endpoint, clusterId, attributeId)
+        chipClient.writeAttribute(devicePointer, endpoint, clusterId, attributeId, value)
     }
 
     override suspend fun <T> readAttribute(
@@ -35,7 +38,8 @@ class AndroidMatterClient(
         clusterId: Int,
         attributeId: Int
     ): Flow<T> {
-        TODO("Not yet implemented")
+        return chipClient.observeAttribute(deviceId, endpoint, clusterId, attributeId)
+            .map { it as T }
     }
 
     override suspend fun <T> executeCommand(
@@ -45,6 +49,9 @@ class AndroidMatterClient(
         clusterId: Int,
         commandId: Int
     ): Flow<T> {
-        TODO("Not yet implemented")
+        val devicePointer = chipClient.getConnectedDevicePointer(deviceId.longValue)
+        val response = chipClient
+            .invokeCommand(devicePointer, endpoint, clusterId, commandId, value)
+        return response?.let { flowOf(it as T) } ?: emptyFlow()
     }
 }

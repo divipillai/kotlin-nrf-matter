@@ -7,11 +7,12 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.nrf.matter.controller.MatterLightController
+import no.nordicsemi.nrf.matter.controller.LevelControlController
+import no.nordicsemi.nrf.matter.controller.OnOffController
 import no.nordicsemi.nrf.matter.model.DeviceId
 import iosMatter.LocalMatterLightController
 
-class MatterLightControllerImpl : MatterLightController {
+class MatterLightControllerImpl : OnOffController, LevelControlController {
 
     private val controller = LocalMatterLightController()
 

@@ -18,7 +18,8 @@ import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
 import no.nordicsemi.nrf.matter.controller.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
-import no.nordicsemi.nrf.matter.controller.MatterLightController
+import no.nordicsemi.nrf.matter.controller.LevelControlController
+import no.nordicsemi.nrf.matter.controller.OnOffController
 import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
@@ -97,7 +98,7 @@ val iosModule = module {
 
     viewModel { LoggerViewModel() }
     viewModel { BindingViewModel(get(), get(), get()) }
-    factory { LightCommandHandler(get()) }
+    factory { LightCommandHandler(get(), get()) }
     factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
 
@@ -105,7 +106,8 @@ val iosModule = module {
     single<MatterDecommissioner> { MatterDecommissionerImpl() }
     single<BindingController> { BindingControllerImpl() }
     single<BindingLogsProvider> { BindingLogsProviderImpl() }
-    single<MatterLightController> { MatterLightControllerImpl() }
+    single<OnOffController> { MatterLightControllerImpl() }
+    single<LevelControlController> { MatterLightControllerImpl() }
     single<MatterDoorLockController> { MatterDoorLockControllerImpl() }
     single<MatterClusterExtensionController> { MatterClusterExtensionControllerImpl() }
     single<MatterManufacturerSpecificController> {

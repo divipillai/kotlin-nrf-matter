@@ -235,66 +235,6 @@ fun ManufacturerSpecItem(
 
 }
 
-@Composable
-private fun GenerateRandomNumberBlock(
-    randomNumber: UiState<Int>,
-    generateRandomNumber: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = {
-                generateRandomNumber()
-            },
-        ) {
-            Text(
-                text = "Generate number",
-            )
-        }
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-
-            Box(
-            ) {
-                when (randomNumber) {
-                    is UiState.Error -> Icon(
-                        Icons.Outlined.Error,
-                        "Error",
-                        tint = NordicRed,
-                    )
-
-                    is UiState.Idle<Int> -> Text(
-                        "__",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    is UiState.Loading<Int> -> CircularProgressIndicator(modifier = Modifier.size(28.dp))
-                    is UiState.Success<Int> -> Text(
-                        "${randomNumber.data}",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-            Text(
-                text = "Random number",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LedButtonRow(

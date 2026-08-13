@@ -53,6 +53,7 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.TestDeviceLight
+import no.nordicsemi.nrf.matter.ui.device.LevelControlItem
 import no.nordicsemi.nrf.matter.ui.manspec.ControlCardContainer
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
@@ -185,7 +186,7 @@ internal fun LightItemContainer(
                 // TODO: Add if statement to show brightness only if the device supports it.
                 // Brightness control section
                 HorizontalDivider()
-                BrightnessControlCard(
+                LevelControlItem(
                     deviceId = deviceId,
                     brightness = brightnessLevel,
                     modifier = Modifier.padding(16.dp),
@@ -280,88 +281,6 @@ fun InfoItem(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BrightnessControlCard(
-    modifier: Modifier = Modifier,
-    deviceId: DeviceId,
-    brightness: Float,
-    isEnabled: Boolean,
-    onBrightnessChange: (DeviceId, Float) -> Unit,
-    onBrightnessChangeFinished: (DeviceId) -> Unit,
-) {
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(16.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Brightness Control",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "${(brightness * 100).roundToInt()}%",
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
-            )
-        }
-        Slider(
-            value = brightness,
-            onValueChange = { onBrightnessChange(deviceId, it) },
-            onValueChangeFinished = {
-                onBrightnessChangeFinished(deviceId)
-            },
-            valueRange = 0f..1f,
-            colors = SliderDefaults.colors(
-                activeTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
-                thumbColor = MaterialTheme.colorScheme.primary
-            ),
-            thumb = {
-                SliderDefaults.Thumb(
-                    interactionSource = remember { MutableInteractionSource() },
-                    colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary),
-                    modifier = Modifier.size(20.dp)
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = isEnabled,
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.LightMode,
-                contentDescription = "Low Brightness",
-                tint = MaterialTheme.colorScheme.outline,
-            )
-            Icon(
-                imageVector = Icons.Filled.LightMode,
-                contentDescription = "High Brightness",
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
     }
 }
 

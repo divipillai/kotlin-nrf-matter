@@ -15,11 +15,12 @@ import no.nordicsemi.nrf.matter.chip.MatterLightControllerImpl
 import no.nordicsemi.nrf.matter.chip.MatterManufacturerSpecificControllerImpl
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
+import no.nordicsemi.nrf.matter.controller.LevelControlController
 import no.nordicsemi.nrf.matter.controller.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
-import no.nordicsemi.nrf.matter.controller.MatterLightController
 import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
+import no.nordicsemi.nrf.matter.controller.OnOffController
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.home.CommissioningViewModelAndroid
@@ -87,7 +88,8 @@ val androidModule = module {
     single<BindingController> { BindingControllerImpl(chipClient = get()) }
     single<BindingLogsProvider> { BindingLogsProviderImpl(chipClient = get()) }
     single<MatterBasicInfoProvider> { MatterBasicInfoProvider(chipClient = get()) }
-    single<MatterLightController> { MatterLightControllerImpl(chipClient = get()) }
+    single<OnOffController> { MatterLightControllerImpl(chipClient = get()) }
+    single< LevelControlController> { MatterLightControllerImpl(chipClient = get()) }
     single<MatterDoorLockController> { MatterDoorLockControllerImpl(chipClient = get()) }
     single<MatterClusterExtensionController> { MatterClusterExtensionControllerImpl(chipClient = get()) }
     single<MatterManufacturerSpecificController> {
@@ -100,7 +102,7 @@ val androidModule = module {
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<BindingRepository> { BindingRepository(get()) }
 
-    factory { LightCommandHandler(get()) }
+    factory { LightCommandHandler(get(), get()) }
     factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
 

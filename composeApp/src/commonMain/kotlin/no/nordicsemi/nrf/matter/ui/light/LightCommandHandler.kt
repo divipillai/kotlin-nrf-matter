@@ -3,7 +3,9 @@ package no.nordicsemi.nrf.matter.ui.light
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import no.nordicsemi.nrf.matter.controller.LevelControlController
 import no.nordicsemi.nrf.matter.controller.MatterLightController
+import no.nordicsemi.nrf.matter.controller.OnOffController
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.ui.CommandHandler
@@ -13,7 +15,8 @@ private const val ON_OFF_CLUSTER_ID: Long = 0x0006L
 private const val LEVEL_CONTROL_CLUSTER_ID: Long = 0x0008L
 
 class LightCommandHandler(
-    private val deviceController: MatterLightController,
+    private val onOffController: OnOffController,
+    private val levelControlController: LevelControlController,
 ) : CommandHandler {
 
     /**
@@ -26,7 +29,7 @@ class LightCommandHandler(
         val deviceId = device.deviceId
         val endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
 
-        deviceController.setDeviceOnOff(
+        onOffController.setDeviceOnOff(
             deviceId = deviceId,
             isOn = isOn,
             endpoint = endpoint,
@@ -43,7 +46,7 @@ class LightCommandHandler(
         val deviceId = device.deviceId
         val endpoint = resolveEndpoint(device, clusterId = LEVEL_CONTROL_CLUSTER_ID)
 
-        deviceController.setBrightnessLevel(
+        levelControlController.setBrightnessLevel(
             deviceId = deviceId,
             brightnessLevel = (1 + (brightnessLevel * 253)).roundToInt(),
             endpoint = endpoint,
@@ -54,7 +57,7 @@ class LightCommandHandler(
         device: Device
     ): Flow<UiState<Boolean>> = flow {
         emitAll(
-            deviceController.observeLightState(
+            onOffController.observeLightState(
                 deviceId = device.deviceId,
                 endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
             )
@@ -65,7 +68,7 @@ class LightCommandHandler(
         device: Device
     ): Flow<UiState<Float>> = flow {
         emitAll(
-            deviceController.observeBrightnessState(
+            levelControlController.observeBrightnessState(
                 deviceId = device.deviceId,
                 endpoint = resolveEndpoint(device, clusterId = LEVEL_CONTROL_CLUSTER_ID)
             )

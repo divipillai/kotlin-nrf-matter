@@ -14,7 +14,8 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.nrf.matter.controller.MatterLightController
+import no.nordicsemi.nrf.matter.controller.LevelControlController
+import no.nordicsemi.nrf.matter.controller.OnOffController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import kotlin.coroutines.resumeWithException
@@ -62,7 +63,7 @@ import kotlin.coroutines.resumeWithException
  */
 class MatterLightControllerImpl(
     private val chipClient: ChipClient,
-) : MatterLightController {
+) : OnOffController, LevelControlController {
 
     override suspend fun setBrightnessLevel(
         deviceId: DeviceId,

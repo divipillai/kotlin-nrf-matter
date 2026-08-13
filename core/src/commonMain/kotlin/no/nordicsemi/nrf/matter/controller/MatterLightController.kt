@@ -3,28 +3,7 @@ package no.nordicsemi.nrf.matter.controller
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.model.DeviceId
 
-interface MatterLightController {
-
-    /**
-     * Writes the current brightness level to the Level Control cluster.
-     *
-     * The command used is "Move to Level with On/Off", which sets the brightness level and turns on
-     * or off the device based on the brightness level (if [brightnessLevel] > 0, the device will be
-     * turned on; if [brightnessLevel] == 0, the device will be turned off). The transition is
-     * instantaneous (no fade).
-     *
-     * @param deviceId the commissioned device to control.
-     * @param brightnessLevel target level in the device's raw Level Control range (typically 1-254).
-     * @param endpoint the Matter endpoint exposing the Level Control cluster.
-     * @throws Exception if the underlying cluster command fails (e.g. device unreachable, command
-     * rejected).
-     */
-    suspend fun setBrightnessLevel(
-        deviceId: DeviceId,
-        brightnessLevel: Int,
-        endpoint: Int
-    )
-
+interface OnOffController {
     /**
      * Turns the light on or off via the On/Off cluster.
      *
@@ -48,6 +27,28 @@ interface MatterLightController {
      * @return a cold [Flow] emitting `true` when the light is on, `false` when it is off.
      */
     suspend fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<Boolean>
+}
+interface LevelControlController {
+
+    /**
+     * Writes the current brightness level to the Level Control cluster.
+     *
+     * The command used is "Move to Level with On/Off", which sets the brightness level and turns on
+     * or off the device based on the brightness level (if [brightnessLevel] > 0, the device will be
+     * turned on; if [brightnessLevel] == 0, the device will be turned off). The transition is
+     * instantaneous (no fade).
+     *
+     * @param deviceId the commissioned device to control.
+     * @param brightnessLevel target level in the device's raw Level Control range (typically 1-254).
+     * @param endpoint the Matter endpoint exposing the Level Control cluster.
+     * @throws Exception if the underlying cluster command fails (e.g. device unreachable, command
+     * rejected).
+     */
+    suspend fun setBrightnessLevel(
+        deviceId: DeviceId,
+        brightnessLevel: Int,
+        endpoint: Int
+    )
 
     /**
      * Subscribes to the CurrentLevel attribute of a light endpoint and emits its brightness as it

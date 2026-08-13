@@ -413,6 +413,16 @@ class ChipClient(
         }
     }
 
+    suspend fun readAttribute(devicePtr: Long, endpoint: Int, clusterId: Int, attributeId: Int): Any? {
+        val path = ChipAttributePath.newInstance(endpoint, clusterId.toLong(), attributeId.toLong())
+        return readAttribute(devicePtr, path)?.value
+    }
+
+    suspend fun setAttribute(value: T, devicePtr: Long, endpoint: Int, clusterId: Int, attributeId: Int): Any? {
+        val path = ChipAttributePath.newInstance(endpoint, clusterId.toLong(), attributeId.toLong())
+        return readAttribute(devicePtr, path)?.value
+    }
+
     /**
      * Reads a single attribute from a device.
      *

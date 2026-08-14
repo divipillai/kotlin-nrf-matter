@@ -12,7 +12,6 @@ import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import org.jetbrains.compose.resources.painterResource
 
-/** The icon of the device, where [isActive] tells whether the device is on or locked. */
 @Composable
 fun Device.toIcon(isActive: Boolean): Painter = when (deviceType) {
     DeviceType.DOOR_LOCK -> painterResource(
@@ -24,11 +23,10 @@ fun Device.toIcon(isActive: Boolean): Painter = when (deviceType) {
     else -> painterResource(Res.drawable.light_bulb)
 }
 
-/** The name of the device, falling back to its type when the device is unnamed. */
 fun Device.toTitle(): String = name ?: productName ?: deviceType.toString()
 
 fun Device.toSubtitle(): String = deviceType.toString()
 
-/** Only switches and outlets can be bound to another device, see the binding screen. */
-fun Device.isBindingCapable(): Boolean =
-    deviceType == DeviceType.LIGHT_SWITCH || deviceType == DeviceType.OUTLET
+fun Device.isBindingCapable(): Boolean {
+    return deviceType == DeviceType.LIGHT_SWITCH || deviceType == DeviceType.OUTLET
+}

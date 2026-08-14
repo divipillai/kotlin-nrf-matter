@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 
-/** The card every single control of a device is placed on. */
 @Composable
 fun ControlCardContainer(
     modifier: Modifier = Modifier,

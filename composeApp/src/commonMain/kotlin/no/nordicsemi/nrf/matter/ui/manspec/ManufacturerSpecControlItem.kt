@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.ui.device
+package no.nordicsemi.nrf.matter.ui.manspec
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.domain.UiState
+import no.nordicsemi.nrf.matter.ui.device.ControlCardContainer
 
 @Composable
 fun ManufacturerSpecControlItem(

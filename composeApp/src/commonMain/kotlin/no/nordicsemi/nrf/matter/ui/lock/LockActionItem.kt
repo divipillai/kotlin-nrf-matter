@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.ui.device
+package no.nordicsemi.nrf.matter.ui.lock
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box

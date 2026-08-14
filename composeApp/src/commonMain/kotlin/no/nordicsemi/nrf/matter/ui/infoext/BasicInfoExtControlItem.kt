@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.ui.device
+package no.nordicsemi.nrf.matter.ui.infoext
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

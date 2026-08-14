@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.ui.device
+package no.nordicsemi.nrf.matter.ui.manspec
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.cluster.ManufacturerSpecCluster
 import no.nordicsemi.nrf.matter.domain.UiState
+import no.nordicsemi.nrf.matter.ui.device.ClusterViewModel
 
 data class ManufacturerSpecState(
     val isLedOn: UiState<Boolean> = UiState.Idle(),

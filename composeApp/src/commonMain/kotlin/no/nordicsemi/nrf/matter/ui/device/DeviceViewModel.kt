@@ -9,10 +9,6 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.ui.MatterController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 
-/**
- * Presents a commissioned device as a [DeviceItem], with one [ClusterViewModel] per cluster the
- * device exposes.
- */
 class DeviceViewModel(
     private val device: DeviceUiModel,
     client: MatterClient,

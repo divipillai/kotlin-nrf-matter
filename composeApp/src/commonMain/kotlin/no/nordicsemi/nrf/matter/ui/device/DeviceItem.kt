@@ -45,14 +45,17 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
+import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtControlItem
+import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtViewModel
+import no.nordicsemi.nrf.matter.ui.level.LevelControlItem
+import no.nordicsemi.nrf.matter.ui.level.LevelControlViewModel
+import no.nordicsemi.nrf.matter.ui.light.OnOffActionItem
+import no.nordicsemi.nrf.matter.ui.light.OnOffViewModel
+import no.nordicsemi.nrf.matter.ui.lock.DoorLockViewModel
+import no.nordicsemi.nrf.matter.ui.lock.LockActionItem
+import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecControlItem
+import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecViewModel
 
-/**
- * A card presenting a single commissioned device.
- *
- * The card is assembled from the clusters the device exposes: the cluster which the device is
- * controlled with (On/Off or Door Lock) becomes the action in the header, the remaining ones are
- * shown as controls once the card is expanded.
- */
 @Composable
 internal fun DeviceItem(
     device: DeviceUiModel,

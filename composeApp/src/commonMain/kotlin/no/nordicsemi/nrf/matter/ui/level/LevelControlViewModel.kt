@@ -1,10 +1,11 @@
-package no.nordicsemi.nrf.matter.ui.device
+package no.nordicsemi.nrf.matter.ui.level
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.cluster.LevelControlCluster
+import no.nordicsemi.nrf.matter.ui.device.ClusterViewModel
 
 data class LevelControlState(
     val brightness: Float = 0f,
@@ -30,7 +31,6 @@ class LevelControlViewModel(
         _state.update { it.copy(brightness = brightness) }
     }
 
-    /** Sends the brightness the user has selected. */
     fun commitBrightness() {
         val brightness = _state.value.brightness
         _state.update { it.copy(isEnabled = false) }

@@ -1,4 +1,4 @@
-package no.nordicsemi.nrf.matter.ui.device
+package no.nordicsemi.nrf.matter.ui.level
 
 import no.nordicsemi.nrf.matter.cluster.LevelControlCluster.Companion.MAX_LEVEL
 import no.nordicsemi.nrf.matter.cluster.LevelControlCluster.Companion.MIN_LEVEL

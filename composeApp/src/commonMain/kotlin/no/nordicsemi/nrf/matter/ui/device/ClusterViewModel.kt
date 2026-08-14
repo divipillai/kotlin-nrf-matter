@@ -14,17 +14,17 @@ import no.nordicsemi.nrf.matter.cluster.LevelControlCluster
 import no.nordicsemi.nrf.matter.cluster.ManufacturerSpecCluster
 import no.nordicsemi.nrf.matter.cluster.OnOffCluster
 import no.nordicsemi.nrf.matter.logger.NordicLogger
+import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtViewModel
+import no.nordicsemi.nrf.matter.ui.level.LevelControlViewModel
+import no.nordicsemi.nrf.matter.ui.light.OnOffViewModel
+import no.nordicsemi.nrf.matter.ui.lock.DoorLockViewModel
+import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecViewModel
 
-/**
- * Holds the UI state of a single cluster of a device. Each subclass owns one cluster and exposes
- * its state as a [kotlinx.coroutines.flow.StateFlow], so that the UI stays stateless.
- */
-sealed class ClusterViewModel(private val scope: CoroutineScope) {
+abstract class ClusterViewModel(private val scope: CoroutineScope) {
 
     private val tag: String
         get() = this::class.simpleName ?: "ClusterViewModel"
 
-    /** Reports every value of [source] to [onValue] until [scope] is cancelled. */
     protected fun <T> observe(source: suspend () -> Flow<T>, onValue: (T) -> Unit) {
         scope.launch {
             flow { emitAll(source()) }
@@ -36,7 +36,6 @@ sealed class ClusterViewModel(private val scope: CoroutineScope) {
         }
     }
 
-    /** Sends [command] to the device, calling [onFailure] when it could not be delivered. */
     protected fun send(onFailure: () -> Unit = {}, command: suspend () -> Unit) {
         scope.launch {
             try {
@@ -51,7 +50,6 @@ sealed class ClusterViewModel(private val scope: CoroutineScope) {
     }
 }
 
-/** Creates the view model driving the UI of this cluster. */
 fun Cluster.toViewModel(scope: CoroutineScope): ClusterViewModel = when (this) {
     is OnOffCluster -> OnOffViewModel(this, scope)
     is LevelControlCluster -> LevelControlViewModel(this, scope)

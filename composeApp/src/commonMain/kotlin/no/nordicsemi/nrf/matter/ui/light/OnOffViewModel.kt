@@ -1,10 +1,11 @@
-package no.nordicsemi.nrf.matter.ui.device
+package no.nordicsemi.nrf.matter.ui.light
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.cluster.OnOffCluster
+import no.nordicsemi.nrf.matter.ui.device.ClusterViewModel
 
 data class OnOffState(
     val isOn: Boolean = false,

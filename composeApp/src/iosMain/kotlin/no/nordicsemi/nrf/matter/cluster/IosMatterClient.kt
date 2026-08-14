@@ -49,8 +49,8 @@ class IosMatterClient : MatterClient() {
         value: T,
         deviceId: DeviceId,
         endpoint: Int,
-        clusterId: Int,
-        attributeId: Int
+        clusterId: Long,
+        attributeId: Long
     ) {
         return suspendCancellableCoroutine { continuation ->
             client.writeAttributeWithDeviceId(
@@ -68,8 +68,8 @@ class IosMatterClient : MatterClient() {
     override suspend fun <T> readAttribute(
         deviceId: DeviceId,
         endpoint: Int,
-        clusterId: Int,
-        attributeId: Int
+        clusterId: Long,
+        attributeId: Long
     ): T {
         return suspendCancellableCoroutine { continuation ->
             client.readAttributeWithDeviceId(
@@ -92,8 +92,8 @@ class IosMatterClient : MatterClient() {
     override suspend fun <T> observeAttribute(
         deviceId: DeviceId,
         endpoint: Int,
-        clusterId: Int,
-        attributeId: Int
+        clusterId: Long,
+        attributeId: Long
     ): Flow<T> {
         return callbackFlow {
             client.observeAttributeWithDeviceId(
@@ -125,8 +125,8 @@ class IosMatterClient : MatterClient() {
         value: T,
         deviceId: DeviceId,
         endpoint: Int,
-        clusterId: Int,
-        commandId: Int
+        clusterId: Long,
+        commandId: Long
     ): Flow<T> {
         val response: Any? = suspendCancellableCoroutine { continuation ->
             client.executeCommandWithDeviceId(

@@ -13,6 +13,8 @@ import no.nordicsemi.nrf.matter.chip.MatterClusterExtensionControllerImpl
 import no.nordicsemi.nrf.matter.chip.MatterDoorLockControllerImpl
 import no.nordicsemi.nrf.matter.chip.MatterLightControllerImpl
 import no.nordicsemi.nrf.matter.chip.MatterManufacturerSpecificControllerImpl
+import no.nordicsemi.nrf.matter.cluster.AndroidMatterClient
+import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
 import no.nordicsemi.nrf.matter.controller.LevelControlController
@@ -83,6 +85,7 @@ val androidModule = module {
     }
 
     single<ChipClient> { ChipClient(context = androidContext()) }
+    single<MatterClient> { AndroidMatterClient(chipClient = get()) }
     single<ClustersHelper> { ClustersHelper(chipClient = get()) }
     single<MatterDecommissioner> { MatterDecommissionerImpl(chipClient = get()) }
     single<BindingController> { BindingControllerImpl(chipClient = get()) }

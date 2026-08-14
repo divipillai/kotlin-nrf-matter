@@ -36,74 +36,52 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
-import no.nordicsemi.nrf.matter.cluster.BasicInfoExtCluster
-import no.nordicsemi.nrf.matter.cluster.Cluster
-import no.nordicsemi.nrf.matter.cluster.DoorLockCluster
-import no.nordicsemi.nrf.matter.cluster.LevelControlCluster
-import no.nordicsemi.nrf.matter.cluster.ManufacturerSpecCluster
-import no.nordicsemi.nrf.matter.cluster.OnOffCluster
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
-import no.nordicsemi.nrf.matter.composeapp.generated.resources.Res
-import no.nordicsemi.nrf.matter.composeapp.generated.resources.door_lock
-import no.nordicsemi.nrf.matter.composeapp.generated.resources.door_lock_open_right
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
-import org.jetbrains.compose.resources.painterResource
 
-// Lock Item
+/**
+ * A card presenting a single commissioned device.
+ *
+ * The card is assembled from the clusters the device exposes: the cluster which the device is
+ * controlled with (On/Off or Door Lock) becomes the action in the header, the remaining ones are
+ * shown as controls once the card is expanded.
+ */
 @Composable
 internal fun DeviceItem(
     device: DeviceUiModel,
-    lockState: UiState<LockDeviceState>,
-    onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
+    clusters: List<ClusterViewModel>,
     onDecommission: (DeviceId) -> Unit,
 ) {
-    DeviceItemContainer(
-        deviceUiModel = device,
-        title = "Front Door",
-        subtitle = "Smart Lock",
-        lockState = lockState,
-        onLockUnlockDoor = onLockUnlockDoor,
-        onDecommission = onDecommission
-    )
+    val onOff = clusters.filterIsInstance<OnOffViewModel>().firstOrNull()
+    val doorLock = clusters.filterIsInstance<DoorLockViewModel>().firstOrNull()
+    val levelControl = clusters.filterIsInstance<LevelControlViewModel>().firstOrNull()
+    val manufacturerSpec = clusters.filterIsInstance<ManufacturerSpecViewModel>().firstOrNull()
+    val basicInfoExt = clusters.filterIsInstance<BasicInfoExtViewModel>().firstOrNull()
 
-}
+    val onOffState = onOff?.state?.collectAsStateWithLifecycle()?.value
+    val lockState = doorLock?.state?.collectAsStateWithLifecycle()?.value
 
-@Composable
-fun DeviceItemContainer(
-    deviceUiModel: DeviceUiModel,
-    title: String,
-    subtitle: String,
-    lockState: UiState<LockDeviceState>,
-    clusters: List<Cluster>,
-    onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
-    onDecommission: (DeviceId) -> Unit,
-) {
+    // The lock keeps its last known state while it is moving, so that the label does not flicker.
     var isLocked by remember { mutableStateOf(false) }
-
     LaunchedEffect(lockState) {
-        (lockState as? UiState.Success)?.let {
-            isLocked = it.data == LockDeviceState.LOCKED
-        }
+        (lockState as? UiState.Success)?.let { isLocked = it.data == LockDeviceState.LOCKED }
     }
 
-    val icon = if (isLocked)
-        painterResource(Res.drawable.door_lock)
-    else painterResource(Res.drawable.door_lock_open_right)
-
+    val isActive = onOffState?.isOn == true || isLocked
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
 
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
-        border = if (isLocked) BorderStroke(
+        border = if (isActive) BorderStroke(
             width = 1.dp,
             color = MaterialTheme.colorScheme.primary.copy(0.3f)
         ) else CardDefaults.outlinedCardBorder(),
@@ -118,60 +96,84 @@ fun DeviceItemContainer(
     ) {
 
         DeviceHeader(
-            isOn = isLocked,
-            icon = icon,
-            title = title,
-            subtitle = subtitle,
-            bindingCapable = false
+            isOn = isActive,
+            icon = device.device.toIcon(isActive),
+            title = device.device.toTitle(),
+            subtitle = device.device.toSubtitle(),
+            bindingCapable = device.device.isBindingCapable(),
         ) {
-            when (deviceUiModel.device.deviceType) {
-
-                DeviceType.LIGHT_ON_OFF,
-                DeviceType.DIMMABLE_LIGHT -> OnOffActionItem(
-
+            when {
+                doorLock != null && lockState != null -> LockActionItem(
+                    lockState = lockState,
+                    isLocked = isLocked,
+                    onLockUnlockDoor = doorLock::setLocked,
                 )
-                DeviceType.DOOR_LOCK -> LockActionItem(
 
+                onOff != null && onOffState != null -> OnOffActionItem(
+                    isOn = onOffState.isOn,
+                    isEnabled = onOffState.isEnabled,
+                    onCheckedChange = onOff::setOn,
                 )
-                DeviceType.LIGHT_SWITCH,
-                DeviceType.OUTLET,
-                DeviceType.UNSUPPORTED,
-                DeviceType.COLOR_TEMPERATURE_LIGHT,
-                DeviceType.EXTENDED_COLOR_LIGHT,
-                DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> TODO()
             }
         }
-        if (isExpanded) {
-            AnimatedVisibility(isExpanded) {
-                Column {
-                    // Matter Device information section
-                    HorizontalDivider()
 
-                    clusters.forEach {
-                        when (it) {
-                            is BasicInfoExtCluster -> BasicInfoExtControlItem()
-                            is LevelControlCluster -> LevelControlItem()
-                            is ManufacturerSpecCluster -> ManufacturerSpecControlItem()
-                            is OnOffCluster,
-                            is DoorLockCluster -> { }
-                        }
-                    }
+        AnimatedVisibility(isExpanded) {
+            Column {
+                HorizontalDivider()
 
-                    SharedSection(deviceUiModel, showMatterDeviceInfo) { showMatterDeviceInfo = it }
+                levelControl?.let { BrightnessControl(it, device.device.deviceId) }
+                manufacturerSpec?.let { LedAndButtonControl(it) }
+                basicInfoExt?.let { RandomNumberControl(it) }
 
-                    // Decommission device
-                    DecommissionDevice(deviceUiModel.device.deviceId, onDecommission)
-                }
+                SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
 
+                // Decommission device
+                DecommissionDevice(device.device.deviceId, onDecommission)
             }
         }
 
         // Basic Information Bottom Sheet Dialog
         if (showMatterDeviceInfo) {
-            BasicInformationBottomSheet(deviceUiModel, onDismiss = { showMatterDeviceInfo = false })
+            BasicInformationBottomSheet(device, onDismiss = { showMatterDeviceInfo = false })
         }
-
     }
+}
+
+@Composable
+private fun BrightnessControl(viewModel: LevelControlViewModel, deviceId: DeviceId) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LevelControlItem(
+        deviceId = deviceId,
+        brightness = state.brightness,
+        isEnabled = state.isEnabled,
+        onBrightnessChange = { _, brightness -> viewModel.setBrightness(brightness) },
+        onBrightnessChangeFinished = { viewModel.commitBrightness() },
+        modifier = Modifier.padding(16.dp),
+    )
+}
+
+@Composable
+private fun LedAndButtonControl(viewModel: ManufacturerSpecViewModel) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    ManufacturerSpecControlItem(
+        isLedOn = state.isLedOn,
+        isButtonOn = state.isButtonPressed,
+        isButtonPressed = (state.isButtonPressed as? UiState.Success)?.data == true,
+        setLed = viewModel::setLed,
+    )
+}
+
+@Composable
+private fun RandomNumberControl(viewModel: BasicInfoExtViewModel) {
+    val randomNumber by viewModel.randomNumber.collectAsStateWithLifecycle()
+
+    BasicInfoExtControlItem(
+        randomNumber = randomNumber,
+        generateRandomNumber = viewModel::generateRandomNumber,
+        modifier = Modifier.padding(16.dp),
+    )
 }
 
 @Composable

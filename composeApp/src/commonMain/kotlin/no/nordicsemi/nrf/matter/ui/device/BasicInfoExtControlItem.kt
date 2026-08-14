@@ -27,10 +27,11 @@ import no.nordicsemi.nrf.matter.theme.NordicRed
 @Composable
 fun BasicInfoExtControlItem(
     randomNumber: UiState<Int>,
-    generateRandomNumber: () -> Unit
+    generateRandomNumber: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)

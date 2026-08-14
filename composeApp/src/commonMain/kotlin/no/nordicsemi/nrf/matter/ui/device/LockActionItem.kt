@@ -19,16 +19,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.domain.UiState
-import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.LockDeviceState
 
 @Composable
 fun LockActionItem(
-    deviceUiModel: DeviceUiModel,
     lockState: UiState<LockDeviceState>,
     isLocked: Boolean,
-    onLockUnlockDoor: (deviceId: DeviceId, value: Boolean) -> Unit,
+    onLockUnlockDoor: (isLocked: Boolean) -> Unit,
 ) {
     Box(
         contentAlignment = Alignment.Center
@@ -39,7 +36,7 @@ fun LockActionItem(
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
                 .clickable {
-                    onLockUnlockDoor(deviceUiModel.device.deviceId, !isLocked)
+                    onLockUnlockDoor(!isLocked)
                 }.alpha(
                     if (lockState is UiState.Success) 1f else 0f
                 )

@@ -424,24 +424,24 @@ class ChipClient(
         }
     }
 
-    suspend fun readAttribute(devicePtr: Long, endpoint: Int, clusterId: Int, attributeId: Int): Any? {
-        val path = ChipAttributePath.newInstance(endpoint, clusterId.toLong(), attributeId.toLong())
+    suspend fun readAttribute(devicePtr: Long, endpoint: Int, clusterId: Long, attributeId: Long): Any? {
+        val path = ChipAttributePath.newInstance(endpoint, clusterId, attributeId)
         return readAttribute(devicePtr, path)?.value
     }
 
     suspend fun writeAttribute(
         devicePtr: Long,
         endpoint: Int,
-        clusterId: Int,
-        attributeId: Int,
+        clusterId: Long,
+        attributeId: Long,
         value: Any?,
         timedRequestTimeoutMs: Int = 0,
         imTimeoutMs: Int = DEFAULT_IM_TIMEOUT,
     ) {
         val request = AttributeWriteRequest.newInstance(
             endpoint,
-            clusterId.toLong(),
-            attributeId.toLong(),
+            clusterId,
+            attributeId,
             encodeAttributeValue(value),
         )
         return suspendCancellableCoroutine { continuation ->
@@ -484,16 +484,16 @@ class ChipClient(
     suspend fun invokeCommand(
         devicePtr: Long,
         endpoint: Int,
-        clusterId: Int,
-        commandId: Int,
+        clusterId: Long,
+        commandId: Long,
         value: Any?,
         timedRequestTimeoutMs: Int = 0,
         imTimeoutMs: Int = DEFAULT_IM_TIMEOUT,
     ): Any? {
         val invokeElement = InvokeElement.newInstance(
             endpoint,
-            clusterId.toLong(),
-            commandId.toLong(),
+            clusterId,
+            commandId,
             encodeCommandFields(value),
             null,
         )
@@ -528,8 +528,8 @@ class ChipClient(
     fun observeAttribute(
         deviceId: DeviceId,
         endpoint: Int,
-        clusterId: Int,
-        attributeId: Int,
+        clusterId: Long,
+        attributeId: Long,
         minIntervalS: Int = DEFAULT_SUBSCRIPTION_MIN_INTERVAL_S,
         maxIntervalS: Int = DEFAULT_SUBSCRIPTION_MAX_INTERVAL_S,
         timeoutMs: Int = DEFAULT_SUBSCRIPTION_TIMEOUT_MS,
@@ -551,8 +551,8 @@ class ChipClient(
 
             override fun onReport(nodeState: NodeState?) {
                 val attributeState = nodeState?.getEndpointState(endpoint)
-                    ?.getClusterState(clusterId.toLong())
-                    ?.getAttributeState(attributeId.toLong())
+                    ?.getClusterState(clusterId)
+                    ?.getAttributeState(attributeId)
                     ?: return
                 trySend(attributeState.value)
             }
@@ -562,7 +562,7 @@ class ChipClient(
             reportCallback = reportCallback,
             devicePtr = devicePtr,
             attributePaths = listOf(
-                ChipAttributePath.newInstance(endpoint, clusterId.toLong(), attributeId.toLong())
+                ChipAttributePath.newInstance(endpoint, clusterId, attributeId)
             ),
             minIntervalS = minIntervalS,
             maxIntervalS = maxIntervalS,

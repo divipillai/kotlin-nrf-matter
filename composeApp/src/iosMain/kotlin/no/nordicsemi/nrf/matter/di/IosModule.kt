@@ -12,6 +12,8 @@ import no.nordicsemi.nrf.matter.adapters.MatterManufacturerSpecificControllerImp
 import no.nordicsemi.nrf.matter.binding.BindingLogsProviderImpl
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
+import no.nordicsemi.nrf.matter.cluster.IosMatterClient
+import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.commission.CommissioningViewModelIos
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
@@ -101,6 +103,8 @@ val iosModule = module {
     factory { LightCommandHandler(get(), get()) }
     factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
+
+    single<MatterClient> { IosMatterClient() }
 
     single<MatterCommissioner> { MatterCommissionerImpl() }
     single<MatterDecommissioner> { MatterDecommissionerImpl() }

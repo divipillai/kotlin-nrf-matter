@@ -15,8 +15,8 @@ class AndroidMatterClient(
         value: T,
         deviceId: DeviceId,
         endpoint: Int,
-        clusterId: Int,
-        attributeId: Int
+        clusterId: Long,
+        attributeId: Long
     ) {
         val devicePointer = chipClient.getConnectedDevicePointer(deviceId.longValue)
         chipClient.writeAttribute(devicePointer, endpoint, clusterId, attributeId, value)
@@ -25,33 +25,38 @@ class AndroidMatterClient(
     override suspend fun <T> readAttribute(
         deviceId: DeviceId,
         endpoint: Int,
-        clusterId: Int,
-        attributeId: Int
+        clusterId: Long,
+        attributeId: Long
     ): T {
         val devicePointer = chipClient.getConnectedDevicePointer(deviceId.longValue)
+        @Suppress("UNCHECKED_CAST")
         return chipClient.readAttribute(devicePointer, endpoint, clusterId, attributeId) as T
     }
 
     override suspend fun <T> observeAttribute(
         deviceId: DeviceId,
         endpoint: Int,
-        clusterId: Int,
-        attributeId: Int
+        clusterId: Long,
+        attributeId: Long
     ): Flow<T> {
         return chipClient.observeAttribute(deviceId, endpoint, clusterId, attributeId)
-            .map { it as T }
+            .map {
+                @Suppress("UNCHECKED_CAST")
+                it as T
+            }
     }
 
     override suspend fun <T> executeCommand(
         value: T,
         deviceId: DeviceId,
         endpoint: Int,
-        clusterId: Int,
-        commandId: Int
+        clusterId: Long,
+        commandId: Long
     ): Flow<T> {
         val devicePointer = chipClient.getConnectedDevicePointer(deviceId.longValue)
         val response = chipClient
             .invokeCommand(devicePointer, endpoint, clusterId, commandId, value)
+        @Suppress("UNCHECKED_CAST")
         return response?.let { flowOf(it as T) } ?: emptyFlow()
     }
 }

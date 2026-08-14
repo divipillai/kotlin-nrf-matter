@@ -64,6 +64,7 @@ import no.nordicsemi.nrf.matter.theme.NordicRed
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
+import no.nordicsemi.nrf.matter.ui.device.BasicInfoExtControlItem
 import no.nordicsemi.nrf.matter.ui.light.InfoItem
 import org.jetbrains.compose.resources.painterResource
 
@@ -155,7 +156,7 @@ fun ManufacturerSpecItem(
                     .padding(8.dp).fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                GenerateRandomNumberBlock(randomNumber, generateRandomNumber)
+                BasicInfoExtControlItem(randomNumber, generateRandomNumber)
 
                 LedButtonRow(
                     isLedOn = isLedOn,

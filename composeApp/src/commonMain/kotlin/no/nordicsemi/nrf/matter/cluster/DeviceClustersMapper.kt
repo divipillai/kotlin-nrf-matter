@@ -2,10 +2,7 @@ package no.nordicsemi.nrf.matter.cluster
 
 import no.nordicsemi.nrf.matter.model.Device
 
-/**
- * Creates a [Cluster] for every supported server cluster the device reported during commissioning.
- * Clusters which have no representation in the UI are skipped.
- */
+
 fun Device.toClusters(client: MatterClient): List<Cluster> {
 
     val hasManufacturerSpecCluster = deviceMatterInfo.any {

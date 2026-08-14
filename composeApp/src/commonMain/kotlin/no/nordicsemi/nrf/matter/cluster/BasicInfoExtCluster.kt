@@ -2,10 +2,7 @@ package no.nordicsemi.nrf.matter.cluster
 
 import no.nordicsemi.nrf.matter.model.DeviceId
 
-/**
- * The Basic Information cluster with the Nordic specific "random number" extension, which is only
- * available on devices running the companion firmware.
- */
+
 class BasicInfoExtCluster(
     override val deviceId: DeviceId,
     override val endpoint: Int,

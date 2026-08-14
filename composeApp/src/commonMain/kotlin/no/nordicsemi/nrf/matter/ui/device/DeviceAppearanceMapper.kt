@@ -28,5 +28,5 @@ fun Device.toTitle(): String = name ?: productName ?: deviceType.toString()
 fun Device.toSubtitle(): String = deviceType.toString()
 
 fun Device.isBindingCapable(): Boolean {
-    return deviceType == DeviceType.LIGHT_SWITCH || deviceType == DeviceType.OUTLET
+    return deviceMatterInfo.any { it.serverClusters.contains(6) }
 }

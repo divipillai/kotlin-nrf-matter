@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.domain.UiState
-import no.nordicsemi.nrf.matter.ui.manspec.ControlCardContainer
 
 @Composable
 fun ManufacturerSpecControlItem(

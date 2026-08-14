@@ -42,7 +42,7 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
-import no.nordicsemi.nrf.matter.ui.light.InfoItem
+import no.nordicsemi.nrf.matter.ui.device.InfoItem
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor

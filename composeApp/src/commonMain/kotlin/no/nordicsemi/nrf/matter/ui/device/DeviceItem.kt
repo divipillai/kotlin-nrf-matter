@@ -45,7 +45,6 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
-import no.nordicsemi.nrf.matter.ui.light.InfoItem
 
 /**
  * A card presenting a single commissioned device.

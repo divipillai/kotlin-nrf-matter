@@ -9,20 +9,11 @@ import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterDecommissionerImpl
 import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
-import no.nordicsemi.nrf.matter.chip.MatterClusterExtensionControllerImpl
-import no.nordicsemi.nrf.matter.chip.MatterDoorLockControllerImpl
-import no.nordicsemi.nrf.matter.chip.MatterLightControllerImpl
-import no.nordicsemi.nrf.matter.chip.MatterManufacturerSpecificControllerImpl
 import no.nordicsemi.nrf.matter.cluster.AndroidMatterClient
 import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
-import no.nordicsemi.nrf.matter.controller.LevelControlController
-import no.nordicsemi.nrf.matter.controller.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
-import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
-import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
-import no.nordicsemi.nrf.matter.controller.OnOffController
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.home.CommissioningViewModelAndroid
@@ -32,9 +23,6 @@ import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.ui.light.LightCommandHandler
-import no.nordicsemi.nrf.matter.ui.lock.LockCommandHandler
-import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecCommandHandler
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -91,23 +79,11 @@ val androidModule = module {
     single<BindingController> { BindingControllerImpl(chipClient = get()) }
     single<BindingLogsProvider> { BindingLogsProviderImpl(chipClient = get()) }
     single<MatterBasicInfoProvider> { MatterBasicInfoProvider(chipClient = get()) }
-    single<OnOffController> { MatterLightControllerImpl(chipClient = get()) }
-    single< LevelControlController> { MatterLightControllerImpl(chipClient = get()) }
-    single<MatterDoorLockController> { MatterDoorLockControllerImpl(chipClient = get()) }
-    single<MatterClusterExtensionController> { MatterClusterExtensionControllerImpl(chipClient = get()) }
-    single<MatterManufacturerSpecificController> {
-        MatterManufacturerSpecificControllerImpl(
-            chipClient = get()
-        )
-    }
 
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<BindingRepository> { BindingRepository(get()) }
 
-    factory { LightCommandHandler(get(), get()) }
-    factory { LockCommandHandler(get()) }
-    factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
 
 
     // Binding Viewmodel

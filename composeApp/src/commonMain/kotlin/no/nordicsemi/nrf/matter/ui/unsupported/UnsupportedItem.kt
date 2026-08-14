@@ -43,7 +43,7 @@ import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
-import no.nordicsemi.nrf.matter.ui.light.InfoItem
+import no.nordicsemi.nrf.matter.ui.device.InfoItem
 import kotlin.time.Clock
 
 /*

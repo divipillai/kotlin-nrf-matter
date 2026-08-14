@@ -2,6 +2,17 @@ package no.nordicsemi.nrf.matter.cluster
 
 import no.nordicsemi.nrf.matter.model.DeviceId
 
+object BasicInfoClusterInfo {
+    const val ID: Long = 0x28
+
+    object Attribute {
+        const val RANDOM_NUMBER: Long = 0x17
+    }
+
+    object Command {
+        const val GENERATE_RANDOM_NUMBER: Long = 0x00
+    }
+}
 
 class BasicInfoExtCluster(
     override val deviceId: DeviceId,
@@ -9,18 +20,11 @@ class BasicInfoExtCluster(
     controller: MatterClient,
 ) : Cluster(controller) {
 
-    override val id: Long = ID
+    override val id: Long = BasicInfoClusterInfo.ID
 
     /** Asks the device for a new random number and reads the generated value back. */
     suspend fun generateRandomNumber(): Long {
-        execute(commandId = GENERATE_RANDOM_NUMBER_COMMAND_ID)
-        return read<Number>(RANDOM_NUMBER_ATTRIBUTE_ID).toLong()
-    }
-
-    companion object {
-        const val ID: Long = 0x28
-
-        private const val RANDOM_NUMBER_ATTRIBUTE_ID: Long = 0x17
-        private const val GENERATE_RANDOM_NUMBER_COMMAND_ID: Long = 0x00
+        execute(commandId = BasicInfoClusterInfo.Command.GENERATE_RANDOM_NUMBER)
+        return read<Number>(BasicInfoClusterInfo.Attribute.RANDOM_NUMBER).toLong()
     }
 }

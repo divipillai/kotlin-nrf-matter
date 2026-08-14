@@ -3,34 +3,39 @@ package no.nordicsemi.nrf.matter.cluster
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.model.DeviceId
 
+object ManufacturerSpecClusterInfo {
+    const val ID: Long = 0xFFF1FC01
+
+    object Attribute {
+        const val NAME: Long = 0xFFF10000
+        const val LED: Long = 0xFFF10001
+        const val BUTTON: Long = 0xFFF10002
+    }
+
+    object Command {
+        const val SET_LET: Long = 0xFFF10000
+    }
+}
+
 class ManufacturerSpecCluster(
     override val deviceId: DeviceId,
     override val endpoint: Int,
     controller: MatterClient,
 ) : Cluster(controller) {
 
-    override val id: Long = ID
+    override val id: Long = ManufacturerSpecClusterInfo.ID
 
     suspend fun setLed(isOn: Boolean) {
-        execute(commandId = SET_LED_COMMAND_ID, value = if (isOn) ON_VALUE else OFF_VALUE)
+        execute(commandId = ManufacturerSpecClusterInfo.Command.SET_LET, value = if (isOn) ON_VALUE else OFF_VALUE)
     }
 
-    suspend fun observeLed(): Flow<Boolean> = observe(LED_ATTRIBUTE_ID)
+    suspend fun observeLed(): Flow<Boolean> = observe(ManufacturerSpecClusterInfo.Attribute.LED)
 
-    suspend fun observeButton(): Flow<Boolean> = observe(BUTTON_ATTRIBUTE_ID)
+    suspend fun observeButton(): Flow<Boolean> = observe(ManufacturerSpecClusterInfo.Attribute.BUTTON)
 
-    suspend fun readName(): String = read(NAME_ATTRIBUTE_ID)
+    suspend fun readName(): String = read(ManufacturerSpecClusterInfo.Attribute.NAME)
 
     companion object {
-        const val ID: Long = 0xFFF1FC01
-
-        private const val NAME_ATTRIBUTE_ID: Long = 0xFFF10000
-        private const val LED_ATTRIBUTE_ID: Long = 0xFFF10001
-        private const val BUTTON_ATTRIBUTE_ID: Long = 0xFFF10002
-
-        private const val SET_LED_COMMAND_ID: Long = 0xFFF10000
-
-        // The command carries the new LED state as a single uint8 field.
         private val ON_VALUE: UByte = 1u
         private val OFF_VALUE: UByte = 0u
     }

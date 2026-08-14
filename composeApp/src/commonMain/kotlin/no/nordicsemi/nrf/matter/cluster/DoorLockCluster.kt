@@ -3,27 +3,32 @@ package no.nordicsemi.nrf.matter.cluster
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.model.DeviceId
 
+object DoorLockClusterInfo {
+    const val ID: Long = 0x0101
+
+    object Attribute {
+        const val LOCK_STATE: Long = 0x0000
+    }
+
+    object Command {
+        const val LOCK: Long = 0x00
+        const val UNLOCK: Long = 0x01
+    }
+}
+
 class DoorLockCluster(
     override val deviceId: DeviceId,
     override val endpoint: Int,
     controller: MatterClient,
 ) : Cluster(controller) {
 
-    override val id: Long = ID
+    override val id: Long = DoorLockClusterInfo.ID
 
     /** Locks or unlocks the door. The optional PIN code field is never sent. */
     suspend fun setLocked(isLocked: Boolean) {
-        execute(commandId = if (isLocked) LOCK_COMMAND_ID else UNLOCK_COMMAND_ID)
+        execute(commandId = if (isLocked) DoorLockClusterInfo.Command.LOCK else DoorLockClusterInfo.Command.UNLOCK)
     }
 
     /** Emits the raw LockState value, see [no.nordicsemi.nrf.matter.model.LockDeviceState]. */
-    suspend fun observeLockState(): Flow<Number> = observe(LOCK_STATE_ATTRIBUTE_ID)
-
-    companion object {
-        const val ID: Long = 0x0101
-
-        private const val LOCK_STATE_ATTRIBUTE_ID: Long = 0x0000
-        private const val LOCK_COMMAND_ID: Long = 0x00
-        private const val UNLOCK_COMMAND_ID: Long = 0x01
-    }
+    suspend fun observeLockState(): Flow<Number> = observe(DoorLockClusterInfo.Attribute.LOCK_STATE)
 }

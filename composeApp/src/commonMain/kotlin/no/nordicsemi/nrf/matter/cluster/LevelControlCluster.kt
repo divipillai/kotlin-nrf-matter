@@ -9,7 +9,7 @@ class LevelControlCluster(
     controller: MatterClient,
 ) : Cluster(controller) {
 
-    override val id: Int = 0x0006
+    override val id: Long = 0x0006
 
     private val levelControlAttributeId = 0x0000
 

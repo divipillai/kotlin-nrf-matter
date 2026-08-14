@@ -9,7 +9,7 @@ class OnOffCluster(
     controller: MatterClient,
 ) : Cluster(controller) {
 
-    override val id: Int = 0x0006
+    override val id: Long = 0x0006
 
     private val onOffAttributeId = 0x0000
 

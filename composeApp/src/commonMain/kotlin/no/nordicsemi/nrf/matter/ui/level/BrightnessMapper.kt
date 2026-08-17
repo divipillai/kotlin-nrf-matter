@@ -1,10 +1,10 @@
 package no.nordicsemi.nrf.matter.ui.level
 
-import no.nordicsemi.nrf.matter.cluster.LevelControlCluster.Companion.MAX_LEVEL
-import no.nordicsemi.nrf.matter.cluster.LevelControlCluster.Companion.MIN_LEVEL
 import kotlin.math.roundToInt
 
-private val LEVEL_RANGE = (MAX_LEVEL - MIN_LEVEL).toFloat()
+private const val MIN_LEVEL = 1
+private const val MAX_LEVEL = 255
+private const val LEVEL_RANGE = (MAX_LEVEL - MIN_LEVEL).toFloat()
 
 /** Maps a raw device level ([MIN_LEVEL]..[MAX_LEVEL]) to a 0f..1f brightness. */
 fun Number.toBrightness(): Float = ((toFloat() - MIN_LEVEL) / LEVEL_RANGE).coerceIn(0f, 1f)

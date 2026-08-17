@@ -24,7 +24,7 @@ class BasicInfoExtCluster(
 
     /** Asks the device for a new random number and reads the generated value back. */
     suspend fun generateRandomNumber(): Long {
-        execute(commandId = BasicInfoClusterInfo.Command.GENERATE_RANDOM_NUMBER)
-        return read<Number>(BasicInfoClusterInfo.Attribute.RANDOM_NUMBER).toLong()
+        executeCommand(commandId = BasicInfoClusterInfo.Command.GENERATE_RANDOM_NUMBER)
+        return readAttribute<Number>(BasicInfoClusterInfo.Attribute.RANDOM_NUMBER).toLong()
     }
 }

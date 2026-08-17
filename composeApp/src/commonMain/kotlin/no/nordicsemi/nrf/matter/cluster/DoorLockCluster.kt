@@ -26,9 +26,9 @@ class DoorLockCluster(
 
     /** Locks or unlocks the door. The optional PIN code field is never sent. */
     suspend fun setLocked(isLocked: Boolean) {
-        execute(commandId = if (isLocked) DoorLockClusterInfo.Command.LOCK else DoorLockClusterInfo.Command.UNLOCK)
+        executeCommand(commandId = if (isLocked) DoorLockClusterInfo.Command.LOCK else DoorLockClusterInfo.Command.UNLOCK)
     }
 
     /** Emits the raw LockState value, see [no.nordicsemi.nrf.matter.model.LockDeviceState]. */
-    suspend fun observeLockState(): Flow<Number> = observe(DoorLockClusterInfo.Attribute.LOCK_STATE)
+    suspend fun observeLockState(): Flow<Number> = observeAttribute(DoorLockClusterInfo.Attribute.LOCK_STATE)
 }

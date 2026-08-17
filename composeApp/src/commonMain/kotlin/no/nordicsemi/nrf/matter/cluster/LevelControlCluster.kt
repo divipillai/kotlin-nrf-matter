@@ -27,9 +27,9 @@ class LevelControlCluster(
      * Sets the raw device level.
      */
     suspend fun setLevel(level: Int) {
-        execute(commandId = LevelControlClusterInfo.Command.MOVE_TO_LEVEL, value = level.toUByte())
+        executeCommand(commandId = LevelControlClusterInfo.Command.MOVE_TO_LEVEL, value = level.toUByte())
     }
 
     /** Emits the raw device level, reported as [Int] on Android and as [Long] on iOS. */
-    suspend fun observeLevel(): Flow<Number> = observe(LevelControlClusterInfo.Attribute.CURRENT_LEVEL)
+    suspend fun observeLevel(): Flow<Number> = observeAttribute(LevelControlClusterInfo.Attribute.CURRENT_LEVEL)
 }

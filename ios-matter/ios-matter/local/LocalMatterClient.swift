@@ -78,13 +78,21 @@ import Matter
     ///   - cluster: The cluster ID the command belongs to.
     ///   - command: The command ID to invoke.
     ///   - value: The command's single field, or `nil` for commands that take no fields.
+    ///   - timedInvokeTimeoutMs: The timed invoke window in milliseconds, or `nil` to send an
+    ///     untimed invoke.
     /// - Returns: The first field of the command response, or `nil` if the device answered with a
     ///   status and no data.
     /// - Throws: An error if the local controller cannot be obtained or the command fails.
-    @objc public func executeCommand(deviceId: NSNumber, endpoint: NSNumber, cluster: NSNumber, command: NSNumber, value: MatterValue?) async throws -> MatterValue? {
+    @objc public func executeCommand(deviceId: NSNumber, endpoint: NSNumber, cluster: NSNumber, command: NSNumber, value: MatterValue?, timedInvokeTimeoutMs: NSNumber?) async throws -> MatterValue? {
         SwiftLogger.debug("Execute command \(command) of cluster \(cluster)")
         let executor = try CommandExecutor(deviceId: deviceId)
 
-        return try await executor.executeCommand(endpoint: endpoint, cluster: cluster, command: command, value: value)
+        return try await executor.executeCommand(
+            endpoint: endpoint,
+            cluster: cluster,
+            command: command,
+            value: value,
+            timedInvokeTimeoutMs: timedInvokeTimeoutMs
+        )
     }
 }

@@ -120,13 +120,16 @@ class IosMatterClient : MatterClient() {
      * The command is sent when this method is called; the returned flow replays its outcome and
      * emits the first field of the command response, or nothing when the device answered with a
      * status and no data.
+     *
+     * When [timedInvokeTimeoutMs] is given the command is sent as a timed invoke.
      */
     override suspend fun <T> executeCommand(
         value: T,
         deviceId: DeviceId,
         endpoint: Int,
         clusterId: Long,
-        commandId: Long
+        commandId: Long,
+        timedInvokeTimeoutMs: Int?
     ): Flow<T> {
         val response: Any? = suspendCancellableCoroutine { continuation ->
             client.executeCommandWithDeviceId(
@@ -135,6 +138,7 @@ class IosMatterClient : MatterClient() {
                 cluster = clusterId.toNSNumber(),
                 command = commandId.toNSNumber(),
                 value = value.takeUnless { it == null || it == Unit }?.toMatterValue(),
+                timedInvokeTimeoutMs = timedInvokeTimeoutMs?.toNSNumber(),
             ) { responseValue, error ->
                 continuation.resumeWithValue(responseValue, error)
             }

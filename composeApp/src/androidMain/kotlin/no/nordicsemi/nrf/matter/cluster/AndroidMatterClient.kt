@@ -51,11 +51,19 @@ class AndroidMatterClient(
         deviceId: DeviceId,
         endpoint: Int,
         clusterId: Long,
-        commandId: Long
+        commandId: Long,
+        timedInvokeTimeoutMs: Int?
     ): Flow<T> {
         val devicePointer = chipClient.getConnectedDevicePointer(deviceId.longValue)
         val response = chipClient
-            .invokeCommand(devicePointer, endpoint, clusterId, commandId, value)
+            .invokeCommand(
+                devicePtr = devicePointer,
+                endpoint = endpoint,
+                clusterId = clusterId,
+                commandId = commandId,
+                value = value,
+                timedRequestTimeoutMs = timedInvokeTimeoutMs ?: 0,
+            )
         @Suppress("UNCHECKED_CAST")
         return response?.let { flowOf(it as T) } ?: emptyFlow()
     }

@@ -24,9 +24,14 @@ class DoorLockCluster(
 
     override val id: Long = DoorLockClusterInfo.ID
 
-    /** Locks or unlocks the door. The optional PIN code field is never sent. */
+    /**
+     * Locks or unlocks the door. The optional PIN code field is never sent.
+     */
     suspend fun setLocked(isLocked: Boolean) {
-        executeCommand(commandId = if (isLocked) DoorLockClusterInfo.Command.LOCK else DoorLockClusterInfo.Command.UNLOCK)
+        executeCommand(
+            commandId = if (isLocked) DoorLockClusterInfo.Command.LOCK else DoorLockClusterInfo.Command.UNLOCK,
+            timedInvokeTimeoutMs = 10_000,
+        )
     }
 
     /** Emits the raw LockState value, see [no.nordicsemi.nrf.matter.model.LockDeviceState]. */

@@ -16,7 +16,12 @@ sealed class Cluster(protected val controller: MatterClient) {
     protected suspend fun <T> observeAttribute(attributeId: Long): Flow<T> =
         controller.observeAttribute(deviceId, endpoint, id, attributeId)
 
-    protected suspend fun executeCommand(commandId: Long, value: Any? = null) {
-        controller.executeCommand(value, deviceId, endpoint, id, commandId).collect()
+    protected suspend fun executeCommand(
+        commandId: Long,
+        value: Any? = null,
+        timedInvokeTimeoutMs: Int? = null,
+    ) {
+        controller.executeCommand(value, deviceId, endpoint, id, commandId, timedInvokeTimeoutMs)
+            .collect()
     }
 }

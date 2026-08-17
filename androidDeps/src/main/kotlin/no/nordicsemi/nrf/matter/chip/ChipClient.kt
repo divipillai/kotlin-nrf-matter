@@ -37,6 +37,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import java.util.Optional
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -532,6 +533,8 @@ class ChipClient(
         timeoutMs: Int = DEFAULT_SUBSCRIPTION_TIMEOUT_MS,
     ): Flow<Any?> = callbackFlow {
         val devicePtr = getConnectedDevicePointer(deviceId.longValue)
+
+        val subscriptionId = AtomicReference<Long?>(null)
         val reportCallback = object : ReportCallback {
             override fun onError(
                 attributePath: ChipAttributePath?,
@@ -564,9 +567,19 @@ class ChipClient(
             minIntervalS = minIntervalS,
             maxIntervalS = maxIntervalS,
             timeoutMs = timeoutMs,
+            onSubscriptionEstablished = { subscriptionId.set(it) },
         )
 
-        awaitClose { NordicLogger.debug("Stopped observing attribute $attributeId", tag = TAG) }
+        awaitClose {
+            subscriptionId.get()?.let {
+                chipDeviceController.shutdownSubscriptions(
+                    chipDeviceController.fabricIndex,
+                    deviceId.longValue,
+                    it,
+                )
+            }
+            NordicLogger.debug("Stopped observing attribute $attributeId", tag = TAG)
+        }
     }
 
     /**
@@ -682,6 +695,9 @@ class ChipClient(
      * @param minIntervalS The minimum reporting interval in seconds.
      * @param maxIntervalS The maximum reporting interval in seconds.
      * @param timeoutMs The timeout in milliseconds for establishing the subscription.
+     * @param onSubscriptionEstablished Invoked with the subscription ID once the device confirms
+     *   the subscription. The ID can be passed to [ChipDeviceController.shutdownSubscriptions]
+     *   to tear down this subscription alone.
      */
     fun subscribeAttribute(
         reportCallback: ReportCallback,
@@ -690,21 +706,25 @@ class ChipClient(
         minIntervalS: Int,
         maxIntervalS: Int,
         timeoutMs: Int,
+        onSubscriptionEstablished: (Long) -> Unit = {},
     ) {
-        chipDeviceController.subscribeToAttributePath(
-            object : SubscriptionEstablishedCallback {
-                override fun onSubscriptionEstablished(subscriptionId: Long) {
-                    NordicLogger.debug(
-                        "Subscription established: $subscriptionId",
-                        tag = "SubscribeAttribute"
-                    )
-                }
+        chipDeviceController.subscribeToPath(
+            { subscriptionId ->
+                NordicLogger.debug(
+                    "Subscription established: $subscriptionId",
+                    tag = "SubscribeAttribute"
+                )
+                onSubscriptionEstablished(subscriptionId)
             },
+            null,
             reportCallback,
             devicePtr,
             attributePaths,
+            emptyList(),
             minIntervalS,
             maxIntervalS,
+            true,
+            false,
             timeoutMs,
         )
     }

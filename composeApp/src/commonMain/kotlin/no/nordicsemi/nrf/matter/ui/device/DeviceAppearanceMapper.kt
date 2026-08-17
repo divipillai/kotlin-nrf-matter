@@ -23,9 +23,26 @@ fun Device.toIcon(isActive: Boolean): Painter = when (deviceType) {
     else -> painterResource(Res.drawable.light_bulb)
 }
 
-fun Device.toTitle(): String = name ?: productName ?: deviceType.toString()
+fun Device.toTitle(): String = manufacturerSpecificName() ?: productName ?: deviceType.toString()
 
-fun Device.toSubtitle(): String = deviceType.toString()
+fun Device.toSubtitle(): String = when (deviceType) {
+    DeviceType.DOOR_LOCK -> "Smart Lock"
+
+    DeviceType.OUTLET,
+    DeviceType.LIGHT_SWITCH -> "Bind the switch with other devices"
+
+    DeviceType.LIGHT_ON_OFF,
+    DeviceType.DIMMABLE_LIGHT,
+    DeviceType.COLOR_TEMPERATURE_LIGHT,
+    DeviceType.EXTENDED_COLOR_LIGHT,
+    DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> "Turn light ON or OFF"
+
+    DeviceType.UNSUPPORTED -> "Unknown device type."
+}
+
+private fun Device.manufacturerSpecificName(): String? = deviceMatterInfo
+    .firstNotNullOfOrNull { it.manufacturerSpecificData?.name }
+    ?.takeIf { it.isNotBlank() }
 
 fun Device.isBindingCapable(): Boolean {
     return deviceMatterInfo.any { it.serverClusters.contains(6) }

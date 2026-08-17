@@ -134,8 +134,8 @@ internal fun DeviceItem(
                 HorizontalDivider()
 
                 levelControl?.let { BrightnessControl(it, device.device.deviceId) }
-                manufacturerSpec?.let { LedAndButtonControl(it) }
                 basicInfoExt?.let { RandomNumberControl(it) }
+                manufacturerSpec?.let { LedAndButtonControl(it) }
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
 

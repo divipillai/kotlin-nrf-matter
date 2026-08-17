@@ -16,11 +16,11 @@ object BasicInfoClusterInfo {
 
 class BasicInfoExtCluster(
     override val deviceId: DeviceId,
-    override val endpoint: Int,
     controller: MatterClient,
 ) : Cluster(controller) {
 
     override val id: Long = BasicInfoClusterInfo.ID
+    override val endpoint = 0
 
     /** Asks the device for a new random number and reads the generated value back. */
     suspend fun generateRandomNumber(): Long {

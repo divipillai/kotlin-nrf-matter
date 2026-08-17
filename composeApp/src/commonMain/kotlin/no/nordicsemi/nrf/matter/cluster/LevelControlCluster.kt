@@ -9,6 +9,10 @@ object LevelControlClusterInfo {
     object Attribute {
         const val CURRENT_LEVEL: Long = 0x0000
     }
+
+    object Command {
+        const val MOVE_TO_LEVEL: Long = 0x0000
+    }
 }
 
 class LevelControlCluster(
@@ -21,12 +25,9 @@ class LevelControlCluster(
 
     /**
      * Sets the raw device level.
-     *
-     * TODO: use the MoveToLevelWithOnOff command once [MatterClient] can invoke commands with more
-     *  than a single field; the command carries level, transition time and two option fields.
      */
     suspend fun setLevel(level: Int) {
-        write(level.toUByte(), LevelControlClusterInfo.Attribute.CURRENT_LEVEL)
+        execute(commandId = LevelControlClusterInfo.Command.MOVE_TO_LEVEL, value = level.toUByte())
     }
 
     /** Emits the raw device level, reported as [Int] on Android and as [Long] on iOS. */

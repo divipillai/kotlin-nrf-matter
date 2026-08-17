@@ -7,7 +7,6 @@ import no.nordicsemi.nrf.matter.cluster.toClusters
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.ui.MatterController
-import no.nordicsemi.nrf.matter.logger.NordicLogger
 
 class DeviceViewModel(
     private val device: DeviceUiModel,
@@ -16,7 +15,6 @@ class DeviceViewModel(
 ) : MatterController {
 
     private val clusters = device.device.toClusters(client).map { it.toViewModel(scope) }
-        .also { NordicLogger.info("AAATESTAAA - clusters: $it") }
 
     @Composable
     override fun Item(onDecommission: (DeviceId) -> Unit) {

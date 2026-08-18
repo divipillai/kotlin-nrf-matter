@@ -130,8 +130,8 @@ class IosMatterClient : MatterClient() {
         clusterId: Long,
         commandId: Long,
         timedInvokeTimeoutMs: Int?
-    ): Flow<T> {
-        val response: Any? = suspendCancellableCoroutine { continuation ->
+    ) {
+        suspendCancellableCoroutine { continuation ->
             client.executeCommandWithDeviceId(
                 deviceId = deviceId.toNSNumber(),
                 endpoint = endpoint.toNSNumber(),
@@ -140,12 +140,9 @@ class IosMatterClient : MatterClient() {
                 value = value.takeUnless { it == null || it == Unit }?.toMatterValue(),
                 timedInvokeTimeoutMs = timedInvokeTimeoutMs?.toNSNumber(),
             ) { responseValue, error ->
-                continuation.resumeWithValue(responseValue, error)
+                continuation.handleResult<Unit>(error)
             }
         }
-
-        @Suppress("UNCHECKED_CAST")
-        return response?.let { flowOf(it as T) } ?: emptyFlow()
     }
 }
 

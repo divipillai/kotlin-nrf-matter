@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter.cluster
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import no.nordicsemi.nrf.matter.model.DeviceId
 
 sealed class Cluster(protected val controller: MatterClient) {
@@ -22,6 +21,5 @@ sealed class Cluster(protected val controller: MatterClient) {
         timedInvokeTimeoutMs: Int? = null,
     ) {
         controller.executeCommand(value, deviceId, endpoint, id, commandId, timedInvokeTimeoutMs)
-            .collect()
     }
 }

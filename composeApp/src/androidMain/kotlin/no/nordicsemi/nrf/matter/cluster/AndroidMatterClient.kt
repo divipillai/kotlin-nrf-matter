@@ -9,7 +9,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 
 class AndroidMatterClient(
     private val chipClient: ChipClient
-): MatterClient() {
+) : MatterClient() {
 
     override suspend fun <T> setAttribute(
         value: T,
@@ -53,18 +53,15 @@ class AndroidMatterClient(
         clusterId: Long,
         commandId: Long,
         timedInvokeTimeoutMs: Int?
-    ): Flow<T> {
+    ) {
         val devicePointer = chipClient.getConnectedDevicePointer(deviceId.longValue)
-        val response = chipClient
-            .invokeCommand(
-                devicePtr = devicePointer,
-                endpoint = endpoint,
-                clusterId = clusterId,
-                commandId = commandId,
-                value = value,
-                timedRequestTimeoutMs = timedInvokeTimeoutMs ?: 0,
-            )
-        @Suppress("UNCHECKED_CAST")
-        return response?.let { flowOf(it as T) } ?: emptyFlow()
+        chipClient.invokeCommand(
+            devicePtr = devicePointer,
+            endpoint = endpoint,
+            clusterId = clusterId,
+            commandId = commandId,
+            value = value,
+            timedRequestTimeoutMs = timedInvokeTimeoutMs ?: 0,
+        )
     }
 }

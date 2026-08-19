@@ -59,6 +59,18 @@ platform :ios do
     path
   end
 
+  lane :build_check do
+    build_app(
+      scheme: "iOS debug",
+      configuration: "Debug",
+      destination: "generic/platform=iOS Simulator",
+      skip_archive: true,
+      skip_codesigning: true,
+      skip_package_ipa: true,
+      xcargs: "CODE_SIGNING_ALLOWED=NO"
+    )
+  end
+
   lane :upload_testflight do
     api_key = authenticate
 

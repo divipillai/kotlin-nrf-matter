@@ -1,0 +1,127 @@
+nRF Matter for Mobile
+Copyright (c) 2026, Nordic Semiconductor ASA
+
+This product includes software developed by Nordic Semiconductor ASA, licensed
+under the BSD-3-Clause style license in the LICENSE file at the root of this
+repository.
+
+This repository also redistributes, or builds against, third-party components
+listed below. Each component remains subject to its own license; the notices
+below are provided for attribution and do not modify those licenses.
+
+--------------------------------------------------------------------------------
+Matter (Connectivity Standards Alliance) / Project CHIP — prebuilt binaries
+--------------------------------------------------------------------------------
+Location in this repository: androidDeps/libs
+  Jars: AndroidPlatform.jar, CHIPClusterID.jar, CHIPClusters.jar,
+        CHIPController.jar, CHIPInteractionModel.jar, OnboardingPayload.jar,
+        libMatterJson.jar, libMatterTlv.jar
+  Native: libs/jniLibs/arm64-v8a/libCHIPController.so
+
+These binaries are built from Nordic Semiconductor's downstream of the Matter
+SDK, https://github.com/nrfconnect/sdk-connectedhomeip, itself a fork of
+https://github.com/project-chip/connectedhomeip.
+
+  Copyright (c) Project CHIP Authors
+  Copyright (c) Nordic Semiconductor ASA
+  Licensed under the Apache License, Version 2.0
+  http://www.apache.org/licenses/LICENSE-2.0
+
+--------------------------------------------------------------------------------
+LLVM libc++ — prebuilt binary
+--------------------------------------------------------------------------------
+Location in this repository: androidDeps/libs/jniLibs/arm64-v8a/libc++_shared.so
+
+  Part of the Android NDK C++ runtime, derived from the LLVM project.
+  Licensed under Apache License 2.0 with LLVM Exceptions.
+  https://llvm.org/LICENSE.txt
+
+--------------------------------------------------------------------------------
+Google Home Mobile SDK (Home APIs) — vendored Maven artifacts
+--------------------------------------------------------------------------------
+Location in this repository: mavenLocal
+  com.google.android.gms:play-services-home:17.1.0
+  com.google.android.gms:play-services-home-types:17.1.0
+
+  Copyright (c) Google LLC
+  Redistributed here because these versions are not published to any public
+  Maven repository. Use is governed by the Google APIs Terms of Service and the
+  Android Software Development Kit License Agreement, and — while the Home APIs
+  remain in beta — by the terms of Google's Home APIs early-access program.
+  https://developers.google.com/terms
+  https://developer.android.com/studio/terms
+
+--------------------------------------------------------------------------------
+Pulse
+--------------------------------------------------------------------------------
+Consumed by: ios-matter (Swift package dependency, pinned in
+ios-matter/Package.resolved); linked into the iOS build.
+
+  https://github.com/kean/Pulse
+  Copyright (c) Alexander Grebenyuk
+  Licensed under the MIT License
+
+--------------------------------------------------------------------------------
+Apple frameworks
+--------------------------------------------------------------------------------
+The iOS build links against Apple's Matter, MatterSupport, SwiftUI and related
+system frameworks. These are provided by the operating system and the Apple
+developer tools; they are not redistributed by this repository, and their use is
+governed by the Apple Developer Program License Agreement.
+
+--------------------------------------------------------------------------------
+Build-time and runtime dependencies resolved from Maven
+--------------------------------------------------------------------------------
+This project depends on, but does not redistribute, libraries resolved from
+Maven Central and Google's Maven repository. The full, authoritative set — with
+versions — is the Nordic version catalog referenced in settings.gradle.kts
+(no.nordicsemi.gradle:version-catalog) together with the dependency blocks in
+each module's build.gradle.kts. The principal ones are:
+
+  Kotlin, Kotlin Multiplatform, kotlinx.coroutines, kotlinx.serialization,
+  kotlinx.datetime, kotlinx.collections.immutable
+    Copyright (c) JetBrains s.r.o. and Kotlin Programming Language contributors
+    Apache License 2.0
+
+  Compose Multiplatform (org.jetbrains.compose.*), including Compose runtime,
+  foundation, material3, resources, navigation, lifecycle and viewmodel
+    Copyright (c) JetBrains s.r.o.
+    Copyright (c) The Android Open Source Project
+    Apache License 2.0
+
+  AndroidX libraries — activity-compose, core-splashscreen, datastore, room
+    Copyright (c) The Android Open Source Project
+    Apache License 2.0
+
+  Koin
+    https://github.com/InsertKoinIO/koin
+    Copyright (c) Arnaud Giuliani and Koin contributors
+    Apache License 2.0
+
+  Accompanist Permissions
+    https://github.com/google/accompanist
+    Copyright (c) Google LLC
+    Apache License 2.0
+
+  Compottie
+    https://github.com/alexzhirkevich/compottie
+    Copyright (c) Alexander Zhirkevich
+    Apache License 2.0
+    Renders Lottie animations; the Lottie format and reference implementations
+    are Copyright (c) Airbnb, Inc., Apache License 2.0
+
+  CMPToast
+    https://github.com/Chaintech-Network/CMPToast
+    Apache License 2.0
+
+  Cloudy
+    https://github.com/skydoves/cloudy
+    Copyright (c) Jaewoong Eum (skydoves)
+    Apache License 2.0
+
+  Nordic Gradle plugins and version catalog (no.nordicsemi.gradle:*)
+    Copyright (c) Nordic Semiconductor ASA
+    https://github.com/NordicSemiconductor/Nordic-Gradle-Plugins
+
+Copies of the licenses referenced above are distributed with the respective
+artifacts and are available at the URLs given.

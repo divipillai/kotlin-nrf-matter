@@ -1,6 +1,10 @@
 name: Deploy to Testflight
 on:
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: macos-latest

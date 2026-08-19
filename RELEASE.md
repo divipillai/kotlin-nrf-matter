@@ -57,7 +57,7 @@ testing is done, or run `fastlane deploy` locally to upload straight to
 
 ## iOS
 
-The workflow publishes to TestFlight; the App Store release is made by hand from
+The workflow publishes to TestFlight. The App Store release is made manually from
 that build.
 
 1. Tag and create the GitHub release.

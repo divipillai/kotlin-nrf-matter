@@ -24,8 +24,7 @@ class DoorLockViewModel(
 
     init {
         cluster.observeLockState()
-            .mapNotNull { it.toLockDeviceState() }
-            .withUiState()
+            .mapNotNull { it.toLockDeviceState()?.toUiState() }
             .onEach { newValue -> _state.update { newValue } }
             .launchIn(scope)
     }

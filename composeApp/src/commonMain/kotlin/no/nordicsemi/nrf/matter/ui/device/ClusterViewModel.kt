@@ -1,4 +1,4 @@
- package no.nordicsemi.nrf.matter.ui.device
+package no.nordicsemi.nrf.matter.ui.device
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -19,21 +19,21 @@ import no.nordicsemi.nrf.matter.ui.light.OnOffViewModel
 import no.nordicsemi.nrf.matter.ui.lock.DoorLockViewModel
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecViewModel
 
- abstract class ClusterViewModel(protected val scope: CoroutineScope) {
+abstract class ClusterViewModel(protected val scope: CoroutineScope) {
 
-     protected fun <T> execute(action: suspend () -> T): Flow<T> {
-         return flow { emit(action()) }
-     }
+    protected fun <T> execute(action: suspend () -> T): Flow<T> {
+        return flow { emit(action()) }
+    }
 
-     protected fun <T> Flow<T>.withUiState(): Flow<UiState<T>> {
-         return this
-             .map<T, UiState<T>> { UiState.Success(it) }
-             .onStart { emit(UiState.Loading()) }
-             .catch {
-                 it.printStackTrace()
-                 emit(UiState.Error("Failed to send command", it))
-             }
-     }
+    protected fun <T> Flow<T>.withUiState(): Flow<UiState<T>> {
+        return this
+            .map<T, UiState<T>> { UiState.Success(it) }
+            .onStart { emit(UiState.Loading()) }
+            .catch {
+                it.printStackTrace()
+                emit(UiState.Error("Failed to send command", it))
+            }
+    }
 }
 
 fun Cluster.toViewModel(scope: CoroutineScope): ClusterViewModel = when (this) {

@@ -9,7 +9,7 @@ import org.koin.core.component.get
 
 class MatterControllerCache(
     private val scope: CoroutineScope,
-): KoinComponent {
+) : KoinComponent {
 
     private val controllerCache = mutableMapOf<DeviceId, MatterController>()
 

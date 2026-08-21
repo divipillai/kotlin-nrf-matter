@@ -11,7 +11,12 @@ fun Device.toClusters(client: MatterClient): List<Cluster> {
                 OnOffClusterInfo.ID -> OnOffCluster(deviceId, info.endpoint, client)
                 LevelControlClusterInfo.ID -> LevelControlCluster(deviceId, info.endpoint, client)
                 DoorLockClusterInfo.ID -> DoorLockCluster(deviceId, info.endpoint, client)
-                ManufacturerSpecClusterInfo.ID -> ManufacturerSpecCluster(deviceId, info.endpoint, client)
+                ManufacturerSpecClusterInfo.ID -> ManufacturerSpecCluster(
+                    deviceId,
+                    info.endpoint,
+                    client
+                )
+
                 else -> null
             }
         }

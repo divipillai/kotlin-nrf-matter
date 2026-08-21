@@ -35,5 +35,6 @@ class DoorLockCluster(
     }
 
     /** Emits the raw LockState value, see [no.nordicsemi.nrf.matter.model.LockDeviceState]. */
-    fun observeLockState(): Flow<Number> = observeAttribute(DoorLockClusterInfo.Attribute.LOCK_STATE)
+    fun observeLockState(): Flow<Number> =
+        observeAttribute(DoorLockClusterInfo.Attribute.LOCK_STATE)
 }

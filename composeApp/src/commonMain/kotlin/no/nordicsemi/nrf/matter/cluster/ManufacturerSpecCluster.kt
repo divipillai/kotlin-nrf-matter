@@ -26,12 +26,16 @@ class ManufacturerSpecCluster(
     override val id: Long = ManufacturerSpecClusterInfo.ID
 
     suspend fun setLed(isOn: Boolean) {
-        executeCommand(commandId = ManufacturerSpecClusterInfo.Command.SET_LET, value = if (isOn) ON_VALUE else OFF_VALUE)
+        executeCommand(
+            commandId = ManufacturerSpecClusterInfo.Command.SET_LET,
+            value = if (isOn) ON_VALUE else OFF_VALUE
+        )
     }
 
     fun observeLed(): Flow<Boolean> = observeAttribute(ManufacturerSpecClusterInfo.Attribute.LED)
 
-    fun observeButton(): Flow<Boolean> = observeAttribute(ManufacturerSpecClusterInfo.Attribute.BUTTON)
+    fun observeButton(): Flow<Boolean> =
+        observeAttribute(ManufacturerSpecClusterInfo.Attribute.BUTTON)
 
     suspend fun readName(): String = readAttribute(ManufacturerSpecClusterInfo.Attribute.NAME)
 

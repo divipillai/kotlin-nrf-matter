@@ -21,18 +21,18 @@ import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecViewModel
 
  abstract class ClusterViewModel(protected val scope: CoroutineScope) {
 
-     private val tag: String
-        get() = this::class.simpleName ?: "ClusterViewModel"
-
      protected fun <T> execute(action: suspend () -> T): Flow<T> {
-         return flow { action() }
+         return flow { emit(action()) }
      }
 
      protected fun <T> Flow<T>.withUiState(): Flow<UiState<T>> {
          return this
              .map<T, UiState<T>> { UiState.Success(it) }
              .onStart { emit(UiState.Loading()) }
-             .catch { emit(UiState.Error("Failed to send command", it)) }
+             .catch {
+                 it.printStackTrace()
+                 emit(UiState.Error("Failed to send command", it))
+             }
      }
 }
 

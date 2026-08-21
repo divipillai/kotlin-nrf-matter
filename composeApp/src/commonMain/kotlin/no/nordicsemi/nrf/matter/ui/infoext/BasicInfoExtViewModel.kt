@@ -21,7 +21,7 @@ class BasicInfoExtViewModel(
     fun generateRandomNumber() {
         execute { cluster.generateRandomNumber() }
             .withUiState()
-            .onEach { _randomNumber.update { it } }
+            .onEach { newState -> _randomNumber.update { newState } }
             .launchIn(scope)
     }
 }

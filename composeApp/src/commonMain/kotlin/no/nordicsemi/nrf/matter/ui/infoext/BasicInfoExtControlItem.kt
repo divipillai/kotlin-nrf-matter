@@ -62,14 +62,14 @@ fun BasicInfoExtControlItem(
                         tint = NordicRed,
                     )
 
-                    is UiState.Idle<Long> -> Text(
+                    is UiState.Idle -> Text(
                         "__",
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    is UiState.Loading<Long> -> CircularProgressIndicator(modifier = Modifier.size(28.dp))
-                    is UiState.Success<Long> -> Text(
+                    is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.size(28.dp))
+                    is UiState.Success -> Text(
                         "${randomNumber.data}",
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onSurface

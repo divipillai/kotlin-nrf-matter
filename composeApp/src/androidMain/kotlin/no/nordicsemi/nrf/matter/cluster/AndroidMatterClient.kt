@@ -33,7 +33,7 @@ class AndroidMatterClient(
         return chipClient.readAttribute(devicePointer, endpoint, clusterId, attributeId) as T
     }
 
-    override suspend fun <T> observeAttribute(
+    override fun <T> observeAttribute(
         deviceId: DeviceId,
         endpoint: Int,
         clusterId: Long,

@@ -24,7 +24,7 @@ class OnOffCluster(
         executeCommand(commandId = if (isOn) ON_COMMAND_ID else OFF_COMMAND_ID)
     }
 
-    suspend fun observeOnOff(): Flow<Boolean> = observeAttribute(OnOffClusterInfo.Attribute.ON_OFF)
+    fun observeOnOff(): Flow<Boolean> = observeAttribute(OnOffClusterInfo.Attribute.ON_OFF)
 
     companion object {
         private const val OFF_COMMAND_ID: Long = 0x00

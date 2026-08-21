@@ -26,7 +26,7 @@ import no.nordicsemi.nrf.matter.theme.NordicRed
 
 @Composable
 fun BasicInfoExtControlItem(
-    randomNumber: UiState<Int>,
+    randomNumber: UiState<Long>,
     generateRandomNumber: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -62,14 +62,14 @@ fun BasicInfoExtControlItem(
                         tint = NordicRed,
                     )
 
-                    is UiState.Idle<Int> -> Text(
+                    is UiState.Idle<Long> -> Text(
                         "__",
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    is UiState.Loading<Int> -> CircularProgressIndicator(modifier = Modifier.size(28.dp))
-                    is UiState.Success<Int> -> Text(
+                    is UiState.Loading<Long> -> CircularProgressIndicator(modifier = Modifier.size(28.dp))
+                    is UiState.Success<Long> -> Text(
                         "${randomNumber.data}",
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onSurface

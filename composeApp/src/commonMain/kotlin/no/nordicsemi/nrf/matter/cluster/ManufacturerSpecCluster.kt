@@ -29,9 +29,9 @@ class ManufacturerSpecCluster(
         executeCommand(commandId = ManufacturerSpecClusterInfo.Command.SET_LET, value = if (isOn) ON_VALUE else OFF_VALUE)
     }
 
-    suspend fun observeLed(): Flow<Boolean> = observeAttribute(ManufacturerSpecClusterInfo.Attribute.LED)
+    fun observeLed(): Flow<Boolean> = observeAttribute(ManufacturerSpecClusterInfo.Attribute.LED)
 
-    suspend fun observeButton(): Flow<Boolean> = observeAttribute(ManufacturerSpecClusterInfo.Attribute.BUTTON)
+    fun observeButton(): Flow<Boolean> = observeAttribute(ManufacturerSpecClusterInfo.Attribute.BUTTON)
 
     suspend fun readName(): String = readAttribute(ManufacturerSpecClusterInfo.Attribute.NAME)
 

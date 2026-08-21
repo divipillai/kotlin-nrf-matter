@@ -12,7 +12,7 @@ sealed class Cluster(protected val controller: MatterClient) {
     protected suspend fun <T> readAttribute(attributeId: Long): T =
         controller.readAttribute(deviceId, endpoint, id, attributeId)
 
-    protected suspend fun <T> observeAttribute(attributeId: Long): Flow<T> =
+    protected fun <T> observeAttribute(attributeId: Long): Flow<T> =
         controller.observeAttribute(deviceId, endpoint, id, attributeId)
 
     protected suspend fun executeCommand(

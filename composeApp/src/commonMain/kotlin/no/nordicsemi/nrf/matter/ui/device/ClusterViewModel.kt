@@ -1,53 +1,39 @@
-package no.nordicsemi.nrf.matter.ui.device
+ package no.nordicsemi.nrf.matter.ui.device
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import no.nordicsemi.nrf.matter.cluster.BasicInfoExtCluster
 import no.nordicsemi.nrf.matter.cluster.Cluster
 import no.nordicsemi.nrf.matter.cluster.DoorLockCluster
 import no.nordicsemi.nrf.matter.cluster.LevelControlCluster
 import no.nordicsemi.nrf.matter.cluster.ManufacturerSpecCluster
 import no.nordicsemi.nrf.matter.cluster.OnOffCluster
-import no.nordicsemi.nrf.matter.logger.NordicLogger
+import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtViewModel
 import no.nordicsemi.nrf.matter.ui.level.LevelControlViewModel
 import no.nordicsemi.nrf.matter.ui.light.OnOffViewModel
 import no.nordicsemi.nrf.matter.ui.lock.DoorLockViewModel
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecViewModel
 
-abstract class ClusterViewModel(private val scope: CoroutineScope) {
+ abstract class ClusterViewModel(protected val scope: CoroutineScope) {
 
-    private val tag: String
+     private val tag: String
         get() = this::class.simpleName ?: "ClusterViewModel"
 
-    protected fun <T> observe(source: suspend () -> Flow<T>, onValue: (T) -> Unit) {
-        scope.launch {
-            flow { emitAll(source()) }
-                .catch { NordicLogger.error("Failed to observe the device.", it, tag = tag) }
-                .collect { value ->
-                    NordicLogger.info("New value: $value", tag = tag)
-                    onValue(value)
-                }
-        }
-    }
+     protected fun <T> execute(action: suspend () -> T): Flow<T> {
+         return flow { action() }
+     }
 
-    protected fun send(onFailure: () -> Unit = {}, command: suspend () -> Unit) {
-        scope.launch {
-            try {
-                command()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (t: Throwable) {
-                NordicLogger.error("Failed to send a command to the device.", t, tag = tag)
-                onFailure()
-            }
-        }
-    }
+     protected fun <T> Flow<T>.withUiState(): Flow<UiState<T>> {
+         return this
+             .map<T, UiState<T>> { UiState.Success(it) }
+             .onStart { emit(UiState.Loading()) }
+             .catch { emit(UiState.Error("Failed to send command", it)) }
+     }
 }
 
 fun Cluster.toViewModel(scope: CoroutineScope): ClusterViewModel = when (this) {

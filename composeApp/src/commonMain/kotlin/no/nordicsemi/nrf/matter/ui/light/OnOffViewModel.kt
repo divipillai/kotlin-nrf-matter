@@ -3,6 +3,11 @@ package no.nordicsemi.nrf.matter.ui.light
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.cluster.OnOffCluster
 import no.nordicsemi.nrf.matter.ui.device.ClusterViewModel
@@ -21,17 +26,16 @@ class OnOffViewModel(
     val state = _state.asStateFlow()
 
     init {
-        observe({ cluster.observeOnOff() }) { isOn ->
-            _state.update { it.copy(isOn = isOn, isEnabled = true) }
-        }
+        cluster.observeOnOff()
+            .onEach { isOn -> _state.update { it.copy(isOn = isOn, isEnabled = true) } }
+            .launchIn(scope)
     }
 
     fun setOn(isOn: Boolean) {
-        // The switch follows the request immediately and is restored if the device rejects it.
-        _state.update { it.copy(isOn = isOn, isEnabled = false) }
-        send(onFailure = { _state.update { it.copy(isOn = !isOn, isEnabled = true) } }) {
-            cluster.setOn(isOn)
-            _state.update { it.copy(isEnabled = true) }
-        }
+        execute { cluster.setOn(isOn) }
+            .onStart { _state.update { it.copy(isOn = isOn, isEnabled = false) } }
+            .onCompletion { _state.update { it.copy(isEnabled = true) } }
+            .catch { _state.update { it.copy(isOn = !isOn, isEnabled = true) } }
+            .launchIn(scope)
     }
 }

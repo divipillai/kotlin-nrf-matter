@@ -89,7 +89,7 @@ class IosMatterClient : MatterClient() {
      * The subscription lives as long as the app and is shared with every other observer of the
      * same device, so cancelling the collection only stops the delivery of reports.
      */
-    override suspend fun <T> observeAttribute(
+    override fun <T> observeAttribute(
         deviceId: DeviceId,
         endpoint: Int,
         clusterId: Long,

@@ -3,6 +3,12 @@ package no.nordicsemi.nrf.matter.ui.lock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.cluster.DoorLockCluster
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.LockDeviceState
@@ -17,16 +23,17 @@ class DoorLockViewModel(
     val state = _state.asStateFlow()
 
     init {
-        observe({ cluster.observeLockState() }) { lockState ->
-            lockState.toLockDeviceState()?.let { _state.value = it.toUiState() }
-        }
+        cluster.observeLockState()
+            .mapNotNull { it.toLockDeviceState() }
+            .withUiState()
+            .onEach { _state.update { it } }
+            .launchIn(scope)
     }
 
     fun setLocked(isLocked: Boolean) {
-        // The device reports the new state once the bolt has moved, until then the lock is busy.
-        _state.value = UiState.Loading()
-        send(onFailure = { _state.value = UiState.Error("Could not change the lock state.") }) {
-            cluster.setLocked(isLocked)
-        }
+        execute { cluster.setLocked(isLocked) }
+            .onStart { _state.update { UiState.Loading() } }
+            .catch { _state.update { UiState.Error("Could not change the lock state.") } }
+            .launchIn(scope)
     }
 }

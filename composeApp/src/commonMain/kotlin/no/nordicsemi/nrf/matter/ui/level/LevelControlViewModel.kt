@@ -1,6 +1,6 @@
 package no.nordicsemi.nrf.matter.ui.level
 
-import kotlinx.coroutines.CoroutineScope
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -18,8 +18,7 @@ data class LevelControlState(
 
 class LevelControlViewModel(
     private val cluster: LevelControlCluster,
-    scope: CoroutineScope,
-) : ClusterViewModel(scope) {
+) : ClusterViewModel() {
 
     private val _state = MutableStateFlow(LevelControlState())
     val state = _state.asStateFlow()
@@ -29,7 +28,7 @@ class LevelControlViewModel(
             .onEach { value ->
                 _state.update { it.copy(brightness = value.toBrightness()) }
             }
-            .launchIn(scope)
+            .launchIn(viewModelScope)
     }
 
     /** Moves the slider without touching the device. The value is sent by [commitBrightness]. */
@@ -41,6 +40,6 @@ class LevelControlViewModel(
         execute { cluster.setLevel(_state.value.brightness.toLevel()) }
             .onStart { _state.update { it.copy(isEnabled = false) } }
             .onCompletion { _state.update { it.copy(isEnabled = true) } }
-            .launchIn(scope)
+            .launchIn(viewModelScope)
     }
 }

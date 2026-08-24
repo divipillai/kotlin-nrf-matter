@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.ui.device
 
+import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -19,7 +20,7 @@ import no.nordicsemi.nrf.matter.ui.light.OnOffViewModel
 import no.nordicsemi.nrf.matter.ui.lock.DoorLockViewModel
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecViewModel
 
-abstract class ClusterViewModel(protected val scope: CoroutineScope) {
+abstract class ClusterViewModel : ViewModel() {
 
     protected fun <T> execute(action: suspend () -> T): Flow<T> {
         return flow { emit(action()) }
@@ -36,10 +37,10 @@ abstract class ClusterViewModel(protected val scope: CoroutineScope) {
     }
 }
 
-fun Cluster.toViewModel(scope: CoroutineScope): ClusterViewModel = when (this) {
-    is OnOffCluster -> OnOffViewModel(this, scope)
-    is LevelControlCluster -> LevelControlViewModel(this, scope)
-    is DoorLockCluster -> DoorLockViewModel(this, scope)
-    is BasicInfoExtCluster -> BasicInfoExtViewModel(this, scope)
-    is ManufacturerSpecCluster -> ManufacturerSpecViewModel(this, scope)
+fun Cluster.toViewModel(): ClusterViewModel = when (this) {
+    is OnOffCluster -> OnOffViewModel(this)
+    is LevelControlCluster -> LevelControlViewModel(this)
+    is DoorLockCluster -> DoorLockViewModel(this)
+    is BasicInfoExtCluster -> BasicInfoExtViewModel(this)
+    is ManufacturerSpecCluster -> ManufacturerSpecViewModel(this)
 }

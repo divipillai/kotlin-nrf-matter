@@ -1,6 +1,6 @@
 package no.nordicsemi.nrf.matter.ui.manspec
 
-import kotlinx.coroutines.CoroutineScope
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -18,8 +18,7 @@ data class ManufacturerSpecState(
 
 class ManufacturerSpecViewModel(
     private val cluster: ManufacturerSpecCluster,
-    scope: CoroutineScope,
-) : ClusterViewModel(scope) {
+) : ClusterViewModel() {
 
     private val _state = MutableStateFlow(ManufacturerSpecState())
     val state = _state.asStateFlow()
@@ -28,12 +27,12 @@ class ManufacturerSpecViewModel(
         cluster.observeLed()
             .withUiState()
             .onEach { value -> _state.update { it.copy(isLedOn = value) } }
-            .launchIn(scope)
+            .launchIn(viewModelScope)
 
         cluster.observeButton()
             .withUiState()
             .onEach { value -> _state.update { it.copy(isButtonPressed = value) } }
-            .launchIn(scope)
+            .launchIn(viewModelScope)
     }
 
     fun setLed(isOn: Boolean) {
@@ -41,6 +40,6 @@ class ManufacturerSpecViewModel(
             .map { isOn }
             .withUiState()
             .onEach { value -> _state.update { it.copy(isLedOn = value) } }
-            .launchIn(scope)
+            .launchIn(viewModelScope)
     }
 }

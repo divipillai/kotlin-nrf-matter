@@ -1,6 +1,6 @@
 package no.nordicsemi.nrf.matter.ui.light
 
-import kotlinx.coroutines.CoroutineScope
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -19,8 +19,7 @@ data class OnOffState(
 
 class OnOffViewModel(
     private val cluster: OnOffCluster,
-    scope: CoroutineScope,
-) : ClusterViewModel(scope) {
+) : ClusterViewModel() {
 
     private val _state = MutableStateFlow(OnOffState())
     val state = _state.asStateFlow()
@@ -28,7 +27,7 @@ class OnOffViewModel(
     init {
         cluster.observeOnOff()
             .onEach { isOn -> _state.update { it.copy(isOn = isOn, isEnabled = true) } }
-            .launchIn(scope)
+            .launchIn(viewModelScope)
     }
 
     fun setOn(isOn: Boolean) {
@@ -36,6 +35,6 @@ class OnOffViewModel(
             .onStart { _state.update { it.copy(isOn = isOn, isEnabled = false) } }
             .onCompletion { _state.update { it.copy(isEnabled = true) } }
             .catch { _state.update { it.copy(isOn = !isOn, isEnabled = true) } }
-            .launchIn(scope)
+            .launchIn(viewModelScope)
     }
 }

@@ -70,7 +70,7 @@ val commonModule = module {
         )
     }
 
-    single { MatterControllerCache(get()) }
+    single { MatterControllerCache() }
 
     single<BindingDataSource> {
         BaseBindingDataSource(get())

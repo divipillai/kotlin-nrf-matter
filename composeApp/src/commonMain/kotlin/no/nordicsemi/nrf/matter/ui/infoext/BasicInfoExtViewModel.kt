@@ -1,6 +1,6 @@
 package no.nordicsemi.nrf.matter.ui.infoext
 
-import kotlinx.coroutines.CoroutineScope
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -12,8 +12,7 @@ import no.nordicsemi.nrf.matter.ui.device.ClusterViewModel
 
 class BasicInfoExtViewModel(
     private val cluster: BasicInfoExtCluster,
-    scope: CoroutineScope,
-) : ClusterViewModel(scope) {
+) : ClusterViewModel() {
 
     private val _randomNumber = MutableStateFlow<UiState<Long>>(UiState.Idle())
     val randomNumber = _randomNumber.asStateFlow()
@@ -22,6 +21,6 @@ class BasicInfoExtViewModel(
         execute { cluster.generateRandomNumber() }
             .withUiState()
             .onEach { newState -> _randomNumber.update { newState } }
-            .launchIn(scope)
+            .launchIn(viewModelScope)
     }
 }

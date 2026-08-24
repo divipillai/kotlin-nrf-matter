@@ -1,15 +1,12 @@
 package no.nordicsemi.nrf.matter.ui
 
-import kotlinx.coroutines.CoroutineScope
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.ui.device.DeviceViewModel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
-class MatterControllerCache(
-    private val scope: CoroutineScope,
-) : KoinComponent {
+class MatterControllerCache : KoinComponent {
 
     private val controllerCache = mutableMapOf<DeviceId, MatterController>()
 
@@ -18,7 +15,7 @@ class MatterControllerCache(
     }
 
     fun create(device: DeviceUiModel): MatterController {
-        return DeviceViewModel(device, get(), scope).also {
+        return DeviceViewModel(device, get()).also {
             controllerCache[device.device.deviceId] = it
         }
     }

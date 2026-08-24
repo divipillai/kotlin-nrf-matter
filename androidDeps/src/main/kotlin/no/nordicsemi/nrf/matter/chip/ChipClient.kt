@@ -9,7 +9,7 @@ import chip.devicecontroller.ControllerParams
 import chip.devicecontroller.GetConnectedDeviceCallbackJni
 import chip.devicecontroller.InvokeCallback
 import chip.devicecontroller.ReportCallback
-import chip.devicecontroller.SubscriptionEstablishedCallback
+import chip.devicecontroller.ResubscriptionAttemptCallback
 import chip.devicecontroller.WriteAttributesCallback
 import chip.devicecontroller.model.AttributeState
 import chip.devicecontroller.model.AttributeWriteRequest
@@ -697,7 +697,17 @@ class ChipClient(
      * @param timeoutMs The timeout in milliseconds for establishing the subscription.
      * @param onSubscriptionEstablished Invoked with the subscription ID once the device confirms
      *   the subscription. The ID can be passed to [ChipDeviceController.shutdownSubscriptions]
-     *   to tear down this subscription alone.
+     *   to tear down this subscription alone. Called again with a new ID after every successful
+     *   automatic resubscription.
+     * @param onResubscriptionAttempt Invoked when the subscription drops and the SDK schedules an
+     *   automatic retry, with the CHIP error that terminated the subscription and the delay in
+     *   milliseconds until the next attempt.
+     *
+     * A non-null [ResubscriptionAttemptCallback] must always be supplied. The native
+     * `ReportCallback::OnResubscriptionNeeded` fails with `CHIP_ERROR_INCORRECT_STATE` (0x03) when
+     * its Java resubscription callback reference is not initialized, and `ReadClient` then reports
+     * that error through [ReportCallback.onError] and tears the subscription down for good instead
+     * of retrying.
      */
     fun subscribeAttribute(
         reportCallback: ReportCallback,
@@ -707,6 +717,7 @@ class ChipClient(
         maxIntervalS: Int,
         timeoutMs: Int,
         onSubscriptionEstablished: (Long) -> Unit = {},
+        onResubscriptionAttempt: (terminationCause: Long, nextRetryDelayMs: Long) -> Unit = { _, _ -> },
     ) {
         chipDeviceController.subscribeToPath(
             { subscriptionId ->
@@ -716,7 +727,14 @@ class ChipClient(
                 )
                 onSubscriptionEstablished(subscriptionId)
             },
-            null,
+            { terminationCause, nextRetryDelayMs ->
+                NordicLogger.info(
+                    "Subscription terminated with error $terminationCause, " +
+                            "resubscribing in ${nextRetryDelayMs}ms",
+                    tag = "SubscribeAttribute"
+                )
+                onResubscriptionAttempt(terminationCause, nextRetryDelayMs)
+            },
             reportCallback,
             devicePtr,
             attributePaths,

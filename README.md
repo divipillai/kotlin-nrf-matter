@@ -1,5 +1,9 @@
 # nRF Matter for Mobile
 
+[![Download on the App Store](assets/AppStore.png)](https://apps.apple.com/ng/app/nrf-matter/id6786253679)
+
+[![Download on the App Store](assets/PlayStore.png)](https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter)
+
 A [Matter](https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/index.html)
 commissioning and control companion app by
 [Nordic Semiconductor](https://www.nordicsemi.com/), built with Kotlin Multiplatform and Compose Multiplatform, with the iOS-specific implementation written in Swift.

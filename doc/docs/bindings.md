@@ -1,9 +1,10 @@
 # Configuring bindings
 
-The Bindings screen configures the Binding Cluster (`0x001E`) so a client node, such as a light
-switch, controls a target node directly over the Matter fabric instead of routing every command
-through the app. Once a binding is written, pressing the physical button on the switch controls the
-bound light even if the phone is not present.
+The Bindings screen configures the Binding Cluster (`0x001E`) to allow a client node, such as a
+light switch, to control a target node directly over the Matter fabric, without routing each command
+through the app. Once the binding is established, the light switch can communicate directly with and
+control the connected light bulb. At the time of writing, only **unicast binding** is supported.
+
 
 <div align="center">
   <img src="./screenshots/bindings_form.png" alt="Selecting source and target" />
@@ -11,39 +12,34 @@ bound light even if the phone is not present.
   <img src="./screenshots/bindings_active_entry.png" alt="Active binding table entry" />
 </div>
 
-The screen is made up of three sections.
+The Binding screen consists of three sections.
 
-| Section | Description |
-| --- | --- |
-| **Understanding Matter Bindings** | An explanation of the Binding Cluster, with a link to the nRF Connect SDK light switch sample documentation. |
-| **Write Matter Binding Cluster (0x001E)** | The form used to create a binding. |
-| **Active Binding Table Entries** | The bindings that have already been written, with the count in the heading. |
+| Section                                   | Description                                                                                                                                                                                                                                   |
+|-------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Understanding Matter Bindings**         | An explanation of the Binding Cluster for users who want to learn more about binding before setting up binding between two devices. It also provides a link to the nRF Connect SDK Light Switch sample documentation for further exploration. |
+| **Write Matter Binding Cluster (0x001E)** | In this section, users can select a source device from the available options, such as a light switch, and a target device, such as a light bulb. At the time of writing, binding is supported only for the On/Off Cluster (0x0006).           |
+| **Active Binding Table Entries**          | This section displays a list of active bindings, including the source and target node IDs and the cluster associated with each binding.                                                                                                       |
 
 ## Writing a binding
 
 1. Open the **Bindings** tab.
-1. Under **Select Client / Source Node (Write Client)**, choose the switch or outlet that will send
-   the commands. Each entry is listed by product name and node ID. If no client node has been
-   commissioned, the section explains that no compatible source devices were found.
-1. Under **Select Server / Target Node (Control Target)**, choose the light to be controlled. Only
-   on/off and dimmable lights that are not already bound to the selected source are offered. Until a
-   source is chosen, the section asks you to select one first.
-1. Confirm the operation summarized by the **Target Action** banner, which states that the On/Off
-   cluster (`0x0006`) will be written as a binding entry.
-1. Tap **Write Binding**.
+2. Under **Select Client / Source Node (Write Client)**, select the source node, such as a light
+   switch, that will send the commands. Each entry is identified by its product name and node ID. If
+   no client node has been commissioned, the user should commission a source device before creating
+   a binding.
+3. Under **Select Server / Target Node (Control Target)**, select the target node that you want to
+   control. Only light bulbs that are not already bound to the selected source node are available
+   for selection.
+4. Tap **Write Binding** to initiate binding operation between the selected source and target nodes.
 
-While the binding is being written, a full-screen **Binding...** dialog appears with the warning that
-the operation may take a few seconds and the app should not be closed. A **PROCESS LOGS** panel below
-it streams the Matter traffic as it happens, which is useful when a binding does not take effect. On
-success, a confirmation is shown, the form is cleared, and the new entry appears under **Active
-Binding Table Entries**.
+While the binding operation is in progress, it is recommended to keep the app open and avoid
+closing it. The stream of Matter traffic generated during the process is displayed in the log, providing an
+overview of the binding operation and its progress.
 
-If the operation fails, a **Binding Failed.** dialog is shown.
-
-!!! caution "The Retry button does not resubmit"
-
-    The **Retry** button in the **Binding Failed.** dialog does not resubmit the operation. Dismiss
-    the dialog and write the binding again instead.
+If the binding operation succeeds, the active bindings list is updated automatically, and a toast
+message confirms that the binding was successful. If the operation fails, a **Binding Failed**
+dialog is displayed. The user can **Retry** to attempt the operation again or cancel and
+troubleshoot the issue using the logs in the logs panel.
 
 ## What writing a binding does
 
@@ -51,14 +47,13 @@ Writing a binding involves two operations on two different accessories:
 
 1. An *operate* privilege is granted in the light's Access Control List, so the switch is allowed to
    command it.
-1. A binding entry is written into the switch's Binding Table.
+2. A binding entry is written into the switch's Binding Table.
 
-Both use endpoint 1 on each accessory. Only unicast bindings are supported — there is no group
-binding in the user interface.
+At the time of writing, only unicast bindings are supported.
 
 ## Active binding table entries
 
-Each entry lists its binding ID, the client and server node IDs, and the bound cluster.
-
-The list is read-only. There is no button to delete an individual binding. A binding is removed
-automatically when either of the devices it references is decommissioned.
+This section displays a list of active bindings, including the source and target node IDs and the
+cluster associated with each binding.
+A binding entry is automatically updated when either of the referenced devices is decommissioned or
+removed from the network.

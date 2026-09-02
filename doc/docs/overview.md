@@ -1,6 +1,6 @@
 # Overview and user interface
 
-The app is build inn Compose Multiplatform, the user interface provides identical screens, labels,
+The app is build in Compose Multiplatform, the user interface provides identical screens, labels,
 and controls across both Android and iOS. The app automatically adapts to the system theme on both
 platforms. The only platform-specific behavior occurs during commissioning, where execution is
 handed off to the native operating system — `Google Play Services` on Android and Apple’s
@@ -21,12 +21,12 @@ list of commissioned devices.
 
 The following elements are present on every screen.
 
-| UI element            | Description                                                                                                                                                                                  |
-|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Top app bar           | Displays the title of the current screen.                                                                                                                                                    |
-| Bottom navigation bar | The bottom navigation bar allows to switch between the three main screens: **Dashboard**, **Bindings**, and **Logs Panel**.                                                                  |
-| Add device button     | A floating **+** button in the bottom-right corner allows the user to commission other matter devices. The button appears if device already has at least one commissioned device to the app. |
-| Back navigation       | The system back gesture or button closes the current screen. From **Bindings** or **Logs Panel** it returns to the Dashboard; from the Dashboard it leaves the app.                          |
+| UI element            | Description                                                                                                                                                                           |
+|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Top app bar           | Displays the title of the current screen.                                                                                                                                             |
+| Bottom navigation bar | The bottom navigation bar allows to switch between the three main screens: **Dashboard**, **Bindings**, and **Logs Panel**.                                                           |
+| Add device button     | A floating **+** button in the bottom-right corner allows the user to commission other matter devices. This button appears once at least one device has been commissioned to the app. |
+| Back navigation       | The system back gesture or button closes the current screen. From **Bindings** or **Logs Panel** it returns to the Dashboard; from the Dashboard it leaves the app.                   |
 
 The top app bar title depends on the current screen.
 
@@ -44,21 +44,28 @@ The Dashboard is the home screen and lists every device commissioned onto the ap
 
 ### Getting-started screen
 
-When no device has been commissioned, the Dashboard shows the following elements.
+When you open the nRF Matter app and no devices have been commissioned yet, the main dashboard
+displays the Getting Started screen. It features an Add Device button to initiate the commissioning
+process via QR code or manual setup payload. Once your first accessory is successfully provisioned
+onto the network, this screen automatically updates to showcase your active device cards on the main
+dashboard.
 
-| UI element              | Description                                                                                       |
-|-------------------------|---------------------------------------------------------------------------------------------------|
-| **Let's get connected** | Heading, shown above an animated illustration.                                                    |
-| Introductory text       | Explains that no Matter accessories have been added yet.                                          |
-| **Add New Device**      | The user can begin by commissiong the matter device by adding a new device. Starts commissioning. |
-| **What is Matter?**     | Opens Nordic's Matter documentation in the system browser.                                        |
-| `Version: <version>`    | The application version, shown at the bottom.                                                     |
+| UI element           | Description                                                                                       |
+|----------------------|---------------------------------------------------------------------------------------------------|
+| **Add New Device**   | The user can begin by commissiong the matter device by adding a new device. Starts commissioning. |
+| **What is Matter?**  | Opens Nordic's Matter documentation in the system browser.                                        |
+| `Version: <version>` | The application version.                                                                          |
 
 ### Dashboard Device Cards
 
-The dashboard displays a list of all commissioned devices. Each device card features an icon,
-product name, and primary control at a glance. Tapping the header expands the card to access
-additional controls, Matter device details, and the Remove/Decommission Device option.
+Once commissioned, your accessory is added to the home dashboard as a dedicated Device Card. Each
+card provides quick access to essential device details and controls:
+
+* Quick Controls: Directly operate primary actions such as toggling an On/Off light, controlling a
+  door lock, or triggering a custom manufacturer command and Remove/Decommission device.
+* Device Status: View the device name, type, and current connection state.
+* Detailed View: Tap the card to open the complete device view, where you can inspect device
+  metadata read directly from the accessory's Basic Information cluster (`0x0028`).
 
 <div align="center">
   <img src="./screenshots/device_card_light.png" alt="Expanded light device card" />
@@ -74,8 +81,12 @@ additional controls, Matter device details, and the Remove/Decommission Device o
 
 ## Supported device types
 
-The controls offered on a card are chosen from the Matter device type reported by the accessory's
-Descriptor cluster.
+The app includes dedicated control interfaces for standard Matter device types, including
+Dimmable Lights, Light Switches, and Door Locks. Additionally, the app supports Nordic
+Manufacturer-Specific Clusters, allowing developers to interact with custom attributes and commands
+on proprietary accessories. Any device type not explicitly implemented by the app is categorized as
+an Unsupported Device Type, where essential metadata (such as Product Name, Vendor ID, and Product
+ID) can still be inspected and the accessory can be decommissioned as needed.
 
 | Device type                  | Matter device type ID | Controls available in the app                                                   |
 |------------------------------|-----------------------|---------------------------------------------------------------------------------|
@@ -105,10 +116,16 @@ The following table describes the controls available for On/Off and Dimmable lig
   subscribes to this attribute, ensuring the toggle switch updates in real time if the light is
   turned on or off externally.
 * Dimmable - The app writes the Level Control cluster (`0x0008`). The percentage updates dynamically
-  while dragging, and the command sends upon release. The app subscribes to the level attribute to
-  stay synced with external changes.
+  while dragging, and the command sends upon release. The app subscribes to the level attribute,
+  ensuring the updates in real time if brightness changes externally.
 * Binding capability - The light bulb can serve as a binding target device. For more information,
   see [Configuring bindings](bindings.md).
+
+| UI element                    | Description                                                                                                                                                                                           |
+|-------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| On/off switch                 | Writes the On/Off cluster (`0x0006`) on the accessory. The app subscribes to the attribute, so the switch also follows changes made from outside the app.                                             |
+| **Brightness Control** slider | Writes the Level Control cluster (`0x0008`). The percentage next to the label updates while dragging, and the command is sent when the slider is released. The app subscribes to the level attribute. |
+| **Binding capability**        | An informational label indicating that the light bulb can be used as a binding target.                                                                                                                |
 
 ### Door lock
 
@@ -123,16 +140,52 @@ externally operated.
   subscribes to this attribute, ensuring the toggle switch updates in real time if the lock is
   operated externally.
 
+| UI element         | Description                                                                                                                     |
+|--------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| Lock state control | A status indicator showing **Locked** or **Unlocked**. Tapping it sends the corresponding Door Lock cluster (`0x0101`) command. |
+
 ### Light switches
 
 The Light Switch device is a Matter *client* node, this light switch binds with target lighting
 devices to control their light states. Because switches operate as clients, they do not expose
 controllable states within the app.
 
+| UI element                               | Description                                                                                                              |
+|------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| Title and subtitle                       | **Light Switch** and **Bind the switch with other devices**.                                                             |
+| `Cluster 0x001D (Descriptor Device Map)` | Explains that the node operates as a Matter client whose Binding Table must be configured to link it with target lights. |
+| Binding hint                             | Directs you to manage the switch's targets on the **Bindings** screen.                                                   |
+
 ### Manufacturer-specific device
 
-This card demonstrates a vendor-defined cluster and a cluster extension, as implemented by the
-nRF Connect SDK
+A Manufacturer-Specific Cluster (also called a Vendor-Specific Cluster) is a non-standardized
+cluster used in Matter devices to support proprietary or custom features. While standard Matter
+clusters (like `0x0006` for On/Off or `0x0101` for Door Lock) ensure interoperability across
+different
+smart home ecosystems (Apple, Google, Amazon, etc.), vendor-specific clusters allow manufacturers to
+implement features unique to their hardware.
+
+The app allows you to commission and interact with devices running Nordic Semiconductor's
+Manufacturer Specific Cluster sample. The app reads the device’s data model directly during
+discovery. Any custom endpoints, attributes, or commands defined via the nRF Connect Matter
+Manufacturer Cluster Editor are automatically exposed these custom features directly in the mobile
+UI without needing extra client-side development
+
+### Manufacturer-specific device controls
+
+* Generate random number — The app invokes a custom command added to the Basic Information cluster (
+  `0x28`) via a cluster extension. The generated result is displayed in the UI under Random number
+  The response is displayed directly in the UI
+  upon execution.
+* On/Off — LED switch — The app writes to the manufacturer-specific cluster (`0xFFF1FC01`) to turn
+  the
+  LED on the development kit on or off. Continuous subscription ensures the switch toggle reflects
+  the physical LED state if changed externally.
+* Button state — The app subscribes to custom button state attributes or events on the accessory.
+  The UI dynamically updates to show real-time state changes (such as pressed, released, or
+  long-pressed) whenever a physical button (button 1 in the Nordic kit) on the device is operated.
+
+The app's support for manufacturer-specific clusters is demonstrated in the
 [manufacturer-specific sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific).
 
 | UI element          | Description                                                                                                                                                                                                         |
@@ -143,17 +196,20 @@ nRF Connect SDK
 
 ### Unsupported device types
 
-For device types the app does not implement, the card shows the product name, the subtitle
-**Device not supported in this version of the app.**, and an explanation that the local application
-profile has not been implemented yet. The **Matter Device information** sheet and the
-**Remove/Decommission Device** button remain available, so the accessory can still be inspected and
-removed.
+Devices not fully supported by the app are categorized as Unsupported Device Type. However, you can
+still access **Matter Device Information** to inspect the accessory or use **Remove/Decommission
+Device** to unpair or remove the accessory.
 
 ## Matter Device Information
 
-This sheet reads the accessory's Basic Information cluster (`0x0028`). The values are fetched from
-the accessory when the secure session is established. Fields that the accessory does not report are
-omitted.
+The Matter Device Information screen provides essential device metadata read directly from the
+accessory's Basic Information cluster (`0x0028`). It displays key operational details, including:
+
+* Vendor & Identity: Product Name, Vendor Name, Vendor ID (VID), and Product ID (PID).
+
+* Firmware & Build: Software Version, Software Version String, and Serial Number.
+
+This information is available for all commissioned accessories, including Unsupported Device Types.
 
 | Field                 | Attribute |
 |-----------------------|-----------|
@@ -166,17 +222,14 @@ omitted.
 | Unique ID             | `0x0012`  |
 | Specification Version | `0x0013`  |
 
-**Close** dismisses the sheet.
-
 ## Removing a device
 
 **Remove / Decommission Device** removes the accessory from the app's fabric and clears all
 associated bindings.
 
-Since the app is commissioned through Android's Google Play services and Home API, the device is
-linked across all integrated fabrics (Only Applicable to Android). Decommissioning disassociates the
-device across these APIs,
-returning it to a factory-ready state.
+!!! note "Note"
+
+    Applicable to Android only- Since the device is commissioned through Android's Google Play services and Home API, the device is linked across all integrated fabrics (Only Applicable to Android). Decommissioning disassociates the device across these APIs, returning it to a factory-ready state.
 
 Once decommissioned, the device is ready to be re-commissioned at any time by scanning its QR code
 or entering the setup code.

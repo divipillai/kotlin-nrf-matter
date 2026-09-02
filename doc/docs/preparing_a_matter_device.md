@@ -4,7 +4,7 @@ To work with the application you need a Matter-enabled accessory device. There a
 of getting one:
 
 1. Using a **Matter Virtual Device**. It works over a local network and is easier to set up.
-1. Using one of **Nordic's development kits**. This requires a working Thread Border Router
+2. Using one of **Nordic's development kits**. This requires a working Thread Border Router
    accessible on the local network.
 
 Both approaches are explained in the following sections.
@@ -24,20 +24,22 @@ Matter Virtual Device application:
 To explore and test additional device types, a compatible Nordic development kit is required.
 
 ### Testing without a hub
+!!! note "Prerequisite"
+
+The Mac running MVD and the phone **must be on the same Wi-Fi network**.
 
 1. Download the MVD `.dmg` for your Mac (Apple Silicon or Intel) and drag it into `Applications`.
    You can download the Matter Virtual Device from the [official Google Home developer resources] (https://developers.home.google.com/matter/tools/virtual-device#install_mvd).
-1. Launch MVD and configure the simulated accessory: device type, name, discriminator, Matter port,
+2. Launch MVD and configure the simulated accessory: device type, name, discriminator, Matter port,
    and test VID/PID. After launching the application, the initial screen looks as follow:
 
     <img width="500" alt="Matter Virtual Device initial screen" src="https://github.com/user-attachments/assets/aac2b545-1e16-4ef1-81bc-68d74bbc186b" />
 
-1. Commission it from this app like a real device.
+3. Commission it from this app like a real device.
 
    It shows a QR code and joins over the existing Wi-Fi® connection of the macOS host.
 
-1. The Mac running MVD and the phone **must be on the same Wi-Fi network**.
-1. Once commissioned, you can control the simulated device from this app.
+4. Once commissioned, you can control the simulated device from the app.
 
 <div align="center">
   <img src="https://github.com/user-attachments/assets/dfc2d152-9898-459e-a768-b8b793201a94" width="49%" />
@@ -52,12 +54,12 @@ using one of the available Matter samples. The samples can be installed using th
 which is a part of
 [nRF Connect for Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download).
 
-| Sample | How to get it |
-| --- | --- |
-| **Door Lock** | Available directly in the Matter Quick Start app. |
-| **Light** | Available directly in the Matter Quick Start app. |
-| **Switch** | Build the [light switch sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_switch) in Visual Studio Code. |
-| **Manufacturer-specific cluster and cluster extension** | Build the [manufacturer-specific sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific) in Visual Studio Code. |
+| Sample                                                  | How to get it                                                                                                                                                                          |
+|---------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Door Lock**                                           | Available directly in the Matter Quick Start app, or build the [light bulb sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_bulb) in Visual Studio Code. |
+| **Light**                                               | Available directly in the Matter Quick Start app, or build the [door lock sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/lock) in Visual Studio Code.        |
+| **Switch**                                              | Build the [light switch sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_switch) in Visual Studio Code.                                                  |
+| **Manufacturer-specific cluster and cluster extension** | Build the [manufacturer-specific sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific) in Visual Studio Code.                                |
 
 !!! tip "Finding the commissioning QR code"
 

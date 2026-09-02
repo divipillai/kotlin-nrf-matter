@@ -6,37 +6,75 @@ accessories, [Thread network credentials](thread_network_credentials.md) on the 
 
 ## Starting commissioning
 
-Commissioning is started with **Add New Device** on the getting-started screen, or with the **+**
-button once the device list is populated. The app then shows the **Commissioning** screen with an
-animation and the message **Please wait while we prepare everything.** while the platform
-commissioning flow runs on top of it.
+To commission a new accessory, tap **Add Device** (or the floating **+** button) on the main screen
+to start
+the onboarding process. Scan the device’s QR code or manually enter the setup payload (discriminator
+and PIN).
 
-When commissioning succeeds, the app reads the accessory's Basic Information and Descriptor clusters
-to determine its device type, adds it to the Dashboard, and returns to the previous screen.
+The app scans for the accessory's Bluetooth Low Energy (BLE) advertising signal to establish an
+initial secure connection. Once connected over BLE, the app authenticates the accessory, provisions
+your local network credentials (Thread or Wi-Fi), and adds the device to your Matter fabric.
+
+Once network credentials are provisioned and the fabric is bound, the app reads the accessory's
+Descriptor (`0x001D`) and Basic Information (`0x0028`) clusters. This allows the app to determine
+the device type, render the correct UI controls, and extract hardware metadata like the Product
+Name and Vendor ID. The accessory is then added to the dashboard for further control or inspection
+as a functional Device Card.
 
 !!! note "The pairing UI belongs to the operating system"
 
     Scanning the QR code, choosing the network, and naming the device are all handled by the
-    operating system, not by this app. You never type a setup code into an app screen.
+    operating system, not by this app.
 
 ## Commissioning on Android
 
 Commissioning goes through Google Play Services and the Android Home API:
 
-1. The app requests commissioning, and the Google Home system flow appears.
-2. In the system flow, scan the accessory's QR code or enter its setup code manually, let it join the
-   Wi-Fi or Thread network, and give it a name.
-3. In parallel, the app's own commissioning service adds the accessory to the app's local fabric, so
-   the device ends up on both the Google Home fabric and the app's fabric.
-4. The app reads the accessory's clusters and adds it to the Dashboard under the name given in the
-   system flow.
+1. **Initiate Onboarding Flow:** Prerequisite: App has camera & Bluetooth permissions.
+   Tap **Add Device** on the Getting Started screen (or the floating **+** button if devices are
+   already present) to launch the Android system commissioning interface. !!! note "Prerequisite"
+
+   App has camera & Bluetooth permissions.
+
+2. **Scan Payload or Enter Code:**
+   Scan the accessory's Matter **QR Code** using the on-screen camera viewfinder, or tap **Setup
+   with Code** to manually enter the 11-digit or 21-digit setup payload (Discriminator and PIN
+   Code).
+
+3. **Establish BLE Rendezvous (PASE):** Bluetooth LE Discovery & Authentication.
+   Google Play Services initiates a **Bluetooth Low Energy (BLE)** scan for the accessory's
+   advertisement. Once discovered, the app establishes a Password-Authenticated Session
+   Establishment (PASE) using the setup PIN to secure the channel.
+
+4. **Provision Network Credentials:**
+   The app securely transfers operational network credentials (Wi-Fi SSID/Password or Thread Network
+   Credentials via the local Border Router) over the encrypted BLE channel.
+
+5. **Fabric Binding & Certificate Exchange:**
+   The device connects directly to the local Wi-Fi or Thread network. The app exchanges operational
+   certificates (Node Operational Certificate / NOC) and binds the device to both the Google Home
+   ecosystem fabric and the nRF Matter app's local fabric.
+
+6. **Descriptor & Metadata Reading:** Endpoint mapping & identity parsing.
+   After successful fabric join, the app queries Endpoint 0 clusters over IP:
+
+
+* Reads **Descriptor Cluster (`0x001D`)** to identify endpoints and Device Type IDs.
+* Reads **Basic Information Cluster (`0x0028`)** for basic matter device metadata such as Vendor ID,
+  Product ID, Product Name, and Serial
+  Number.
+
+7. **Dashboard Rendering:**
+   The onboarding window closes and redirects to the main view, replacing or appending a new
+   **Device Card** with custom controls, online status, and primary actions.
 
 ## Commissioning on iOS
 
 Commissioning goes through Apple's `MatterSupport` framework and the app extension bundled with the
 app:
 
-1. The app issues a `MatterAddDeviceRequest`, and the system commissioning sheet appears, showing the
+1. The app issues a `MatterAddDeviceRequest`, and the system commissioning sheet appears, showing
+   the
    ecosystem as *Nordic Ecosystem* and the home as *Nordic Home*.
 2. Scan the accessory's QR code in the system sheet and pick a room from the list offered by the
    extension.
@@ -49,19 +87,23 @@ Cancelling the system sheet ends commissioning with a *Cancelled* message on the
 
 ## If commissioning fails
 
-The **Connection Failed** screen explains that the accessory could not be paired and reports the
-details needed to diagnose it.
+If the onboarding process encounters an error such as an invalid setup payload,
+timeout, or failed network authentication, the app halts the setup and displays a **Connection
+Failed** screen. An error message details the specific issue, along with options to navigate
+directly to the Logs panel to inspect detailed diagnostic logs or return to the main view.
 
-| Field | Description |
-| --- | --- |
-| Commissioning id | Identifier of the commissioning attempt, useful for correlating with the log. |
-| Error Code | The error reported by the platform or the Matter stack. |
-| Stage | Where the failure happened: during commissioning, while reading Basic Information, or while reading the Descriptor cluster. |
-| Message | The underlying error message. |
+| Field            | Description                                                                                                                 |
+|------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| Commissioning id | Identifier of the commissioning attempt, useful for correlating with the log.                                               |
+| Error Code       | The error reported by the platform or the Matter stack.                                                                     |
+| Stage            | Where the failure happened: during commissioning, while reading Basic Information, or while reading the Descriptor cluster. |
+| Message          | The underlying error message.                                                                                               |
 
-A **TROUBLESHOOTING** section suggests confirming that the accessory is in commissioning mode — its
-LED flashing quickly — and that the fabric ID is configured correctly. Two buttons are available:
-**Go to Logs Panel** opens the log for the full trace, and **Finish** dismisses the screen.
+The **Troubleshooting** section serves as a quick hardware sanity check before diving into the logs
+panel. It instructs you to verify that the accessory is in commissioning mode: confirmed by
+its LED flashing rapidly and that the correct Fabric ID is configured. Catching these physical
+hardware or setup mismatches early saves time before you navigate to the logs panel for deeper
+technical investigation.
 
 !!! tip "Commissioning an accessory that was paired before"
 

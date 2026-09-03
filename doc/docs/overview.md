@@ -175,8 +175,7 @@ UI without needing extra client-side development
 
 * Generate random number — The app invokes a custom command added to the Basic Information cluster (
   `0x28`) via a cluster extension. The generated result is displayed in the UI under Random number
-  The response is displayed directly in the UI
-  upon execution.
+ 
 * On/Off — LED switch — The app writes to the manufacturer-specific cluster (`0xFFF1FC01`) to turn
   the
   LED on the development kit on or off. Continuous subscription ensures the switch toggle reflects
@@ -229,7 +228,7 @@ associated bindings.
 
 !!! note "Note"
 
-    Applicable to Android only- Since the device is commissioned through Android's Google Play services and Home API, the device is linked across all integrated fabrics (Only Applicable to Android). Decommissioning disassociates the device across these APIs, returning it to a factory-ready state.
+    Applicable to Android only- Since the device is commissioned through Android's Google Play services and Home API, the device is linked across all integrated fabrics. Decommissioning disassociates the device across these APIs, returning it to a factory-ready state.
 
 Once decommissioned, the device is ready to be re-commissioned at any time by scanning its QR code
 or entering the setup code.

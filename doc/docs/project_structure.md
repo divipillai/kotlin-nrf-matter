@@ -66,9 +66,40 @@ where you would add any additional SwiftUI code.
 
 ## ios-matter
 
-[`/ios-matter`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/ios-matter) is the Swift
-package that wraps Apple's `Matter` and `MatterSupport` frameworks, vendored into the repository
-rather than resolved from git. `:composeApp` runs cinterop against it, so this is where the iOS half
-of commissioning, cluster access, and the keypair and storage shared with the Matter extension lives.
+[`/ios-matter`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/ios-matter) is a full Swift
+package — manifest and sources — checked directly into git, the Apple-side counterpart to the
+vendoring described above. It used to be resolved from a git remote at an exact tag; it is now built
+in place.
 
-See [Vendored dependencies](vendored_dependencies.md#ios-matter) for how it is built and consumed.
+**It is not a SwiftPM dependency of the Kotlin build.** It is compiled to a static library and
+consumed through plain cinterop, so the Swift object code ends up *inside* the published artifact.
+Three Gradle tasks per iOS target do this, in `composeApp/build.gradle.kts`:
+
+| Task                            | What it does                                                                                                                                      |
+|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| `compileIosMatterSwift<Target>` | Runs `xcodebuild` on `/ios-matter`, which also resolves and builds Pulse.                                                                         |
+| `iosMatterStaticLib<Target>`    | Runs `libtool` on the resulting objects to produce `libios-matter.a`, and copies the Swift-generated Objective-C header and module map beside it. |
+| `cinteropIosMatter<Target>`     | Translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib.                                                    |
+
+
+`./gradlew :composeApp:iosMatterStaticLibs` builds the library for every target. All three tasks run
+automatically as part of any iOS compile — there is nothing to invoke by hand.
+
+Only the `@objc public` surface of `ios-matter` crosses the boundary; the Swift-generated
+Objective-C header is the contract, which is why the Kotlin-facing classes are annotated. Kotlin
+reaches them through the `iosMatter.*` package, for example `iosMatter.SwiftLogger` and
+`iosMatter.LocalMatterLightController`.
+
+### Editing it
+
+Change a `.swift` file under `/ios-matter/ios-matter` and build. The task inputs cover the sources and
+the manifest, so the library is rebuilt and re-archived automatically. There is no tag to push, no
+version to bump, and no lockfile to realign.
+
+Its own remote dependency, [Pulse](https://github.com/kean/Pulse), is still pinned by
+`/ios-matter/Package.resolved` and is linked into the same archive.
+
+One consequence of `/ios-matter` staying a local package: SwiftPM refuses `unsafeFlags` in a package
+consumed as a dependency, but exempts local ones. That is what lets `/ios-matter/Package.swift` keep
+`-enable-library-evolution`. Its comment explains why that flag is needed.
+ 

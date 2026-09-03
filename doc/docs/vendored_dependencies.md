@@ -1,8 +1,12 @@
 # Vendored dependencies
+!!! note "Applicable to Android only"
 
-Three dependencies are checked directly into the repository rather than resolved from a remote
-repository: the native Matter (CHIP) binaries, the Google Home API Maven artifacts, and the
-`ios-matter` Swift package. Cloning the repository and building is enough — none of them require
+    This page is only relevant for the Android build. The iOS build uses Apple's Matter frameworks
+    and does not require any vendored dependencies.
+
+Two dependencies are checked directly into the repository rather than resolved from a remote
+repository: the native Matter (CHIP) binaries, and the Google Home API Maven artifacts. Cloning the
+repository and building is enough — none of them require
 manual setup.
 
 This page explains what each one is and what to do if you need to update it.
@@ -10,11 +14,12 @@ This page explains what each one is and what to do if you need to update it.
 ## Native Matter (CHIP) SDK binaries
 
 [`/androidDeps/libs`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/androidDeps/libs)
-contains prebuilt binaries checked directly into git. They are not built by this Gradle project.
+contains prebuilt binaries checked directly into git. They are prebuild binaries and imported into
+this project.
 
-| Kind | Files |
-| --- | --- |
-| Jars | `AndroidPlatform.jar`, `CHIPClusterID.jar`, `CHIPClusters.jar`, `CHIPController.jar`, `CHIPInteractionModel.jar`, `OnboardingPayload.jar`, `libMatterJson.jar`, `libMatterTlv.jar` |
+| Kind             | Files                                                                                                                                                                                   |
+|------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Jars             | `AndroidPlatform.jar`, `CHIPClusterID.jar`, `CHIPClusters.jar`, `CHIPController.jar`, `CHIPInteractionModel.jar`, `OnboardingPayload.jar`, `libMatterJson.jar`, `libMatterTlv.jar`      |
 | Native libraries | `libCHIPController.so` and `libc++_shared.so`, in [`/androidDeps/libs/jniLibs/arm64-v8a`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/androidDeps/libs/jniLibs/arm64-v8a) |
 
 !!! note "Note"
@@ -22,7 +27,7 @@ contains prebuilt binaries checked directly into git. They are not built by this
     The native libraries are built for `arm64-v8a` only. There is no `x86_64` build, so these
     libraries will not load on an Android emulator — a physical arm64 device is required.
 
-These binaries are built against **Matter 1.5.0**, as provided by Nordic. They come from Nordic's
+These binaries are built against **Matter 1.5.0**, as provided by Nordic. It comes from Nordic's
 fork of Project CHIP,
 [`nrfconnect/sdk-connectedhomeip`](https://github.com/nrfconnect/sdk-connectedhomeip), the nRF
 Connect SDK downstream of
@@ -55,13 +60,13 @@ transparently. No manual setup is required.
 It vendors the following Android dependencies, which Google does not publish on public Maven
 repositories:
 
-| Artifact | Version | Purpose |
-| --- | --- | --- |
-| `com.google.android.gms:play-services-home` | `17.1.0` | The main Google Home Mobile SDK for Matter (the Home API). Provides API interfaces, device control, authorization, and commissioning services. |
-| `com.google.android.gms:play-services-home-types` | `17.1.0` | A helper library containing models for device types, traits, command parameters, and other domain types. |
+| Artifact                                          | Version  | Purpose                                                                                                                                        |
+|---------------------------------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| `com.google.android.gms:play-services-home`       | `17.1.0` | The main Google Home Mobile SDK for Matter (the Home API). Provides API interfaces, device control, authorization, and commissioning services. |
+| `com.google.android.gms:play-services-home-types` | `17.1.0` | A helper library containing models for device types, traits, command parameters, and other domain types.                                       |
 
-The POM of `play-services-home-types` declares a compile-scope dependency on `play-services-home`, so
-**both artifacts must always be updated together**.
+The POM of `play-services-home-types` declares a compile-scope dependency on `play-services-home`,
+so **both artifacts must always be updated together**.
 
 Google's public Maven repository (`google()`, that is `dl.google.com/android/maven2`) only publishes
 `play-services-home` up to `16.0.0`, and does not publish `play-services-home-types` at all. Version
@@ -74,22 +79,23 @@ Google's public Maven repository (`google()`, that is `dl.google.com/android/mav
     The `./mavenLocal` directory already ships the vendored `17.1.0` artifacts, so the steps below
     only matter if you are deliberately updating to a newer version.
 
-The Google Home APIs are currently in **open beta**, which means they are available to developers but
-may change without notice. They are not part of the standard Android SDK or the usual Google Play
+The Google Home APIs are currently in **open beta**, which means they are available to developers
+but may change without notice. They are not part of the standard Android SDK or the usual Google Play
 Services libraries (`com.google.android.gms.*`), and they are not yet available in Maven Central or
 Google's standard Maven repositories. Getting started therefore requires a few non-standard
 integration steps:
 
-1. Sign in to the [Google Cloud Console](https://console.cloud.google.com/) with your Google account.
-1. Access the Home APIs early-access program and download the ZIP archive containing the SDK
+1. Sign in to the [Google Cloud Console](https://console.cloud.google.com/) with your Google
+   account.
+2. Access the Home APIs early-access program and download the ZIP archive containing the SDK
    artifacts.
-1. Extract the SDK into your system's local Maven repository, the `.m2/repository` directory:
+3. Extract the SDK into your system's local Maven repository, the `.m2/repository` directory:
     - **Linux:** `~/.m2/repository/`
     - **macOS:** `~/.m2/repository/`
     - **Windows:** `C:\Users\<User_Name>\.m2\repository\`
-1. Add `mavenLocal()` to your Gradle `repositories` block so Gradle can find the artifacts.
+4. Add `mavenLocal()` to your Gradle `repositories` block so Gradle can find the artifacts.
    `settings.gradle.kts` already declares it alongside the vendored `./mavenLocal` repository.
-1. Repeat this process each time the SDK is updated, until Google officially publishes it to a Maven
+5. Repeat this process each time the SDK is updated, until Google officially publishes it to a Maven
    repository.
 
 !!! Caution "Breaking changes"

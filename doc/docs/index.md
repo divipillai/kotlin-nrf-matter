@@ -5,6 +5,9 @@ commissioning and control companion app by [Nordic Semiconductor](https://www.no
 available for Android and iOS. It is built with Kotlin Multiplatform and Compose Multiplatform, with
 the iOS-specific implementation written in Swift.
 
+## Application 
+[![Download on the App Store](assets/AppStore.png)](https://apps.apple.com/ng/app/nrf-matter/id6786253679) [![Download on the App Store](assets/PlayStore.png)](https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter)
+
 ## Overview
 
 The app acts as a Matter **controller and administrator** on its own local fabric. It commissions

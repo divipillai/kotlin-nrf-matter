@@ -32,7 +32,8 @@ Commissioning goes through Google Play Services and the Android Home API:
 
 1. **Initiate Onboarding Flow:** Prerequisite: App has camera & Bluetooth permissions.
    Tap **Add Device** on the Getting Started screen (or the floating **+** button if devices are
-   already present) to launch the Android system commissioning interface. !!! note "Prerequisite"
+   already present) to launch the Android system commissioning interface.
+   !!! note "Prerequisite"
 
    App has camera & Bluetooth permissions.
 

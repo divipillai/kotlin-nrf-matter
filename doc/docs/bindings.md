@@ -23,10 +23,10 @@ The Binding screen consists of three sections.
 ## Writing a binding
 
 1. Open the **Bindings** tab.
-2. Under **Select Client / Source Node (Write Client)**, select the source node, such as a light
-   switch, that will send the commands. Each entry is identified by its product name and node ID. If
-   no client node has been commissioned, the user should commission a source device before creating
-   a binding.
+2. Under **Select Client / Source Node (Write Client)**, select the source node that will send
+   commands (for example, a light switch). Nodes are listed by product name and Node ID.
+   Note: You must commission at least one source device before creating a binding.
+
 3. Under **Select Server / Target Node (Control Target)**, select the target node that you want to
    control. Only light bulbs that are not already bound to the selected source node are available
    for selection.

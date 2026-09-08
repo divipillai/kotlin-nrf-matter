@@ -17,17 +17,18 @@ meet the following hardware and software requirements:
 
 #### Hardware requirements
 
+- Physical Device Required: The nRF matter app requires a physical device to perform commissioning. It
+  will not run on Android Emulators.
 - 64-bit Architecture Only (`arm64-v8a`): The app relies on compiled native CHIP/Matter libraries (
   `libCHIPController.so`) built specifically for 64-bit ARM processors.
-- Physical Device Required: It
-  will not run on Android Emulators (which run on x86/x86_64 architectures) because the bundled
-  native libraries do not include x86 builds.
 
-#### Network and Connectivity requirements
+#### Thread & Network Prerequisites
 
-- Wi-Fi: A physical Wi-Fi adapter on the phone connected to the same local network subnet as your
-  Thread Border Router or Matter Virtual Device. Discovery relies on local multicast DNS (`mDNS`),
-  which does not cross different subnets or VLANs.
+- Thread Border Router (for Thread devices): If you are commissioning Matter-over-Thread
+  hardware using the app, a Thread Border Router (such as a Nest Hub or Google TV
+  Streamer 4K) must be configured on the same Wi-Fi subnet. For more information, see [Thread network credentials](thread_network_credentials.md).
+- Wi-Fi Subnet: The Android device must be connected to a Wi-Fi network that supports **IPv6** and
+  allows mDNS traffic without client isolation.
 - Bluetooth Low Energy (BLE): Required for initial Matter device discovery and Bluetooth LE
   commissioning.
 
@@ -70,7 +71,7 @@ software must meet the following requirements:
 
 - Thread Border Router (for Thread devices): If you are commissioning Matter-over-Thread
   hardware using the app, a Thread Border Router (such as a Nest Hub or Google TV
-  Streamer 4K) must be configured on the same Wi-Fi subnet.
+  Streamer 4K) must be configured on the same Wi-Fi subnet. For more information, see [Thread network credentials](thread_network_credentials.md).
 - Wi-Fi Subnet: The iOS device must be connected to a Wi-Fi network that supports **IPv6** and
   allows mDNS traffic without client isolation.
 
@@ -107,36 +108,4 @@ other device type can still be commissioned and inspected, but not controlled.
 See [Overview and user interface](overview.md#supported-device-types) for the controls offered for
 each type.
 
-## Network requirements
-
-Both the Android and iOS versions of the **nRF Matter** app rely on the exact same underlying Matter
-networking standards.
-
-### Local Network and Addressing
-
-- Active Wi-Fi Connection: The smartphone must be connected to the local Wi-Fi access point
-  where the Matter infrastructure resides.
-- Full IPv6 Support: Matter operates strictly over IPv6. The local network router/access point
-  must have IPv6 enabled and support local IPv6 packet routing between the phone and other IP
-  devices.
-- Single Subnet / L2 Domain: The phone and all target devices (or border routers) must sit on
-  the same broadcast domain/VLAN.
-
-### Device Discovery and Transport
-
-- mDNS (Multicast DNS) Unblocked: The network must allow local UDP multicast traffic (
-  specifically port `5353`). Routers with features like "AP Isolation," "Client Isolation," or
-  blocked multicast will prevent the app from discovering devices.
-- Bluetooth Low Energy (BLE): The smartphone must have physical Bluetooth LE enabled. BLE is
-  required for initial "out-of-band" commissioning (scanning the QR code and sending network
-  credentials to the device).
-
-### Infrastructure Prerequisites (Matter Core)
-
-- Thread Border Router (For Thread End-Devices): If commissioning Matter-over-Thread hardware (
-  rather than Matter-over-Wi-Fi), the local network must contain a Thread Border Router (such as
-  Google TV Streamer 4K, Google Nest Hub, or OpenThread Border Router) connected to the same Wi-Fi
-  subnet. For more information, see [Thread network credentials](thread_network_credentials.md).
-- Active Internet Access: Internet access is required on the local network for ecosystem API
-  authentication (Google Play Services / Apple Home Framework) during the initial pairing workflow.
 

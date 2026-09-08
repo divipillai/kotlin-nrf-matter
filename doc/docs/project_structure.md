@@ -1,6 +1,6 @@
 # Project structure
 
-This is a Kotlin Multiplatform project targeting Android and iOS.
+This is a Kotlin Multiplatform project targeting Android and iOS. It consists of following modules:
 
 | Module                                                                                                                      | Contents                                                                                                                                                  |
 |-----------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|

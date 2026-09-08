@@ -24,12 +24,14 @@ Matter Virtual Device application:
 To explore and test additional device types, a compatible Nordic development kit is required.
 
 ### Testing without a hub
+
 !!! note "Prerequisite"
 
 The Mac/Linux running MVD and the phone **must be on the same Wi-Fi network**.
 
 1. Download the MVD `.dmg` for your Mac (Apple Silicon or Intel) and drag it into `Applications`.
-   You can download the Matter Virtual Device from the [official Google Home developer resources] (https://developers.home.google.com/matter/tools/virtual-device#install_mvd).
+   You can download the Matter Virtual Device from
+   the [official Google Home developer resources](https://developers.home.google.com/matter/tools/virtual-device#install_mvd).
 2. Launch MVD and configure the simulated accessory: device type, name, discriminator, Matter port,
    and test VID/PID. After launching the application, the initial screen looks as follow:
 
@@ -54,12 +56,12 @@ using one of the available Matter samples. The samples can be installed using th
 which is a part of
 [nRF Connect for Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download).
 
-| Sample                                                  | How to get it                                                                                                                                                                          |
-|---------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Door Lock**                                           | Available directly in the Matter Quick Start app, or build the [light bulb sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_bulb) in Visual Studio Code. |
-| **Light**                                               | Available directly in the Matter Quick Start app, or build the [door lock sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/lock) in Visual Studio Code.        |
-| **Switch**                                              | Build the [light switch sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_switch) in Visual Studio Code.                                                  |
-| **Manufacturer-specific cluster and cluster extension** | Build the [manufacturer-specific sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific) in Visual Studio Code.                                |
+| Sample                                                  | How to get it                                                                                                                                                                                                 |
+|---------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Door Lock**                                           | Available directly in the Matter Quick Start app, or build and flash the [light bulb sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_bulb) in Visual Studio Code.              |
+| **Light Bulb**                                          | Available directly in the Matter Quick Start app, or build and flash the [door lock sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/lock) in Visual Studio Code.                     |
+| **Light Switch**                                        | Build the [light switch sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_switch) in Visual Studio Code and flash it to one of the supported development kits.                   |
+| **Manufacturer-specific cluster and cluster extension** | Build the [manufacturer-specific sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific) in Visual Studio Code and flash it to one of the supported development kits. |
 
 !!! tip "Finding the commissioning QR code"
 
@@ -71,7 +73,7 @@ which is a part of
     port. If the device has not yet been commissioned, press the reset button on the kit. The device
     then prints the logs, including the QR code link, in the logs panel.
 
-    <img width="914" alt="QR code link in the serial log" src="https://github.com/user-attachments/assets/844905d9-5701-4426-b049-5d686369b455" />
+<img width="914" alt="QR code link in the serial log" src="https://github.com/user-attachments/assets/844905d9-5701-4426-b049-5d686369b455" />
 
 ## Next steps
 

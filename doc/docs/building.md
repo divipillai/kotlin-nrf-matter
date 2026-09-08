@@ -11,7 +11,7 @@ git clone https://github.com/nordicsemi/kotlin-nrf-matter.git
 
 All dependencies, including the native Matter binaries and the Google Home API artifacts, are
 vendored in the repository, so no additional setup is needed. See
-[Vendored dependencies](vendored_dependencies.md) for what that involves.
+[Vendored dependencies](vendored_dependencies.md) for more information.
 
 ## Building and running the Android application
 

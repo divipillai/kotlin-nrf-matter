@@ -19,12 +19,16 @@ The application supports the following features:
 - **Commissioning** new Matter devices onto your fabric:
     - Android — through the Android Home API and Google Play Services, provisioning the device onto
       both the Google Home fabric and the app's local fabric.
-    - iOS — through Apple's `MatterSupport` framework (`MatterAddDeviceRequest`), onto a local fabric
-      managed directly by the app itself (using `Matter.framework` and `MTRDeviceController`), with a
+    - iOS — through Apple's `MatterSupport` framework (`MatterAddDeviceRequest`), onto a local
+      fabric
+      managed directly by the app itself (using `Matter.framework` and `MTRDeviceController`), with
+      a
       bundled app extension providing the system QR-code scanning UI.
-- **Controlling** commissioned devices — door locks, lights, switches, and manufacturer-specific
+- **Controlling** commissioned devices — door locks, light bulbs (dimmable light bulb), switches,
+  and manufacturer-specific
   clusters.
-- **Managing bindings** between devices, for example a switch controlling a light directly.
+- **Managing bindings** between devices, for example a light switch controlling a light bulb
+  directly.
 - **Viewing logs** for diagnosing commissioning and cluster interactions.
 
 For a description of every screen and control, see
@@ -41,5 +45,9 @@ For a description of every screen and control, see
 
 ## Application source code
 
-The code of the application is open source and [available on GitHub](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main).
-You can fork the repository and clone it for secondary development or feature contributions.
+The complete source code for the nRF Matter mobile application is fully
+open-source and [available on GitHub](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main).
+Developers can explore the codebase to examine device cluster interactions, node management, and
+binding workflows under the hood. By cloning or forking the public repository, you can easily build
+the app locally, integrate core Matter commissioning and control logic into your own multiplatform
+applications, or contribute fixes and features back to the community.

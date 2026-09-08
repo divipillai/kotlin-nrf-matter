@@ -8,7 +8,7 @@ handed off to the native operating system — `Google Play Services` on Android 
 on iOS.
 
 Upon launch, the app opens to the Dashboard. If no accessories have been commissioned, a
-getting-started screen appears with options to begin setup, access Matter documentation, and view
+Getting Started screen appears with options to begin setup, access Matter documentation, and view
 the app version. Once a device is commissioned, the Dashboard dynamically updates to display the
 list of commissioned devices.
 
@@ -100,17 +100,18 @@ ID) can still be inspected and the accessory can be decommissioned as needed.
 Regardless of the device type, every card provides the **Matter Device information** sheet and the
 **Remove/Decommission Device** button.
 
-### Lights
+### Light bulbs
 
-Once a Light Bulb is commissioned, you can control it directly through the app—with support for both
+Once a Light bulb is commissioned, you can control it directly through the app, with support for
+both
 standard On/Off and Dimmable lights. The interface includes a power switch and a brightness slider
 that updates its percentage in real time as you drag. The brightness command sends as soon as you
 release the slider. Because the app subscribes to level attribute updates, the control stays in sync
-if the light is adjusted externally.
+if the device is adjusted externally.
 
 ### Light bulb controls
 
-The following table describes the controls available for On/Off and Dimmable lights.
+The following describes the controls available for On/Off and Dimmable lights.
 
 * On/Off - The app writes the On/Off cluster (`0x0006`) on the accessory. It continuously
   subscribes to this attribute, ensuring the toggle switch updates in real time if the light is
@@ -166,16 +167,16 @@ smart home ecosystems (Apple, Google, Amazon, etc.), vendor-specific clusters al
 implement features unique to their hardware.
 
 The app allows you to commission and interact with devices running Nordic Semiconductor's
-Manufacturer Specific Cluster sample. The app reads the device’s data model directly during
-discovery. Any custom endpoints, attributes, or commands defined via the nRF Connect Matter
-Manufacturer Cluster Editor are automatically exposed these custom features directly in the mobile
-UI without needing extra client-side development
+[Manufacturer Specific Cluster](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific)
+sample. By reading the device’s data model directly during discovery, the app automatically
+exposes any custom endpoints, attributes, or commands defined via the nRF Connect Matter
+Manufacturer Cluster Editor in the mobile UI without needing additional client-side development.
 
 ### Manufacturer-specific device controls
 
 * Generate random number — The app invokes a custom command added to the Basic Information cluster (
-  `0x28`) via a cluster extension. The generated result is displayed in the UI under Random number
- 
+  `0x28`) via a cluster extension. The generated result is displayed in the UI under Random number.
+
 * On/Off — LED switch — The app writes to the manufacturer-specific cluster (`0xFFF1FC01`) to turn
   the
   LED on the development kit on or off. Continuous subscription ensures the switch toggle reflects

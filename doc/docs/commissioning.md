@@ -30,61 +30,78 @@ as a functional Device Card.
 
 Commissioning goes through Google Play Services and the Android Home API:
 
-1. **Initiate Onboarding Flow:** Prerequisite: App has camera & Bluetooth permissions.
-   Tap **Add Device** on the Getting Started screen (or the floating **+** button if devices are
+1. Launch the nRF Matter Android App:
+   Open the **nRF Matter** app on your Android device. Tap **+ Add New Device** on the Getting Started screen (or the floating **+** button if devices are
    already present) to launch the Android system commissioning interface.
    !!! note "Prerequisite"
 
    App has camera & Bluetooth permissions.
 
-2. **Scan Payload or Enter Code:**
+2. Scan Payload or Enter Code:
    Scan the accessory's Matter **QR Code** using the on-screen camera viewfinder, or tap **Setup
    with Code** to manually enter the 11-digit or 21-digit setup payload (Discriminator and PIN
    Code).
 
-3. **Establish BLE Rendezvous (PASE):** Bluetooth LE Discovery & Authentication.
+3. Establish BLE Rendezvous (PASE):
    Google Play Services initiates a **Bluetooth Low Energy (BLE)** scan for the accessory's
    advertisement. Once discovered, the app establishes a Password-Authenticated Session
    Establishment (PASE) using the setup PIN to secure the channel.
 
-4. **Provision Network Credentials:**
+4. Provision Network Credentials:
    The app securely transfers operational network credentials (Wi-Fi SSID/Password or Thread Network
    Credentials via the local Border Router) over the encrypted BLE channel.
 
-5. **Fabric Binding & Certificate Exchange:**
+5. Fabric Binding & Certificate Exchange:
    The device connects directly to the local Wi-Fi or Thread network. The app exchanges operational
    certificates (Node Operational Certificate / NOC) and binds the device to both the Google Home
    ecosystem fabric and the nRF Matter app's local fabric.
 
-6. **Descriptor & Metadata Reading:** Endpoint mapping & identity parsing.
+6. Descriptor & Metadata Reading:
    After successful fabric join, the app queries Endpoint 0 clusters over IP:
+   * Reads **Descriptor Cluster (`0x001D`)** to identify endpoints and Device Type IDs.
+   * Reads **Basic Information Cluster (`0x0028`)** for basic matter device metadata such as Vendor ID,
+     Product ID, Product Name, and Serial
+     Number.
 
-
-* Reads **Descriptor Cluster (`0x001D`)** to identify endpoints and Device Type IDs.
-* Reads **Basic Information Cluster (`0x0028`)** for basic matter device metadata such as Vendor ID,
-  Product ID, Product Name, and Serial
-  Number.
-
-7. **Dashboard Rendering:**
+7. Dashboard Rendering:
    The onboarding window closes and redirects to the main view, replacing or appending a new
    **Device Card** with custom controls, online status, and primary actions.
 
 ## Commissioning on iOS
 
 Commissioning goes through Apple's `MatterSupport` framework and the app extension bundled with the
-app:
+app.
 
-1. The app issues a `MatterAddDeviceRequest`, and the system commissioning sheet appears, showing
-   the
-   ecosystem as *Nordic Ecosystem* and the home as *Nordic Home*.
-2. Scan the accessory's QR code in the system sheet and pick a room from the list offered by the
-   extension.
-3. Network selection is automatic: Wi-Fi accessories join the current system network, and Thread
+Before starting, ensure the iPhone is connected to the same Wi-Fi network you plan to
+commission the Matter accessory onto, and that Bluetooth is turned on. If commissioning a **Thread**
+accessory, an active Thread Border Router (such as Google TV Streamer 4K) must be present on the
+local network and the Thread network credentials must be known to the phone.
+
+1. Launch the nRF Matter iOS App:
+   Open the **nRF Matter** app on your iPhone. Tap **+ Add New Device** on the Getting Started screen (or the floating **+** button if devices are
+   already present) to initiate the commissioning workflow.
+
+2. Scan QR Code or Enter Pairing Code:
+   The app invokes the iOS system Matter scanner view. Point your camera at the **Matter QR Code**
+   displayed on the terminal console/device label.
+
+3. Establish BLE Rendezvous:
+   For commissioning over Thread, iOS proceeds by establishing a local Bluetooth connection with
+   the board so that it can send the Thread network credentials to the device.
+
+4. Provision Network Credentials:
+   Network selection is handled in the code. Wi-Fi accessories join the current system network and Thread
    accessories join the first network found during scanning.
-4. The extension commissions the accessory onto the app's local fabric, and the app reads its
-   clusters and adds it to the Dashboard.
 
-Cancelling the system sheet ends commissioning with a *Cancelled* message on the error screen.
+5. Complete Fabric Association:
+   The nRF board joins the local network, switches communications from BLE to IPv6 (Thread or
+   Wi-Fi), and completes CASE (Certificate Authenticated Session Establishment) with the local
+   controller managed by the app.
+
+6. Verify & Control:
+   Once commissioned, assign a custom name and room to the device inside the nRF Matter app. You can
+   now toggle attributes (e.g., On/Off light bulb, level controls, door lock) to verify operational
+   control.
 
 ## If commissioning fails
 

@@ -26,7 +26,7 @@ To explore and test additional device types, a compatible Nordic development kit
 ### Testing without a hub
 !!! note "Prerequisite"
 
-The Mac running MVD and the phone **must be on the same Wi-Fi network**.
+The Mac/Linux running MVD and the phone **must be on the same Wi-Fi network**.
 
 1. Download the MVD `.dmg` for your Mac (Apple Silicon or Intel) and drag it into `Applications`.
    You can download the Matter Virtual Device from the [official Google Home developer resources] (https://developers.home.google.com/matter/tools/virtual-device#install_mvd).

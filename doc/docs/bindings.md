@@ -49,8 +49,6 @@ Writing a binding involves two operations on two different accessories:
    command it.
 2. A binding entry is written into the switch's Binding Table.
 
-At the time of writing, only unicast bindings are supported.
-
 ## Active binding table entries
 
 This section displays a list of active bindings, including the source and target node IDs and the

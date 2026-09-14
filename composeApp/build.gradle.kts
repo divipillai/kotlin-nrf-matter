@@ -11,9 +11,8 @@ plugins {
     alias(libs.plugins.nordic.kotlin)
     alias(libs.plugins.ksp)
     alias(libs.plugins.nordic.publish.kmp)
+    alias(localLibs.plugins.swift.klib)
 }
-
-apply(plugin = "io.github.ttypic.swiftklib")
 
 extensions.configure<NamedDomainObjectContainer<io.github.ttypic.swiftklib.gradle.SwiftKlibEntry>>("swiftklib") {
     create("iosMatter") {

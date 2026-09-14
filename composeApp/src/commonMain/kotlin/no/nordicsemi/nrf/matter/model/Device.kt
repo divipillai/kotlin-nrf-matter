@@ -70,6 +70,7 @@ enum class StandardDeviceType(val value: DeviceType) {
     LIGHT_ON_OFF(DeviceType(256L, "Light On/Off")),
     DIMMABLE_LIGHT(DeviceType(257L, "Dimmable Light")),
     LIGHT_SWITCH(DeviceType(259L, "Light Switch")),
+    DIMMER_SWITCH(DeviceType(260L, "Light Switch")),
     OUTLET(DeviceType(266L, "Outlet")),
     DOOR_LOCK(DeviceType(268L, "Color Temperature Light")),
     COLOR_TEMPERATURE_LIGHT(DeviceType(269L, "Extended Color Light")),

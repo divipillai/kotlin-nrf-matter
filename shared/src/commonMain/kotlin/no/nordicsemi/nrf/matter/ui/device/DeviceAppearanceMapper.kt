@@ -36,6 +36,7 @@ private fun DeviceType.toSubtitle(): String = when (this) {
     StandardDeviceType.DOOR_LOCK.value -> "Smart Lock"
 
     StandardDeviceType.OUTLET.value,
+    StandardDeviceType.DIMMER_SWITCH.value,
     StandardDeviceType.LIGHT_SWITCH.value -> "Bind the switch with other devices"
 
     StandardDeviceType.LIGHT_ON_OFF.value,

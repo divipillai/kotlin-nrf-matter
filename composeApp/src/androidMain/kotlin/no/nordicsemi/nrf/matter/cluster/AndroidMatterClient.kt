@@ -1,5 +1,7 @@
 package no.nordicsemi.nrf.matter.cluster
 
+import chip.devicecontroller.ChipStructs
+import chip.devicecontroller.ChipTLVType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -70,6 +72,10 @@ class AndroidMatterClient(
 private fun Any?.toCommonValue(): Any? = when (this) {
     is List<*> -> map { it.toCommonValue() }
 
+    is ChipStructs.DescriptorClusterDeviceTypeStruct -> MatterStruct(
+        mapOf(DescriptorClusterInfo.DeviceTypeStruct.DEVICE_TYPE to deviceType)
+    )
+
     is Map<*, *> -> MatterStruct(
         entries.mapNotNull { (contextTag, value) ->
             val tag = when (contextTag) {
@@ -81,6 +87,21 @@ private fun Any?.toCommonValue(): Any? = when (this) {
             tag?.let { it to value.toCommonValue() }
         }.toMap()
     )
+
+    is ChipTLVType.ArrayType -> (0 until size()).map { value(it).toCommonValue() }
+
+    is ChipTLVType.StructType -> MatterStruct(
+        value().associate { it.contextTagNum() to it.value().toCommonValue() }
+    )
+
+    is ChipTLVType.IntType -> value()
+    is ChipTLVType.UIntType -> value()
+    is ChipTLVType.StringType -> value()
+    is ChipTLVType.BooleanType -> value()
+    is ChipTLVType.DoubleType -> value()
+    is ChipTLVType.FloatType -> value()
+    is ChipTLVType.ByteArrayType -> value()
+    is ChipTLVType.NullType, is ChipTLVType.EmptyType -> null
 
     else -> this
 }

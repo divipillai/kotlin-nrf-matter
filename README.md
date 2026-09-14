@@ -364,16 +364,17 @@ directory in Xcode and run it from there.
 
 ### Adding the commissioning extension to another iOS app
 
-An app embedding `matter-support` needs a `MatterSupport` app extension, but almost none of one. The
-commissioning logic ships in the library, as iOS-only entry points on `NordicMatters` and `Fabric`
-declared in
+An app embedding `matter-support` needs a `MatterSupport` app extension, but almost none of one —
+the commissioning logic ships in the library as iOS-only entry points on `NordicMatters` and
+`Fabric`, declared in
 [`api/NordicMattersAppExtension.kt`](./composeApp/src/iosMain/kotlin/no/nordicsemi/nrf/matter/api/NordicMattersAppExtension.kt).
-The extension target holds a single Swift class that forwards each system callback to them and
-nothing else. [`iosApp/nrfMatter`](./iosApp/nrfMatter) is the worked example — three pieces of
-configuration and one source file.
+The extension target just forwards system callbacks to them.
+[`iosApp/nrfMatter`](./iosApp/nrfMatter) is the worked example.
 
-1. **App extension target.** Add one with the `com.apple.matter.support.extension.device-setup`
-   extension point, naming your own handler as its principal class:
+1. **App extension target** with the `com.apple.matter.support.extension.device-setup` extension
+   point, naming your own handler as its principal class. `$(PRODUCT_MODULE_NAME)` is required —
+   `MatterSupport` is Swift-only, so the handler must be compiled into the extension's own module,
+   never linked in from the Kotlin framework:
 
    ```xml
    <key>NSExtension</key>
@@ -385,15 +386,10 @@ configuration and one source file.
    </dict>
    ```
 
-   The `$(PRODUCT_MODULE_NAME).` prefix is required — the class is compiled into the extension's own
-   module. It cannot be a class linked in from the Kotlin framework instead: `MatterSupport` is a
-   Swift-only framework (its Objective-C umbrella header is empty), so `MatterAddDeviceExtension`
-   `RequestHandler` can only be subclassed from Swift compiled into this target, and never from
-   Kotlin.
-
-2. **App groups.** Provision two under your own team and list them in the
-   `com.apple.security.application-groups` entitlement of *both* the app and the extension, then
-   name them in *both* targets' `Info.plist`:
+2. **App groups.** Provision two under your own team, list both in the
+   `com.apple.security.application-groups` entitlement of *both* the app and the extension, and set
+   them in *both* targets' `Info.plist` (an extension never sees the host app's plist, so values
+   must match on both sides or the two processes silently land on different `UserDefaults` suites):
 
    ```xml
    <key>NordicMatterLocalAppGroup</key>
@@ -402,49 +398,25 @@ configuration and one source file.
    <string>group.example.matter.shared</string>
    ```
 
-   The local group holds the Matter fabric, the shared group the app-to-extension handshake and the
-   log store. They cannot be compiled into the library, since an app group is provisioned per
-   developer team, so both keys are required — there is no default. Omitting one, or leaving it
-   empty, trips a `preconditionFailure` naming the missing key and the target whose Info.plist
-   lacks it.
-
-   *Both* plists is not a typo. `Bundle.main` in an app extension is the `.appex` bundle, so the
-   extension never sees the host app's keys. Values that disagree put the two processes on different
-   `UserDefaults` suites and fail silently rather than loudly.
-
-   The keychain holding the NOC signing keypair needs the same treatment. `KeypairHelper` scopes it
-   to the group named by `NordicMatterKeychainGroup`, which `iosApp` and `nrfMatter` both set:
+   Also set a keychain group for the NOC signing keypair, listed in `keychain-access-groups` on
+   both targets — a plain app group id works here too, which is the shorter path for a new app:
 
    ```xml
    <key>NordicMatterKeychainGroup</key>
    <string>$(AppIdentifierPrefix)nordicsemi.nrf.matter</string>
    ```
 
-   Xcode expands `$(AppIdentifierPrefix)` at build time, so the value carries no hardcoded team ID,
-   and the group it resolves to must also be listed in the `keychain-access-groups` entitlement of
-   both targets. This key is required too. If you would rather not provision a keychain group and
-   entitle it, name your shared app group here instead — an app group identifier is valid as a
-   keychain access group, which is the shorter path for a new app:
+   A missing app-group key fails loudly with a `preconditionFailure`. A wrong/mismatched keychain
+   group doesn't: the extension generates a second keypair, falls back to a new fabric the app
+   can't see, and commissioning reports success onto it — check this first if devices commission
+   but never show up, and don't change the value once devices exist, or they orphan.
 
-   ```xml
-   <key>NordicMatterKeychainGroup</key>
-   <string>group.example.matter.shared</string>
-   ```
+3. **Linker flags.** `OTHER_LDFLAGS` on the extension target needs
+   `-ObjC -framework <YourKotlinFramework>` (`-ObjC -framework shared` here) — `-framework` because
+   Swift only auto-links a module it uses, and the Kotlin framework is static; `-ObjC` force-loads
+   its Objective-C classes.
 
-   Getting this one wrong is the least obvious failure in the whole setup, because nothing reports
-   it. The extension finds no key, `MatterKeypair` generates a second one,
-   `createController(onExistingFabric:)` fails, and `LocalControllerProvider` falls back to
-   `onNewFabric` — commissioning reports success onto a fabric the app cannot see. Changing the
-   value on an app that has already commissioned devices orphans them for the same reason: the
-   keypair does not move with the group.
-
-3. **Linker flags.** Set `OTHER_LDFLAGS` on the extension target to
-   `-ObjC -framework <YourKotlinFramework>` (`-ObjC -framework shared` here). `-framework` is needed
-   explicitly because Swift only auto-links a module it actually uses, and the Kotlin framework is a
-   *static* one, so the linker pulls only archive members that resolve a referenced symbol; `-ObjC`
-   force-loads the members that define Objective-C classes.
-
-4. **The handler.** One Swift file, which is the whole of the extension's own code:
+4. **The handler** — the extension's whole source:
 
    ```swift
    import MatterSupport
@@ -474,26 +446,16 @@ configuration and one source file.
    }
    ```
 
-   `initializeAppExtension()` installs Kotlin-side logging: the extension is a separate process, so
-   nothing the app does at start-up applies to it and every process running Kotlin has to do this
-   once for itself.
+   `initializeAppExtension()` sets up Kotlin-side logging for this process — the extension runs
+   separately from the app, so each has to do this once for itself. Keep at least this one source
+   file in the target: with none, Xcode skips linking and reports `BUILD SUCCEEDED` on an `.appex`
+   with no executable inside.
 
-   Xcode needs at least one compilable source in the target to run the link step, which this file
-   satisfies. Leave the target with no sources at all and Xcode skips linking silently: the `.appex`
-   gets an `Info.plist` and resources but **no executable**, and the build still reports
-   `BUILD SUCCEEDED`.
-
-To offer your own rooms in the system UI, set `NordicMatters.commissioningRooms` before
-commissioning starts. The app hands them to the extension through the shared app group, and
-`appExtensionRooms()` falls back to the default list if it finds none. The room the user picks is
-discarded — the system flow shows the step regardless, and the library has no notion of rooms — but
-the *name* they type is applied to the device.
-
-**The extension does not write to the fabric.** Its `Fabric` is built in the extension's own process
-against the extension's own container, so a device registered there would be invisible to the app.
-`commissionAppExtensionDevice` only pairs the device; `configureAppExtensionDevice` records the
-chosen name and a success flag in the shared app group, and `MatterCommissionerImpl.commission` in
-the app reads them back and registers the device once the system flow returns.
+Set `NordicMatters.commissioningRooms` before commissioning to offer your own rooms in the system
+UI (falls back to a default list otherwise). The extension only pairs the device and records the
+chosen name in the shared app group — it never touches the app's own fabric — and
+`MatterCommissionerImpl.commission` reads that back and registers the device once the system flow
+returns.
 
 ## Requirements
 

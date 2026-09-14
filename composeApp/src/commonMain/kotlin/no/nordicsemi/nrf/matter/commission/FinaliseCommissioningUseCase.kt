@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter.commission
 import no.nordicsemi.nrf.matter.cluster.BasicInformationCluster
 import no.nordicsemi.nrf.matter.cluster.DescriptorCluster
 import no.nordicsemi.nrf.matter.cluster.MatterClient
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.ROOT_ENDPOINT
@@ -21,6 +22,8 @@ internal class FinaliseCommissioningUseCase(
     }
 
     suspend fun readDevice(deviceId: DeviceId): Device {
+        NordicLogger.debug("--- Reading device info ---")
+
         val basicInfo = catchAndThrow(deviceId, Stage.READ_BASIC_INFORMATION) {
             BasicInformationCluster(deviceId, client).read()
         }
@@ -28,6 +31,8 @@ internal class FinaliseCommissioningUseCase(
         val endpoints = catchAndThrow(deviceId, Stage.READ_DESCRIPTOR_CLUSTER) {
             DescriptorCluster(deviceId, ROOT_ENDPOINT, client).endpoints()
         }
+
+        NordicLogger.debug("--- Successfully read device info ---")
 
         return Device(
             deviceId = deviceId,

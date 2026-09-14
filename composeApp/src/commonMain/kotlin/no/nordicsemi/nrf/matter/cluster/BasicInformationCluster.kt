@@ -42,27 +42,35 @@ class BasicInformationCluster(
 
     suspend fun readVendorName(): String =
         readAttribute<String>(BasicInfoClusterInfo.Attribute.VENDOR_NAME)
+            .also { NordicLogger.debug("Vendor name: $it") }
 
     suspend fun readVendorId(): Int? =
         readNumberOrNull(BasicInfoClusterInfo.Attribute.VENDOR_ID)?.toInt()
+            .also { NordicLogger.debug("Vendor id: $it") }
 
     suspend fun readProductName(): String? =
         readOrNull<String>(BasicInfoClusterInfo.Attribute.PRODUCT_NAME)
+            .also { NordicLogger.debug("Product name: $it") }
 
     suspend fun readProductId(): Int? =
         readNumberOrNull(BasicInfoClusterInfo.Attribute.PRODUCT_ID)?.toInt()
+            .also { NordicLogger.debug("Product id: $it") }
 
     suspend fun readSoftwareVersion(): String? =
         readOrNull<String>(BasicInfoClusterInfo.Attribute.SOFTWARE_VERSION_STRING)
+            .also { NordicLogger.debug("Software version: $it") }
 
     suspend fun readSerialNumber(): String? =
         readOrNull<String>(BasicInfoClusterInfo.Attribute.SERIAL_NUMBER)
+            .also { NordicLogger.debug("Serial number: $it") }
 
     suspend fun readSpecificationVersion(): Long? =
         readNumberOrNull(BasicInfoClusterInfo.Attribute.SPECIFICATION_VERSION)
+            .also { NordicLogger.debug("Spec version: $it") }
 
     suspend fun readUniqueId(): String? =
         readOrNull<String>(BasicInfoClusterInfo.Attribute.UNIQUE_ID)
+            .also { NordicLogger.debug("Unique id: $it") }
 
     private suspend fun readNumberOrNull(attributeId: Long): Long? =
         readOrNull<Number>(attributeId)?.toLong()

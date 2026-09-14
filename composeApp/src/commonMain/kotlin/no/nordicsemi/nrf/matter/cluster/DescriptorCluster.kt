@@ -43,6 +43,12 @@ class DescriptorCluster(
         val deviceTypes = deviceTypes()
         val parts = parts()
 
+        NordicLogger.debug("Descriptor cluster for endpoint: $endpoint")
+        NordicLogger.debug("Server clusters: $serverClusters")
+        NordicLogger.debug("Client clusters: $clientClusters")
+        NordicLogger.debug("Device types: $deviceTypes")
+        NordicLogger.debug("Endpoints: $parts")
+
         into += Endpoint(
             id = endpoint,
             types = deviceTypes,

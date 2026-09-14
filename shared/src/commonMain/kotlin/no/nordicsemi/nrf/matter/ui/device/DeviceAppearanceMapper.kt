@@ -11,6 +11,8 @@ import no.nordicsemi.nrf.matter.shared.generated.resources.smart_outlet
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.StandardDeviceType
+import no.nordicsemi.nrf.matter.nordic.NORDIC_MANUFACTURER_SPECIFIC_DEVICE_TYPE
+import no.nordicsemi.nrf.matter.nordic.NordicDeviceType
 import no.nordicsemi.nrf.matter.nordic.isNordicManufacturerSpecific
 import org.jetbrains.compose.resources.painterResource
 
@@ -39,6 +41,7 @@ private fun DeviceType.toSubtitle(): String = when (this) {
     StandardDeviceType.DIMMER_SWITCH.value,
     StandardDeviceType.LIGHT_SWITCH.value -> "Bind the switch with other devices"
 
+    NordicDeviceType,
     StandardDeviceType.LIGHT_ON_OFF.value,
     StandardDeviceType.DIMMABLE_LIGHT.value,
     StandardDeviceType.COLOR_TEMPERATURE_LIGHT.value,

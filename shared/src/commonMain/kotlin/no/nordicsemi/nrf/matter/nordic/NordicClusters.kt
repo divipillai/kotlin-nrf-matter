@@ -5,7 +5,7 @@ import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 
 const val NORDIC_MANUFACTURER_SPECIFIC_DEVICE_TYPE: Long = 0xFFF10001
-private val NordicDeviceType = DeviceType(NORDIC_MANUFACTURER_SPECIFIC_DEVICE_TYPE, "Nordic Semi Device")
+val NordicDeviceType = DeviceType(NORDIC_MANUFACTURER_SPECIFIC_DEVICE_TYPE, "Nordic Semi Device")
 
 fun Device.isNordicManufacturerSpecific(): Boolean =
     endpoints.any { !it.isRoot && NORDIC_MANUFACTURER_SPECIFIC_DEVICE_TYPE in it.types }

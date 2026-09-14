@@ -72,9 +72,9 @@ enum class StandardDeviceType(val value: DeviceType) {
     LIGHT_SWITCH(DeviceType(259L, "Light Switch")),
     DIMMER_SWITCH(DeviceType(260L, "Light Switch")),
     OUTLET(DeviceType(266L, "Outlet")),
-    DOOR_LOCK(DeviceType(268L, "Color Temperature Light")),
-    COLOR_TEMPERATURE_LIGHT(DeviceType(269L, "Extended Color Light")),
-    EXTENDED_COLOR_LIGHT(DeviceType(10L, "Door Lock")),
+    DOOR_LOCK(DeviceType(10L, "Door Lock")),
+    COLOR_TEMPERATURE_LIGHT(DeviceType(268L, "Color Temperature Light")),
+    EXTENDED_COLOR_LIGHT(DeviceType(269L, "Extended Color Light")),
 }
 
 @Serializable

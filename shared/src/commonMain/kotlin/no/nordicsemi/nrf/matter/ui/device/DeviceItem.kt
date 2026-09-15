@@ -47,8 +47,8 @@ import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.UiState
+import no.nordicsemi.nrf.matter.ui.contact.ContactSensorActionItem
 import no.nordicsemi.nrf.matter.ui.contact.ContactSensorController
-import no.nordicsemi.nrf.matter.ui.contact.ContactSensorItem
 import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtControlItem
 import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtController
 import no.nordicsemi.nrf.matter.ui.level.LevelControlItem
@@ -59,8 +59,8 @@ import no.nordicsemi.nrf.matter.ui.lock.DoorLockController
 import no.nordicsemi.nrf.matter.ui.lock.LockActionItem
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecControlItem
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecController
+import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorActionItem
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
-import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorItem
 
 @Composable
 internal fun DeviceItem(
@@ -80,6 +80,7 @@ internal fun DeviceItem(
     val lockState = doorLock?.state?.collectAsStateWithLifecycle()?.value
     val manufacturerSpecState = manufacturerSpec?.state?.collectAsStateWithLifecycle()?.value
     val contactSensorState = contactSensor?.state?.collectAsStateWithLifecycle()?.value
+    val temperatureSensorState = temperatureSensor?.state?.collectAsStateWithLifecycle()?.value
 
     // The lock keeps its last known state while it is moving, so that the label does not flicker.
     var isLocked by remember { mutableStateOf(false) }
@@ -87,7 +88,8 @@ internal fun DeviceItem(
         (lockState as? UiState.Success)?.let { isLocked = it.data == LockDeviceState.LOCKED }
     }
 
-    val isActive = onOffState?.isOn == true || isLocked || contactSensorState?.isOpen == true
+    val isActive = onOffState?.isOn == true || isLocked
+    val isIconLit = isActive || contactSensorState?.isContactDetected == true
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
 
@@ -108,10 +110,12 @@ internal fun DeviceItem(
     ) {
 
         DeviceHeader(
-            isOn = isActive,
-            icon = device.device.toIcon(isActive),
+            isOn = isIconLit,
+            icon = device.device.toIcon(isIconLit),
             title = manufacturerSpecState?.displayName ?: device.device.toTitle(),
-            subtitle = device.device.toSubtitle(),
+            subtitle = contactSensorState?.let {
+                if (it.isContactDetected) "Contact detected" else "Contact not detected"
+            } ?: device.device.toSubtitle(),
             bindingCapable = device.device.isBindingSource() != null,
         ) {
             when {
@@ -125,6 +129,14 @@ internal fun DeviceItem(
                     isOn = onOffState.isOn,
                     isEnabled = onOffState.isEnabled,
                     onCheckedChange = onOff::setOn,
+                )
+
+                contactSensor != null && contactSensorState != null -> ContactSensorActionItem(
+                    isContactDetected = contactSensorState.isContactDetected,
+                )
+
+                temperatureSensor != null && temperatureSensorState != null -> TemperatureSensorActionItem(
+                    temperatureCelsius = temperatureSensorState.temperatureCelsius,
                 )
 
                 else -> Icon(
@@ -145,8 +157,6 @@ internal fun DeviceItem(
                 levelControl?.let { BrightnessControl(it, device.device.deviceId) }
                 basicInfoExt?.let { RandomNumberControl(it) }
                 manufacturerSpec?.let { LedAndButtonControl(it) }
-                contactSensor?.let { ContactSensorControl(it) }
-                temperatureSensor?.let { TemperatureSensorControl(it) }
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
 
@@ -185,26 +195,6 @@ private fun LedAndButtonControl(controller: ManufacturerSpecController) {
         isButtonOn = state.isButtonPressed,
         isButtonPressed = (state.isButtonPressed as? UiState.Success)?.data == true,
         setLed = controller::setLed,
-    )
-}
-
-@Composable
-private fun ContactSensorControl(controller: ContactSensorController) {
-    val state by controller.state.collectAsStateWithLifecycle()
-
-    ContactSensorItem(
-        isOpen = state.isOpen,
-        modifier = Modifier.padding(16.dp),
-    )
-}
-
-@Composable
-private fun TemperatureSensorControl(controller: TemperatureSensorController) {
-    val state by controller.state.collectAsStateWithLifecycle()
-
-    TemperatureSensorItem(
-        temperatureCelsius = state.temperatureCelsius,
-        modifier = Modifier.padding(16.dp),
     )
 }
 

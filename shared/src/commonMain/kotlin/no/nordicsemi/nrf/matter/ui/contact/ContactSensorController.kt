@@ -10,7 +10,7 @@ import no.nordicsemi.nrf.matter.cluster.ContactSensorCluster
 import no.nordicsemi.nrf.matter.ui.device.ClusterController
 
 data class ContactSensorState(
-    val isOpen: Boolean = false,
+    val isContactDetected: Boolean = false,
 )
 
 class ContactSensorController(
@@ -23,7 +23,7 @@ class ContactSensorController(
 
     init {
         cluster.observeStateValue()
-            .onEach { isOpen -> _state.update { it.copy(isOpen = isOpen) } }
+            .onEach { isContactDetected -> _state.update { it.copy(isContactDetected = isContactDetected) } }
             .launchIn(scope)
     }
 }

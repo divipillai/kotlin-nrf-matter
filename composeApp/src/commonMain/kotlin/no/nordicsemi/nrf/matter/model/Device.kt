@@ -75,6 +75,8 @@ enum class StandardDeviceType(val value: DeviceType) {
     DOOR_LOCK(DeviceType(10L, "Door Lock")),
     COLOR_TEMPERATURE_LIGHT(DeviceType(268L, "Color Temperature Light")),
     EXTENDED_COLOR_LIGHT(DeviceType(269L, "Extended Color Light")),
+    CONTACT_SENSOR(DeviceType(21L, "Contact Sensor")),
+    TEMPERATURE_SENSOR(DeviceType(770L, "Temperature Sensor")),
 }
 
 @Serializable

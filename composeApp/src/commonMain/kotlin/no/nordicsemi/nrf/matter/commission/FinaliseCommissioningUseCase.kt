@@ -7,7 +7,6 @@ import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.ROOT_ENDPOINT
-import no.nordicsemi.nrf.matter.model.deviceType
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
 
@@ -37,7 +36,6 @@ internal class FinaliseCommissioningUseCase(
         return Device(
             deviceId = deviceId,
             dateCommissioned = Clock.System.now().toEpochMilliseconds(),
-            deviceType = endpoints.deviceType(),
             name = namesFromCommissioning.remove(deviceId),
             basicInformation = basicInfo,
             endpoints = endpoints,

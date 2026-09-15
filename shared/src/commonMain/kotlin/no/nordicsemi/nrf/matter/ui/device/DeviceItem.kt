@@ -47,6 +47,8 @@ import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.UiState
+import no.nordicsemi.nrf.matter.ui.contact.ContactSensorActionItem
+import no.nordicsemi.nrf.matter.ui.contact.ContactSensorController
 import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtControlItem
 import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtController
 import no.nordicsemi.nrf.matter.ui.level.LevelControlItem
@@ -57,6 +59,8 @@ import no.nordicsemi.nrf.matter.ui.lock.DoorLockController
 import no.nordicsemi.nrf.matter.ui.lock.LockActionItem
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecControlItem
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecController
+import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorActionItem
+import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
 
 @Composable
 internal fun DeviceItem(
@@ -69,10 +73,14 @@ internal fun DeviceItem(
     val levelControl = clusters.filterIsInstance<LevelControlController>().firstOrNull()
     val manufacturerSpec = clusters.filterIsInstance<ManufacturerSpecController>().firstOrNull()
     val basicInfoExt = clusters.filterIsInstance<BasicInfoExtController>().firstOrNull()
+    val contactSensor = clusters.filterIsInstance<ContactSensorController>().firstOrNull()
+    val temperatureSensor = clusters.filterIsInstance<TemperatureSensorController>().firstOrNull()
 
     val onOffState = onOff?.state?.collectAsStateWithLifecycle()?.value
     val lockState = doorLock?.state?.collectAsStateWithLifecycle()?.value
     val manufacturerSpecState = manufacturerSpec?.state?.collectAsStateWithLifecycle()?.value
+    val contactSensorState = contactSensor?.state?.collectAsStateWithLifecycle()?.value
+    val temperatureSensorState = temperatureSensor?.state?.collectAsStateWithLifecycle()?.value
 
     // The lock keeps its last known state while it is moving, so that the label does not flicker.
     var isLocked by remember { mutableStateOf(false) }
@@ -81,6 +89,7 @@ internal fun DeviceItem(
     }
 
     val isActive = onOffState?.isOn == true || isLocked
+    val isIconLit = isActive || contactSensorState?.isContactDetected == true
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
 
@@ -101,10 +110,12 @@ internal fun DeviceItem(
     ) {
 
         DeviceHeader(
-            isOn = isActive,
-            icon = device.device.toIcon(isActive),
+            isOn = isIconLit,
+            icon = device.device.toIcon(isIconLit),
             title = manufacturerSpecState?.displayName ?: device.device.toTitle(),
-            subtitle = device.device.toSubtitle(),
+            subtitle = contactSensorState?.let {
+                if (it.isContactDetected) "Contact detected" else "Contact not detected"
+            } ?: device.device.toSubtitle(),
             bindingCapable = device.device.isBindingSource() != null,
         ) {
             when {
@@ -118,6 +129,14 @@ internal fun DeviceItem(
                     isOn = onOffState.isOn,
                     isEnabled = onOffState.isEnabled,
                     onCheckedChange = onOff::setOn,
+                )
+
+                contactSensor != null && contactSensorState != null -> ContactSensorActionItem(
+                    isContactDetected = contactSensorState.isContactDetected,
+                )
+
+                temperatureSensor != null && temperatureSensorState != null -> TemperatureSensorActionItem(
+                    temperatureCelsius = temperatureSensorState.temperatureCelsius,
                 )
 
                 else -> Icon(

@@ -7,6 +7,7 @@ import chip.devicecontroller.ChipStructs
 import chip.devicecontroller.CommissionParameters
 import chip.devicecontroller.ControllerParams
 import chip.devicecontroller.GetConnectedDeviceCallbackJni
+import chip.devicecontroller.ICDRegistrationInfo
 import chip.devicecontroller.InvokeCallback
 import chip.devicecontroller.ReportCallback
 import chip.devicecontroller.ResubscriptionAttemptCallback
@@ -36,6 +37,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
+import java.security.SecureRandom
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.resume
@@ -81,6 +83,8 @@ private const val DEFAULT_IM_TIMEOUT = 30_000
 private const val DEFAULT_SUBSCRIPTION_MIN_INTERVAL_S = 0
 private const val DEFAULT_SUBSCRIPTION_MAX_INTERVAL_S = 10
 private const val DEFAULT_SUBSCRIPTION_TIMEOUT_MS = 10_000
+
+private const val ICD_CLIENT_TYPE_PERMANENT = 0
 
 /**
  * Manages the lifecycle of the Matter (CHIP) native device controller and provides
@@ -411,6 +415,19 @@ class ChipClient(
                     override fun onError(error: Throwable) {
                         super.onError(error)
                         continuation.resumeWithException(error)
+                    }
+
+                    override fun onICDRegistrationInfoRequired() {
+                        super.onICDRegistrationInfoRequired()
+                        val symmetricKey = ByteArray(16).also { SecureRandom().nextBytes(it) }
+                        val checkInNodeId = chipDeviceController.controllerNodeId
+                        val registrationInfo = ICDRegistrationInfo.newBuilder()
+                            .setSymmetricKey(symmetricKey)
+                            .setCheckInNodeId(checkInNodeId)
+                            .setMonitoredSubject(checkInNodeId)
+                            .setClientType(ICD_CLIENT_TYPE_PERMANENT)
+                            .build()
+                        chipDeviceController.updateCommissioningICDRegistrationInfo(registrationInfo)
                     }
                 })
 

@@ -59,11 +59,13 @@ fun Long.toDeviceId(): DeviceId {
 data class Device(
     val deviceId: DeviceId,
     val dateCommissioned: Long? = null,
-    val deviceType: DeviceType,
     val name: String? = null,
     val basicInformation: BasicInformation = BasicInformation(),
     val endpoints: List<Endpoint> = emptyList(),
-)
+) {
+    val deviceType: DeviceType
+        get() = endpoints.deviceType()
+}
 
 enum class StandardDeviceType(val value: DeviceType) {
     UNSUPPORTED(DeviceType(-1, "Unsupported")),
@@ -75,6 +77,8 @@ enum class StandardDeviceType(val value: DeviceType) {
     DOOR_LOCK(DeviceType(10L, "Door Lock")),
     COLOR_TEMPERATURE_LIGHT(DeviceType(268L, "Color Temperature Light")),
     EXTENDED_COLOR_LIGHT(DeviceType(269L, "Extended Color Light")),
+    CONTACT_SENSOR(DeviceType(21L, "Contact Sensor")),
+    TEMPERATURE_SENSOR(DeviceType(770L, "Temperature Sensor")),
 }
 
 @Serializable

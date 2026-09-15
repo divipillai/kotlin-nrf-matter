@@ -14,6 +14,8 @@ fun Device.toClusters(): List<Cluster> {
                 OnOffClusterInfo.ID -> OnOffCluster(deviceId, endpoint.id, client)
                 LevelControlClusterInfo.ID -> LevelControlCluster(deviceId, endpoint.id, client)
                 DoorLockClusterInfo.ID -> DoorLockCluster(deviceId, endpoint.id, client)
+                ContactSensorClusterInfo.ID -> ContactSensorCluster(deviceId, endpoint.id, client)
+                TemperatureMeasurementClusterInfo.ID -> TemperatureMeasurementCluster(deviceId, endpoint.id, client)
 
                 else -> NordicMatters.getCustomClusters()[clusterId]?.let { factory ->
                     factory.first?.let { customDeviceType ->

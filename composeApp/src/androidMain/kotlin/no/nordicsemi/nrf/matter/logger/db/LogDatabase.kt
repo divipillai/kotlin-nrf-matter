@@ -18,15 +18,26 @@ abstract class LogDatabase : RoomDatabase() {
         private var instance: LogDatabase? = null
 
         fun initialize(context: Context) {
-            instance = Room.databaseBuilder(
-                context.applicationContext,
-                LogDatabase::class.java,
-                "log_database"
-            ).build()
+            if (instance != null) return
+
+            synchronized(this) {
+                if (instance != null) return
+
+                instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    LogDatabase::class.java,
+                    "log_database"
+                ).build()
+            }
         }
 
         fun getDatabase(): LogDatabase {
-            return instance!!
+            return instance ?: error(
+                """The log database is not open. It is opened by the library's App Startup
+                    initializer. If you removed that provider from your manifest, call 
+                    LogDatabase.initialize(context) before using the library.
+                """.trimMargin()
+            )
         }
     }
 }

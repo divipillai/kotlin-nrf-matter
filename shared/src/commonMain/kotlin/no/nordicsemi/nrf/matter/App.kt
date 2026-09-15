@@ -84,6 +84,7 @@ import no.nordicsemi.nrf.matter.theme.NordicTheme
 
 @Composable
 fun App(homeViewModel: HomeViewModel) {
+
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)
 

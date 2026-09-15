@@ -145,10 +145,11 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
   beyond the `CommissioningTask` composable that drives the platform commissioning flow. Contains
   the usual KMP source sets:
     - [`commonMain`](./composeApp/src/commonMain/kotlin) — the platform-agnostic half: domain
-      models (`Device`, `DeviceMatterInfo`, `LockDeviceState`, …), cluster definitions,
+      models (`Device`, `BasicInformation`, `Endpoint`, `LockDeviceState`, …), cluster definitions,
       repositories/data sources, the decommission and binding use cases, and the `NordicLogger`
-      abstraction — backed by Room on Android and, on iOS, by `ios-matter`'s Pulse-based
-      `SwiftLogger`.
+      abstraction — backed by Room on Android and, on iOS, by `ios-matter`'s `SwiftLogger`,
+      which appends to a JSONL file in the shared app group so the app's log viewer also shows
+      what the commissioning extension recorded.
     - `androidMain` / `iosMain` — platform-specific code, e.g. wiring up Matter commissioning on
       each platform. `androidMain` also holds the wrappers around the native Matter (CHIP) SDK and
       the Google Home API (`ChipClient`, `ClustersHelper`, `BindingControllerImpl`) along with the
@@ -276,17 +277,39 @@ git, the Apple-side counterpart to the vendoring described above. It used to be 
 `git@github.com:sylwester-zielinski/ios-matter.git` at an exact tag; it is now built in place.
 
 **It is not a SwiftPM dependency of the Kotlin build.** It is compiled to a static library and
-consumed through plain cinterop, so the Swift object code ends up *inside* the published artifact.
-Three Gradle tasks per iOS target do this, in [`build.gradle.kts`](./composeApp/build.gradle.kts):
+consumed through cinterop, so the Swift object code ends up *inside* the published artifact. The
+[swiftklib](https://github.com/ttypic/swift-klib-plugin) Gradle plugin does this, configured in
+[`build.gradle.kts`](./composeApp/build.gradle.kts):
 
-| Task | Does |
-| --- | --- |
-| `compileIosMatterSwift<Target>` | runs `xcodebuild` on `/ios-matter`, which also resolves and builds Pulse |
-| `iosMatterStaticLib<Target>` | `libtool`s the resulting objects into `libios-matter.a` and copies the Swift-generated ObjC header and module map beside it |
-| `cinteropIosMatter<Target>` | translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib |
+```kotlin
+swiftklib {
+    create("iosMatter") {
+        path.set(file("../ios-matter/ios-matter"))
+        packageName("iosMatter")
+        minIos.set(26)
+    }
+}
+```
 
-`./gradlew :composeApp:iosMatterStaticLibs` builds the library for every target. All three tasks run
-automatically as part of any iOS compile — there is nothing to invoke by hand.
+Per iOS target it wraps the sources in a generated Swift package, builds them with `swift build`,
+and writes a cinterop `.def` with `modules`/`staticLibraries` — so `cinteropIosMatter<Target>`
+translates the module into the `iosMatter` Kotlin package and embeds `libiosMatter.a` in the klib.
+It runs automatically as part of any iOS compile; there is nothing to invoke by hand.
+
+Two workarounds are needed, both in the same two places:
+
+- The plugin declares a runtime dependency on `kotlin-gradle-plugin:2.0.0`. Applying it through
+  `plugins {}` puts that on the buildscript classpath and breaks the AGP KMP `android {}` DSL
+  (`Unresolved reference 'namespace'`). It is therefore applied from the root
+  [`build.gradle.kts`](./build.gradle.kts) buildscript with that dependency excluded.
+- Its generated `.def` points `-I` at `<target>.build`, but current SwiftPM writes
+  `module.modulemap` into `<target>.build/include`, so cinterop fails with
+  `module 'iosMatter' not found`. The cinterop block adds the missing include directory, resolved
+  through SwiftPM's stable `.build/release` symlink so it does not depend on the build host's
+  triple.
+
+The plugin's last release is 0.6.4 (October 2024); if either of these is fixed upstream, the
+corresponding workaround can go.
 
 Only the `@objc public` surface of ios-matter crosses the boundary; the Swift-generated
 Objective-C header is the contract, which is why the Kotlin-facing classes are annotated.
@@ -303,16 +326,21 @@ the cinterop klib avoids both problems: `no.nordicsemi.nrf.matter:matter-support
 self-contained, and Xcode needs no package graph — neither `iosApp` nor `nrfMatter` imports
 `ios_matter`, both reach it through Kotlin bridges such as `KeychainKt.prepareKeychain()`.
 
-**Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the task inputs
-cover the sources and the manifest, so the library is rebuilt and re-archived automatically. There
-is no tag to push, no version to bump, and no lockfile to realign. Its own remote dependency,
-[Pulse](https://github.com/kean/Pulse), is still pinned by
-[`/ios-matter/Package.resolved`](./ios-matter/Package.resolved) and is linked into the same archive.
+**Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the plugin's task
+inputs cover the sources, so the library is rebuilt and re-archived automatically. There is no tag
+to push, no version to bump, and no lockfile to realign.
 
-One consequence of `/ios-matter` staying a local package: SwiftPM refuses `unsafeFlags` in a package
-consumed as a dependency but exempts local ones, which is what lets
-[`/ios-matter/Package.swift`](./ios-matter/Package.swift) keep `-enable-library-evolution`. Its
-comment explains why that flag is needed.
+**It has no dependencies, deliberately.** Its compiled objects are archived into the cinterop klib
+and published inside `matter-support`, so anything linked here has to be redistributable and has to
+build for both iOS targets without a package graph at the consumer's end. `libios-matter.a`
+therefore holds exactly one object, `ios-matter.o`. Keeping it that way is also what lets
+[`/ios-matter/Package.swift`](./ios-matter/Package.swift) stay a dozen lines with no
+`Package.resolved`, no `unsafeFlags` and no `-enable-library-evolution`.
+
+**`Package.swift` is kept only for Xcode.** Nothing consumes ios-matter as a Swift package —
+swiftklib generates its own manifest, and `iosApp.xcodeproj` references the directory only as a
+folder to browse. Ours stays because `/ios-matter` holds no `.xcodeproj`, so it is what gives Xcode
+a target to index and autocomplete the sources against while editing.
 
 ### Build and run the Android application
 
@@ -333,6 +361,101 @@ terminal:
 Use the run configuration from the run widget in your IDE's toolbar, or open the [
 `/iosApp`](./iosApp)
 directory in Xcode and run it from there.
+
+### Adding the commissioning extension to another iOS app
+
+An app embedding `matter-support` needs a `MatterSupport` app extension, but almost none of one —
+the commissioning logic ships in the library as iOS-only entry points on `NordicMatters` and
+`Fabric`, declared in
+[`api/NordicMattersAppExtension.kt`](./composeApp/src/iosMain/kotlin/no/nordicsemi/nrf/matter/api/NordicMattersAppExtension.kt).
+The extension target just forwards system callbacks to them.
+[`iosApp/nrfMatter`](./iosApp/nrfMatter) is the worked example.
+
+1. **App extension target** with the `com.apple.matter.support.extension.device-setup` extension
+   point, naming your own handler as its principal class. `$(PRODUCT_MODULE_NAME)` is required —
+   `MatterSupport` is Swift-only, so the handler must be compiled into the extension's own module,
+   never linked in from the Kotlin framework:
+
+   ```xml
+   <key>NSExtension</key>
+   <dict>
+       <key>NSExtensionPointIdentifier</key>
+       <string>com.apple.matter.support.extension.device-setup</string>
+       <key>NSExtensionPrincipalClass</key>
+       <string>$(PRODUCT_MODULE_NAME).RequestHandler</string>
+   </dict>
+   ```
+
+2. **App groups.** Provision two under your own team, list both in the
+   `com.apple.security.application-groups` entitlement of *both* the app and the extension, and set
+   them in *both* targets' `Info.plist` (an extension never sees the host app's plist, so values
+   must match on both sides or the two processes silently land on different `UserDefaults` suites):
+
+   ```xml
+   <key>NordicMatterLocalAppGroup</key>
+   <string>group.example.matter.local</string>
+   <key>NordicMatterSharedAppGroup</key>
+   <string>group.example.matter.shared</string>
+   ```
+
+   Also set a keychain group for the NOC signing keypair, listed in `keychain-access-groups` on
+   both targets — a plain app group id works here too, which is the shorter path for a new app:
+
+   ```xml
+   <key>NordicMatterKeychainGroup</key>
+   <string>$(AppIdentifierPrefix)nordicsemi.nrf.matter</string>
+   ```
+
+   A missing app-group key fails loudly with a `preconditionFailure`. A wrong/mismatched keychain
+   group doesn't: the extension generates a second keypair, falls back to a new fabric the app
+   can't see, and commissioning reports success onto it — check this first if devices commission
+   but never show up, and don't change the value once devices exist, or they orphan.
+
+3. **Linker flags.** `OTHER_LDFLAGS` on the extension target needs
+   `-ObjC -framework <YourKotlinFramework>` (`-ObjC -framework shared` here) — `-framework` because
+   Swift only auto-links a module it uses, and the Kotlin framework is static; `-ObjC` force-loads
+   its Objective-C classes.
+
+4. **The handler** — the extension's whole source:
+
+   ```swift
+   import MatterSupport
+   import shared
+
+   final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
+
+       private let fabric: Fabric = {
+           NordicMatters.shared.initializeAppExtension()
+           return NordicMatters.shared.defaultFabric
+       }()
+
+       override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
+           return NordicMatters.shared.appExtensionRooms()
+               .map { MatterAddDeviceRequest.Room(displayName: $0) }
+       }
+
+       override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
+           try await fabric.commissionAppExtensionDevice(payload: onboardingPayload)
+       }
+
+       override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
+           fabric.configureAppExtensionDevice(name: name)
+       }
+
+       // ...plus validateDeviceCredential, selectWiFiNetwork and selectThreadNetwork
+   }
+   ```
+
+   `initializeAppExtension()` sets up Kotlin-side logging for this process — the extension runs
+   separately from the app, so each has to do this once for itself. Keep at least this one source
+   file in the target: with none, Xcode skips linking and reports `BUILD SUCCEEDED` on an `.appex`
+   with no executable inside.
+
+Set `NordicMatters.commissioningRooms` before commissioning to offer your own rooms in the system
+UI (falls back to a default list otherwise). The extension only pairs the device and records the
+chosen name in the shared app group — it never touches the app's own fabric — and
+`MatterCommissionerImpl.commission` reads that back and registers the device once the system flow
+returns.
 
 ## Requirements
 

@@ -29,6 +29,16 @@
 
     <application>
 
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="no.nordicsemi.nrf.matter.api.NordicMatterInitializer"
+                android:value="androidx.startup" />
+        </provider>
+
         <service
             android:name="no.nordicsemi.nrf.matter.service.AppCommissioningService"
             android:exported="true"

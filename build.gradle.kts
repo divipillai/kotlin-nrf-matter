@@ -18,4 +18,5 @@ plugins {
     alias(libs.plugins.nordic.kotlin) apply false
     alias(libs.plugins.nordic.feature.compose) apply false
     alias(libs.plugins.nordic.publish.kmp) apply false
+    alias(localLibs.plugins.swift.klib) apply false
 }

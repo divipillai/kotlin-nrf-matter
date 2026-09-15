@@ -39,38 +39,40 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
+import no.nordicsemi.nrf.matter.binding.isBindingSource
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
-import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
+import no.nordicsemi.nrf.matter.ui.UiState
 import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtControlItem
-import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtViewModel
+import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtController
 import no.nordicsemi.nrf.matter.ui.level.LevelControlItem
-import no.nordicsemi.nrf.matter.ui.level.LevelControlViewModel
+import no.nordicsemi.nrf.matter.ui.level.LevelControlController
 import no.nordicsemi.nrf.matter.ui.light.OnOffActionItem
-import no.nordicsemi.nrf.matter.ui.light.OnOffViewModel
-import no.nordicsemi.nrf.matter.ui.lock.DoorLockViewModel
+import no.nordicsemi.nrf.matter.ui.light.OnOffController
+import no.nordicsemi.nrf.matter.ui.lock.DoorLockController
 import no.nordicsemi.nrf.matter.ui.lock.LockActionItem
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecControlItem
-import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecViewModel
+import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecController
 
 @Composable
 internal fun DeviceItem(
     device: DeviceUiModel,
-    clusters: List<ClusterViewModel>,
+    clusters: List<ClusterController>,
     onDecommission: (DeviceId) -> Unit,
 ) {
-    val onOff = clusters.filterIsInstance<OnOffViewModel>().firstOrNull()
-    val doorLock = clusters.filterIsInstance<DoorLockViewModel>().firstOrNull()
-    val levelControl = clusters.filterIsInstance<LevelControlViewModel>().firstOrNull()
-    val manufacturerSpec = clusters.filterIsInstance<ManufacturerSpecViewModel>().firstOrNull()
-    val basicInfoExt = clusters.filterIsInstance<BasicInfoExtViewModel>().firstOrNull()
+    val onOff = clusters.filterIsInstance<OnOffController>().firstOrNull()
+    val doorLock = clusters.filterIsInstance<DoorLockController>().firstOrNull()
+    val levelControl = clusters.filterIsInstance<LevelControlController>().firstOrNull()
+    val manufacturerSpec = clusters.filterIsInstance<ManufacturerSpecController>().firstOrNull()
+    val basicInfoExt = clusters.filterIsInstance<BasicInfoExtController>().firstOrNull()
 
     val onOffState = onOff?.state?.collectAsStateWithLifecycle()?.value
     val lockState = doorLock?.state?.collectAsStateWithLifecycle()?.value
+    val manufacturerSpecState = manufacturerSpec?.state?.collectAsStateWithLifecycle()?.value
 
     // The lock keeps its last known state while it is moving, so that the label does not flicker.
     var isLocked by remember { mutableStateOf(false) }
@@ -101,9 +103,9 @@ internal fun DeviceItem(
         DeviceHeader(
             isOn = isActive,
             icon = device.device.toIcon(isActive),
-            title = device.device.toTitle(),
+            title = manufacturerSpecState?.displayName ?: device.device.toTitle(),
             subtitle = device.device.toSubtitle(),
-            bindingCapable = device.device.isBindingCapable(),
+            bindingCapable = device.device.isBindingSource() != null,
         ) {
             when {
                 doorLock != null && lockState != null -> LockActionItem(
@@ -152,38 +154,38 @@ internal fun DeviceItem(
 }
 
 @Composable
-private fun BrightnessControl(viewModel: LevelControlViewModel, deviceId: DeviceId) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+private fun BrightnessControl(controller: LevelControlController, deviceId: DeviceId) {
+    val state by controller.state.collectAsStateWithLifecycle()
 
     LevelControlItem(
         deviceId = deviceId,
         brightness = state.brightness,
         isEnabled = state.isEnabled,
-        onBrightnessChange = { _, brightness -> viewModel.setBrightness(brightness) },
-        onBrightnessChangeFinished = { viewModel.commitBrightness() },
+        onBrightnessChange = { _, brightness -> controller.setBrightness(brightness) },
+        onBrightnessChangeFinished = { controller.commitBrightness() },
         modifier = Modifier.padding(16.dp),
     )
 }
 
 @Composable
-private fun LedAndButtonControl(viewModel: ManufacturerSpecViewModel) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+private fun LedAndButtonControl(controller: ManufacturerSpecController) {
+    val state by controller.state.collectAsStateWithLifecycle()
 
     ManufacturerSpecControlItem(
         isLedOn = state.isLedOn,
         isButtonOn = state.isButtonPressed,
         isButtonPressed = (state.isButtonPressed as? UiState.Success)?.data == true,
-        setLed = viewModel::setLed,
+        setLed = controller::setLed,
     )
 }
 
 @Composable
-private fun RandomNumberControl(viewModel: BasicInfoExtViewModel) {
-    val randomNumber by viewModel.randomNumber.collectAsStateWithLifecycle()
+private fun RandomNumberControl(controller: BasicInfoExtController) {
+    val randomNumber by controller.randomNumber.collectAsStateWithLifecycle()
 
     BasicInfoExtControlItem(
         randomNumber = randomNumber,
-        generateRandomNumber = viewModel::generateRandomNumber,
+        generateRandomNumber = controller::generateRandomNumber,
         modifier = Modifier.padding(16.dp),
     )
 }
@@ -231,12 +233,12 @@ private fun SharedSection(
         ) {
             InfoItem(
                 label = "Vendor",
-                value = deviceUiModel.device.vendorName ?: "UNKNOWN",
+                value = deviceUiModel.device.basicInformation.vendorName ?: "UNKNOWN",
                 modifier = Modifier.weight(1f)
             )
             InfoItem(
                 label = "Firmware",
-                value = deviceUiModel.device.softwareVersion ?: "UNKNOWN",
+                value = deviceUiModel.device.basicInformation.softwareVersion ?: "UNKNOWN",
                 modifier = Modifier.weight(1f)
             )
         }

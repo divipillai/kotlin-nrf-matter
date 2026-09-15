@@ -10,40 +10,42 @@ import no.nordicsemi.nrf.matter.shared.generated.resources.power_settings
 import no.nordicsemi.nrf.matter.shared.generated.resources.smart_outlet
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.StandardDeviceType
+import no.nordicsemi.nrf.matter.nordic.NORDIC_MANUFACTURER_SPECIFIC_DEVICE_TYPE
+import no.nordicsemi.nrf.matter.nordic.NordicDeviceType
+import no.nordicsemi.nrf.matter.nordic.isNordicManufacturerSpecific
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun Device.toIcon(isActive: Boolean): Painter = when (deviceType) {
-    DeviceType.DOOR_LOCK -> painterResource(
+    StandardDeviceType.DOOR_LOCK.value -> painterResource(
         if (isActive) Res.drawable.door_lock else Res.drawable.door_lock_open_right
     )
 
-    DeviceType.OUTLET -> painterResource(Res.drawable.smart_outlet)
-    DeviceType.LIGHT_SWITCH -> painterResource(Res.drawable.power_settings)
+    StandardDeviceType.OUTLET.value -> painterResource(Res.drawable.smart_outlet)
+    StandardDeviceType.LIGHT_SWITCH.value -> painterResource(Res.drawable.power_settings)
     else -> painterResource(Res.drawable.light_bulb)
 }
 
-fun Device.toTitle(): String = manufacturerSpecificName() ?: productName ?: deviceType.toString()
+fun Device.toTitle(): String = basicInformation.productName ?: deviceType.toString()
 
-fun Device.toSubtitle(): String = when (deviceType) {
-    DeviceType.DOOR_LOCK -> "Smart Lock"
-
-    DeviceType.OUTLET,
-    DeviceType.LIGHT_SWITCH -> "Bind the switch with other devices"
-
-    DeviceType.LIGHT_ON_OFF,
-    DeviceType.DIMMABLE_LIGHT,
-    DeviceType.COLOR_TEMPERATURE_LIGHT,
-    DeviceType.EXTENDED_COLOR_LIGHT,
-    DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> "Turn light ON or OFF"
-
-    DeviceType.UNSUPPORTED -> "Unknown device type."
+fun Device.toSubtitle(): String = when {
+    isNordicManufacturerSpecific() -> "Turn light ON or OFF"
+    else -> deviceType.toSubtitle()
 }
 
-private fun Device.manufacturerSpecificName(): String? = deviceMatterInfo
-    .firstNotNullOfOrNull { it.manufacturerSpecificData?.name }
-    ?.takeIf { it.isNotBlank() }
+private fun DeviceType.toSubtitle(): String = when (this) {
+    StandardDeviceType.DOOR_LOCK.value -> "Smart Lock"
 
-fun Device.isBindingCapable(): Boolean {
-    return deviceMatterInfo.any { it.serverClusters.contains(6) }
+    StandardDeviceType.OUTLET.value,
+    StandardDeviceType.DIMMER_SWITCH.value,
+    StandardDeviceType.LIGHT_SWITCH.value -> "Bind the switch with other devices"
+
+    NordicDeviceType,
+    StandardDeviceType.LIGHT_ON_OFF.value,
+    StandardDeviceType.DIMMABLE_LIGHT.value,
+    StandardDeviceType.COLOR_TEMPERATURE_LIGHT.value,
+    StandardDeviceType.EXTENDED_COLOR_LIGHT.value -> "Turn light ON or OFF"
+
+    else -> "Unknown device type."
 }

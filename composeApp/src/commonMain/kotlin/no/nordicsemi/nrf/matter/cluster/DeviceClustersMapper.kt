@@ -1,38 +1,29 @@
 package no.nordicsemi.nrf.matter.cluster
 
+import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.StandardDeviceType
 
+fun Device.toClusters(): List<Cluster> {
+    val device = this
+    val client = NordicMatters.matterClient
 
-fun Device.toClusters(client: MatterClient): List<Cluster> {
-    val supported = deviceMatterInfo.flatMap { info ->
-        info.serverClusters.mapNotNull { clusterId ->
+    return endpoints.flatMap { endpoint ->
+        endpoint.serverClusters.mapNotNull { clusterId ->
             when (clusterId) {
-                OnOffClusterInfo.ID -> OnOffCluster(deviceId, info.endpoint, client)
-                LevelControlClusterInfo.ID -> LevelControlCluster(deviceId, info.endpoint, client)
-                DoorLockClusterInfo.ID -> DoorLockCluster(deviceId, info.endpoint, client)
-                ManufacturerSpecClusterInfo.ID -> ManufacturerSpecCluster(
-                    deviceId,
-                    info.endpoint,
-                    client
-                )
+                OnOffClusterInfo.ID -> OnOffCluster(deviceId, endpoint.id, client)
+                LevelControlClusterInfo.ID -> LevelControlCluster(deviceId, endpoint.id, client)
+                DoorLockClusterInfo.ID -> DoorLockCluster(deviceId, endpoint.id, client)
 
-                else -> null
+                else -> NordicMatters.getCustomClusters()[clusterId]?.let { factory ->
+                    factory.first?.let { customDeviceType ->
+                        factory.second
+                            .takeIf { customDeviceType != StandardDeviceType.UNSUPPORTED.value }
+                            .takeIf { device.deviceType == customDeviceType }
+                            ?.invoke(deviceId, endpoint.id, client)
+                    }
+                }
             }
         }
     }
-
-    return supported + basicInfoExtensions(client)
-}
-
-private fun Device.basicInfoExtensions(client: MatterClient): List<Cluster> {
-    val isManufacturerSpecificDevice = deviceMatterInfo.any {
-        it.types
-            .map { DeviceType.parse(it) }
-            .any { it == DeviceType.MANUFACTURER_SPECIFIC_DEVICE }
-    }
-
-    if (!isManufacturerSpecificDevice) return emptyList()
-
-    return listOf(BasicInfoExtCluster(deviceId, client))
 }

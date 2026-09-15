@@ -23,3 +23,14 @@ fun <T> CancellableContinuation<T>.handleResult(error: NSError?, result: T? = nu
         resume(Unit as T)
     }
 }
+
+fun <T> CancellableContinuation<T>.handleNullableResult(error: NSError?, result: T) {
+    NordicLogger.debug("Handle operation result: $error, $result")
+    val commissioningException = error?.toCommissioningException()
+
+    when {
+        commissioningException != null -> resumeWithException(commissioningException)
+        error != null -> resumeWithException(IOSException(error))
+        else -> resume(result)
+    }
+}

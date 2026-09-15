@@ -61,7 +61,6 @@ import no.nordicsemi.nrf.matter.binding.BindingLoaderDialog
 import no.nordicsemi.nrf.matter.binding.BindingUiState
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DeviceBindingTest
-import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -69,6 +68,7 @@ import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.DeviceTest_LIGHT
+import no.nordicsemi.nrf.matter.ui.UiState
 import org.koin.compose.viewmodel.koinViewModel
 
 /*
@@ -293,12 +293,12 @@ private fun BindingTableDetails(
     // Derive displayed text from current UiState
     val sourceText = bindingScreenState.sourceDevices
         .firstOrNull { it.deviceId == bindingScreenState.selectedSourceDeviceId }
-        ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
+        ?.let { it.basicInformation.productName ?: "Node ${it.deviceId.longValue}" }
         ?: "Select Light Switch"
 
     val targetText = bindingScreenState.eligibleTargetDevices
         .firstOrNull { it.deviceId == bindingScreenState.selectedTargetDeviceId }
-        ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
+        ?.let { it.basicInformation.productName ?: "Node ${it.deviceId.longValue}" }
         ?: "Select Light Bulb"
 
     OutlinedCard(
@@ -342,7 +342,7 @@ private fun BindingTableDetails(
                         bindingScreenState.sourceDevices.forEach { device ->
                             DropdownMenuItem(
                                 text = {
-                                    Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
+                                    Text("${device.basicInformation.productName} (Node ID: ${device.deviceId.longValue})")
                                 },
                                 onClick = {
                                     isSourceDropdownExpanded = false
@@ -414,7 +414,7 @@ private fun BindingTableDetails(
                             bindingScreenState.eligibleTargetDevices.forEach { device ->
                                 DropdownMenuItem(
                                     text = {
-                                        Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
+                                        Text("${device.basicInformation.productName} (Node ID: ${device.deviceId.longValue})")
                                     },
                                     onClick = {
                                         isTargetDropdownExpanded = false

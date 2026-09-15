@@ -8,23 +8,21 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.api.Fabric
+import no.nordicsemi.nrf.matter.api.NordicMatters
+import no.nordicsemi.nrf.matter.commission.DecommissionDeviceUseCase
 import no.nordicsemi.nrf.matter.commission.DecommissionState
-import no.nordicsemi.nrf.matter.commission.DecommissionUseCases
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
-import no.nordicsemi.nrf.matter.model.Devices
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
-import no.nordicsemi.nrf.matter.model.DevicesState
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.ui.MatterController
-import no.nordicsemi.nrf.matter.ui.MatterControllerCache
-import org.koin.core.component.KoinComponent
+import no.nordicsemi.nrf.matter.ui.device.DevicePresenter
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -57,19 +55,20 @@ import org.koin.core.component.KoinComponent
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class HomeViewModel(
-    private val devicesRepository: DevicesRepository,
-    private val devicesStateRepository: DevicesStateRepository,
-    private val matterControllerCache: MatterControllerCache,
-    private val decommissionUseCases: DecommissionUseCases,
-) : ViewModel(), KoinComponent {
+class HomeViewModel : ViewModel() {
+
+    private val fabric: Fabric = NordicMatters.defaultFabric
+    private val decommissionDeviceUseCase = DecommissionDeviceUseCase(fabric)
+
+    private val devicePresenters = mutableMapOf<DeviceId, DevicePresenter>()
+
     private val _decommissionState = MutableStateFlow<DecommissionState>(DecommissionState.Idle)
     val decommissionState = _decommissionState.asStateFlow()
 
     private val devicesListUiModelFlow: Flow<DevicesListUiModel> =
         combine(
-            devicesRepository.devicesFlow,
-            devicesStateRepository.devicesStateFlow,
+            fabric.devices,
+            fabric.deviceStates,
         ) { devices, states ->
             DevicesListUiModel(
                 devices = processDevices(devices, states),
@@ -77,18 +76,15 @@ class HomeViewModel(
                 )
         }
 
-    val devices: StateFlow<List<MatterController>> =
-        combine(
-            devicesRepository.devicesFlow,
-            devicesStateRepository.devicesStateFlow,
-        ) { devices, states ->
-            DevicesListUiModel(
-                devices = processDevices(devices, states),
-            ).devices.map { device ->
-                (matterControllerCache[device.device.deviceId] ?: matterControllerCache.create(
-                    device
-                )).also {
-                    NordicLogger.debug("Device $it", "MatterController")
+    val devices: StateFlow<List<DevicePresenter>> =
+        devicesListUiModelFlow.map { uiModel ->
+            retainDeviceControllers(uiModel.devices.map { it.device.deviceId }.toSet())
+
+            uiModel.devices.map { device ->
+                devicePresenters.getOrPut(device.device.deviceId) {
+                    DevicePresenter(device, viewModelScope)
+                }.also {
+                    NordicLogger.debug("Device $it", "HomeViewModel")
                 }
             }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -100,13 +96,19 @@ class HomeViewModel(
             DevicesListUiModel(emptyList())
         )
 
+    private fun retainDeviceControllers(ids: Set<DeviceId>) {
+        val stale = devicePresenters.keys - ids
+
+        stale.forEach { devicePresenters.remove(it)?.cancel() }
+    }
+
     private fun processDevices(
-        devices: Devices,
-        devicesStates: DevicesState
+        devices: List<Device>,
+        devicesStates: List<DeviceState>
     ): List<DeviceUiModel> {
         val list = mutableListOf<DeviceUiModel>()
-        devices.devicesList.forEach { device ->
-            val state = devicesStates.devicesStateList.find { it.deviceId == device.deviceId }
+        devices.forEach { device ->
+            val state = devicesStates.find { it.deviceId == device.deviceId }
             if (state == null) {
                 list.add(DeviceUiModel(device, isOnline = false, isOn = false))
             } else {
@@ -116,39 +118,17 @@ class HomeViewModel(
         return list
     }
 
-    fun addCommissionedDevice(
-        device: Device,
-        isOnline: Boolean,
-        isOn: Boolean,
-    ) {
-        viewModelScope.launch {
-            devicesRepository.addDevice(device)
-            devicesStateRepository.addDeviceState(
-                device.deviceId,
-                isOnline = isOnline,
-                isOn = isOn
-            )
-        }
-    }
-
-    fun commissioningFailed(resultCode: Int) {
-        // TODO: Handle commissioning failure with proper UI states.
-        if (resultCode == 0) {
-            // User simply wilfully exited from commissioning.
-            return
-        }
-    }
-
-    /**
-     * Removes the device. First we remove the fabric from the device, and then we remove the device from the app's devices repository.
-     * Note that unlinking the device may take a while if the device is offline.
-     * If removing the fabric from the device fails (e.g. device is offline),
-     * then a dialog is shown so the user has the option to force remove the device without unlinking
-     * the fabric at the device.
-     */
     fun decommissionDevice(deviceId: DeviceId) {
         viewModelScope.launch {
-            decommissionUseCases.decommissionDevice(deviceId).collect {
+            decommissionDeviceUseCase.decommissionDevice(deviceId).collect {
+                updateDecommissionState(it)
+            }
+        }
+    }
+
+    fun forceRemove(deviceId: DeviceId) {
+        viewModelScope.launch {
+            decommissionDeviceUseCase.forceRemoveDevice(deviceId).collect {
                 updateDecommissionState(it)
             }
         }
@@ -156,16 +136,5 @@ class HomeViewModel(
 
     fun updateDecommissionState(state: DecommissionState) {
         _decommissionState.update { state }
-    }
-
-    /**
-     * Force removes the device from the app's devices repository without unlinking the fabric at the device.
-     */
-    fun forceRemove(deviceId: DeviceId) {
-        viewModelScope.launch {
-            decommissionUseCases.forceRemoveDevice(deviceId).collect {
-                updateDecommissionState(it)
-            }
-        }
     }
 }

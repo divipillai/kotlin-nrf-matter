@@ -32,17 +32,12 @@ package no.nordicsemi.nrf.matter.model
  */
 
 /**
- * Encapsulates all of the information on a specific device. Note that the app currently only
+ * Encapsulates all the information on a specific device. Note that the app currently only
  * supports Matter devices with server attribute "ON/OFF".
  */
 data class DeviceUiModel(
     // Device information that is persisted in a DataStore.
     val device: Device,
-
-    // Device state information that is retrieved dynamically.
-    val isOnline: Boolean,
-    // Whether the device is on or off.
-    val isOn: Boolean,
 )
 
 /**

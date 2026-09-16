@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -19,7 +18,6 @@ import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.ui.device.DevicePresenter
@@ -66,14 +64,10 @@ class HomeViewModel : ViewModel() {
     val decommissionState = _decommissionState.asStateFlow()
 
     private val devicesListUiModelFlow: Flow<DevicesListUiModel> =
-        combine(
-            fabric.devices,
-            fabric.deviceStates,
-        ) { devices, states ->
+        fabric.devices.map { devices ->
             DevicesListUiModel(
-                devices = processDevices(devices, states),
-
-                )
+                devices = processDevices(devices),
+            )
         }
 
     val devices: StateFlow<List<DevicePresenter>> =
@@ -104,18 +98,10 @@ class HomeViewModel : ViewModel() {
 
     private fun processDevices(
         devices: List<Device>,
-        devicesStates: List<DeviceState>
     ): List<DeviceUiModel> {
-        val list = mutableListOf<DeviceUiModel>()
-        devices.forEach { device ->
-            val state = devicesStates.find { it.deviceId == device.deviceId }
-            if (state == null) {
-                list.add(DeviceUiModel(device, isOnline = false, isOn = false))
-            } else {
-                list.add(DeviceUiModel(device, state.online, state.on))
-            }
+        return devices.map { device ->
+            DeviceUiModel(device)
         }
-        return list
     }
 
     fun decommissionDevice(deviceId: DeviceId) {

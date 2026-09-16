@@ -38,6 +38,6 @@ dependencyResolutionManagement {
     }
 }
 
-include(":composeApp")
+include(":lib")
 include(":androidApp")
 include(":shared")

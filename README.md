@@ -140,11 +140,11 @@ way.
 
 This is a Kotlin Multiplatform project targeting Android and iOS.
 
-* [`/composeApp`](./composeApp/src) — the Matter layer, published as the `matter-support` library.
+* [`/lib`](./lib/src) — the Matter layer, published as the `matter-support` library.
   It owns commissioning, cluster access, bindings, persistence, and logging, and carries no UI
   beyond the `CommissioningTask` composable that drives the platform commissioning flow. Contains
   the usual KMP source sets:
-    - [`commonMain`](./composeApp/src/commonMain/kotlin) — the platform-agnostic half: domain
+    - [`commonMain`](./lib/src/commonMain/kotlin) — the platform-agnostic half: domain
       models (`Device`, `BasicInformation`, `Endpoint`, `LockDeviceState`, …), cluster definitions,
       repositories/data sources, the decommission and binding use cases, and the `NordicLogger`
       abstraction — backed by Room on Android and, on iOS, by `ios-matter`'s `SwiftLogger`,
@@ -157,7 +157,7 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
       [Native Matter (CHIP) SDK binaries](#native-matter-chip-sdk-binaries).
 * [`/shared`](./shared) — the Compose Multiplatform UI: screens for home, commissioning, bindings
   and logs, per-device-type controllers for locks, lights and switches, the theme, navigation, and
-  the view models and Koin bindings (`uiModule`) behind them. It `api`/`export`s `:composeApp`, so
+  the view models and Koin bindings (`uiModule`) behind them. It `api`/`export`s `:lib`, so
   it is also the iOS framework the Xcode project consumes — Swift needs a single `import shared` to
   reach the whole Kotlin surface. Both Xcode targets build it through a run-script phase calling
   `./gradlew :shared:embedAndSignAppleFrameworkForXcode`.
@@ -170,19 +170,19 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
   where
   you'd add any additional SwiftUI code.
 * [`/ios-matter`](./ios-matter) — the Swift package that wraps Apple's Matter and MatterSupport
-  frameworks, vendored into this repo rather than resolved from git. `:composeApp` cinterops against
+  frameworks, vendored into this repo rather than resolved from git. `:lib` cinterops against
   it, so this is where the iOS half of commissioning, cluster access, and the keypair/storage shared
   with the Matter extension lives. See
   [`/ios-matter` — vendored Matter Swift package](#ios-matter--vendored-matter-swift-package).
 
 ### Native Matter (CHIP) SDK binaries
 
-[`/composeApp/libs`](./composeApp/libs) contains prebuilt binaries checked directly into git —
+[`/lib/libs`](./lib/libs) contains prebuilt binaries checked directly into git —
 they are not built by this Gradle project:
 
 - Jars: `AndroidPlatform.jar`, `CHIPClusterID.jar`, `CHIPClusters.jar`, `CHIPController.jar`,
   `CHIPInteractionModel.jar`, `OnboardingPayload.jar`, `libMatterJson.jar`, `libMatterTlv.jar`.
-- Native libraries: [`/composeApp/libs/jniLibs/arm64-v8a`](./composeApp/libs/jniLibs/arm64-v8a) —
+- Native libraries: [`/lib/libs/jniLibs/arm64-v8a`](./lib/libs/jniLibs/arm64-v8a) —
   `libCHIPController.so` and `libc++_shared.so` (`arm64-v8a` only — there's no `x86_64` build, so
   these
   libs won't load on an Android emulator, only on a physical arm64 device).
@@ -266,7 +266,7 @@ Therefore, getting started requires a few non-standard integration steps.
    repository.
 
 > **Warning:** the Home API is still evolving, so a newer version may introduce breaking changes —
-> check `composeApp` and anywhere else the Home API is used (search for `play.services.home` in the
+> check `lib` and anywhere else the Home API is used (search for `play.services.home` in the
 > source), and adjust as needed.
 >
 
@@ -347,7 +347,7 @@ directory in Xcode and run it from there.
 An app embedding `matter-support` needs a `MatterSupport` app extension, but almost none of one —
 the commissioning logic ships in the library as iOS-only entry points on `NordicMatters` and
 `Fabric`, declared in
-[`api/NordicMattersAppExtension.kt`](./composeApp/src/iosMain/kotlin/no/nordicsemi/nrf/matter/api/NordicMattersAppExtension.kt).
+[`api/NordicMattersAppExtension.kt`](./lib/src/iosMain/kotlin/no/nordicsemi/nrf/matter/api/NordicMattersAppExtension.kt).
 The extension target just forwards system callbacks to them.
 [`iosApp/nrfMatter`](./iosApp/nrfMatter) is the worked example.
 

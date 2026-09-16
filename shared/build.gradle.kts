@@ -28,7 +28,7 @@ kotlin {
             baseName = "shared"
             isStatic = true
 
-            export(project(":composeApp"))
+            export(project(":lib"))
 //            export("no.nordicsemi.nrf.matter:matter-support:1.0.0")
         }
     }
@@ -39,7 +39,7 @@ kotlin {
             implementation(libs.jetbrains.compose.viewmodel)
         }
         commonMain.dependencies {
-            api(project(":composeApp"))
+            api(project(":lib"))
 //            api("no.nordicsemi.nrf.matter:matter-support:1.0.0")
 
             implementation(libs.kotlinx.coroutines.core)

@@ -5,10 +5,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.job
 import no.nordicsemi.nrf.matter.cluster.toClusters
-import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.model.Device
 
 class DevicePresenter(
-    val device: DeviceUiModel,
+    val device: Device,
     parent: CoroutineScope,
 ) {
 
@@ -16,7 +16,7 @@ class DevicePresenter(
         CoroutineScope(parent.coroutineContext + SupervisorJob(parent.coroutineContext.job))
 
     val clusters: List<ClusterController> =
-        device.device.toClusters().mapNotNull { it.toController(scope) }
+        device.toClusters().mapNotNull { it.toController(scope) }
 
     fun cancel() {
         scope.cancel()

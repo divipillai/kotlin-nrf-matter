@@ -68,7 +68,7 @@ internal fun DeviceList(
 
         items(
             items = devices,
-            key = { it.device.device.deviceId.stringValue },
+            key = { it.device.deviceId.stringValue },
         ) { controller ->
             DeviceItem(
                 device = controller.device,

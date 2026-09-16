@@ -16,9 +16,7 @@ import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.commission.DecommissionDeviceUseCase
 import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
-import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.ui.device.DevicePresenter
 
@@ -65,17 +63,15 @@ class HomeViewModel : ViewModel() {
 
     private val devicesListUiModelFlow: Flow<DevicesListUiModel> =
         fabric.devices.map { devices ->
-            DevicesListUiModel(
-                devices = processDevices(devices),
-            )
+            DevicesListUiModel(devices = devices)
         }
 
     val devices: StateFlow<List<DevicePresenter>> =
         devicesListUiModelFlow.map { uiModel ->
-            retainDeviceControllers(uiModel.devices.map { it.device.deviceId }.toSet())
+            retainDeviceControllers(uiModel.devices.map { it.deviceId }.toSet())
 
             uiModel.devices.map { device ->
-                devicePresenters.getOrPut(device.device.deviceId) {
+                devicePresenters.getOrPut(device.deviceId) {
                     DevicePresenter(device, viewModelScope)
                 }.also {
                     NordicLogger.debug("Device $it", "HomeViewModel")
@@ -94,14 +90,6 @@ class HomeViewModel : ViewModel() {
         val stale = devicePresenters.keys - ids
 
         stale.forEach { devicePresenters.remove(it)?.cancel() }
-    }
-
-    private fun processDevices(
-        devices: List<Device>,
-    ): List<DeviceUiModel> {
-        return devices.map { device ->
-            DeviceUiModel(device)
-        }
     }
 
     fun decommissionDevice(deviceId: DeviceId) {

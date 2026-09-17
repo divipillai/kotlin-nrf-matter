@@ -1,5 +1,0 @@
-[versions]
-swiftklib = "0.6.4"
-
-[plugins]
-swift-klib = { id = "io.github.ttypic.swiftklib", version.ref = "swiftklib" }

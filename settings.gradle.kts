@@ -35,9 +35,6 @@ dependencyResolutionManagement {
         create("libs") {
             from("no.nordicsemi.gradle:version-catalog:3.2")
         }
-        create("localLibs") {
-            from(files("gradle/local.versions.toml"))
-        }
     }
 }
 

@@ -8,9 +8,11 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -82,7 +84,8 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun NoDevicesScreen(
     onAddDeviceClick: () -> Unit = {},
-    onMatterUrlClick: () -> Unit = {}
+    onMatterUrlClick: () -> Unit = {},
+    onSourceCodeClick: () -> Unit = {}
 ) {
     val version = getAppVersion()
 
@@ -158,14 +161,30 @@ fun NoDevicesScreen(
             }
         }
 
-        Text(
-            text = "Version: $version",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+        Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 16.dp),
-        )
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                text = "Version: $version",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            )
+            Text(
+                text = "•",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            )
+            Text(
+                text = "Source Code",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { onSourceCodeClick() }
+            )
+        }
     }
 }
 
@@ -195,7 +214,6 @@ private fun EmptyStateIllustration() {
         contentAlignment = Alignment.Center,
         modifier = Modifier.size(280.dp)
     ) {
-        // Background Glow/Pulse
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -214,7 +232,7 @@ private fun EmptyStateIllustration() {
         ) {
             val painterRes = painterResource(resource = Res.drawable.no_matter_devices)
             Icon(
-                painter = painterRes, // todo: change it to no_matter drawable.
+                painter = painterRes,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(40.dp)

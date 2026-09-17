@@ -62,6 +62,9 @@ fun HomeScreen(
                 onAddDeviceClick = onCommissionClick,
                 onMatterUrlClick = {
                     uriHandler.openUri(MATTER_OVERVIEW_URL)
+                },
+                onSourceCodeClick = {
+                    uriHandler.openUri(SOURCE_CODE_URL)
                 }
             )
         } else {
@@ -73,5 +76,8 @@ fun HomeScreen(
 }
 
 private const val MATTER_OVERVIEW_URL =
-    "https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/overview/index.html"
+    "https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/matter/index.html"
+
+private const val SOURCE_CODE_URL =
+    "https://github.com/nordicsemi/kotlin-nrf-matter"
 

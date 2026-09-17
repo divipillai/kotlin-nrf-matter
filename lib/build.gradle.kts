@@ -127,7 +127,7 @@ val isMacOs = HostManager.hostIsMac
 
 val iosMatterRoot = rootProject.layout.projectDirectory.dir("ios-matter")
 
-/** Convenience aggregate so `./gradlew :composeApp:iosMatterStaticLibs` builds every target. */
+/** Convenience aggregate so `./gradlew :lib:iosMatterStaticLibs` builds every target. */
 tasks.register("iosMatterStaticLibs") {
     group = "ios-matter"
     description = "Builds the ios-matter static library for every iOS target."

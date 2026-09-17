@@ -27,12 +27,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.model.Device
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun BasicInformationBottomSheet(
-    device: DeviceUiModel,
+    device: Device,
     onDismiss: () -> Unit,
 ) {
     ModalBottomSheet(
@@ -45,7 +45,7 @@ internal fun BasicInformationBottomSheet(
 
 @Composable
 internal fun BasicDeviceInformation(
-    device: DeviceUiModel,
+    device: Device,
     onDismiss: () -> Unit,
 ) {
     Column(
@@ -103,7 +103,7 @@ internal fun BasicDeviceInformation(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            val basicInformation = device.device.basicInformation
+            val basicInformation = device.basicInformation
 
             basicInformation.productName?.let {
                 InfoRow(

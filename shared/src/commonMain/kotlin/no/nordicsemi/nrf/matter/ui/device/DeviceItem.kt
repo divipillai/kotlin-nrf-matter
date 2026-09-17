@@ -41,8 +41,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.binding.isBindingSource
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
+import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
@@ -64,7 +64,7 @@ import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
 
 @Composable
 internal fun DeviceItem(
-    device: DeviceUiModel,
+    device: Device,
     clusters: List<ClusterController>,
     onDecommission: (DeviceId) -> Unit,
 ) {
@@ -111,12 +111,12 @@ internal fun DeviceItem(
 
         DeviceHeader(
             isOn = isIconLit,
-            icon = device.device.toIcon(isIconLit),
-            title = manufacturerSpecState?.displayName ?: device.device.toTitle(),
+            icon = device.toIcon(isIconLit),
+            title = manufacturerSpecState?.displayName ?: device.toTitle(),
             subtitle = contactSensorState?.let {
                 if (it.isContactDetected) "Contact detected" else "Contact not detected"
-            } ?: device.device.toSubtitle(),
-            bindingCapable = device.device.isBindingSource() != null,
+            } ?: device.toSubtitle(),
+            bindingCapable = device.isBindingSource() != null,
         ) {
             when {
                 doorLock != null && lockState != null -> LockActionItem(
@@ -154,14 +154,14 @@ internal fun DeviceItem(
             Column {
                 HorizontalDivider()
 
-                levelControl?.let { BrightnessControl(it, device.device.deviceId) }
+                levelControl?.let { BrightnessControl(it, device.deviceId) }
                 basicInfoExt?.let { RandomNumberControl(it) }
                 manufacturerSpec?.let { LedAndButtonControl(it) }
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
 
                 // Decommission device
-                DecommissionDevice(device.device.deviceId, onDecommission)
+                DecommissionDevice(device.deviceId, onDecommission)
             }
         }
 
@@ -211,7 +211,7 @@ private fun RandomNumberControl(controller: BasicInfoExtController) {
 
 @Composable
 private fun SharedSection(
-    deviceUiModel: DeviceUiModel,
+    device: Device,
     showMatterDeviceInfo: Boolean,
     onShowMatterDeviceInfoChange: (Boolean) -> Unit,
 ) {
@@ -252,12 +252,12 @@ private fun SharedSection(
         ) {
             InfoItem(
                 label = "Vendor",
-                value = deviceUiModel.device.basicInformation.vendorName ?: "UNKNOWN",
+                value = device.basicInformation.vendorName ?: "UNKNOWN",
                 modifier = Modifier.weight(1f)
             )
             InfoItem(
                 label = "Firmware",
-                value = deviceUiModel.device.basicInformation.softwareVersion ?: "UNKNOWN",
+                value = device.basicInformation.softwareVersion ?: "UNKNOWN",
                 modifier = Modifier.weight(1f)
             )
         }

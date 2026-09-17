@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -17,10 +16,7 @@ import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.commission.DecommissionDeviceUseCase
 import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
-import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceState
-import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.ui.device.DevicePresenter
 
@@ -66,22 +62,16 @@ class HomeViewModel : ViewModel() {
     val decommissionState = _decommissionState.asStateFlow()
 
     private val devicesListUiModelFlow: Flow<DevicesListUiModel> =
-        combine(
-            fabric.devices,
-            fabric.deviceStates,
-        ) { devices, states ->
-            DevicesListUiModel(
-                devices = processDevices(devices, states),
-
-                )
+        fabric.devices.map { devices ->
+            DevicesListUiModel(devices = devices)
         }
 
     val devices: StateFlow<List<DevicePresenter>> =
         devicesListUiModelFlow.map { uiModel ->
-            retainDeviceControllers(uiModel.devices.map { it.device.deviceId }.toSet())
+            retainDeviceControllers(uiModel.devices.map { it.deviceId }.toSet())
 
             uiModel.devices.map { device ->
-                devicePresenters.getOrPut(device.device.deviceId) {
+                devicePresenters.getOrPut(device.deviceId) {
                     DevicePresenter(device, viewModelScope)
                 }.also {
                     NordicLogger.debug("Device $it", "HomeViewModel")
@@ -100,22 +90,6 @@ class HomeViewModel : ViewModel() {
         val stale = devicePresenters.keys - ids
 
         stale.forEach { devicePresenters.remove(it)?.cancel() }
-    }
-
-    private fun processDevices(
-        devices: List<Device>,
-        devicesStates: List<DeviceState>
-    ): List<DeviceUiModel> {
-        val list = mutableListOf<DeviceUiModel>()
-        devices.forEach { device ->
-            val state = devicesStates.find { it.deviceId == device.deviceId }
-            if (state == null) {
-                list.add(DeviceUiModel(device, isOnline = false, isOn = false))
-            } else {
-                list.add(DeviceUiModel(device, state.online, state.on))
-            }
-        }
-        return list
     }
 
     fun decommissionDevice(deviceId: DeviceId) {

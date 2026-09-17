@@ -140,11 +140,11 @@ way.
 
 This is a Kotlin Multiplatform project targeting Android and iOS.
 
-* [`/composeApp`](./composeApp/src) — the Matter layer, published as the `matter-support` library.
+* [`/lib`](./lib/src) — the Matter layer, published as the `matter-support` library.
   It owns commissioning, cluster access, bindings, persistence, and logging, and carries no UI
   beyond the `CommissioningTask` composable that drives the platform commissioning flow. Contains
   the usual KMP source sets:
-    - [`commonMain`](./composeApp/src/commonMain/kotlin) — the platform-agnostic half: domain
+    - [`commonMain`](./lib/src/commonMain/kotlin) — the platform-agnostic half: domain
       models (`Device`, `BasicInformation`, `Endpoint`, `LockDeviceState`, …), cluster definitions,
       repositories/data sources, the decommission and binding use cases, and the `NordicLogger`
       abstraction — backed by Room on Android and, on iOS, by `ios-matter`'s `SwiftLogger`,
@@ -157,7 +157,7 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
       [Native Matter (CHIP) SDK binaries](#native-matter-chip-sdk-binaries).
 * [`/shared`](./shared) — the Compose Multiplatform UI: screens for home, commissioning, bindings
   and logs, per-device-type controllers for locks, lights and switches, the theme, navigation, and
-  the view models and Koin bindings (`uiModule`) behind them. It `api`/`export`s `:composeApp`, so
+  the view models and Koin bindings (`uiModule`) behind them. It `api`/`export`s `:lib`, so
   it is also the iOS framework the Xcode project consumes — Swift needs a single `import shared` to
   reach the whole Kotlin surface. Both Xcode targets build it through a run-script phase calling
   `./gradlew :shared:embedAndSignAppleFrameworkForXcode`.
@@ -170,19 +170,19 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
   where
   you'd add any additional SwiftUI code.
 * [`/ios-matter`](./ios-matter) — the Swift package that wraps Apple's Matter and MatterSupport
-  frameworks, vendored into this repo rather than resolved from git. `:composeApp` cinterops against
+  frameworks, vendored into this repo rather than resolved from git. `:lib` cinterops against
   it, so this is where the iOS half of commissioning, cluster access, and the keypair/storage shared
   with the Matter extension lives. See
   [`/ios-matter` — vendored Matter Swift package](#ios-matter--vendored-matter-swift-package).
 
 ### Native Matter (CHIP) SDK binaries
 
-[`/composeApp/libs`](./composeApp/libs) contains prebuilt binaries checked directly into git —
+[`/lib/libs`](./lib/libs) contains prebuilt binaries checked directly into git —
 they are not built by this Gradle project:
 
 - Jars: `AndroidPlatform.jar`, `CHIPClusterID.jar`, `CHIPClusters.jar`, `CHIPController.jar`,
   `CHIPInteractionModel.jar`, `OnboardingPayload.jar`, `libMatterJson.jar`, `libMatterTlv.jar`.
-- Native libraries: [`/composeApp/libs/jniLibs/arm64-v8a`](./composeApp/libs/jniLibs/arm64-v8a) —
+- Native libraries: [`/lib/libs/jniLibs/arm64-v8a`](./lib/libs/jniLibs/arm64-v8a) —
   `libCHIPController.so` and `libc++_shared.so` (`arm64-v8a` only — there's no `x86_64` build, so
   these
   libs won't load on an Android emulator, only on a physical arm64 device).
@@ -266,7 +266,7 @@ Therefore, getting started requires a few non-standard integration steps.
    repository.
 
 > **Warning:** the Home API is still evolving, so a newer version may introduce breaking changes —
-> check `composeApp` and anywhere else the Home API is used (search for `play.services.home` in the
+> check `lib` and anywhere else the Home API is used (search for `play.services.home` in the
 > source), and adjust as needed.
 >
 
@@ -277,39 +277,17 @@ git, the Apple-side counterpart to the vendoring described above. It used to be 
 `git@github.com:sylwester-zielinski/ios-matter.git` at an exact tag; it is now built in place.
 
 **It is not a SwiftPM dependency of the Kotlin build.** It is compiled to a static library and
-consumed through cinterop, so the Swift object code ends up *inside* the published artifact. The
-[swiftklib](https://github.com/ttypic/swift-klib-plugin) Gradle plugin does this, configured in
-[`build.gradle.kts`](./composeApp/build.gradle.kts):
+consumed through plain cinterop, so the Swift object code ends up *inside* the published artifact.
+Three Gradle tasks per iOS target do this, in [`build.gradle.kts`](./composeApp/build.gradle.kts):
 
-```kotlin
-swiftklib {
-    create("iosMatter") {
-        path.set(file("../ios-matter/ios-matter"))
-        packageName("iosMatter")
-        minIos.set(26)
-    }
-}
-```
+| Task | Does |
+| --- | --- |
+| `compileIosMatterSwift<Target>` | runs `xcodebuild` on `/ios-matter` |
+| `iosMatterStaticLib<Target>` | `libtool`s the resulting objects into `libios-matter.a` and copies the Swift-generated ObjC header and module map beside it |
+| `cinteropIosMatter<Target>` | translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib |
 
-Per iOS target it wraps the sources in a generated Swift package, builds them with `swift build`,
-and writes a cinterop `.def` with `modules`/`staticLibraries` — so `cinteropIosMatter<Target>`
-translates the module into the `iosMatter` Kotlin package and embeds `libiosMatter.a` in the klib.
-It runs automatically as part of any iOS compile; there is nothing to invoke by hand.
-
-Two workarounds are needed, both in the same two places:
-
-- The plugin declares a runtime dependency on `kotlin-gradle-plugin:2.0.0`. Applying it through
-  `plugins {}` puts that on the buildscript classpath and breaks the AGP KMP `android {}` DSL
-  (`Unresolved reference 'namespace'`). It is therefore applied from the root
-  [`build.gradle.kts`](./build.gradle.kts) buildscript with that dependency excluded.
-- Its generated `.def` points `-I` at `<target>.build`, but current SwiftPM writes
-  `module.modulemap` into `<target>.build/include`, so cinterop fails with
-  `module 'iosMatter' not found`. The cinterop block adds the missing include directory, resolved
-  through SwiftPM's stable `.build/release` symlink so it does not depend on the build host's
-  triple.
-
-The plugin's last release is 0.6.4 (October 2024); if either of these is fixed upstream, the
-corresponding workaround can go.
+`./gradlew :composeApp:iosMatterStaticLibs` builds the library for every target. All three tasks run
+automatically as part of any iOS compile — there is nothing to invoke by hand.
 
 Only the `@objc public` surface of ios-matter crosses the boundary; the Swift-generated
 Objective-C header is the contract, which is why the Kotlin-facing classes are annotated.
@@ -326,9 +304,9 @@ the cinterop klib avoids both problems: `no.nordicsemi.nrf.matter:matter-support
 self-contained, and Xcode needs no package graph — neither `iosApp` nor `nrfMatter` imports
 `ios_matter`, both reach it through Kotlin bridges such as `KeychainKt.prepareKeychain()`.
 
-**Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the plugin's task
-inputs cover the sources, so the library is rebuilt and re-archived automatically. There is no tag
-to push, no version to bump, and no lockfile to realign.
+**Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the task inputs
+cover the sources and the manifest, so the library is rebuilt and re-archived automatically. There
+is no tag to push, no version to bump, and no lockfile to realign.
 
 **It has no dependencies, deliberately.** Its compiled objects are archived into the cinterop klib
 and published inside `matter-support`, so anything linked here has to be redistributable and has to
@@ -337,10 +315,12 @@ therefore holds exactly one object, `ios-matter.o`. Keeping it that way is also 
 [`/ios-matter/Package.swift`](./ios-matter/Package.swift) stay a dozen lines with no
 `Package.resolved`, no `unsafeFlags` and no `-enable-library-evolution`.
 
-**`Package.swift` is kept only for Xcode.** Nothing consumes ios-matter as a Swift package —
-swiftklib generates its own manifest, and `iosApp.xcodeproj` references the directory only as a
-folder to browse. Ours stays because `/ios-matter` holds no `.xcodeproj`, so it is what gives Xcode
-a target to index and autocomplete the sources against while editing.
+**The manifest is a build entry point, not a distribution format.** Nothing consumes ios-matter as
+a Swift package — it is not a SwiftPM dependency of the Kotlin build, and `iosApp.xcodeproj`
+references the directory only as a folder to browse. It exists because `/ios-matter` holds no
+`.xcodeproj`, so the manifest is what lets `compileIosMatterSwift*` build the sources with
+`xcodebuild -scheme ios-matter`, and what gives Xcode a target to index them against while
+editing.
 
 ### Build and run the Android application
 
@@ -367,7 +347,7 @@ directory in Xcode and run it from there.
 An app embedding `matter-support` needs a `MatterSupport` app extension, but almost none of one —
 the commissioning logic ships in the library as iOS-only entry points on `NordicMatters` and
 `Fabric`, declared in
-[`api/NordicMattersAppExtension.kt`](./composeApp/src/iosMain/kotlin/no/nordicsemi/nrf/matter/api/NordicMattersAppExtension.kt).
+[`api/NordicMattersAppExtension.kt`](./lib/src/iosMain/kotlin/no/nordicsemi/nrf/matter/api/NordicMattersAppExtension.kt).
 The extension target just forwards system callbacks to them.
 [`iosApp/nrfMatter`](./iosApp/nrfMatter) is the worked example.
 

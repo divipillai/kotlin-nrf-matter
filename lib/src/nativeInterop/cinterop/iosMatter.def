@@ -1,7 +1,7 @@
 # cinterop bindings for the vendored ios-matter Swift package.
 #
 # The Swift sources are compiled to a static library by the `iosMatterStaticLib*`
-# Gradle tasks (see composeApp/build.gradle.kts), which also emit the
+# Gradle tasks (see lib/build.gradle.kts), which also emit the
 # Swift-generated Objective-C header consumed below. Only the `@objc public`
 # surface of ios-matter appears in that header -- everything Kotlin uses is
 # annotated for exactly this reason.

@@ -79,9 +79,9 @@
 			path = Configuration;
 			sourceTree = "<group>";
 		};
-		A7228F212FD844A4009CC829 /* ../composeApp/src */ = {
+		A7228F212FD844A4009CC829 /* ../lib/src */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ../composeApp/src;
+			path = ../lib/src;
 			sourceTree = SOURCE_ROOT;
 		};
 		A725F1BB2F4DAACB005BC977 /* nrfMatter */ = {
@@ -150,7 +150,7 @@
 				A71640AB3021D4D300531E94 /* ios-matter */,
 				A7B81D812FF7F490000AF7E4 /* screenshots */,
 				A7B81D7B2FF7F45D000AF7E4 /* fastlane */,
-				A7228F212FD844A4009CC829 /* ../composeApp/src */,
+				A7228F212FD844A4009CC829 /* ../lib/src */,
 				924494A307E640B6954B6B71 /* Configuration */,
 				208BF3748A4E27EC7D0D131C /* iosApp */,
 				A725F1BB2F4DAACB005BC977 /* nrfMatter */,

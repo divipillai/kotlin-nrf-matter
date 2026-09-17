@@ -15,7 +15,6 @@ import no.nordicsemi.nrf.matter.api.Fabric
 import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.commission.DecommissionDeviceUseCase
 import no.nordicsemi.nrf.matter.commission.DecommissionState
-import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.ui.device.DevicePresenter
@@ -73,8 +72,6 @@ class HomeViewModel : ViewModel() {
             uiModel.devices.map { device ->
                 devicePresenters.getOrPut(device.deviceId) {
                     DevicePresenter(device, viewModelScope)
-                }.also {
-                    NordicLogger.debug("Device $it", "HomeViewModel")
                 }
             }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())

@@ -1,7 +1,6 @@
 import UIKit
 import SwiftUI
 import shared
-import SwiftUI
 
 /// Bridges the shared Compose Multiplatform UI into SwiftUI.
 ///

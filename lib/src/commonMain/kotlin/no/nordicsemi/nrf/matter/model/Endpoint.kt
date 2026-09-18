@@ -47,11 +47,6 @@ data class Endpoint(
         get() = id == ROOT_ENDPOINT
 }
 
-val List<Endpoint>.root: Endpoint?
-    get() = endpoint(ROOT_ENDPOINT)
-
-fun List<Endpoint>.endpoint(id: Int): Endpoint? = firstOrNull { it.id == id }
-
 fun List<Endpoint>.deviceTypes(): List<DeviceType> =
     filterNot { it.isRoot }
         .flatMap { it.types }

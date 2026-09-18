@@ -6,7 +6,6 @@
 //
 
 import Matter
-import os.log
 
 /// Class used for NOC signing.
 ///

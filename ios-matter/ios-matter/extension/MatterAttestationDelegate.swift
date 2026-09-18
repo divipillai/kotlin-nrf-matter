@@ -5,7 +5,6 @@
 //  Created by Sylwester Zielinski on 27/02/2026.
 //
 
-import Foundation
 import Matter
 
 /// `MTRDeviceAttestationDelegate` implementation that ignores the attestation outcome and always

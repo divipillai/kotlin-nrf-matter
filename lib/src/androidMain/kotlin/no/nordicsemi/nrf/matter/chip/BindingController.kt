@@ -93,7 +93,12 @@ internal class BindingControllerImpl(
 
         // Read existing ACL
         val existingAcl = cluster.awaitReadAcl()
-        NordicLogger.debug("Light has already existing ACL of size: ${existingAcl.size}", tag = TAG)
+        if (existingAcl.isNotEmpty()) {
+            NordicLogger.debug(
+                "Light has already existing ACL of size: ${existingAcl.size}",
+                tag = TAG
+            )
+        }
 
         // Check duplicates
         val alreadyExists = existingAcl.any { entry ->

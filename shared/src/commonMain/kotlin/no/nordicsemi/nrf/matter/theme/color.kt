@@ -39,13 +39,9 @@ val NordicBlue = Color(0xFF00A9CE)
 val NordicSky = Color(0xFF6AD1E3)
 val NordicBlueslate = Color(0xFF0033A0)
 val NordicLake = Color(0xFF0077C8)
-val NordicGrass = Color(0xFFD0DF00)
 val NordicGreen = Color(0xFF00A651)
 val NordicSun = Color(0xFFFFCD00)
 val NordicRed = Color(0xFFEE2F4E)
-val NordicFall = Color(0xFFF58220)
-val NordicLightGray = Color(0xFFD9E1E2)
-val NordicMiddleGray = Color(0xFF768692)
 val NordicDarkGray = Color(0xFF333f48)
 
 // Light theme colors
@@ -82,8 +78,6 @@ val light_md_theme_inverseSurface = Color(0xFF2E3133)
 val light_md_theme_primaryInverse = Color(0xFF57D5FC)
 
 val light_md_appBarColor = Color(0xFF00A9CE)
-val light_md_statusBarColor = Color(0xFF00A9CE)
-val light_md_navigationBarColor = Color(0xFFE1EFF2)
 
 // Dark Theme colors
 val dark_md_theme_primary = NordicBlue
@@ -118,5 +112,3 @@ val dark_md_theme_inverseSurface = Color(0xFFE1E2E5)
 val dark_md_theme_primaryInverse = Color(0xFF006780)
 
 val dark_md_appBarColor = Color(0xFF333f48)
-val dark_md_statusBarColor = NordicDarkGray
-val dark_md_navigationBarColor = Color(0xFF17282C)

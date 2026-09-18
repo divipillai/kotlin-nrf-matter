@@ -5,8 +5,6 @@
 //  Created by Sylwester Zielinski on 23/04/2026.
 //
 
-import Foundation
-
 /// A type that can be parsed from the raw `Any` value returned when reading a Matter attribute.
 public protocol AttributeParser {
     

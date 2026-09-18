@@ -39,9 +39,8 @@ import MatterSupport
     /// for scanning the QR code and choosing among available Thread networks. The local fabric
     /// is shared between the main app and the app extension via App Groups.
     ///
-    /// Pairing is all this does: reading the commissioned device back is a separate step, done by
-    /// ``LocalMatterClusterDiscovery``, so that the caller decides when - and whether - to pay for
-    /// those reads.
+    /// Pairing is all this does: reading the commissioned device back is a separate step, left to
+    /// the caller, so that the caller decides when - and whether - to pay for those reads.
     ///
     /// - Parameters:
     ///   - deviceId: The Matter node ID to assign to the newly commissioned device.

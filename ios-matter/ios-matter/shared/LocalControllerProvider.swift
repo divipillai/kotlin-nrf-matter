@@ -6,7 +6,6 @@
 //
 
 import Matter
-import os.log
 
 /// Errors that can occur while setting up the local ``MTRDeviceController``.
 enum ControllerError : Error {

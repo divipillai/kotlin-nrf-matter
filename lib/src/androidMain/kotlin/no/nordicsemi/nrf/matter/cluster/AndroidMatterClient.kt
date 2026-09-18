@@ -3,8 +3,6 @@ package no.nordicsemi.nrf.matter.cluster
 import chip.devicecontroller.ChipStructs
 import chip.devicecontroller.ChipTLVType
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.model.DeviceId

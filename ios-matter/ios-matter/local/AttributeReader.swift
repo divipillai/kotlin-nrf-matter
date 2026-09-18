@@ -70,13 +70,4 @@ class AttributeReader {
 
         return try report.readMatterValue()
     }
-    
-    private func printAttributes(_ array: [[String: Any]]) {
-        for (index, dict) in array.enumerated() {
-            SwiftLogger.debug("Item nr \(index):")
-            for (key, value) in dict {
-                SwiftLogger.debug("\(key): \(value as! NSObject)")
-            }
-        }
-    }
 }

@@ -77,8 +77,6 @@ import kotlin.coroutines.resumeWithException
 /* 0xFFF4 is a test vendor ID, replace with your assigned company ID */
 private const val VENDOR_ID = 0xFFF4
 
-private const val DEFAULT_TIMEOUT = 1000
-
 private const val DEFAULT_IM_TIMEOUT = 30_000
 private const val DEFAULT_SUBSCRIPTION_MIN_INTERVAL_S = 0
 private const val DEFAULT_SUBSCRIPTION_MAX_INTERVAL_S = 10
@@ -664,42 +662,6 @@ class ChipClient(
             continuation.invokeOnCancellation {
                 NordicLogger.debug("Read attribute coroutine cancelled", tag = TAG)
             }
-        }
-    }
-
-    /**
-     * Invokes a cluster command on a device and returns the response status code.
-     *
-     * @param devicePtr A native pointer to the connected device.
-     * @param invokeElement The command to invoke, including its endpoint, cluster, command ID,
-     *   and TLV-encoded fields.
-     * @param timedRequestTimeoutMs The timeout in milliseconds for the timed-invoke window.
-     *   Defaults to [DEFAULT_TIMEOUT].
-     * @param imTimeoutMs The timeout in milliseconds for the Interaction Model exchange.
-     *   Defaults to [DEFAULT_TIMEOUT].
-     * @return The success status code returned by the device.
-     * @throws IllegalStateException If the invocation fails.
-     */
-    suspend fun invoke(
-        devicePtr: Long,
-        invokeElement: InvokeElement,
-        timedRequestTimeoutMs: Int = DEFAULT_TIMEOUT,
-        imTimeoutMs: Int = DEFAULT_TIMEOUT
-    ): Long {
-        return suspendCancellableCoroutine { continuation ->
-            val invokeCallback: InvokeCallback =
-                object : InvokeCallback {
-                    override fun onError(e: java.lang.Exception?) {
-                        continuation.resumeWithException(IllegalStateException("invoke failed", e))
-                    }
-
-                    override fun onResponse(invokeElement: InvokeElement?, successCode: Long) {
-                        continuation.resume(successCode)
-                    }
-                }
-            chipDeviceController.invoke(
-                invokeCallback, devicePtr, invokeElement, timedRequestTimeoutMs, imTimeoutMs
-            )
         }
     }
 

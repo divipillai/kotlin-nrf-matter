@@ -13,7 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.api.NordicMatters
-import no.nordicsemi.nrf.matter.logger.NordicLogger
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor

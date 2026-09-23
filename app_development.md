@@ -2,7 +2,7 @@
 
 This repository contains complete, open-source code for the application. You can explore the codebase to examine device cluster interactions, node management, and binding workflows. By cloning or forking the public repository, you can build the app locally, integrate core Matter commissioning and control logic into your own multiplatform applications, or contribute fixes and features back to the community.
 
-[![Release notes](assets/ReleaseNotes.png)](https://github.com/nordicsemi/kotlin-nrf-matter/releases) [![App user guide](assets/AppUserGuide.png)](https://github.com/nordicsemi/kotlin-nrf-matter/README.md)
+[![Release notes](assets/ReleaseNotes.png)](https://github.com/nordicsemi/kotlin-nrf-matter/releases) [![App user guide](assets/AppUserGuide.png)](./README.md)
 
 ---
 

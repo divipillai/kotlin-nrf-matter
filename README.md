@@ -288,7 +288,7 @@ To commission on iOS:
 The app initiates the Matter network commissioning stages. Once done, the device is added to the Matter fabric and the app is updated with the new device card.
 For example, the `Test_Product` (Matter Light Bulb) in the following image.
 
-![nRF Matter on iOS (Matter Test_Product added)](assets/device_card_ios.jpg "nRF Matter on iOS (Matter Test_Product added)")
+![nRF Matter on iOS (Matter Test_Product added)](assets/device_card_ios.png "nRF Matter on iOS (Matter Test_Product added)")
 
 #### What if commissioning fails
 

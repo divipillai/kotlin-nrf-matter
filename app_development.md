@@ -81,19 +81,6 @@ The Android build of the app uses several vendored dependencies, as described in
 
 The iOS build of the app uses Apple's Matter frameworks and does not require any vendored dependencies.
 
-### Supported firmware
-
-The vendored CHIP binaries (see [native Matter (CHIP) SDK binaries](#vendored-dependencies-for-android)) are built against **Matter 1.5.0**, which was first introduced in the **nRF Connect SDK v3.2.0**. Nordic development kits running Matter firmware built with the nRF Connect SDK v3.2.0 or newer are therefore compatible for testing commissioning and control with this app.
-
-| Development kit | SoC       |
-|-----------------|-----------|
-| nRF52840 DK     | nRF52840  |
-| nRF5340 DK      | nRF5340   |
-| nRF54L15 DK     | nRF54L15  |
-| nRF54LM20 DK    | nRF54LM20 |
-
-For the authoritative, up-to-date list of supported hardware, see Nordic's [Matter hardware and memory requirements](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/matter/getting_started/hw_requirements.html) page - new development kits and SoCs are added there as they gain Matter support.
-
 ### Vendored dependencies for Android
 
 Two dependencies are checked directly into the repository rather than resolved from a remote repository:
@@ -114,7 +101,7 @@ Cloning the repository and building is enough — none of them require manual se
 
 **Note:** The native libraries are built for `arm64-v8a` only. There is no `x86_64` build, so these libraries will not load on an Android emulator — a physical arm64 device is required.
 
-These binaries are built against **Matter 1.5.0**, as provided by Nordic. It comes from Nordic's fork of Project CHIP, [`nrfconnect/sdk-connectedhomeip`](https://github.com/nrfconnect/sdk-connectedhomeip), the nRF Connect SDK downstream of [`project-chip/connectedhomeip`](https://github.com/project-chip/connectedhomeip), specifically its Android `chip-tool` build target for arm64.
+These binaries are built against Matter v1.5.0, as provided by Nordic Semiconductor (first used in the nRF Connect SDK v3.2.0). The Matter integration comes from Nordic Semiconductor's fork of the Matter project (formerly known as Connected Home over IP, CHIP), [`nrfconnect/sdk-connectedhomeip`](https://github.com/nrfconnect/sdk-connectedhomeip), which is a the downstream of [`project-chip/connectedhomeip`](https://github.com/project-chip/connectedhomeip). Specifically, the Android binaries come from the CHIP Tool's build target for `arm64`.
 
 To rebuild them from source, follow the [Android building instructions](https://github.com/nrfconnect/sdk-connectedhomeip/blob/9895b2bdb4c43b48426930f03e3c05502babd2f0/docs/platforms/android/android_building.md) in that repository.
 
